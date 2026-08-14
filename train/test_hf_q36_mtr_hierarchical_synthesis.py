@@ -48,11 +48,23 @@ def test_incumbent_challenger_prompt_is_asymmetric_and_task_agnostic() -> None:
     assert "development" not in prompt
 
 
+def test_incumbent_cyclic_prompt_preserves_incumbent_without_voting() -> None:
+    prompt = module.incumbent_cyclic_prompt(
+        "Original question", "incumbent", "cyclic one", "cyclic two"
+    )
+    assert "should be preserved unless a concrete" in prompt
+    assert "never change A because of surface agreement or voting" in prompt
+    assert "cyclic one" in prompt and "cyclic two" in prompt
+
+
 def test_mode_contract_freezes_geometry_and_seed() -> None:
     assert module.mode_contract("retention_controls")["path_counts"] == (16, 1, 8)
     challenger = module.mode_contract("incumbent_challenger")
     assert challenger["path_counts"] == (16, 16, 16)
     assert challenger["seed"] == module.INCUMBENT_CHALLENGER_SEED
+    cyclic = module.mode_contract("incumbent_cyclic")
+    assert cyclic["path_counts"] == (16, 16, 16)
+    assert cyclic["seed"] == module.INCUMBENT_CYCLIC_SEED
     with pytest.raises(module.Q36MTRHierarchicalSynthesisError):
         module.mode_contract("unknown")
 

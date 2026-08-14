@@ -26,6 +26,7 @@ SHARDS = 16
 ROWS = 1_289
 SEED = 2026081423
 INCUMBENT_CHALLENGER_SEED = 2026081424
+INCUMBENT_CYCLIC_SEED = 2026081425
 MAX_NEW_TOKENS = 768
 TASKS = {"bbh_logic", "math500", "mbpp"}
 
@@ -92,6 +93,34 @@ def incumbent_challenger_prompt(
     )
 
 
+def incumbent_cyclic_prompt(
+    source_prompt: str,
+    incumbent: str,
+    cyclic_offset_one: str,
+    cyclic_offset_two: str,
+) -> str:
+    values = (source_prompt, incumbent, cyclic_offset_one, cyclic_offset_two)
+    if any(not isinstance(value, str) or not value.strip() for value in values):
+        raise Q36MTRHierarchicalSynthesisError("incumbent-cyclic prompt input differs")
+    return (
+        "Produce the single most reliable answer to the original problem. Candidate A "
+        "is the incumbent verified solution and should be preserved unless a concrete, "
+        "recomputed error is established. Candidates B and C are independent cyclic "
+        "reconciliations of the underlying reasoning trajectories. Use either cyclic "
+        "candidate to identify a specific weakness in A, but never change A because of "
+        "surface agreement or voting. Recompute every disputed step from the original "
+        "problem; if A is wrong, repair only what is necessary. Do not mention the "
+        "candidates or this review process, and return one final solution in the "
+        "original problem's requested output format.\n\n"
+        f"Original problem:\n{source_prompt}\n\n"
+        f"Candidate A — incumbent verified solution:\n{incumbent}\n\n"
+        f"Candidate B — cyclic reconciliation one:\n{cyclic_offset_one}\n\n"
+        f"Candidate C — cyclic reconciliation two:\n{cyclic_offset_two}\n\n"
+        "Return the verified final solution in the original problem's requested output "
+        "format."
+    )
+
+
 def mode_contract(mode: str) -> dict[str, Any]:
     if mode == "retention_controls":
         return {
@@ -114,6 +143,17 @@ def mode_contract(mode: str) -> dict[str, Any]:
                 "direct_synthesis",
             ),
             "interpretation": "incumbent_challenger_conservative_verification",
+        }
+    if mode == "incumbent_cyclic":
+        return {
+            "seed": INCUMBENT_CYCLIC_SEED,
+            "path_counts": (16, 16, 16),
+            "roles": (
+                "incumbent_verified",
+                "cyclic_offset_one",
+                "cyclic_offset_two",
+            ),
+            "interpretation": "incumbent_cyclic_conservative_verification",
         }
     raise Q36MTRHierarchicalSynthesisError("hierarchical mode differs")
 
@@ -238,11 +278,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     for offset in range(0, len(shard_identities), args.batch_size):
         identities = shard_identities[offset : offset + args.batch_size]
-        prompt_builder = (
-            hierarchical_prompt
-            if args.mode == "retention_controls"
-            else incumbent_challenger_prompt
-        )
+        prompt_builder = {
+            "retention_controls": hierarchical_prompt,
+            "incumbent_challenger": incumbent_challenger_prompt,
+            "incumbent_cyclic": incumbent_cyclic_prompt,
+        }[args.mode]
         prompts = [
             prompt_builder(
                 sources[identity]["source_prompt"],
@@ -357,7 +397,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument(
         "--mode",
-        choices=("retention_controls", "incumbent_challenger"),
+        choices=("retention_controls", "incumbent_challenger", "incumbent_cyclic"),
         default="retention_controls",
     )
     parser.add_argument("--model-revision", default=MODEL_REVISION)

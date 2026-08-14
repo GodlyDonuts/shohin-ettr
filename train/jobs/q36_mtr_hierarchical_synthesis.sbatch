@@ -21,6 +21,7 @@ HIERARCHICAL_MODE=${HIERARCHICAL_MODE:-retention_controls}
 case "$HIERARCHICAL_MODE" in
   retention_controls) expected_geometry='16 1 8'; hierarchical_seed=2026081423 ;;
   incumbent_challenger) expected_geometry='16 16 16'; hierarchical_seed=2026081424 ;;
+  incumbent_cyclic) expected_geometry='16 16 16'; hierarchical_seed=2026081425 ;;
   *) printf 'hierarchical mode differs\n' >&2; exit 2 ;;
 esac
 [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] || { printf 'SLURM_ARRAY_TASK_ID differs\n' >&2; exit 2; }
