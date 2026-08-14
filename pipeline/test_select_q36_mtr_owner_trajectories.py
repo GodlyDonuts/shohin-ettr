@@ -79,3 +79,19 @@ def test_selection_rejects_duplicate_identity(tmp_path: Path) -> None:
             _write(tmp_path / "first.jsonl", first),
             _write(tmp_path / "second.jsonl", _rows("b")),
         )
+
+
+def test_selection_can_project_one_shared_split(tmp_path: Path) -> None:
+    first = _rows("a")
+    train = dict(first[0])
+    train["identity_sha256"] = "f" * 64
+    train["split"] = "train"
+    first.append(train)
+    selected, report = select(
+        _write(tmp_path / "first.jsonl", first),
+        _write(tmp_path / "second.jsonl", _rows("b")),
+        "development",
+    )
+    assert len(selected) == 3
+    assert report["selected_split"] == "development"
+    assert {row["split"] for row in selected} == {"development"}

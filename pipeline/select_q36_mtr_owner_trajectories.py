@@ -30,7 +30,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _load(path: Path) -> list[dict[str, Any]]:
+def _load(path: Path, split: str | None = None) -> list[dict[str, Any]]:
     try:
         rows = [
             json.loads(line)
@@ -60,7 +60,10 @@ def _load(path: Path) -> list[dict[str, Any]]:
         identities.append(identity)
     if not rows or len(identities) != len(set(identities)):
         raise Q36MTROwnerTrajectorySelectionError("owner candidate identities differ")
-    return rows
+    selected = rows if split is None else [row for row in rows if row["split"] == split]
+    if not selected:
+        raise Q36MTROwnerTrajectorySelectionError("owner candidate split is empty")
+    return selected
 
 
 def _explicit(row: dict[str, Any]) -> bool:
@@ -81,9 +84,13 @@ def _choose(first: dict[str, Any], second: dict[str, Any]) -> tuple[str, str]:
     return "first", "retained_first"
 
 
-def select(first_path: Path, second_path: Path) -> tuple[list[dict], dict[str, Any]]:
-    first = _load(first_path)
-    second = _load(second_path)
+def select(
+    first_path: Path, second_path: Path, split: str | None = None
+) -> tuple[list[dict], dict[str, Any]]:
+    if split not in (None, "train", "development"):
+        raise Q36MTROwnerTrajectorySelectionError("owner selection split differs")
+    first = _load(first_path, split)
+    second = _load(second_path, split)
     if len(first) != len(second):
         raise Q36MTROwnerTrajectorySelectionError("owner candidate counts differ")
     selected = []
@@ -122,6 +129,7 @@ def select(first_path: Path, second_path: Path) -> tuple[list[dict], dict[str, A
         "status": "complete",
         "interpretation": "candidate_only_owner_trajectory_commit",
         "rule": RULE,
+        "selected_split": split or "all",
         "rows": len(selected),
         "first_candidates": str(first_path.resolve()),
         "first_candidates_sha256": sha256_file(first_path),
@@ -184,6 +192,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--first-candidates", type=Path, required=True)
     parser.add_argument("--second-candidates", type=Path, required=True)
+    parser.add_argument("--split", choices=("train", "development"))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     return parser.parse_args()
@@ -191,7 +200,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    rows, report = select(args.first_candidates, args.second_candidates)
+    rows, report = select(args.first_candidates, args.second_candidates, args.split)
     _atomic_jsonl(args.output, rows)
     report["output"] = str(args.output.resolve())
     report["output_sha256"] = sha256_file(args.output)
