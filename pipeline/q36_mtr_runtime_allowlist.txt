@@ -73,6 +73,7 @@ train/hf_q36_mtr_apply_multi_owner_commit.py
 train/hf_q36_mtr_evaluate.py
 train/hf_q36_mtr_generate_drafts.py
 train/hf_q36_mtr_mechanics.py
+train/hf_q36_mtr_synthesize_trajectories.py
 train/hf_q36_mtr_train_commit.py
 train/hf_q36_mtr_train_commit_256.py
 train/hf_q36_mtr_train_role.py
@@ -85,6 +86,7 @@ train/jobs/q36_mtr_generate_drafts.sbatch
 train/jobs/q36_mtr_generate_owner_preview.sbatch
 train/jobs/q36_mtr_mechanics.sbatch
 train/jobs/q36_mtr_mechanics_qualification.sbatch
+train/jobs/q36_mtr_synthesize_trajectories.sbatch
 train/jobs/q36_mtr_train_commit.sbatch
 train/jobs/q36_mtr_train_commit_256.sbatch
 train/jobs/q36_mtr_train_role.sbatch
