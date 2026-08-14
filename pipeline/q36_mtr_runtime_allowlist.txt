@@ -26,6 +26,7 @@ pipeline/jobs/q36_mtr_capture_accounting.sbatch
 pipeline/jobs/q36_mtr_capture_environment.sbatch
 pipeline/jobs/q36_mtr_commit_pairs.sbatch
 pipeline/jobs/q36_mtr_compare.sbatch
+pipeline/jobs/q36_mtr_compare_semantic_commits.sbatch
 pipeline/jobs/q36_mtr_live_preflight.sbatch
 pipeline/jobs/q36_mtr_materialize.sbatch
 pipeline/jobs/q36_mtr_merge_drafts.sbatch
