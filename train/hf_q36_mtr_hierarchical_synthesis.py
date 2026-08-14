@@ -309,15 +309,16 @@ def guided_multi_trajectory_adjudication_plan(
         )
     if task not in {"bbh_logic", "math500"}:
         raise Q36MTRHierarchicalSynthesisError("guided adjudication task differs")
-    grouped: dict[str, list[str]] = {}
-    unparsed = []
+    grouped: dict[tuple[str, str], list[str]] = {}
     for arm, row in candidates.items():
         answer = normalized_candidate_answer(task, row["completion"])
-        if answer is None:
-            unparsed.append(arm)
-        else:
-            grouped.setdefault(answer, []).append(arm)
-    if len(grouped) == 1 and not unparsed:
+        key = (
+            ("normalized", answer)
+            if answer is not None
+            else ("raw", row["completion"].strip())
+        )
+        grouped.setdefault(key, []).append(arm)
+    if len(grouped) == 1:
         return (
             "hierarchy",
             None,
@@ -328,9 +329,14 @@ def guided_multi_trajectory_adjudication_plan(
                 "guidance_selected": metadata["selected"],
             },
         )
-    guided_answer = normalized_candidate_answer(task, guidance["completion"])
+    normalized_guidance = normalized_candidate_answer(task, guidance["completion"])
+    guided_answer = (
+        ("normalized", normalized_guidance)
+        if normalized_guidance is not None
+        else ("raw", guidance["completion"].strip())
+    )
     guided_arm = metadata["selected"]
-    if guided_answer is None or guided_arm not in grouped.get(guided_answer, []):
+    if guided_arm not in grouped.get(guided_answer, []):
         raise Q36MTRHierarchicalSynthesisError("guided adjudication answer differs")
     ordered = sorted(
         grouped.items(),
@@ -341,18 +347,15 @@ def guided_multi_trajectory_adjudication_plan(
         ),
     )
     proposals = []
-    for index, (answer, arms) in enumerate(ordered, start=1):
-        representative = guided_arm if answer == guided_answer else arms[0]
-        label = "cross-fitted incumbent" if answer == guided_answer else "alternative"
+    for index, (answer_key, arms) in enumerate(ordered, start=1):
+        representative = guided_arm if answer_key == guided_answer else arms[0]
+        label = (
+            "cross-fitted incumbent" if answer_key == guided_answer else "alternative"
+        )
         proposals.append(
             f"Proposal {index} — {label}, supported by {len(arms)} of 6 independent "
             f"trajectories ({', '.join(arms)}):\n"
             f"{candidates[representative]['completion']}"
-        )
-    for arm in unparsed:
-        proposals.append(
-            f"Proposal {len(proposals) + 1} — unparsed alternative trajectory "
-            f"({arm}):\n{candidates[arm]['completion']}"
         )
     prompt = (
         "Independently solve the original problem, then adjudicate the proposed "
@@ -372,7 +375,7 @@ def guided_multi_trajectory_adjudication_plan(
         prompt,
         {
             "decision": "model_owned_guided_disagreement_adjudication",
-            "unique_answers": len(grouped) + len(unparsed),
+            "unique_answers": len(grouped),
             "maximum_support": max((len(arms) for arms in grouped.values()), default=0),
             "guidance_selected": guided_arm,
             "guidance_estimated_reliability": metadata["estimated_reliability"],

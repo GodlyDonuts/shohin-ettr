@@ -171,6 +171,17 @@ def test_guided_adjudication_rejects_heldout_label_access() -> None:
         )
 
 
+def test_guided_adjudication_preserves_identical_unparsed_outputs() -> None:
+    completion = r"\boxed{" + "10" * 400
+    rows = _adjudication_rows("math500", (completion,) * 6)
+    selected, prompt, plan = module.guided_multi_trajectory_adjudication_plan(
+        "Original question", rows, _guidance("hierarchy", completion)
+    )
+    assert selected == "hierarchy"
+    assert prompt is None
+    assert plan["decision"] == "preserve_unanimous_answer"
+
+
 def test_mode_contract_freezes_geometry_and_seed() -> None:
     assert module.mode_contract("retention_controls")["path_counts"] == (16, 1, 8)
     challenger = module.mode_contract("incumbent_challenger")
