@@ -1,0 +1,74 @@
+{
+  "schema": "shohin-q36-mtr-complete-moe-trajectory-commit-result-v1",
+  "status": "complete",
+  "interpretation": "engineering_exact_identity_benchmark",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "split": "source_disjoint_development",
+  "rows": 1289,
+  "variants": {
+    "current": {"correct": 492, "accuracy": 0.3816912335143522},
+    "owner_71": {"correct": 493, "accuracy": 0.382467028704422},
+    "owner_8": {
+      "correct": 494,
+      "accuracy": 0.3832428238944919,
+      "domains": {
+        "bbh_logic": {"rows": 637, "correct": 291, "accuracy": 0.45682888540031397},
+        "math500": {"rows": 623, "correct": 186, "accuracy": 0.2985553772070626},
+        "mbpp": {"rows": 29, "correct": 17, "accuracy": 0.5862068965517241}
+      }
+    },
+    "candidate_only_trajectory_commit": {
+      "correct": 539,
+      "accuracy": 0.4181536074476338,
+      "gain_over_best_owner_count": 45,
+      "gain_over_best_owner_points": 3.491078355314197,
+      "rule": "explicit_final_then_nonexhausted_then_first_v1",
+      "labels_or_assessors_used_for_selection": false,
+      "domains": {
+        "bbh_logic": {"rows": 637, "correct": 311, "accuracy": 0.48822605965463106},
+        "math500": {"rows": 623, "correct": 211, "accuracy": 0.33868378812199035},
+        "mbpp": {"rows": 29, "correct": 17, "accuracy": 0.5862068965517241}
+      },
+      "paired_vs_best_owner_8": {
+        "both_correct": 462,
+        "commit_only_correct": 77,
+        "owner_8_only_correct": 32,
+        "both_wrong": 718,
+        "mcnemar_exact_two_sided_p": 1.9380484093664115e-05
+      }
+    }
+  },
+  "three_owner_oracle": {
+    "correct": 618,
+    "accuracy": 0.4794414274631497,
+    "gain_over_best_owner_count": 124,
+    "gain_over_best_owner_points": 9.619860356865788,
+    "remaining_gain_over_candidate_only_commit_count": 79,
+    "remaining_gain_over_candidate_only_commit_points": 6.12878200155159,
+    "correctness_patterns_current_owner71_owner8": {
+      "000": 671,
+      "001": 47,
+      "010": 37,
+      "011": 42,
+      "100": 45,
+      "101": 33,
+      "110": 42,
+      "111": 372
+    },
+    "domains": {
+      "bbh_logic": {"rows": 637, "correct": 347},
+      "math500": {"rows": 623, "correct": 252},
+      "mbpp": {"rows": 29, "correct": 19}
+    }
+  },
+  "score_collection_sha256": {
+    "contract": "sha256_of_ordered_shard_index_colon_report_sha256_newline",
+    "current": "9f5954bd51c131941b6cf4788002b865fdcfeb43e03d623acdd75cec80b76d39",
+    "owner_71": "8f09414ba574e72402367c31550dd10d0310be8718e73251fcd0e30c5db2d7bd",
+    "owner_8": "eeae4a1f5a3ccc43249110029b1988c16d94a0d0fac26f5226d0d1246780772b",
+    "candidate_only_trajectory_commit": "faf3a02da7636cd6d868571ee9ef281743e5a1e743a861d516dd99ec0c767647"
+  },
+  "conclusion": "On 1,289 exact source-disjoint development identities, three individually tied MoE trajectory owners expose 124 additional correct answers. A label-free whole-trajectory commit rule already captures 45 of them, improving the best owner by 3.49 percentage points with paired p=1.94e-5. The remaining 79-answer gap motivates the independent, diversified, higher-capacity, and contextual setwise learned commit heads already queued.",
+  "next_measurement": "Benchmark every queued learned semantic commit on these exact identities and select the best achieved router before expanding owner diversity."
+}
