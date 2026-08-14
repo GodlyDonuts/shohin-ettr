@@ -1,0 +1,55 @@
+{
+  "schema": "shohin-q36-mtr-incumbent-interpolation-screen-result-v1",
+  "status": "complete_negative_first_four_screen",
+  "date": "2026-08-14",
+  "scope": {
+    "development_shards": [0, 1, 2, 3],
+    "rows": 322,
+    "host": "Qwen/Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "result": {
+    "hierarchical_synthesis_correct": 167,
+    "interpolation_w010_correct": 174,
+    "incumbent_interpolation_composition_correct": 167,
+    "composition_accuracy": 0.5186335403726708,
+    "delta_vs_hierarchy": 0,
+    "delta_vs_interpolation": -7,
+    "domains": {
+      "bbh_logic": {"rows": 167, "composition": 89, "hierarchy": 89, "interpolation": 92},
+      "math500": {"rows": 143, "composition": 69, "hierarchy": 69, "interpolation": 73},
+      "mbpp": {"rows": 12, "composition": 9, "hierarchy": 9, "interpolation": 9}
+    }
+  },
+  "paired_vs_hierarchy": {
+    "both_correct": 163,
+    "composition_only_correct": 4,
+    "hierarchy_only_correct": 4,
+    "both_wrong": 151,
+    "exact_two_sided_p": 1.0,
+    "oracle_correct": 171
+  },
+  "paired_vs_interpolation": {
+    "both_correct": 160,
+    "composition_only_correct": 7,
+    "interpolation_only_correct": 14,
+    "both_wrong": 141,
+    "exact_two_sided_p": 0.18924713134765625,
+    "oracle_correct": 181
+  },
+  "execution": {
+    "generation_array": 759572,
+    "score_jobs": [759573, 759574, 759575, 759576],
+    "comparison_jobs": [759577, 759578],
+    "requeues": 0,
+    "full_board_expansion_submitted": false
+  },
+  "artifacts": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/incumbent_interpolation_efd6e386_r1",
+    "comparison_vs_hierarchy_sha256": "8e2d1c54900f7178aff4e1b5eab524dadf12dedd601674a33c8a7f8a3ed73a2b",
+    "comparison_vs_interpolation_sha256": "ad4724ee396bdc642d300b4343f02993e75649d010968a0e0250e5baf726a90e",
+    "generator_sha256": "1e839c1fc80a7d423ce32cb6c78ccc2892f57606938391ff2a337ac06cdb0f8c",
+    "wrapper_sha256": "6e497cc8a3842e8cec868e306f9568ebec65bc4a359d18cf0457fd96bde0c77f"
+  },
+  "decision": "Do not expand this composition. It ties hierarchical synthesis and loses seven answers to the interpolated owner on the prespecified first-four screen. Redirect H100 capacity to selective disagreement adjudication."
+}
