@@ -32,6 +32,13 @@ the first live Q36 capability diagnostic: the model-owned source-owner drafts
 score 28/85 (`32.94%`), with math 13/40, logic 14/43, and code 1/2. Length is
 the dominant observed failure: non-exhausted drafts score 27/60 (`45.0%`),
 whereas drafts reaching the 768-token limit score 1/25 (`4.0%`). This
+is a trajectory-completion failure rather than merely verbose correct work:
+all 60 non-exhausted drafts expose an explicit final answer, versus only 2/25
+exhausted drafts. The corresponding shard-0 training slice contains 139
+exhausted and 220 non-exhausted trajectories. For the exhausted cases, the
+model-owned draft averages 386 words while the supervisor target averages 26
+words (mean target/draft ratio `0.063`), giving the reviser a strong learned
+trajectory-compression signal rather than a hand-written length heuristic. This
 identity-sorted partial slice is not the matched architecture gate, but it
 supports the trained revision's intended role: preserve the already-capable
 trajectories while learning to finish and commit them more concisely. Preserve
