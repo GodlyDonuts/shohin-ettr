@@ -61,6 +61,7 @@ pipeline/render_q36_mtr_publication_figure.py
 pipeline/score_q36_mtr.py
 pipeline/seal_q36_mtr_terminal_evidence.py
 pipeline/select_q36_mtr_candidate_groups.py
+pipeline/select_q36_mtr_owner_trajectories.py
 pipeline/stack_q36_mtr_sparse_commit.py
 pipeline/train_apply_q36_mtr_calibration_direct_commit.py
 pipeline/train_apply_q36_mtr_calibration_stack.py
