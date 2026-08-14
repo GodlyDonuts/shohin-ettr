@@ -39,6 +39,7 @@ pipeline/jobs/q36_mtr_score.sbatch
 pipeline/jobs/q36_mtr_select_owner_trajectories.sbatch
 pipeline/jobs/q36_mtr_sparse_router.sbatch
 pipeline/jobs/q36_mtr_sparse_router_cv.sbatch
+pipeline/jobs/q36_mtr_stack_sparse_commit.sbatch
 pipeline/jobs/q36_mtr_validate_commit_application.sbatch
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
@@ -51,6 +52,7 @@ pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/score_q36_mtr.py
 pipeline/seal_q36_mtr_terminal_evidence.py
+pipeline/stack_q36_mtr_sparse_commit.py
 pipeline/train_apply_q36_mtr_sparse_router.py
 pipeline/validate_q36_mtr_commit_application.py
 pipeline/validate_q36_mtr_live_preflight.py
