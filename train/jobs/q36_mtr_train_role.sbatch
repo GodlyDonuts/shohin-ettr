@@ -57,6 +57,10 @@ model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
+# The longest bounded synthesis presentations approach the H100 allocation
+# ceiling. Grow CUDA segments instead of stranding reserved holes; this changes
+# allocator mechanics, not examples, update budget, or loss.
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 q36_export_pythonpath
 nvidia-smi
 "$PYTHON" "$trainer" \

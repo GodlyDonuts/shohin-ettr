@@ -416,3 +416,4 @@ def test_role_wrapper_binds_the_exact_engineering_sequence_extension() -> None:
     assert '"$MAX_SEQUENCE_LENGTH" == "4224"' in source
     assert "--engineering-sequence-extension" in source
     assert "TRAIN_SCRIPT_SHA256" in source
+    assert "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" in source
