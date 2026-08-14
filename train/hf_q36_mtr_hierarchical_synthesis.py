@@ -25,6 +25,7 @@ HIERARCHY_SCHEMA = "shohin-q36-mtr-hierarchical-synthesis-v1"
 SHARDS = 16
 ROWS = 1_289
 SEED = 2026081423
+INCUMBENT_CHALLENGER_SEED = 2026081424
 MAX_NEW_TOKENS = 768
 TASKS = {"bbh_logic", "math500", "mbpp"}
 
@@ -58,6 +59,63 @@ def hierarchical_prompt(
         "Return the verified final solution in the original problem's requested output "
         "format."
     )
+
+
+def incumbent_challenger_prompt(
+    source_prompt: str,
+    incumbent: str,
+    challenger: str,
+    direct_synthesis: str,
+) -> str:
+    values = (source_prompt, incumbent, challenger, direct_synthesis)
+    if any(not isinstance(value, str) or not value.strip() for value in values):
+        raise Q36MTRHierarchicalSynthesisError(
+            "incumbent-challenger prompt input differs"
+        )
+    return (
+        "Produce the single most reliable answer to the original problem. Candidate A "
+        "is the incumbent verified solution and should be preserved unless a concrete, "
+        "recomputed error is established. Candidate B is a deeper synthesis obtained "
+        "from multiple cyclic reconciliations, and Candidate C is the original direct "
+        "three-trajectory synthesis. Use B and C only to identify a specific weakness "
+        "in A; never change A merely because alternatives agree. If a weakness is "
+        "found, recompute the disputed reasoning from the original problem and repair "
+        "only what is necessary. Do not mention the candidates or this review process, "
+        "and return one final solution in the original problem's requested output "
+        "format.\n\n"
+        f"Original problem:\n{source_prompt}\n\n"
+        f"Candidate A — incumbent verified solution:\n{incumbent}\n\n"
+        f"Candidate B — cyclic deep synthesis:\n{challenger}\n\n"
+        f"Candidate C — direct synthesis:\n{direct_synthesis}\n\n"
+        "Return the verified final solution in the original problem's requested output "
+        "format."
+    )
+
+
+def mode_contract(mode: str) -> dict[str, Any]:
+    if mode == "retention_controls":
+        return {
+            "seed": SEED,
+            "path_counts": (16, 1, 8),
+            "roles": (
+                "integrated_synthesis",
+                "stacked_preserved",
+                "self_refinement",
+            ),
+            "interpretation": "hierarchical_synthesis_with_conservative_retention",
+        }
+    if mode == "incumbent_challenger":
+        return {
+            "seed": INCUMBENT_CHALLENGER_SEED,
+            "path_counts": (16, 16, 16),
+            "roles": (
+                "incumbent_verified",
+                "cyclic_deep_synthesis",
+                "direct_synthesis",
+            ),
+            "interpretation": "incumbent_challenger_conservative_verification",
+        }
+    raise Q36MTRHierarchicalSynthesisError("hierarchical mode differs")
 
 
 def load_candidate_group(
@@ -110,9 +168,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         q36_nonpadding_prompt_tokens,
     )
 
+    contract = mode_contract(args.mode)
     if (
         args.model_revision != MODEL_REVISION
-        or args.seed != SEED
+        or args.seed != contract["seed"]
         or args.shard_count != SHARDS
         or args.max_new_tokens != MAX_NEW_TOKENS
         or args.batch_size != 2
@@ -138,16 +197,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for row in all_sources
         if row["split"] == "development"
     }
+    candidate_path_groups = (
+        args.synthesis_candidates,
+        args.stacked_candidates,
+        args.self_refinement_candidates,
+    )
     groups = {
-        "integrated_synthesis": load_candidate_group(
-            args.synthesis_candidates, expected_paths=16
-        ),
-        "stacked_preserved": load_candidate_group(
-            args.stacked_candidates, expected_paths=1
-        ),
-        "self_refinement": load_candidate_group(
-            args.self_refinement_candidates, expected_paths=8
-        ),
+        role: load_candidate_group(paths, expected_paths=expected)
+        for role, paths, expected in zip(
+            contract["roles"],
+            candidate_path_groups,
+            contract["path_counts"],
+            strict=True,
+        )
     }
     if len(sources) != ROWS or any(
         set(group) != set(sources) for group in groups.values()
@@ -176,12 +238,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     for offset in range(0, len(shard_identities), args.batch_size):
         identities = shard_identities[offset : offset + args.batch_size]
+        prompt_builder = (
+            hierarchical_prompt
+            if args.mode == "retention_controls"
+            else incumbent_challenger_prompt
+        )
         prompts = [
-            hierarchical_prompt(
+            prompt_builder(
                 sources[identity]["source_prompt"],
-                groups["integrated_synthesis"][identity]["completion"],
-                groups["stacked_preserved"][identity]["completion"],
-                groups["self_refinement"][identity]["completion"],
+                *(group[identity]["completion"] for group in groups.values()),
             )
             for identity in identities
         ]
@@ -235,15 +300,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     output_sha256 = _atomic_lines(args.output, outputs)
-    candidate_paths = {
-        "integrated_synthesis": args.synthesis_candidates,
-        "stacked_preserved": args.stacked_candidates,
-        "self_refinement": args.self_refinement_candidates,
-    }
+    candidate_paths = dict(zip(contract["roles"], candidate_path_groups, strict=True))
     report = {
         "schema": REPORT_SCHEMA,
         "status": "complete",
-        "interpretation": "hierarchical_synthesis_with_conservative_retention",
+        "interpretation": contract["interpretation"],
+        "mode": args.mode,
         "model_revision": MODEL_REVISION,
         "model_loader": loader,
         "aligned_checkpoint": str(args.aligned_checkpoint.resolve()),
@@ -293,6 +355,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--development-source", type=Path, required=True)
     parser.add_argument("--freeze-report", type=Path, required=True)
     parser.add_argument("--model-root", type=Path, required=True)
+    parser.add_argument(
+        "--mode",
+        choices=("retention_controls", "incumbent_challenger"),
+        default="retention_controls",
+    )
     parser.add_argument("--model-revision", default=MODEL_REVISION)
     parser.add_argument("--aligned-checkpoint", type=Path, required=True)
     parser.add_argument("--environment-receipt", type=Path, required=True)

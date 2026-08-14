@@ -17,6 +17,12 @@ set -euo pipefail
 for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON TRAIN_SOURCE TRAIN_SOURCE_SHA256 DEVELOPMENT_SOURCE DEVELOPMENT_SOURCE_SHA256 FREEZE_REPORT FREEZE_REPORT_SHA256 ALIGNED_CHECKPOINT SYNTHESIS_CANDIDATES STACKED_CANDIDATES SELF_REFINEMENT_CANDIDATES SHARD_ROOT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256 HIERARCHICAL_SCRIPT HIERARCHICAL_SCRIPT_SHA256; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
+HIERARCHICAL_MODE=${HIERARCHICAL_MODE:-retention_controls}
+case "$HIERARCHICAL_MODE" in
+  retention_controls) expected_geometry='16 1 8'; hierarchical_seed=2026081423 ;;
+  incumbent_challenger) expected_geometry='16 16 16'; hierarchical_seed=2026081424 ;;
+  *) printf 'hierarchical mode differs\n' >&2; exit 2 ;;
+esac
 [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] || { printf 'SLURM_ARRAY_TASK_ID differs\n' >&2; exit 2; }
 SHARD_INDEX=$SLURM_ARRAY_TASK_ID
 OUTPUT=$SHARD_ROOT/$(printf 'shard_%02d/candidates.jsonl' "$SHARD_INDEX")
@@ -33,7 +39,8 @@ q36_verify_sha256 "$DEVELOPMENT_SOURCE" "$DEVELOPMENT_SOURCE_SHA256"
 q36_verify_sha256 "$FREEZE_REPORT" "$FREEZE_REPORT_SHA256"
 q36_verify_sha256 "$HIERARCHICAL_SCRIPT" "$HIERARCHICAL_SCRIPT_SHA256"
 [[ -f "$ALIGNED_CHECKPOINT" && ! -L "$ALIGNED_CHECKPOINT" ]] || q36_die "aligned checkpoint differs"
-for specification in SYNTHESIS_CANDIDATES:16 STACKED_CANDIDATES:1 SELF_REFINEMENT_CANDIDATES:8; do
+read -r synthesis_count stacked_count refinement_count <<< "$expected_geometry"
+for specification in SYNTHESIS_CANDIDATES:$synthesis_count STACKED_CANDIDATES:$stacked_count SELF_REFINEMENT_CANDIDATES:$refinement_count; do
   name=${specification%:*}; expected=${specification#*:}
   IFS=: read -r -a paths <<< "${!name}"
   [[ ${#paths[@]} -eq $expected ]] || q36_die "hierarchical candidate geometry differs"
@@ -55,12 +62,13 @@ nvidia-smi
 "$PYTHON" "$HIERARCHICAL_SCRIPT" \
   --train-source "$TRAIN_SOURCE" --development-source "$DEVELOPMENT_SOURCE" \
   --freeze-report "$FREEZE_REPORT" --model-root "$model" \
+  --mode "$HIERARCHICAL_MODE" \
   --model-revision "$MODEL_REVISION" --aligned-checkpoint "$ALIGNED_CHECKPOINT" \
   --environment-receipt "$ENVIRONMENT_RECEIPT" \
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
   "${args[@]}" --output "$OUTPUT" --report "$REPORT" \
   --shard-index "$SHARD_INDEX" --shard-count 16 --batch-size 2 \
-  --max-new-tokens 768 --seed 2026081423
+  --max-new-tokens 768 --seed "$hierarchical_seed"
 test -f "$OUTPUT" && test -f "$REPORT"
 chmod a-w "$OUTPUT" "$REPORT"

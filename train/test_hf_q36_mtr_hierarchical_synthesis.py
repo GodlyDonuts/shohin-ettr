@@ -37,6 +37,26 @@ def test_hierarchical_prompt_rejects_empty_input() -> None:
         module.hierarchical_prompt("question", "", "other", "review")
 
 
+def test_incumbent_challenger_prompt_is_asymmetric_and_task_agnostic() -> None:
+    prompt = module.incumbent_challenger_prompt(
+        "Original question", "incumbent", "deeper synthesis", "direct synthesis"
+    )
+    assert "should be preserved unless a concrete" in prompt
+    assert "never change A merely because alternatives agree" in prompt
+    assert "recompute the disputed reasoning" in prompt
+    assert "math500" not in prompt
+    assert "development" not in prompt
+
+
+def test_mode_contract_freezes_geometry_and_seed() -> None:
+    assert module.mode_contract("retention_controls")["path_counts"] == (16, 1, 8)
+    challenger = module.mode_contract("incumbent_challenger")
+    assert challenger["path_counts"] == (16, 16, 16)
+    assert challenger["seed"] == module.INCUMBENT_CHALLENGER_SEED
+    with pytest.raises(module.Q36MTRHierarchicalSynthesisError):
+        module.mode_contract("unknown")
+
+
 def test_candidate_loader_accepts_model_and_control_schemas(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
