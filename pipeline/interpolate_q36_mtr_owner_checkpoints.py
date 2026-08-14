@@ -32,7 +32,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _load(path: Path) -> dict[str, Any]:
+def _load(path: Path, role: str) -> dict[str, Any]:
     import torch
 
     try:
@@ -50,7 +50,7 @@ def _load(path: Path) -> dict[str, Any]:
         or not isinstance(payload.get("metadata"), dict)
     ):
         raise Q36MTROwnerInterpolationError("owner checkpoint schema differs")
-    validate_contract(payload["metadata"], "owner")
+    validate_contract(payload["metadata"], role)
     if payload["metadata"].get(
         "final_trainable_state_sha256"
     ) != trainable_state_sha256(payload["trainable_state"]):
@@ -65,6 +65,7 @@ def interpolate(
     report_path: Path,
     *,
     second_weight: float,
+    role: str = "owner",
 ) -> dict[str, Any]:
     import torch
 
@@ -78,8 +79,8 @@ def interpolate(
         or report_path.is_symlink()
     ):
         raise Q36MTROwnerInterpolationError("owner interpolation settings differ")
-    first = _load(first_path)
-    second = _load(second_path)
+    first = _load(first_path, role)
+    second = _load(second_path, role)
     first_state = first["trainable_state"]
     second_state = second["trainable_state"]
     if set(first_state) != set(second_state):
@@ -118,7 +119,8 @@ def interpolate(
         {
             "final_trainable_state_sha256": state_sha256,
             "interpolation": {
-                "schema": "shohin-q36-mtr-owner-interpolation-v1",
+                "schema": "shohin-q36-mtr-role-interpolation-v1",
+                "role": role,
                 "first_checkpoint_sha256": sha256_file(first_path),
                 "second_checkpoint_sha256": sha256_file(second_path),
                 "second_weight": second_weight,
@@ -139,9 +141,10 @@ def interpolate(
     os.replace(temporary, output_path)
     output_sha256 = sha256_file(output_path)
     report = {
-        "schema": "shohin-q36-mtr-owner-interpolation-report-v1",
+        "schema": "shohin-q36-mtr-role-interpolation-report-v1",
         "status": "complete",
-        "interpretation": "exploratory_owner_weight_space_interpolation",
+        "interpretation": "exploratory_role_weight_space_interpolation",
+        "role": role,
         "first_checkpoint": str(first_path.resolve()),
         "first_checkpoint_sha256": sha256_file(first_path),
         "second_checkpoint": str(second_path.resolve()),
@@ -169,6 +172,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--first", type=Path, required=True)
     parser.add_argument("--second", type=Path, required=True)
     parser.add_argument("--second-weight", type=float, required=True)
+    parser.add_argument(
+        "--role", choices=("owner", "aligned", "draft_hidden"), default="owner"
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     return parser.parse_args()
@@ -182,6 +188,7 @@ def main() -> int:
         args.output,
         args.report,
         second_weight=args.second_weight,
+        role=args.role,
     )
     print(json.dumps(report, sort_keys=True))
     return 0
