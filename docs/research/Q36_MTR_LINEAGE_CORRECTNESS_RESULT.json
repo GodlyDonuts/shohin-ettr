@@ -1,0 +1,100 @@
+{
+  "schema": "shohin-q36-mtr-lineage-correctness-result-v1",
+  "status": "complete",
+  "interpretation": "engineering_source_disjoint_development_benchmark",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "source_commit": "be30ae03548f33eb222b0f71297e02d62ce24ebd",
+  "conclusion": "Calibration-only lineage-conditioned correctness thresholds improve the strongest demonstrated Qwen3.6 MoE trajectory system from 555/1289 to 561/1289. The learned system is 22 correct above the production commit and 67 above the strongest individual owner. Development labels were not read during model selection or application.",
+  "architecture": {
+    "owner_trajectories": ["current", "owner_71", "owner_8"],
+    "head": "independent_sparse_binary_correctness_probability_per_owner",
+    "training_rows": 5824,
+    "feature_dimension": 65536,
+    "development_labels_read": 0,
+    "threshold_mode": "task_head_production",
+    "fallback_thresholds": {
+      "bbh_logic": 0.25,
+      "math500": 0.04,
+      "mbpp": 1.1
+    },
+    "selection_counts": {
+      "correctness_head": 410,
+      "production_commit": 879,
+      "lineage_current": 681,
+      "lineage_owner_71": 316,
+      "lineage_owner_8": 292
+    }
+  },
+  "results": {
+    "lineage_correctness": {
+      "correct": 561,
+      "accuracy": 0.4352211016291699,
+      "domains": {
+        "bbh_logic": {"correct": 317, "rows": 637},
+        "math500": {"correct": 228, "rows": 623},
+        "mbpp": {"correct": 16, "rows": 29}
+      }
+    },
+    "correctness_v1": {"correct": 555},
+    "exploratory_nested_oof_logistic": {"correct": 554},
+    "production_commit": {"correct": 539},
+    "best_individual_owner": {"label": "owner_8", "correct": 494}
+  },
+  "paired_vs_correctness_v1": {
+    "both_correct": 550,
+    "lineage_only_correct": 11,
+    "v1_only_correct": 5,
+    "both_wrong": 723,
+    "gain_count": 6,
+    "gain_points": 0.46547711404189294,
+    "mcnemar_exact_two_sided_p": 0.210113525390625
+  },
+  "paired_vs_production_commit": {
+    "both_correct": 507,
+    "lineage_only_correct": 54,
+    "production_only_correct": 32,
+    "both_wrong": 696,
+    "gain_count": 22,
+    "gain_points": 1.7067494181536074,
+    "mcnemar_exact_two_sided_p": 0.022982591907157044
+  },
+  "paired_vs_exploratory_logistic": {
+    "both_correct": 524,
+    "lineage_only_correct": 37,
+    "logistic_only_correct": 30,
+    "both_wrong": 698,
+    "gain_count": 7,
+    "gain_points": 0.54305663227308,
+    "mcnemar_exact_two_sided_p": 0.4638176178968696
+  },
+  "oracle": {
+    "lineage_v1_logistic_production_correct": 598,
+    "gain_over_lineage_count": 37,
+    "gain_over_lineage_points": 2.8704422032583397
+  },
+  "artifacts": {
+    "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/calibration_correctness_lineage_be30ae0",
+    "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_be30ae0_r1",
+    "runtime_manifest_sha256": "7090f4238be4ef94621a70f70a282e9d913b609f304a598f7a13fa74da87df8b",
+    "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-calibration-correctness-lineage-be30ae0-r1",
+    "durable_evidence_manifest_sha256": "bdfbb72cb9e2858e9f81a7ff3f75e41bf2c49a260dfcb23142d7d2fea4cd2933",
+    "model_sha256": "d6e202dcbd3b76439cc2d0fd8849f48a0659046edec62ce65c1cabdaabe515ad",
+    "candidates_sha256": "3bd765b5cd6f236c1909a005783e307539d11395a49d261bf397874e6cabf301",
+    "decisions_sha256": "a69e240b4980baf61b3ef34ba96a1ec4f7d6ea4b67da4f9e75da6e7845d22335",
+    "report_sha256": "66a4cf75cadf782e92fedab35afe67691ae0528e1bddaa5433ab3a8ff662dc35",
+    "development_score_sha256": "1ad91f470eaafef6f33398170942b4de31d342a6b977a392c8688fd97bf74bb4",
+    "comparison_sha256": "f3618f8cffa499863990d26e169c524bd9c75409b11a7ad14170c653cfb5d4a3"
+  },
+  "jobs": {
+    "train_and_apply": 758727,
+    "independent_score": 758728,
+    "semantic_comparison": 758729
+  },
+  "limitations": {
+    "engineering_board_reused_for_architecture_iteration": true,
+    "fresh_external_board_required_for_unbiased_generalization_claim": true,
+    "paired_gain_over_correctness_v1_not_individually_significant": true,
+    "paired_gain_over_production_commit_significant_at_0_05": true
+  }
+}
