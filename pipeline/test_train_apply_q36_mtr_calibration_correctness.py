@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import train_apply_q36_mtr_calibration_correctness as module
 
 
@@ -90,3 +92,14 @@ def test_supported_lineage_thresholds_override_task_threshold() -> None:
     key = "bbh_logic:1"
     assert key in grouped
     assert module._threshold_for(rows[0], "task_head", thresholds) == thresholds[key]
+
+
+def test_job_emits_matched_production_baseline() -> None:
+    job = (
+        Path(__file__).resolve().parent
+        / "jobs"
+        / "q36_mtr_calibration_correctness.sbatch"
+    ).read_text(encoding="utf-8")
+    assert "PRODUCTION_OUTPUT" in job
+    assert '--production-output "$PRODUCTION_OUTPUT"' in job
+    assert 'chmod a-w "$MODEL_OUTPUT" "$OUTPUT" "$PRODUCTION_OUTPUT"' in job

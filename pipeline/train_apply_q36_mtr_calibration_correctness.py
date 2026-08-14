@@ -355,6 +355,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if any(set(owner) != set(development_rows) for owner in owners):
         raise Q36MTRCalibrationCorrectnessError("correctness-head coverage differs")
     selected_rows: list[dict[str, Any]] = []
+    production_rows: list[dict[str, Any]] = []
     decisions: list[dict[str, Any]] = []
     counts: Counter[str] = Counter()
     for identity in sorted(development_rows):
@@ -395,12 +396,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         chosen = dict(candidates[selected_index])
         chosen["calibration_correctness_selection"] = metadata
         selected_rows.append(chosen)
+        production_rows.append(dict(candidates[production_index]))
         decisions.append(
             {"identity_sha256": identity, "task": source["task"], **metadata}
         )
         counts[selected_source] += 1
         counts[f"lineage:{sparse.LINEAGES[selected_index]}"] += 1
     output_sha = sparse._atomic_lines(args.output, selected_rows)
+    production_output_sha = sparse._atomic_lines(
+        args.production_output, production_rows
+    )
     decisions_sha = sparse._atomic_lines(args.decisions, decisions)
     report = {
         "schema": REPORT_SCHEMA,
@@ -415,6 +420,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_sha256": model_sha,
         "output": str(args.output.resolve()),
         "output_sha256": output_sha,
+        "production_output": str(args.production_output.resolve()),
+        "production_output_sha256": production_output_sha,
         "decisions": str(args.decisions.resolve()),
         "decisions_sha256": decisions_sha,
         "training_rows_sha256": sparse.sha256_file(args.training_rows),
@@ -434,6 +441,7 @@ def parse_args() -> argparse.Namespace:
         )
     parser.add_argument("--model-output", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--production-output", type=Path, required=True)
     parser.add_argument("--decisions", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     return parser.parse_args()
