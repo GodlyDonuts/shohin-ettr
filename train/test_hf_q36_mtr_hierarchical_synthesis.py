@@ -68,6 +68,59 @@ def test_incumbent_interpolation_prompt_is_conservative_and_task_agnostic() -> N
     assert "development" not in prompt
 
 
+def _adjudication_rows(task: str, completions: tuple[str, ...]) -> dict[str, dict]:
+    return {
+        arm: {
+            "identity_sha256": "0" * 64,
+            "task": task,
+            "completion": completion,
+        }
+        for arm, completion in zip(module.ADJUDICATION_ARMS, completions, strict=True)
+    }
+
+
+def test_multi_trajectory_adjudication_preserves_unanimous_answer() -> None:
+    rows = _adjudication_rows("math500", (r"\boxed{7}",) * 6)
+    selected, prompt, plan = module.multi_trajectory_adjudication_plan(
+        "Original question", rows
+    )
+    assert selected == "hierarchy"
+    assert prompt is None
+    assert plan == {
+        "decision": "preserve_unanimous_answer",
+        "unique_answers": 1,
+        "maximum_support": 6,
+    }
+
+
+def test_multi_trajectory_adjudication_prompts_only_on_disagreement() -> None:
+    rows = _adjudication_rows("bbh_logic", ("A", "B", "B", "C", "B", "A"))
+    selected, prompt, plan = module.multi_trajectory_adjudication_plan(
+        "Original question", rows
+    )
+    assert selected is None
+    assert prompt is not None
+    assert "supported by 3 of 6" in prompt
+    assert "supported by 2 of 6" in prompt
+    assert "Support counts are evidence, not proof" in prompt
+    assert "bbh_logic" not in prompt
+    assert plan == {
+        "decision": "model_owned_disagreement_adjudication",
+        "unique_answers": 3,
+        "maximum_support": 3,
+    }
+
+
+def test_multi_trajectory_adjudication_preserves_executable_control() -> None:
+    rows = _adjudication_rows("mbpp", tuple(f"code {i}" for i in range(6)))
+    selected, prompt, plan = module.multi_trajectory_adjudication_plan(
+        "Original question", rows
+    )
+    assert selected == "interpolation"
+    assert prompt is None
+    assert plan["decision"] == "preserve_executable_control"
+
+
 def test_mode_contract_freezes_geometry_and_seed() -> None:
     assert module.mode_contract("retention_controls")["path_counts"] == (16, 1, 8)
     challenger = module.mode_contract("incumbent_challenger")
@@ -79,6 +132,9 @@ def test_mode_contract_freezes_geometry_and_seed() -> None:
     interpolation = module.mode_contract("incumbent_interpolation")
     assert interpolation["path_counts"] == (16, 16, 16)
     assert interpolation["seed"] == module.INCUMBENT_INTERPOLATION_SEED
+    adjudication = module.mode_contract("multi_trajectory_adjudication")
+    assert adjudication["path_counts"] == (16, 16, 16, 16, 16, 16)
+    assert adjudication["seed"] == module.MULTI_TRAJECTORY_ADJUDICATION_SEED
     with pytest.raises(module.Q36MTRHierarchicalSynthesisError):
         module.mode_contract("unknown")
 

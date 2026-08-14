@@ -28,8 +28,17 @@ SEED = 2026081423
 INCUMBENT_CHALLENGER_SEED = 2026081424
 INCUMBENT_CYCLIC_SEED = 2026081425
 INCUMBENT_INTERPOLATION_SEED = 2026081426
+MULTI_TRAJECTORY_ADJUDICATION_SEED = 2026081427
 MAX_NEW_TOKENS = 768
 TASKS = {"bbh_logic", "math500", "mbpp"}
+ADJUDICATION_ARMS = (
+    "hierarchy",
+    "interpolation",
+    "direct",
+    "offset_one",
+    "level_two",
+    "challenger",
+)
 
 
 class Q36MTRHierarchicalSynthesisError(RuntimeError):
@@ -152,6 +161,109 @@ def incumbent_interpolation_prompt(
     )
 
 
+def normalized_candidate_answer(task: str, completion: str) -> str | None:
+    from hf_product_reasoning_eval import (
+        _normalize_math,
+        _normalize_short_answer,
+        extract_boxed,
+        extract_short_answer,
+    )
+
+    if task == "bbh_logic":
+        return _normalize_short_answer(extract_short_answer(completion))
+    if task == "math500":
+        return _normalize_math(extract_boxed(completion))
+    if task == "mbpp":
+        return None
+    raise Q36MTRHierarchicalSynthesisError("adjudication task differs")
+
+
+def multi_trajectory_adjudication_plan(
+    source_prompt: str, candidates: dict[str, dict[str, Any]]
+) -> tuple[str | None, str | None, dict[str, Any]]:
+    if tuple(candidates) != ADJUDICATION_ARMS:
+        raise Q36MTRHierarchicalSynthesisError("adjudication arm order differs")
+    if not isinstance(source_prompt, str) or not source_prompt.strip():
+        raise Q36MTRHierarchicalSynthesisError("adjudication source differs")
+    identities = {row.get("identity_sha256") for row in candidates.values()}
+    tasks = {row.get("task") for row in candidates.values()}
+    if len(identities) != 1 or len(tasks) != 1:
+        raise Q36MTRHierarchicalSynthesisError("adjudication identity differs")
+    task = next(iter(tasks))
+    if task == "mbpp":
+        return (
+            "interpolation",
+            None,
+            {
+                "decision": "preserve_executable_control",
+                "unique_answers": None,
+                "maximum_support": None,
+            },
+        )
+    grouped: dict[str, list[str]] = {}
+    unparsed = []
+    for arm, row in candidates.items():
+        completion = row.get("completion")
+        if not isinstance(completion, str) or not completion.strip():
+            raise Q36MTRHierarchicalSynthesisError("adjudication completion differs")
+        answer = normalized_candidate_answer(task, completion)
+        if answer is None:
+            unparsed.append(arm)
+        else:
+            grouped.setdefault(answer, []).append(arm)
+    if len(grouped) == 1 and not unparsed:
+        return (
+            "hierarchy",
+            None,
+            {
+                "decision": "preserve_unanimous_answer",
+                "unique_answers": 1,
+                "maximum_support": 6,
+            },
+        )
+    proposals = []
+    for index, (answer, arms) in enumerate(
+        sorted(
+            grouped.items(),
+            key=lambda item: (
+                -len(item[1]),
+                min(ADJUDICATION_ARMS.index(arm) for arm in item[1]),
+            ),
+        ),
+        start=1,
+    ):
+        representative = arms[0]
+        proposals.append(
+            f"Proposal {index} — supported by {len(arms)} of 6 independent trajectories "
+            f"({', '.join(arms)}):\n{candidates[representative]['completion']}"
+        )
+    for arm in unparsed:
+        proposals.append(
+            f"Proposal {len(proposals) + 1} — unparsed independent trajectory "
+            f"({arm}):\n{candidates[arm]['completion']}"
+        )
+    prompt = (
+        "Resolve a disagreement among independently derived solutions to the original "
+        "problem. Support counts are evidence, not proof. Recompute the decisive steps "
+        "from the original problem, preserve the plurality answer unless you establish "
+        "a concrete error, and repair only that error. Do not mention the proposals, "
+        "support counts, or review process. Return one final solution in the original "
+        "problem's requested output format.\n\n"
+        f"Original problem:\n{source_prompt}\n\n"
+        + "\n\n".join(proposals)
+        + "\n\nReturn the independently verified final solution."
+    )
+    return (
+        None,
+        prompt,
+        {
+            "decision": "model_owned_disagreement_adjudication",
+            "unique_answers": len(grouped) + len(unparsed),
+            "maximum_support": max((len(arms) for arms in grouped.values()), default=0),
+        },
+    )
+
+
 def mode_contract(mode: str) -> dict[str, Any]:
     if mode == "retention_controls":
         return {
@@ -196,6 +308,20 @@ def mode_contract(mode: str) -> dict[str, Any]:
                 "direct_synthesis",
             ),
             "interpretation": "incumbent_interpolation_conservative_verification",
+        }
+    if mode == "multi_trajectory_adjudication":
+        return {
+            "seed": MULTI_TRAJECTORY_ADJUDICATION_SEED,
+            "path_counts": (16, 16, 16, 16, 16, 16),
+            "roles": (
+                "hierarchy",
+                "interpolation",
+                "direct",
+                "offset_one",
+                "level_two",
+                "challenger",
+            ),
+            "interpretation": "selective_model_owned_multi_trajectory_adjudication",
         }
     raise Q36MTRHierarchicalSynthesisError("hierarchical mode differs")
 
@@ -251,6 +377,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     contract = mode_contract(args.mode)
+    additional_groups = (
+        args.offset_one_candidates,
+        args.level_two_candidates,
+        args.challenger_candidates,
+    )
+    if args.mode == "multi_trajectory_adjudication":
+        if any(group is None for group in additional_groups):
+            raise Q36MTRHierarchicalSynthesisError(
+                "adjudication candidate groups are missing"
+            )
+    elif any(group is not None for group in additional_groups):
+        raise Q36MTRHierarchicalSynthesisError(
+            "unexpected adjudication candidate groups"
+        )
     if (
         args.model_revision != MODEL_REVISION
         or args.seed != contract["seed"]
@@ -280,9 +420,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         if row["split"] == "development"
     }
     candidate_path_groups = (
-        args.synthesis_candidates,
-        args.stacked_candidates,
-        args.self_refinement_candidates,
+        (
+            args.synthesis_candidates,
+            args.stacked_candidates,
+            args.self_refinement_candidates,
+            args.offset_one_candidates,
+            args.level_two_candidates,
+            args.challenger_candidates,
+        )
+        if args.mode == "multi_trajectory_adjudication"
+        else (
+            args.synthesis_candidates,
+            args.stacked_candidates,
+            args.self_refinement_candidates,
+        )
     )
     groups = {
         role: load_candidate_group(paths, expected_paths=expected)
@@ -315,24 +466,80 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.manual_seed_all(args.seed)
     torch.cuda.reset_peak_memory_stats()
 
-    outputs: list[dict[str, Any]] = []
+    output_by_identity: dict[str, dict[str, Any]] = {}
     prompt_tokens = generated_tokens = exhausted = 0
+    preserved_rows = adjudicated_rows = 0
     started = time.monotonic()
-    for offset in range(0, len(shard_identities), args.batch_size):
-        identities = shard_identities[offset : offset + args.batch_size]
+    prompts_by_identity: dict[str, str] = {}
+    plans: dict[str, dict[str, Any]] = {}
+    if args.mode == "multi_trajectory_adjudication":
+        for identity in shard_identities:
+            candidates = {role: groups[role][identity] for role in contract["roles"]}
+            preserve, prompt, plan = multi_trajectory_adjudication_plan(
+                sources[identity]["source_prompt"], candidates
+            )
+            plans[identity] = plan
+            if preserve is None:
+                if prompt is None:
+                    raise Q36MTRHierarchicalSynthesisError(
+                        "adjudication prompt is missing"
+                    )
+                prompts_by_identity[identity] = prompt
+                continue
+            selected = candidates[preserve]
+            selected_completion_sha256 = hashlib.sha256(
+                selected["completion"].encode()
+            ).hexdigest()
+            preservation_receipt = (
+                f"{plan['decision']}:{identity}:{preserve}:"
+                f"{selected_completion_sha256}"
+            )
+            output_by_identity[identity] = {
+                "schema": SCHEMA,
+                "identity_sha256": identity,
+                "split": "development",
+                "task": selected["task"],
+                "prompt_sha256": hashlib.sha256(
+                    preservation_receipt.encode()
+                ).hexdigest(),
+                "owner_checkpoint_sha256": sha256_file(args.aligned_checkpoint),
+                "model_revision": MODEL_REVISION,
+                "completion": selected["completion"],
+                "generated_tokens": selected["generated_tokens"],
+                "max_token_exhausted": selected["max_token_exhausted"],
+                "finish_reason": selected["finish_reason"],
+                "wall_seconds": 0.0,
+                "hierarchical_synthesis": {
+                    "schema": HIERARCHY_SCHEMA,
+                    "input_roles": list(groups),
+                    "development_labels_read": 0,
+                    "adjudication": {**plan, "selected": preserve},
+                },
+            }
+            preserved_rows += 1
+            exhausted += int(selected["max_token_exhausted"])
+        generation_identities = [
+            identity for identity in shard_identities if identity in prompts_by_identity
+        ]
+    else:
         prompt_builder = {
             "retention_controls": hierarchical_prompt,
             "incumbent_challenger": incumbent_challenger_prompt,
             "incumbent_cyclic": incumbent_cyclic_prompt,
             "incumbent_interpolation": incumbent_interpolation_prompt,
         }[args.mode]
-        prompts = [
-            prompt_builder(
+        generation_identities = shard_identities
+        prompts_by_identity = {
+            identity: prompt_builder(
                 sources[identity]["source_prompt"],
                 *(group[identity]["completion"] for group in groups.values()),
             )
-            for identity in identities
-        ]
+            for identity in generation_identities
+        }
+
+    for offset in range(0, len(generation_identities), args.batch_size):
+        identities = generation_identities[offset : offset + args.batch_size]
+        prompts = [prompts_by_identity[identity] for identity in identities]
         rendered = [
             _render_prompt(tokenizer, prompt, True, False) for prompt in prompts
         ]
@@ -357,29 +564,34 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "generation emitted an empty completion"
                 )
             source = sources[identity]
-            outputs.append(
-                {
-                    "schema": SCHEMA,
-                    "identity_sha256": identity,
-                    "split": "development",
-                    "task": source["task"],
-                    "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
-                    "owner_checkpoint_sha256": sha256_file(args.aligned_checkpoint),
-                    "model_revision": MODEL_REVISION,
-                    "completion": completion,
-                    "generated_tokens": int(token_count),
-                    "max_token_exhausted": bool(hit_limit),
-                    "finish_reason": "length" if hit_limit else "stop",
-                    "wall_seconds": batch_wall_seconds,
-                    "hierarchical_synthesis": {
-                        "schema": HIERARCHY_SCHEMA,
-                        "input_roles": list(groups),
-                        "development_labels_read": 0,
-                    },
-                }
-            )
+            synthesis = {
+                "schema": HIERARCHY_SCHEMA,
+                "input_roles": list(groups),
+                "development_labels_read": 0,
+            }
+            if args.mode == "multi_trajectory_adjudication":
+                synthesis["adjudication"] = {**plans[identity], "selected": "model"}
+                adjudicated_rows += 1
+            output_by_identity[identity] = {
+                "schema": SCHEMA,
+                "identity_sha256": identity,
+                "split": "development",
+                "task": source["task"],
+                "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
+                "owner_checkpoint_sha256": sha256_file(args.aligned_checkpoint),
+                "model_revision": MODEL_REVISION,
+                "completion": completion,
+                "generated_tokens": int(token_count),
+                "max_token_exhausted": bool(hit_limit),
+                "finish_reason": "length" if hit_limit else "stop",
+                "wall_seconds": batch_wall_seconds,
+                "hierarchical_synthesis": synthesis,
+            }
             generated_tokens += int(token_count)
             exhausted += int(hit_limit)
+    outputs = [output_by_identity[identity] for identity in shard_identities]
+    if len(outputs) != len(shard_identities):
+        raise Q36MTRHierarchicalSynthesisError("adjudication output coverage differs")
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     output_sha256 = _atomic_lines(args.output, outputs)
@@ -421,6 +633,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "prompt_tokens": prompt_tokens,
         "generated_tokens": generated_tokens,
         "max_token_exhausted": exhausted,
+        "preserved_rows": preserved_rows,
+        "model_adjudicated_rows": adjudicated_rows,
         "elapsed_seconds": elapsed,
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "development_labels_read": 0,
@@ -445,6 +659,7 @@ def parse_args() -> argparse.Namespace:
             "incumbent_challenger",
             "incumbent_cyclic",
             "incumbent_interpolation",
+            "multi_trajectory_adjudication",
         ),
         default="retention_controls",
     )
@@ -462,6 +677,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--self-refinement-candidates", type=Path, action="append", required=True
     )
+    parser.add_argument("--offset-one-candidates", type=Path, action="append")
+    parser.add_argument("--level-two-candidates", type=Path, action="append")
+    parser.add_argument("--challenger-candidates", type=Path, action="append")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--shard-index", type=int, required=True)

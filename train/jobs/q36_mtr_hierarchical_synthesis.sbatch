@@ -23,6 +23,13 @@ case "$HIERARCHICAL_MODE" in
   incumbent_challenger) expected_geometry='16 16 16'; hierarchical_seed=2026081424 ;;
   incumbent_cyclic) expected_geometry='16 16 16'; hierarchical_seed=2026081425 ;;
   incumbent_interpolation) expected_geometry='16 16 16'; hierarchical_seed=2026081426 ;;
+  multi_trajectory_adjudication)
+    expected_geometry='16 16 16 16 16 16'
+    hierarchical_seed=2026081427
+    for variable in OFFSET_ONE_CANDIDATES LEVEL_TWO_CANDIDATES CHALLENGER_CANDIDATES; do
+      [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
+    done
+    ;;
   *) printf 'hierarchical mode differs\n' >&2; exit 2 ;;
 esac
 [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] || { printf 'SLURM_ARRAY_TASK_ID differs\n' >&2; exit 2; }
@@ -41,9 +48,16 @@ q36_verify_sha256 "$DEVELOPMENT_SOURCE" "$DEVELOPMENT_SOURCE_SHA256"
 q36_verify_sha256 "$FREEZE_REPORT" "$FREEZE_REPORT_SHA256"
 q36_verify_sha256 "$HIERARCHICAL_SCRIPT" "$HIERARCHICAL_SCRIPT_SHA256"
 [[ -f "$ALIGNED_CHECKPOINT" && ! -L "$ALIGNED_CHECKPOINT" ]] || q36_die "aligned checkpoint differs"
-read -r synthesis_count stacked_count refinement_count <<< "$expected_geometry"
-for specification in SYNTHESIS_CANDIDATES:$synthesis_count STACKED_CANDIDATES:$stacked_count SELF_REFINEMENT_CANDIDATES:$refinement_count; do
-  name=${specification%:*}; expected=${specification#*:}
+read -r -a expected_counts <<< "$expected_geometry"
+candidate_names=(SYNTHESIS_CANDIDATES STACKED_CANDIDATES SELF_REFINEMENT_CANDIDATES)
+candidate_options=(synthesis stacked self-refinement)
+if [[ "$HIERARCHICAL_MODE" == multi_trajectory_adjudication ]]; then
+  candidate_names+=(OFFSET_ONE_CANDIDATES LEVEL_TWO_CANDIDATES CHALLENGER_CANDIDATES)
+  candidate_options+=(offset-one level-two challenger)
+fi
+[[ ${#candidate_names[@]} -eq ${#expected_counts[@]} ]] || q36_die "hierarchical candidate geometry differs"
+for index in "${!candidate_names[@]}"; do
+  name=${candidate_names[$index]}; expected=${expected_counts[$index]}
   IFS=: read -r -a paths <<< "${!name}"
   [[ ${#paths[@]} -eq $expected ]] || q36_die "hierarchical candidate geometry differs"
   for path in "${paths[@]}"; do [[ -f "$path" && ! -L "$path" ]] || q36_die "hierarchical candidate differs"; done
@@ -55,8 +69,8 @@ export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
 q36_export_pythonpath
 args=()
-for specification in synthesis:SYNTHESIS_CANDIDATES stacked:STACKED_CANDIDATES self-refinement:SELF_REFINEMENT_CANDIDATES; do
-  option=${specification%%:*}; name=${specification#*:}
+for index in "${!candidate_names[@]}"; do
+  option=${candidate_options[$index]}; name=${candidate_names[$index]}
   IFS=: read -r -a paths <<< "${!name}"
   for path in "${paths[@]}"; do args+=(--"$option"-candidates "$path"); done
 done
