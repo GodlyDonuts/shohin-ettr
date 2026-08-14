@@ -23,6 +23,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import FeatureUnion
 
 from hf_product_reasoning_eval import extract_short_answer, _normalize_short_answer
+import train_apply_q36_mtr_calibration_correctness as correctness
 import train_apply_q36_mtr_sparse_router as sparse
 
 MODEL_SCHEMA = "shohin-q36-mtr-stacked-correctness-model-v1"
@@ -307,10 +308,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     candidates = []
     decisions = []
     counts: Counter[str] = Counter()
+    development_owners = correctness._embedded_development_owners(development)
     for index, (row, selected_index) in enumerate(
         zip(development_rows, selected_indices, strict=True)
     ):
-        candidate = dict(row["candidates"][int(selected_index)])
+        candidate = dict(
+            development_owners[int(selected_index)][row["identity_sha256"]]
+        )
         metadata = {
             "schema": SELECTION_SCHEMA,
             "selected_lineage": sparse.LINEAGES[int(selected_index)],
