@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=128G
 #SBATCH --gres=gpu:nvidia_h100_pcie:1
-#SBATCH --time=03:00:00
+#SBATCH --time=04:00:00
 #SBATCH --no-requeue
 #SBATCH --output=logs/q36_mtr_role_%j.out
 #SBATCH --error=logs/q36_mtr_role_%j.err
