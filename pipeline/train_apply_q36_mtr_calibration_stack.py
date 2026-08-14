@@ -95,6 +95,7 @@ def _oof_sparse(
                     "task": row["task"],
                     "selected_lineage": sparse.LINEAGES[selected],
                     "scores": scores,
+                    "candidate_correctness": correctness,
                     "correct": correctness[selected],
                     "production_commit_lineage": sparse.LINEAGES[production_selected],
                     "production_commit_correct": correctness[production_selected],
