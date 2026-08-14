@@ -5,7 +5,7 @@
   "model": "Qwen3.6-35B-A3B",
   "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
   "source_commit": "be30ae03548f33eb222b0f71297e02d62ce24ebd",
-  "conclusion": "Calibration-only lineage-conditioned correctness thresholds improve the strongest demonstrated Qwen3.6 MoE trajectory system from 555/1289 to 561/1289. Against the exact tournament production baseline built from the same three candidate trajectories, the architecture improves 547/1289 to 561/1289, with 27 architecture-only wins versus 13 regressions and exact paired p=0.03848. Development labels were not read during model selection or application.",
+  "conclusion": "A calibration-only nonlinear stack over out-of-fold text correctness, trajectory agreement, answer structure, exhaustion, length, task, and owner features improves the strongest demonstrated Qwen3.6 MoE trajectory system to 563/1289. Against the exact tournament production baseline built from the same three candidate trajectories, the stacked architecture improves 547/1289 to 563/1289, with 37 architecture-only wins versus 21 regressions and exact paired p=0.04794. It is two answers above the lineage-correctness champion, although that narrow paired difference is not significant. Development labels were not read during model selection or application.",
   "matched_reproduction_commit": "a217f29ee4026c07212aba39fa03a1ba8190afc8",
   "architecture": {
     "owner_trajectories": ["current", "owner_71", "owner_8"],
@@ -28,6 +28,15 @@
     }
   },
   "results": {
+    "stacked_correctness": {
+      "correct": 563,
+      "accuracy": 0.4367726920093095,
+      "domains": {
+        "bbh_logic": {"correct": 314, "rows": 637},
+        "math500": {"correct": 231, "rows": 623},
+        "mbpp": {"correct": 18, "rows": 29}
+      }
+    },
     "lineage_correctness": {
       "correct": 561,
       "accuracy": 0.4352211016291699,
@@ -42,6 +51,75 @@
     "exploratory_nested_oof_logistic": {"correct": 554},
     "production_commit": {"correct": 539},
     "best_individual_owner": {"label": "owner_8", "correct": 494}
+  },
+  "stacked_correctness": {
+    "status": "complete_new_engineering_champion",
+    "source_commit": "6d1286a038f7483e7bc0031243ae51013a61c0d0",
+    "architecture": "five_fold_oof_text_correctness_plus_nonlinear_trajectory_structure_stack",
+    "training_rows": 5824,
+    "development_rows": 1289,
+    "development_labels_read_during_selection": 0,
+    "text_heads": {
+      "word_features": 50000,
+      "character_features": 70000,
+      "logistic_c": 3.0,
+      "folds": 5
+    },
+    "meta_head": {
+      "type": "histogram_gradient_boosting",
+      "leaf_nodes": 4,
+      "minimum_samples_leaf": 100,
+      "iterations": 150,
+      "learning_rate": 0.05,
+      "l2_regularization": 1.0,
+      "selection_counts": {"current": 589, "owner_71": 372, "owner_8": 328}
+    },
+    "paired_vs_lineage_champion": {
+      "both_correct": 538,
+      "stacked_only_correct": 25,
+      "lineage_only_correct": 23,
+      "both_wrong": 703,
+      "gain_count": 2,
+      "mcnemar_exact_two_sided_p": 0.8854334972865132,
+      "oracle_correct": 586
+    },
+    "paired_vs_matched_production": {
+      "both_correct": 526,
+      "stacked_only_correct": 37,
+      "production_only_correct": 21,
+      "both_wrong": 705,
+      "gain_count": 16,
+      "gain_points": 1.2412723041117144,
+      "mcnemar_exact_two_sided_p": 0.04794032407166697,
+      "oracle_correct": 584
+    },
+    "paired_vs_unchanged": {
+      "both_correct": 477,
+      "stacked_only_correct": 86,
+      "unchanged_only_correct": 45,
+      "both_wrong": 681,
+      "gain_count": 41,
+      "gain_points": 3.1807602792862687,
+      "mcnemar_exact_two_sided_p": 0.0004305357384844241,
+      "oracle_correct": 608
+    },
+    "artifacts": {
+      "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_correctness_6d1286a_r1",
+      "model_sha256": "4dada7a435a151a97f540222794f58c9b53715c694154efc2ef42a4f034779af",
+      "candidates_sha256": "80157391967d1e07eea2ab16f8a98aaa78a94de0ab28cbdfca66b0e65d3adb8e",
+      "decisions_sha256": "68696d681d5875560493105e4a069f5b51fa365554d3956aca983a219e69a697",
+      "report_sha256": "d4444067ecc59783759551ad836acb28d8319643fa23e3faa5b694cdf51346e4",
+      "score_sha256": "f936590b2c6805b4f969e0fefbeb5adead13190beff8acd4751862b5cd97d3b3",
+      "comparison_sha256": "6a5072b96642c5613af55c328c99197e91cf4e6ab229013bf17c643164aa59c3",
+      "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-stacked-correctness-6d1286a-r1",
+      "durable_evidence_manifest_sha256": "5b44ac8e5555b5b98cd68a92fe9c31ff64a09fa63cfacb0053bf145d3ce531ea"
+    },
+    "jobs": {
+      "independent_score": 758821,
+      "paired_comparison": 758830,
+      "failed_projection_score": 758811,
+      "failed_group_comparison": 758826
+    }
   },
   "matched_same_candidate_proof": {
     "lineage_correct": 561,
@@ -194,6 +272,8 @@
     "fresh_external_board_required_for_unbiased_generalization_claim": true,
     "paired_gain_over_correctness_v1_not_individually_significant": true,
     "paired_gain_over_production_commit_significant_at_0_05": true,
-    "matched_same_candidate_gain_significant_at_0_05": true
+    "matched_same_candidate_gain_significant_at_0_05": true,
+    "stacked_gain_over_matched_production_significant_at_0_05": true,
+    "stacked_gain_over_lineage_champion_not_significant": true
   }
 }
