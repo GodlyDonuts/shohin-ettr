@@ -31,6 +31,7 @@ EXCLUDED_NODES = (
     "evc31",
     "evc32",
     "evc33",
+    "evc34",
     "evc37",
     "evc38",
     "evc43",

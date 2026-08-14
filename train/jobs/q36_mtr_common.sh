@@ -6,7 +6,7 @@ set -euo pipefail
 readonly Q36_MODEL_REVISION=995ad96eacd98c81ed38be0c5b274b04031597b0
 readonly Q36_MODEL_CONFIG_SHA256=93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99
 readonly Q36_MODEL_MANIFEST_SHA256=06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e
-readonly Q36_EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc43,evc46,evc50
+readonly Q36_EXCLUDED_NODES=evc26,evc29,evc31,evc32,evc33,evc34,evc37,evc38,evc43,evc46,evc50
 readonly Q36_PYTHON_ENTRYPOINT=/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python
 readonly Q36_BNB_ROOT=/lustre/fs1/home/sa305415/shohin/env_targets/bitsandbytes-0.50.0-r1
 readonly Q36_BNB_MANIFEST_SHA256=2201774754fb2e0fdd2208b78d34b803b910d8e34c79a43de49b29d7df3a8355

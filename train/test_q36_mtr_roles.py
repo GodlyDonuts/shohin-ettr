@@ -382,7 +382,8 @@ def test_role_wrappers_are_single_h100_no_requeue_and_authorized_only() -> None:
         assert "#SBATCH --no-requeue" in source
         assert "q36_require_authorization" in source
         assert (
-            "--exclude=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc43,evc46" in source
+            "--exclude=evc26,evc29,evc31,evc32,evc33,evc34,evc37,evc38,evc43,evc46,evc50"
+            in source
         )
         assert "sbatch " not in source
 

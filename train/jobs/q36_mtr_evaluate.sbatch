@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=q36-mtr-eval
 #SBATCH --partition=normal
-#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc37,evc38,evc43,evc46,evc50
+#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc34,evc37,evc38,evc43,evc46,evc50
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
