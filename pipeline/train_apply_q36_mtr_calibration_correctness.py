@@ -30,6 +30,8 @@ THRESHOLD_MODES = (
 )
 MINIMUM_THRESHOLD_GROUP = 20
 PRODUCTION_CONFIDENCE_BOUNDS = (0.25, 0.5, 0.75)
+THRESHOLD_TRAINING_MODES = ("holdout", "oof5")
+THRESHOLD_FOLDS = 5
 
 
 class Q36MTRCalibrationCorrectnessError(RuntimeError):
@@ -184,6 +186,68 @@ def _validation_correct(weights: list[array], rows: list[dict[str, Any]]) -> int
         )
         for row in rows
     )
+
+
+def _threshold_predictions(
+    weights: list[array], rows: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    predictions: list[dict[str, Any]] = []
+    for row in rows:
+        probabilities = _probabilities(weights, row)
+        head_index = max(
+            range(len(probabilities)),
+            key=lambda index: (probabilities[index], -index),
+        )
+        production_index = _production_index(row)
+        predictions.append(
+            {
+                "task": row["task"],
+                "head_index": head_index,
+                "production_index": production_index,
+                "estimated_gain": probabilities[head_index]
+                - probabilities[production_index],
+                "production_probability": probabilities[production_index],
+                "correctness": [
+                    bool(candidate["correct"]) for candidate in row["candidates"]
+                ],
+            }
+        )
+    return predictions
+
+
+def _threshold_fold(row: dict[str, Any]) -> int:
+    return int(row["identity_sha256"][:16], 16) % THRESHOLD_FOLDS
+
+
+def _oof_threshold_predictions(
+    rows: list[dict[str, Any]],
+    *,
+    learning_rate: float,
+    epochs: int,
+    balanced: bool,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    predictions: list[dict[str, Any]] = []
+    reports: list[dict[str, Any]] = []
+    for fold in range(THRESHOLD_FOLDS):
+        fit_rows = [row for row in rows if _threshold_fold(row) != fold]
+        held_out = [row for row in rows if _threshold_fold(row) == fold]
+        if not fit_rows or not held_out:
+            raise Q36MTRCalibrationCorrectnessError(
+                "correctness threshold fold differs"
+            )
+        weights, fit_report = _fit(
+            fit_rows,
+            learning_rate=learning_rate,
+            epochs=epochs,
+            balanced=balanced,
+        )
+        predictions.extend(_threshold_predictions(weights, held_out))
+        reports.append({"fold": fold, "held_out_rows": len(held_out), **fit_report})
+    if len(predictions) != len(rows):
+        raise Q36MTRCalibrationCorrectnessError(
+            "correctness threshold OOF coverage differs"
+        )
+    return predictions, reports
 
 
 def _threshold_metrics(
@@ -346,37 +410,29 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
     )
     selected_weights = best[4]
-    validation_predictions: list[dict[str, Any]] = []
-    for row in validation_rows:
-        probabilities = _probabilities(selected_weights, row)
-        head_index = max(
-            range(len(probabilities)), key=lambda index: (probabilities[index], -index)
+    if args.threshold_training == "oof5":
+        threshold_predictions, threshold_fit_reports = _oof_threshold_predictions(
+            training_rows,
+            learning_rate=selected["learning_rate"],
+            epochs=selected["epochs"],
+            balanced=selected["balanced"],
         )
-        production_index = _production_index(row)
-        validation_predictions.append(
-            {
-                "task": row["task"],
-                "head_index": head_index,
-                "production_index": production_index,
-                "estimated_gain": probabilities[head_index]
-                - probabilities[production_index],
-                "production_probability": probabilities[production_index],
-                "correctness": [
-                    bool(candidate["correct"]) for candidate in row["candidates"]
-                ],
-            }
+    else:
+        threshold_predictions = _threshold_predictions(
+            selected_weights, validation_rows
         )
-    task_thresholds, task_trials = _threshold_map(validation_predictions, "task")
+        threshold_fit_reports = []
+    task_thresholds, task_trials = _threshold_map(threshold_predictions, "task")
     threshold_candidates: list[dict[str, Any]] = []
     threshold_trials: dict[str, dict[str, list[dict[str, Any]]]] = {"task": task_trials}
     for mode in THRESHOLD_MODES:
         if mode == "task":
             thresholds = dict(task_thresholds)
         else:
-            grouped, grouped_trials = _threshold_map(validation_predictions, mode)
+            grouped, grouped_trials = _threshold_map(threshold_predictions, mode)
             thresholds = {**task_thresholds, **grouped}
             threshold_trials[mode] = grouped_trials
-        metrics = _mapped_threshold_metrics(validation_predictions, mode, thresholds)
+        metrics = _mapped_threshold_metrics(threshold_predictions, mode, thresholds)
         threshold_candidates.append(
             {**metrics, "thresholds": dict(sorted(thresholds.items()))}
         )
@@ -409,6 +465,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "threshold_mode_trials": threshold_candidates,
         "thresholds": thresholds,
         "threshold_trials": threshold_trials,
+        "threshold_training": args.threshold_training,
+        "threshold_training_rows": len(threshold_predictions),
+        "threshold_fit_reports": threshold_fit_reports,
         "final_fit": final_fit,
         "nonzero_weights": [
             [[index, value] for index, value in enumerate(weights) if value != 0.0]
@@ -513,6 +572,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "development_labels_read": 0,
         "thresholds": thresholds,
         "threshold_mode": threshold_mode,
+        "threshold_training": args.threshold_training,
         "selection_counts": dict(sorted(counts.items())),
         "model": str(args.model_output.resolve()),
         "model_sha256": model_sha,
@@ -549,6 +609,11 @@ def parse_args() -> argparse.Namespace:
         )
     parser.add_argument("--embedded-development-candidates", action="store_true")
     parser.add_argument("--reuse-development-decisions", type=Path)
+    parser.add_argument(
+        "--threshold-training",
+        choices=THRESHOLD_TRAINING_MODES,
+        default="holdout",
+    )
     parser.add_argument("--model-output", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--production-output", type=Path, required=True)

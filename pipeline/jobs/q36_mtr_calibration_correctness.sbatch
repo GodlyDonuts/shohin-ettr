@@ -36,6 +36,9 @@ if [[ -n "${REUSE_DEVELOPMENT_DECISIONS:-}" ]]; then
   [[ -f "$REUSE_DEVELOPMENT_DECISIONS" && ! -L "$REUSE_DEVELOPMENT_DECISIONS" ]] || exit 2
   args+=(--reuse-development-decisions "$REUSE_DEVELOPMENT_DECISIONS")
 fi
+if [[ -n "${THRESHOLD_TRAINING:-}" ]]; then
+  args+=(--threshold-training "$THRESHOLD_TRAINING")
+fi
 export PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train"
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
 "$PYTHON" -P -s -B "$CORRECTNESS_SCRIPT" "${args[@]}"

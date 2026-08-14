@@ -189,6 +189,14 @@ def test_reused_decisions_preserve_exact_probabilities(
     assert loaded[identity]["production_commit_lineage"] == "current"
 
 
+def test_threshold_folds_are_deterministic_and_bounded() -> None:
+    rows = [{"identity_sha256": f"{index:016x}" + "0" * 48} for index in range(50)]
+    first = [module._threshold_fold(row) for row in rows]
+    second = [module._threshold_fold(row) for row in rows]
+    assert first == second
+    assert set(first) == set(range(module.THRESHOLD_FOLDS))
+
+
 def test_job_emits_matched_production_baseline() -> None:
     job = (
         Path(__file__).resolve().parent
