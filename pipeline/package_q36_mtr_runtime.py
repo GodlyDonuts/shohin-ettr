@@ -61,6 +61,7 @@ REQUIRED = {
     "train/hf_q36_mtr_train_role.py",
     "train/hf_q36_mtr_train_temporal_gate.py",
     "train/jobs/q36_mtr_common.sh",
+    "train/jobs/q36_mtr_train_temporal_gate.sbatch",
     "train/jobs/q36_mtr_external_evaluate.sbatch",
     "pipeline/jobs/q36_mtr_external_score.sbatch",
     "train/jobs/q36_mtr_mechanics_qualification.sbatch",

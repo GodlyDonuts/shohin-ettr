@@ -111,6 +111,7 @@ train/jobs/q36_mtr_train_commit.sbatch
 train/jobs/q36_mtr_train_commit_256.sbatch
 train/jobs/q36_mtr_train_role.sbatch
 train/jobs/q36_mtr_train_setwise_commit.sbatch
+train/jobs/q36_mtr_train_temporal_gate.sbatch
 train/pcf1_code_sandbox.py
 train/pcf1_environment.py
 train/q36_mtr_roles.py
