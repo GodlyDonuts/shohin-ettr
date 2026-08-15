@@ -25,6 +25,9 @@ for variable in "${required[@]}"; do
 done
 
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+ARCHITECTURE=${ARCHITECTURE:-temporal}
+[[ "$ARCHITECTURE" == temporal || "$ARCHITECTURE" == multi_trajectory ]] || \
+  q36_die "temporal gate architecture differs"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
@@ -33,6 +36,21 @@ q36_verify_environment
 q36_verify_sha256 "$DATA" "$(q36_sha256 "$DATA")"
 q36_verify_sha256 "$OWNER_CHECKPOINT" "$(q36_sha256 "$OWNER_CHECKPOINT")"
 q36_verify_sha256 "$REVISION_CHECKPOINT" "$(q36_sha256 "$REVISION_CHECKPOINT")"
+architecture_args=(--architecture "$ARCHITECTURE")
+if [[ "$ARCHITECTURE" == multi_trajectory ]]; then
+  [[ -n "${DRAFT_HIDDEN_CHECKPOINT:-}" ]] || \
+    q36_die "multi-trajectory draft-hidden checkpoint is required"
+  q36_verify_sha256 "$DRAFT_HIDDEN_CHECKPOINT" "$(q36_sha256 "$DRAFT_HIDDEN_CHECKPOINT")"
+  architecture_args+=(
+    --draft-hidden-checkpoint "$DRAFT_HIDDEN_CHECKPOINT"
+    --max-rows 1167
+    --data-seed 2026081514
+    --initial-branch-weights 0.9 0.1
+  )
+  [[ "${ROUTING_SUPERVISION_WEIGHT:-0.1}" == 0.1 ]] || \
+    q36_die "multi-trajectory routing supervision differs"
+  ROUTING_SUPERVISION_WEIGHT=0.1
+fi
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]] || q36_die "temporal gate output exists"
 
 trainer=$RUNTIME/train/hf_q36_mtr_train_temporal_gate.py
@@ -55,6 +73,7 @@ nvidia-smi
   --model-source-root "$MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
   --model-config-sha256 "$MODEL_CONFIG_SHA256" \
+  "${architecture_args[@]}" \
   --data "$DATA" \
   --owner-checkpoint "$OWNER_CHECKPOINT" \
   --revision-checkpoint "$REVISION_CHECKPOINT" \

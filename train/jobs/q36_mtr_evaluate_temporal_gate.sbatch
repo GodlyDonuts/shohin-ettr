@@ -29,6 +29,9 @@ done
 (( SLURM_ARRAY_TASK_ID < SHARD_COUNT )) || { printf 'array index differs\n' >&2; exit 2; }
 
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+ARCHITECTURE=${ARCHITECTURE:-temporal}
+[[ "$ARCHITECTURE" == temporal || "$ARCHITECTURE" == multi_trajectory ]] || \
+  q36_die "temporal evaluation architecture differs"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
@@ -38,6 +41,15 @@ q36_verify_sha256 "$SOURCE" "$SOURCE_SHA256"
 q36_require_file "$OWNER_CHECKPOINT"
 q36_require_file "$REVISION_CHECKPOINT"
 q36_require_file "$GATE_CHECKPOINT"
+architecture_args=(--architecture "$ARCHITECTURE")
+arm=temporal_gate
+if [[ "$ARCHITECTURE" == multi_trajectory ]]; then
+  [[ -n "${DRAFT_HIDDEN_CHECKPOINT:-}" ]] || \
+    q36_die "multi-trajectory draft-hidden checkpoint is required"
+  q36_require_file "$DRAFT_HIDDEN_CHECKPOINT"
+  architecture_args+=(--draft-hidden-checkpoint "$DRAFT_HIDDEN_CHECKPOINT")
+  arm=multi_trajectory_gate
+fi
 IFS=: read -r -a draft_paths <<< "$DRAFT_CANDIDATES"
 [[ ${#draft_paths[@]} -eq SHARD_COUNT ]] || q36_die "draft candidate geometry differs"
 draft_args=()
@@ -47,8 +59,8 @@ for path in "${draft_paths[@]}"; do
 done
 
 shard=$(printf '%02d' "$SLURM_ARRAY_TASK_ID")
-output=$OUTPUT_ROOT/temporal_gate/shard_$shard/candidates.jsonl
-report=$OUTPUT_ROOT/temporal_gate/shard_$shard/report.json
+output=$OUTPUT_ROOT/$arm/shard_$shard/candidates.jsonl
+report=$OUTPUT_ROOT/$arm/shard_$shard/report.json
 [[ ! -e "$output" && ! -L "$output" && ! -e "$report" && ! -L "$report" ]] || \
   q36_die "temporal evaluation output exists"
 mkdir -p "$(dirname "$output")" logs
@@ -61,6 +73,7 @@ nvidia-smi
   --model-root "$model" \
   --model-source-root "$MODEL_ROOT" \
   --model-revision "$MODEL_REVISION" \
+  "${architecture_args[@]}" \
   --owner-checkpoint "$OWNER_CHECKPOINT" \
   --revision-checkpoint "$REVISION_CHECKPOINT" \
   --gate-checkpoint "$GATE_CHECKPOINT" \

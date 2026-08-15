@@ -36,7 +36,12 @@ from hf_q36_mtr_external_evaluate import (
 from hf_q36_mtr_train_temporal_gate import (
     GATE_INITIAL_REVISION_WEIGHT,
     GATE_PARAMETERS,
+    MULTI_BRANCHES,
+    MULTI_CHECKPOINT_SCHEMA,
+    MULTI_GATE_PARAMETERS,
+    MULTI_INITIAL_WEIGHTS,
     _role_pair,
+    _role_bank,
     restore_gate_checkpoint,
 )
 from q36_mtr_roles import (
@@ -51,9 +56,15 @@ from q36_mtr_roles import (
     validate_backbone_geometry,
     validate_backbone_moe_surface,
 )
-from temporal_residual_gate import TemporalGatedProductModel, TemporalResidualGateConfig
+from temporal_residual_gate import (
+    MultiTrajectoryGatedProductModel,
+    MultiTrajectoryResidualGateConfig,
+    TemporalGatedProductModel,
+    TemporalResidualGateConfig,
+)
 
 ARM = "temporal_gate"
+MULTI_ARM = "multi_trajectory_gate"
 REPORT_SCHEMA = "shohin-q36-mtr-temporal-gate-evaluation-v1"
 
 
@@ -124,12 +135,88 @@ def load_temporal_gate_model(
     )
 
 
+def load_multi_trajectory_gate_model(
+    model_root: Path,
+    owner_checkpoint: Path,
+    revision_checkpoint: Path,
+    draft_hidden_checkpoint: Path,
+    gate_checkpoint: Path,
+) -> tuple[MultiTrajectoryGatedProductModel, dict[str, Any], str, dict[str, Any]]:
+    role_states, role_receipt = _role_bank(
+        owner_checkpoint, revision_checkpoint, draft_hidden_checkpoint
+    )
+    backbone, loader = load_product_backbone(
+        model_root,
+        "causal",
+        dtype=__import__("torch").bfloat16,
+        device_map={"": 0},
+        quantization=QUANTIZATION,
+    )
+    controlled = validate_backbone_geometry(backbone)
+    moe_surface = validate_backbone_moe_surface(backbone)
+    text_model, lm_head, hidden, layout = resolve_product_backbone_layout(backbone)
+    if hidden != HIDDEN_SIZE or controlled != list(CONTROLLED_LAYER_INDICES):
+        raise Q36MTRTemporalGateEvaluationError(
+            "multi-trajectory gate backbone differs"
+        )
+    model = MultiTrajectoryGatedProductModel(
+        backbone,
+        text_model,
+        lm_head,
+        MultiTrajectoryResidualGateConfig(
+            HIDDEN_SIZE, RANK, ALPHA, MULTI_BRANCHES, MULTI_INITIAL_WEIGHTS
+        ),
+        role_states=role_states,
+        controlled_layer_indices=CONTROLLED_LAYER_INDICES,
+    )
+    update, metadata = restore_gate_checkpoint(
+        gate_checkpoint,
+        model,
+        checkpoint_schema=MULTI_CHECKPOINT_SCHEMA,
+        gate_parameters=MULTI_GATE_PARAMETERS,
+    )
+    expected = {
+        "architecture": "q36-tokenwise-multi-trajectory-residual-gate-v1",
+        "model_revision": MODEL_REVISION,
+        "model_config_sha256": MODEL_CONFIG_SHA256,
+        "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
+        "gate_parameters": MULTI_GATE_PARAMETERS,
+        "branch_names": list(MULTI_BRANCHES),
+        "initial_branch_weights": list(MULTI_INITIAL_WEIGHTS),
+        "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
+        "role_receipt": role_receipt,
+    }
+    if (
+        update != 256
+        or any(metadata.get(key) != value for key, value in expected.items())
+        or model.trainable_parameter_count() != MULTI_GATE_PARAMETERS
+    ):
+        raise Q36MTRTemporalGateEvaluationError(
+            "multi-trajectory gate checkpoint differs"
+        )
+    model.eval()
+    model.reset_routing_receipt()
+    return (
+        model,
+        metadata,
+        loader,
+        {
+            "backbone_layout": layout,
+            "native_moe_surface": moe_surface,
+            "role_receipt": role_receipt,
+        },
+    )
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     import torch
     from transformers import AutoTokenizer
 
+    architecture = getattr(args, "architecture", "temporal")
+    multi = architecture == "multi_trajectory"
     if (
-        args.model_revision != MODEL_REVISION
+        architecture not in {"temporal", "multi_trajectory"}
+        or args.model_revision != MODEL_REVISION
         or args.seed != SEED
         or args.expected_rows not in SHARD_COUNTS
         or args.shard_count != SHARD_COUNTS[args.expected_rows]
@@ -151,12 +238,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    model, metadata, loader, model_receipt = load_temporal_gate_model(
-        args.model_root,
-        args.owner_checkpoint,
-        args.revision_checkpoint,
-        args.gate_checkpoint,
-    )
+    if multi:
+        draft_hidden_checkpoint = getattr(args, "draft_hidden_checkpoint", None)
+        if not isinstance(draft_hidden_checkpoint, Path):
+            raise Q36MTRTemporalGateEvaluationError(
+                "multi-trajectory draft-hidden checkpoint is absent"
+            )
+        model, metadata, loader, model_receipt = load_multi_trajectory_gate_model(
+            args.model_root,
+            args.owner_checkpoint,
+            args.revision_checkpoint,
+            draft_hidden_checkpoint,
+            args.gate_checkpoint,
+        )
+        arm = MULTI_ARM
+    else:
+        model, metadata, loader, model_receipt = load_temporal_gate_model(
+            args.model_root,
+            args.owner_checkpoint,
+            args.revision_checkpoint,
+            args.gate_checkpoint,
+        )
+        arm = ARM
     stop_ids = _generation_stop_token_ids(tokenizer)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -184,7 +287,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         candidates.append(
             {
                 "schema": CANDIDATE_SCHEMA,
-                "arm": ARM,
+                "arm": arm,
                 "identity_sha256": source["identity_sha256"],
                 "task": source["task"],
                 "completion": completion,
@@ -202,7 +305,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     report = {
         "schema": REPORT_SCHEMA,
         "status": "complete",
-        "arm": ARM,
+        "arm": arm,
         "split": "external_validation",
         "model_revision": MODEL_REVISION,
         "model_loader": loader,
@@ -213,6 +316,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ).hexdigest(),
         "owner_checkpoint_sha256": sha256_file(args.owner_checkpoint),
         "revision_checkpoint_sha256": sha256_file(args.revision_checkpoint),
+        "draft_hidden_checkpoint_sha256": (
+            sha256_file(args.draft_hidden_checkpoint) if multi else None
+        ),
         "trainable_parameters": model.trainable_parameter_count(),
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
         **model_receipt,
@@ -245,11 +351,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--architecture",
+        choices=("temporal", "multi_trajectory"),
+        default="temporal",
+    )
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-source-root", type=Path, required=True)
     parser.add_argument("--model-revision", default=MODEL_REVISION)
     parser.add_argument("--owner-checkpoint", type=Path, required=True)
     parser.add_argument("--revision-checkpoint", type=Path, required=True)
+    parser.add_argument("--draft-hidden-checkpoint", type=Path)
     parser.add_argument("--gate-checkpoint", type=Path, required=True)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--source-sha256", required=True)

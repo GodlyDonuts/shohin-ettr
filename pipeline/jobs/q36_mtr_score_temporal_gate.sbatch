@@ -20,6 +20,9 @@ for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+ARM=${ARM:-temporal_gate}
+[[ "$ARM" == temporal_gate || "$ARM" == multi_trajectory_gate ]] || \
+  q36_die "temporal score arm differs"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
@@ -42,6 +45,7 @@ q36_export_pythonpath
 "$PYTHON" "$RUNTIME/pipeline/score_q36_mtr_temporal_gate.py" \
   --assessors "$ASSESSORS" \
   --baseline-score "$BASELINE_SCORE" \
+  --arm "$ARM" \
   "${candidate_args[@]}" \
   --expected-rows "$EXPECTED_ROWS" \
   --shard-count "$SHARD_COUNT" \

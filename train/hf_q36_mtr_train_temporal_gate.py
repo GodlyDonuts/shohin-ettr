@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -19,7 +20,6 @@ from hf_product_reasoning_train import (
     _batches,
     load_product_backbone,
     pack_training_embeddings,
-    reservoir_rows_with_sha256,
     resolve_product_backbone_layout,
 )
 from hf_q36_mtr_train_role import (
@@ -49,6 +49,8 @@ from q36_mtr_roles import (
 )
 from shared_post_mlp_revision import trainable_state, trainable_state_sha256
 from temporal_residual_gate import (
+    MultiTrajectoryGatedProductModel,
+    MultiTrajectoryResidualGateConfig,
     TemporalGatedProductModel,
     TemporalResidualGateConfig,
     TemporalResidualGateError,
@@ -56,6 +58,8 @@ from temporal_residual_gate import (
 
 SCHEMA = "shohin-q36-mtr-temporal-gate-training-v1"
 CHECKPOINT_SCHEMA = "shohin-q36-mtr-temporal-gate-checkpoint-v1"
+MULTI_SCHEMA = "shohin-q36-mtr-multi-trajectory-gate-training-v1"
+MULTI_CHECKPOINT_SCHEMA = "shohin-q36-mtr-multi-trajectory-gate-checkpoint-v1"
 GATE_SEED = 2026081511
 GATE_LEARNING_RATE = 2e-4
 GATE_GRADIENT_ACCUMULATION = 8
@@ -63,6 +67,13 @@ GATE_BATCH_SIZE = 1
 GATE_INITIAL_REVISION_WEIGHT = 0.1
 GATE_ROUTING_SUPERVISION_WEIGHT = 0.1
 GATE_PARAMETERS = len(CONTROLLED_LAYER_INDICES) * (HIDDEN_SIZE + 1)
+MULTI_BRANCHES = ("revision", "draft_hidden")
+MULTI_INITIAL_WEIGHTS = (0.9, 0.1)
+MULTI_PRESENTATIONS = 1_167
+MULTI_DATA_SEED = 2026081514
+MULTI_GATE_PARAMETERS = (
+    len(CONTROLLED_LAYER_INDICES) * len(MULTI_BRANCHES) * (HIDDEN_SIZE + 1)
+)
 LOSS_CHUNK_SIZE = 512
 ROUTING_TARGETS = {
     "base_only": 0.0,
@@ -70,6 +81,7 @@ ROUTING_TARGETS = {
     "both_wrong": None,
     "expert_only": 1.0,
 }
+MULTI_ROW_SCHEMA = "shohin-q36-mtr-multi-trajectory-gate-train-v1"
 
 
 class Q36MTRTemporalGateTrainingError(RuntimeError):
@@ -141,10 +153,144 @@ def _role_pair(
     )
 
 
-def _validate_gate_state(state: dict[str, torch.Tensor]) -> None:
+def _role_bank(
+    owner_checkpoint: Path,
+    revision_checkpoint: Path,
+    draft_hidden_checkpoint: Path,
+) -> tuple[dict[str, dict[str, torch.Tensor]], dict[str, Any]]:
+    """Load two sibling revision trajectories and bind their owner lineage."""
+
+    try:
+        owner = load_role_checkpoint_payload(owner_checkpoint)
+        revision = load_role_checkpoint_payload(revision_checkpoint)
+        hidden = load_role_checkpoint_payload(draft_hidden_checkpoint)
+    except Q36MTRRoleError as error:
+        raise Q36MTRTemporalGateTrainingError(str(error)) from error
+    owner_metadata = owner["metadata"]
+    owner_checkpoint_sha = sha256_file(owner_checkpoint)
+    owner_state_sha = trainable_state_sha256(owner["trainable_state"])
+    shared = (
+        "model_revision",
+        "model_config_sha256",
+        "controlled_layer_indices",
+        "trainable_parameter_name_sha256",
+        "trainable_parameters",
+        "trainable_master_dtype",
+    )
+    branches = (
+        ("revision", "aligned", revision),
+        ("draft_hidden", "draft_hidden", hidden),
+    )
+    if (
+        owner_metadata.get("role") != "owner"
+        or owner_metadata.get("model_revision") != MODEL_REVISION
+        or owner_metadata.get("model_config_sha256") != MODEL_CONFIG_SHA256
+        or owner_metadata.get("controlled_layer_indices")
+        != list(CONTROLLED_LAYER_INDICES)
+        or owner_metadata.get("trainable_master_dtype") != TRAINABLE_MASTER_DTYPE
+        or owner_metadata.get("warm_start_checkpoint") is not None
+        or owner_metadata.get("warm_start_checkpoint_sha256") is not None
+        or owner_metadata.get("final_trainable_state_sha256") != owner_state_sha
+    ):
+        raise Q36MTRTemporalGateTrainingError("multi-trajectory owner differs")
+    role_states: dict[str, dict[str, torch.Tensor]] = {}
+    receipt: dict[str, Any] = {
+        "owner_checkpoint_sha256": owner_checkpoint_sha,
+        "owner_state_sha256": owner_state_sha,
+    }
+    for branch, role, payload in branches:
+        metadata = payload["metadata"]
+        state = payload["trainable_state"]
+        state_sha = trainable_state_sha256(state)
+        if (
+            metadata.get("role") != role
+            or any(metadata.get(key) != owner_metadata.get(key) for key in shared)
+            or metadata.get("warm_start_checkpoint_sha256") != owner_checkpoint_sha
+            or metadata.get("warm_start_update") != REVISION_UPDATES
+            or metadata.get("initial_trainable_state_sha256") != owner_state_sha
+            or metadata.get("final_trainable_state_sha256") != state_sha
+            or set(state) != set(owner["trainable_state"])
+            or state_sha == owner_state_sha
+        ):
+            raise Q36MTRTemporalGateTrainingError(
+                f"multi-trajectory {branch} lineage differs"
+            )
+        role_states[branch] = state
+        receipt[f"{branch}_checkpoint_sha256"] = sha256_file(
+            revision_checkpoint if branch == "revision" else draft_hidden_checkpoint
+        )
+        receipt[f"{branch}_state_sha256"] = state_sha
+    if receipt["revision_state_sha256"] == receipt["draft_hidden_state_sha256"]:
+        raise Q36MTRTemporalGateTrainingError("multi-trajectory branches are identical")
+    return role_states, receipt
+
+
+def _routing_rows_with_sha256(
+    path: Path, limit: int, seed: int, *, architecture: str
+) -> tuple[list[dict[str, Any]], str]:
+    """Hash and shuffle routing rows without dropping supervisor targets."""
+
+    expected_schema = (
+        MULTI_ROW_SCHEMA
+        if architecture == "multi_trajectory"
+        else "shohin-q36-mtr-revision-train-v1"
+    )
+    digest = hashlib.sha256()
+    rows: list[dict[str, Any]] = []
+    with path.open("rb") as handle:
+        for raw_line in handle:
+            digest.update(raw_line)
+            try:
+                row = json.loads(raw_line)
+            except (json.JSONDecodeError, UnicodeDecodeError) as error:
+                raise Q36MTRTemporalGateTrainingError(
+                    "temporal routing row is unreadable"
+                ) from error
+            if (
+                not isinstance(row, dict)
+                or row.get("schema") != expected_schema
+                or not isinstance(row.get("question"), str)
+                or not row["question"].strip()
+                or not isinstance(row.get("response"), str)
+                or not row["response"].strip()
+                or not isinstance(row.get("outcome_class"), str)
+            ):
+                raise Q36MTRTemporalGateTrainingError("temporal routing row differs")
+            if architecture == "multi_trajectory":
+                target = row.get("routing_target")
+                if (
+                    row.get("branch_names") != list(MULTI_BRANCHES)
+                    or not isinstance(target, list)
+                    or len(target) != len(MULTI_BRANCHES)
+                    or any(
+                        isinstance(value, bool)
+                        or not isinstance(value, (int, float))
+                        or not math.isfinite(float(value))
+                        or float(value) < 0.0
+                        for value in target
+                    )
+                    or not math.isclose(sum(float(value) for value in target), 1.0)
+                ):
+                    raise Q36MTRTemporalGateTrainingError(
+                        "multi-trajectory routing target differs"
+                    )
+            elif row["outcome_class"] not in ROUTING_TARGETS:
+                raise Q36MTRTemporalGateTrainingError(
+                    "temporal routing outcome differs"
+                )
+            rows.append(row)
+    if len(rows) != limit:
+        raise Q36MTRTemporalGateTrainingError("temporal routing data geometry differs")
+    random.Random(seed).shuffle(rows)
+    return rows, digest.hexdigest()
+
+
+def _validate_gate_state(
+    state: dict[str, torch.Tensor], gate_parameters: int = GATE_PARAMETERS
+) -> None:
     if (
         len(state) != len(CONTROLLED_LAYER_INDICES) * 2
-        or sum(tensor.numel() for tensor in state.values()) != GATE_PARAMETERS
+        or sum(tensor.numel() for tensor in state.values()) != gate_parameters
         or any(
             not isinstance(name, str)
             or not (name.endswith("gate_weight") or name.endswith("gate_bias"))
@@ -168,18 +314,21 @@ def _response_routing_mask(labels: torch.Tensor) -> torch.Tensor:
 
 def save_gate_checkpoint(
     path: Path,
-    model: TemporalGatedProductModel,
+    model: TemporalGatedProductModel | MultiTrajectoryGatedProductModel,
     update: int,
     metadata: dict[str, Any],
+    *,
+    checkpoint_schema: str = CHECKPOINT_SCHEMA,
+    gate_parameters: int = GATE_PARAMETERS,
 ) -> None:
     if path.exists() or path.is_symlink() or update != REVISION_UPDATES:
         raise Q36MTRTemporalGateTrainingError("temporal gate checkpoint target differs")
     state = trainable_state(model)
-    _validate_gate_state(state)
+    _validate_gate_state(state, gate_parameters)
     temporary = path.with_name(f".{path.name}.tmp.{os.getpid()}")
     torch.save(
         {
-            "schema": CHECKPOINT_SCHEMA,
+            "schema": checkpoint_schema,
             "update": update,
             "trainable_state": state,
             "metadata": metadata,
@@ -190,7 +339,11 @@ def save_gate_checkpoint(
 
 
 def restore_gate_checkpoint(
-    path: Path, model: TemporalGatedProductModel
+    path: Path,
+    model: TemporalGatedProductModel | MultiTrajectoryGatedProductModel,
+    *,
+    checkpoint_schema: str = CHECKPOINT_SCHEMA,
+    gate_parameters: int = GATE_PARAMETERS,
 ) -> tuple[int, dict[str, Any]]:
     if path.is_symlink() or not path.is_file():
         raise Q36MTRTemporalGateTrainingError("temporal gate checkpoint is absent")
@@ -198,14 +351,14 @@ def restore_gate_checkpoint(
     if (
         not isinstance(payload, dict)
         or set(payload) != {"schema", "update", "trainable_state", "metadata"}
-        or payload.get("schema") != CHECKPOINT_SCHEMA
+        or payload.get("schema") != checkpoint_schema
         or payload.get("update") != REVISION_UPDATES
         or not isinstance(payload.get("trainable_state"), dict)
         or not isinstance(payload.get("metadata"), dict)
     ):
         raise Q36MTRTemporalGateTrainingError("temporal gate checkpoint differs")
     saved = payload["trainable_state"]
-    _validate_gate_state(saved)
+    _validate_gate_state(saved, gate_parameters)
     current = {
         name: parameter
         for name, parameter in model.named_parameters()
@@ -225,25 +378,42 @@ def restore_gate_checkpoint(
 
 
 def _validate_args(args: argparse.Namespace) -> None:
+    architecture = getattr(args, "architecture", "temporal")
+    multi = architecture == "multi_trajectory"
+    if architecture not in {"temporal", "multi_trajectory"}:
+        raise Q36MTRTemporalGateTrainingError("temporal gate architecture differs")
     expected = {
         "model_revision": MODEL_REVISION,
         "model_config_sha256": MODEL_CONFIG_SHA256,
         "updates": REVISION_UPDATES,
-        "max_rows": REVISION_PRESENTATIONS,
+        "max_rows": MULTI_PRESENTATIONS if multi else REVISION_PRESENTATIONS,
         "max_sequence_length": REVISION_MAX_SEQUENCE_LENGTH,
         "learning_rate": GATE_LEARNING_RATE,
         "gradient_accumulation": GATE_GRADIENT_ACCUMULATION,
         "batch_size": GATE_BATCH_SIZE,
         "seed": GATE_SEED,
-        "data_seed": REVISION_DATA_SEED,
+        "data_seed": MULTI_DATA_SEED if multi else REVISION_DATA_SEED,
         "initial_revision_weight": GATE_INITIAL_REVISION_WEIGHT,
         "loss_chunk_size": LOSS_CHUNK_SIZE,
     }
     observed = {key: getattr(args, key) for key in expected}
-    if observed != expected or args.routing_supervision_weight not in {
-        0.0,
-        GATE_ROUTING_SUPERVISION_WEIGHT,
-    }:
+    supervision = (
+        {GATE_ROUTING_SUPERVISION_WEIGHT}
+        if multi
+        else {
+            0.0,
+            GATE_ROUTING_SUPERVISION_WEIGHT,
+        }
+    )
+    if (
+        observed != expected
+        or args.routing_supervision_weight not in supervision
+        or (
+            multi
+            and tuple(getattr(args, "initial_branch_weights", ()))
+            != MULTI_INITIAL_WEIGHTS
+        )
+    ):
         raise Q36MTRTemporalGateTrainingError(
             f"temporal gate settings differ: expected={expected} observed={observed}"
         )
@@ -253,6 +423,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     from transformers import AutoTokenizer
 
     _validate_args(args)
+    architecture = getattr(args, "architecture", "temporal")
+    multi = architecture == "multi_trajectory"
     if not torch.cuda.is_available():
         raise Q36MTRTemporalGateTrainingError("temporal gate training requires CUDA")
     if args.output.exists() or args.output.is_symlink():
@@ -279,11 +451,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer = AutoTokenizer.from_pretrained(args.model_root, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    rows, data_sha256 = reservoir_rows_with_sha256(
-        args.data, args.max_rows, args.data_seed
+    rows, data_sha256 = _routing_rows_with_sha256(
+        args.data, args.max_rows, args.data_seed, architecture=architecture
     )
-    if len(rows) != REVISION_PRESENTATIONS:
-        raise Q36MTRTemporalGateTrainingError("temporal gate data geometry differs")
     prompts, responses, draft_masks, sequence_receipt = tokenize_role_rows(
         tokenizer,
         rows,
@@ -291,10 +461,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         max_sequence_length=args.max_sequence_length,
     )
     outcomes = [str(row["outcome_class"]) for row in rows]
-    if any(outcome not in ROUTING_TARGETS for outcome in outcomes):
-        raise Q36MTRTemporalGateTrainingError("temporal routing outcome differs")
+    routing_targets: list[float | list[float] | None] = [
+        (
+            [float(value) for value in row["routing_target"]]
+            if multi
+            else ROUTING_TARGETS[row["outcome_class"]]
+        )
+        for row in rows
+    ]
     sequence_examples = list(zip(prompts, responses, draft_masks, strict=True))
-    examples = list(zip(prompts, responses, draft_masks, outcomes, strict=True))
+    examples = list(
+        zip(prompts, responses, draft_masks, outcomes, routing_targets, strict=True)
+    )
     batches = list(_batches(examples, args.batch_size))
     consumption = training_consumption_receipt(
         sequence_examples,
@@ -302,9 +480,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         gradient_accumulation=args.gradient_accumulation,
         batch_size=args.batch_size,
     )
-    owner_state, revision_state, role_receipt = _role_pair(
-        args.owner_checkpoint, args.revision_checkpoint
-    )
+    if multi:
+        draft_hidden_checkpoint = getattr(args, "draft_hidden_checkpoint", None)
+        if not isinstance(draft_hidden_checkpoint, Path):
+            raise Q36MTRTemporalGateTrainingError(
+                "multi-trajectory draft-hidden checkpoint is absent"
+            )
+        role_states, role_receipt = _role_bank(
+            args.owner_checkpoint, args.revision_checkpoint, draft_hidden_checkpoint
+        )
+    else:
+        owner_state, revision_state, role_receipt = _role_pair(
+            args.owner_checkpoint, args.revision_checkpoint
+        )
     backbone, loader = load_product_backbone(
         args.model_root,
         "causal",
@@ -324,26 +512,46 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         CONTROLLED_LAYER_INDICES
     ):
         raise Q36MTRTemporalGateTrainingError("temporal gate backbone differs")
-    model = TemporalGatedProductModel(
-        backbone,
-        text_model,
-        lm_head,
-        TemporalResidualGateConfig(
-            HIDDEN_SIZE,
-            RANK,
-            ALPHA,
-            args.initial_revision_weight,
-        ),
-        owner_state=owner_state,
-        revision_state=revision_state,
-        controlled_layer_indices=CONTROLLED_LAYER_INDICES,
-    )
+    if multi:
+        model = MultiTrajectoryGatedProductModel(
+            backbone,
+            text_model,
+            lm_head,
+            MultiTrajectoryResidualGateConfig(
+                HIDDEN_SIZE,
+                RANK,
+                ALPHA,
+                MULTI_BRANCHES,
+                MULTI_INITIAL_WEIGHTS,
+            ),
+            role_states=role_states,
+            controlled_layer_indices=CONTROLLED_LAYER_INDICES,
+        )
+        gate_parameters = MULTI_GATE_PARAMETERS
+        checkpoint_schema = MULTI_CHECKPOINT_SCHEMA
+    else:
+        model = TemporalGatedProductModel(
+            backbone,
+            text_model,
+            lm_head,
+            TemporalResidualGateConfig(
+                HIDDEN_SIZE,
+                RANK,
+                ALPHA,
+                args.initial_revision_weight,
+            ),
+            owner_state=owner_state,
+            revision_state=revision_state,
+            controlled_layer_indices=CONTROLLED_LAYER_INDICES,
+        )
+        gate_parameters = GATE_PARAMETERS
+        checkpoint_schema = CHECKPOINT_SCHEMA
     trainables = [
         parameter for parameter in model.parameters() if parameter.requires_grad
     ]
     initial_state = trainable_state(model)
-    _validate_gate_state(initial_state)
-    if model.trainable_parameter_count() != GATE_PARAMETERS or any(
+    _validate_gate_state(initial_state, gate_parameters)
+    if model.trainable_parameter_count() != gate_parameters or any(
         parameter.dtype != torch.float32 for parameter in trainables
     ):
         raise Q36MTRTemporalGateTrainingError("temporal gate trainables differ")
@@ -375,11 +583,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         batch_prompts = [item[0] for item in raw_batch]
         batch_responses = [item[1] for item in raw_batch]
         batch_outcomes = [item[3] for item in raw_batch]
+        batch_targets = [item[4] for item in raw_batch]
         if len(batch_outcomes) != 1:
             raise Q36MTRTemporalGateTrainingError(
                 "temporal routing batch geometry differs"
             )
-        routing_target = ROUTING_TARGETS[batch_outcomes[0]]
+        routing_target = batch_targets[0]
         with torch.autocast("cuda", dtype=torch.bfloat16):
             inputs, attention, labels, charged = pack_training_embeddings(
                 model.text_model.embed_tokens,
@@ -443,22 +652,35 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             print(json.dumps(event, sort_keys=True), flush=True)
 
     final_state = trainable_state(model)
-    _validate_gate_state(final_state)
+    _validate_gate_state(final_state, gate_parameters)
     initial_sha256 = trainable_state_sha256(initial_state)
     final_sha256 = trainable_state_sha256(final_state)
     if initial_sha256 == final_sha256:
         raise Q36MTRTemporalGateTrainingError("temporal gate update is absent")
     metadata = {
-        "schema": SCHEMA,
-        "architecture": "q36-tokenwise-temporal-residual-gate-v1",
+        "schema": MULTI_SCHEMA if multi else SCHEMA,
+        "architecture": (
+            "q36-tokenwise-multi-trajectory-residual-gate-v1"
+            if multi
+            else "q36-tokenwise-temporal-residual-gate-v1"
+        ),
         "model_revision": MODEL_REVISION,
+        "model_config_sha256": MODEL_CONFIG_SHA256,
         "model_loader": loader,
         "backbone_layout": backbone_layout,
         "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
-        "gate_parameters": GATE_PARAMETERS,
+        "gate_parameters": gate_parameters,
+        "branch_names": list(MULTI_BRANCHES) if multi else ["owner", "revision"],
+        "initial_branch_weights": (
+            list(MULTI_INITIAL_WEIGHTS)
+            if multi
+            else [1.0 - args.initial_revision_weight, args.initial_revision_weight]
+        ),
         "initial_revision_weight": args.initial_revision_weight,
         "routing_supervision_weight": args.routing_supervision_weight,
-        "routing_supervision_targets": ROUTING_TARGETS,
+        "routing_supervision_targets": (
+            "per-row-soft-target" if multi else ROUTING_TARGETS
+        ),
         "routing_supervision_mask": "response_tokens_only",
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
@@ -478,11 +700,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "environment_tree_sha256": args.environment_tree_sha256,
     }
     checkpoint = args.output / f"checkpoint_{update:07d}.pt"
-    save_gate_checkpoint(checkpoint, model, update, metadata)
+    save_gate_checkpoint(
+        checkpoint,
+        model,
+        update,
+        metadata,
+        checkpoint_schema=checkpoint_schema,
+        gate_parameters=gate_parameters,
+    )
     with torch.no_grad():
         for parameter in trainables:
             parameter.zero_()
-    restored_update, restored_metadata = restore_gate_checkpoint(checkpoint, model)
+    restored_update, restored_metadata = restore_gate_checkpoint(
+        checkpoint,
+        model,
+        checkpoint_schema=checkpoint_schema,
+        gate_parameters=gate_parameters,
+    )
     if (
         restored_update != update
         or restored_metadata != metadata
@@ -516,6 +750,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--architecture",
+        choices=("temporal", "multi_trajectory"),
+        default="temporal",
+    )
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-source-root", type=Path, required=True)
     parser.add_argument("--model-revision", default=MODEL_REVISION)
@@ -523,6 +762,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--owner-checkpoint", type=Path, required=True)
     parser.add_argument("--revision-checkpoint", type=Path, required=True)
+    parser.add_argument("--draft-hidden-checkpoint", type=Path)
     parser.add_argument("--environment-receipt", type=Path, required=True)
     parser.add_argument("--environment-receipt-sha256", required=True)
     parser.add_argument("--environment-tree-sha256", required=True)
@@ -543,6 +783,12 @@ def parse_args() -> argparse.Namespace:
         "--initial-revision-weight",
         type=float,
         default=GATE_INITIAL_REVISION_WEIGHT,
+    )
+    parser.add_argument(
+        "--initial-branch-weights",
+        type=float,
+        nargs=2,
+        default=MULTI_INITIAL_WEIGHTS,
     )
     parser.add_argument("--routing-supervision-weight", type=float, default=0.0)
     parser.add_argument("--loss-chunk-size", type=int, default=LOSS_CHUNK_SIZE)

@@ -25,6 +25,7 @@ from score_q36_mtr_external import (
 )
 
 ARM = "temporal_gate"
+ARMS = (ARM, "multi_trajectory_gate")
 REPORT_SCHEMA = "shohin-q36-mtr-temporal-gate-score-v1"
 TASKS = ("math500", "bbh_logic", "mbpp")
 
@@ -44,7 +45,7 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 def load_temporal_candidates(
-    paths: list[Path], identities: set[str], expected_shards: int
+    paths: list[Path], identities: set[str], expected_shards: int, arm: str = ARM
 ) -> dict[str, dict[str, Any]]:
     if len(paths) != expected_shards:
         raise Q36MTRTemporalGateScoreError("temporal candidate geometry differs")
@@ -63,7 +64,7 @@ def load_temporal_candidates(
             if (
                 not isinstance(row, dict)
                 or row.get("schema") != CANDIDATE_SCHEMA
-                or row.get("arm") != ARM
+                or row.get("arm") != arm
                 or row.get("task") not in TASKS
                 or not isinstance(identity, str)
                 or identity in candidates
@@ -130,7 +131,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     assessors = load_assessors(args.assessors, args.expected_rows)
     identities = set(assessors)
     candidates = load_temporal_candidates(
-        args.temporal_candidates, identities, args.shard_count
+        args.temporal_candidates, identities, args.shard_count, args.arm
     )
     baseline = load_baseline(args.baseline_score, assessors, args.expected_rows)
     sandbox = qualify_allocation()
@@ -164,6 +165,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "status": "complete",
         "rows": args.expected_rows,
         "shard_count": args.shard_count,
+        "arm": args.arm,
         "assessors_sha256": sha256_file(args.assessors),
         "baseline_score_sha256": sha256_file(args.baseline_score),
         "temporal_candidate_sha256s": [
@@ -172,7 +174,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "sandbox_receipt_sha256": sandbox_sha256,
         "sandbox_probe_sha256": sandbox.get("probe_sha256"),
         "mbpp_setup_qualification_count": len(setups),
-        "temporal_gate": {
+        args.arm: {
             "correct": temporal_correct,
             "total": args.expected_rows,
             "accuracy": temporal_correct / args.expected_rows,
@@ -198,7 +200,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             {
                 "identity_sha256": identity,
                 "task": assessors[identity]["task"],
-                "temporal_gate_correct": temporal[identity],
+                f"{args.arm}_correct": temporal[identity],
                 "unchanged_correct": baseline[identity],
             }
             for identity in sorted(identities)
@@ -212,6 +214,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--assessors", type=Path, required=True)
     parser.add_argument("--baseline-score", type=Path, required=True)
+    parser.add_argument("--arm", choices=ARMS, default=ARM)
     parser.add_argument(
         "--temporal-candidates", type=Path, action="append", required=True
     )
@@ -223,11 +226,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
-    report = run(parse_args())
+    args = parse_args()
+    report = run(args)
     print(
         json.dumps(
             {
-                "temporal_gate_correct": report["temporal_gate"]["correct"],
+                f"{args.arm}_correct": report[args.arm]["correct"],
                 "unchanged_correct": report["unchanged"]["correct"],
             },
             sort_keys=True,

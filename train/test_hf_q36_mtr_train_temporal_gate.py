@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 
 import pytest
 import torch
@@ -157,3 +158,69 @@ def test_gate_state_rejects_wrong_count_or_nonfinite_value() -> None:
     state[next(name for name in state if name.endswith("gate_bias"))][0] = float("nan")
     with pytest.raises(module.Q36MTRTemporalGateTrainingError):
         module._validate_gate_state(state)
+
+
+def test_routing_loader_preserves_temporal_supervision(tmp_path) -> None:
+    path = tmp_path / "revision.jsonl"
+    rows = [
+        {
+            "schema": "shohin-q36-mtr-revision-train-v1",
+            "question": f"question {index}",
+            "response": f"response {index}",
+            "outcome_class": outcome,
+        }
+        for index, outcome in enumerate(("both_wrong", "expert_only"))
+    ]
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    loaded, digest = module._routing_rows_with_sha256(
+        path, 2, module.REVISION_DATA_SEED, architecture="temporal"
+    )
+    assert {row["outcome_class"] for row in loaded} == {
+        "both_wrong",
+        "expert_only",
+    }
+    assert digest == module.sha256_file(path)
+
+
+def test_routing_loader_preserves_multi_soft_targets(tmp_path) -> None:
+    path = tmp_path / "multi.jsonl"
+    rows = [
+        {
+            "schema": module.MULTI_ROW_SCHEMA,
+            "question": f"question {index}",
+            "response": f"response {index}",
+            "outcome_class": outcome,
+            "branch_names": list(module.MULTI_BRANCHES),
+            "routing_target": target,
+        }
+        for index, (outcome, target) in enumerate(
+            (("both_correct", [0.5, 0.5]), ("draft_hidden_only", [0.0, 1.0]))
+        )
+    ]
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    loaded, _ = module._routing_rows_with_sha256(
+        path, 2, module.MULTI_DATA_SEED, architecture="multi_trajectory"
+    )
+    assert sorted(tuple(row["routing_target"]) for row in loaded) == [
+        (0.0, 1.0),
+        (0.5, 0.5),
+    ]
+    rows[0]["routing_target"] = [0.6, 0.6]
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    with pytest.raises(module.Q36MTRTemporalGateTrainingError):
+        module._routing_rows_with_sha256(
+            path, 2, module.MULTI_DATA_SEED, architecture="multi_trajectory"
+        )
+
+
+def test_multi_settings_require_soft_supervision() -> None:
+    args = _args()
+    args.architecture = "multi_trajectory"
+    args.max_rows = module.MULTI_PRESENTATIONS
+    args.data_seed = module.MULTI_DATA_SEED
+    args.initial_branch_weights = module.MULTI_INITIAL_WEIGHTS
+    args.routing_supervision_weight = module.GATE_ROUTING_SUPERVISION_WEIGHT
+    module._validate_args(args)
+    args.routing_supervision_weight = 0.0
+    with pytest.raises(module.Q36MTRTemporalGateTrainingError):
+        module._validate_args(args)
