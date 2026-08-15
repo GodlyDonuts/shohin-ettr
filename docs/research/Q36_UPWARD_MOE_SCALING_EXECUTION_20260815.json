@@ -243,6 +243,47 @@
     "required_pre_download_headroom_bytes": 421100722257,
     "status": "code_complete_tested_and_pushed_not_submitted_current_quota_fails_closed"
   },
+  "ultra_matched_measurement_preparation": {
+    "git_commit": "c9572f2f09af4969592012c20758b21b4de82c7f",
+    "status": "code_complete_tested_and_pushed_not_submitted",
+    "source_disjoint_rows": 256,
+    "arms": [
+      "unchanged",
+      "self_refinement",
+      "revision"
+    ],
+    "shards_per_arm": 4,
+    "rows_per_shard": 64,
+    "h100s_per_shard": 8,
+    "maximum_concurrent_eight_h100_nodes": 2,
+    "gpu_allocations": 12,
+    "score_allocations": 1,
+    "generation": {
+      "mode": "greedy",
+      "seed": 2026080816,
+      "max_new_tokens": 768,
+      "batch_size": 1
+    },
+    "revision_source": "zero_label_zero_update_super_to_ultra_transferred_residual",
+    "unchanged_and_self_refinement_source": "pinned_unchanged_ultra_host",
+    "fixed_draft_control": "identical_qwen_model_owned_drafts_for_revision_and_self_refinement",
+    "evaluation_sha256": "7a4f645b579d10b9336eb694b4953a52021fbe41377db5bcbf268ed9286eb0cd",
+    "evaluation_job_sha256": "21fdd55ad15bf46a9df232e1167c88824be51958b6bac95be74f3d4d406cf682",
+    "score_sha256": "5a0ab522154eb35292fb73b11cfc2a6afd89d772a78adcdc914c886aa5c4089a",
+    "score_job_sha256": "6c6730fc88eda3a9fd48284567717b325a372e7b0675e0e491ebbc42e318cbb3",
+    "focused_tests_passed": 39,
+    "score_contract": "one_sandboxed_cpu_paired_reduction_after_all_twelve_shards",
+    "measures": [
+      "correct_count",
+      "accuracy",
+      "paired_wins_losses",
+      "exact_mcnemar_p",
+      "unchanged_correct_retention",
+      "per_domain_counts",
+      "routing_receipt",
+      "empty_and_max_token_counts"
+    ]
+  },
   "cross_family_upward_points_after_super": [
     {
       "host": "Qwen3-235B-A22B",
