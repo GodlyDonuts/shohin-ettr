@@ -8,6 +8,7 @@ from temporal_residual_gate import (
     TemporalResidualGate,
     TemporalResidualGateConfig,
     TemporalResidualGateError,
+    TemporalGatedProductModel,
     install_temporal_residual_gates,
     temporal_branch_layers,
 )
@@ -142,6 +143,7 @@ class _DecoderLayer(nn.Module):
 class _TextModel(nn.Module):
     def __init__(self) -> None:
         super().__init__()
+        self.embed_tokens = nn.Embedding(8, 2)
         self.layers = nn.ModuleList([_DecoderLayer() for _ in range(3)])
 
 
@@ -187,3 +189,35 @@ def test_real_role_state_mapping_rejects_missing_or_nonfinite_tensor() -> None:
     revision["backbone.model.layers.2.mlp.adapter_b.weight"][0, 0] = float("nan")
     with pytest.raises(TemporalResidualGateError):
         temporal_branch_layers(owner, revision, config, (1, 2))
+
+
+def test_product_surface_exposes_exact_trainables_and_generation_state() -> None:
+    text_model = _TextModel()
+    backbone = nn.Module()
+    backbone.model = text_model
+    lm_head = nn.Linear(2, 8, bias=False)
+    model = TemporalGatedProductModel(
+        backbone,
+        text_model,
+        lm_head,
+        TemporalResidualGateConfig(2, 1, 1.0),
+        owner_state=_role_state(0.0),
+        revision_state=_role_state(0.5),
+        controlled_layer_indices=(1, 2),
+    )
+    assert model.trainable_parameter_count() == 6
+    assert len(model.trainable_parameter_name_sha256()) == 64
+    assert all(not parameter.requires_grad for parameter in model.lm_head.parameters())
+    assert model.routing_receipt() == {
+        "controlled_layer_indices": [1, 2],
+        "layers": [{"tokens": 0}, {"tokens": 0}],
+    }
+    ids = torch.tensor([[0, 1, 2], [3, 4, 0]])
+    attention = torch.tensor([[1, 1, 1], [1, 1, 0]])
+    model.prepare_generation_draft_attention(ids, attention)
+    assert model.generation_position_ids().tolist() == [[0, 1, 2], [0, 1, 0]]
+    embeddings, observed_attention = model.generation_embeddings(ids, attention)
+    assert embeddings.shape == (2, 3, 2)
+    assert torch.equal(observed_attention, attention)
+    with pytest.raises(TemporalResidualGateError):
+        model.generation_embeddings(ids.flip(1), attention)

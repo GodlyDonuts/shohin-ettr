@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import math
 import re
 from typing import Any, Mapping, Sequence
@@ -254,10 +255,117 @@ def install_temporal_residual_gates(
     return tuple(installed)
 
 
+class TemporalGatedProductModel(nn.Module):
+    """Drop-in Q36 training/generation surface with installed temporal gates."""
+
+    def __init__(
+        self,
+        backbone: nn.Module,
+        text_model: nn.Module,
+        lm_head: nn.Module,
+        config: TemporalResidualGateConfig,
+        *,
+        owner_state: Mapping[str, torch.Tensor],
+        revision_state: Mapping[str, torch.Tensor],
+        controlled_layer_indices: Sequence[int],
+    ) -> None:
+        super().__init__()
+        if not all(
+            isinstance(module, nn.Module) for module in (backbone, text_model, lm_head)
+        ):
+            raise TemporalResidualGateError("temporal product modules differ")
+        backbone.requires_grad_(False)
+        lm_head.requires_grad_(False)
+        self.backbone = backbone
+        self.text_model = text_model
+        self.lm_head = lm_head
+        self.config = config
+        self.controlled_layer_indices = tuple(controlled_layer_indices)
+        self.blocks = nn.ModuleList(
+            install_temporal_residual_gates(
+                text_model,
+                owner_state,
+                revision_state,
+                config,
+                self.controlled_layer_indices,
+            )
+        )
+        self._generation_prompt_attention: torch.Tensor | None = None
+        self._generation_position_ids: torch.Tensor | None = None
+        self._generation_prompt_ids: torch.Tensor | None = None
+
+    def trainable_parameter_count(self) -> int:
+        return sum(
+            parameter.numel()
+            for parameter in self.parameters()
+            if parameter.requires_grad
+        )
+
+    def trainable_parameter_name_sha256(self) -> str:
+        names = sorted(
+            name
+            for name, parameter in self.named_parameters()
+            if parameter.requires_grad
+        )
+        if not names:
+            raise TemporalResidualGateError("temporal gate trainable names are absent")
+        return hashlib.sha256("\n".join(names).encode()).hexdigest()
+
+    def reset_routing_receipt(self) -> None:
+        for block in self.blocks:
+            block.reset_receipt()
+
+    def routing_receipt(self) -> dict[str, Any]:
+        return {
+            "controlled_layer_indices": list(self.controlled_layer_indices),
+            "layers": [block.receipt() for block in self.blocks],
+        }
+
+    def prepare_generation_draft_attention(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+    ) -> None:
+        if (
+            input_ids.ndim != 2
+            or attention_mask.shape != input_ids.shape
+            or input_ids.device != attention_mask.device
+        ):
+            raise TemporalResidualGateError("temporal generation prompt differs")
+        position_ids = attention_mask.long().cumsum(dim=-1) - 1
+        position_ids.masked_fill_(~attention_mask.bool(), 0)
+        self._generation_position_ids = position_ids
+        self._generation_prompt_ids = input_ids.detach().clone()
+        self._generation_prompt_attention = attention_mask.detach().clone()
+
+    def generation_position_ids(self) -> torch.Tensor:
+        if self._generation_position_ids is None:
+            raise TemporalResidualGateError("temporal generation positions are absent")
+        return self._generation_position_ids
+
+    def generation_embeddings(
+        self, prompt_ids: torch.Tensor, prompt_attention: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        attention = self._generation_prompt_attention
+        prompt_ids_receipt = self._generation_prompt_ids
+        embed_tokens = getattr(self.text_model, "embed_tokens", None)
+        if (
+            attention is None
+            or attention.shape != prompt_attention.shape
+            or prompt_ids_receipt is None
+            or prompt_ids_receipt.shape != prompt_ids.shape
+            or not torch.equal(prompt_ids_receipt, prompt_ids)
+            or not isinstance(embed_tokens, nn.Module)
+        ):
+            raise TemporalResidualGateError("temporal generation state is absent")
+        return embed_tokens(prompt_ids), attention
+
+
 __all__ = [
     "TemporalResidualGate",
     "TemporalResidualGateConfig",
     "TemporalResidualGateError",
+    "TemporalGatedProductModel",
     "install_temporal_residual_gates",
     "temporal_branch_layers",
 ]
