@@ -35,6 +35,7 @@ pipeline/jobs/q36_mtr_capture_environment.sbatch
 pipeline/jobs/q36_mtr_commit_pairs.sbatch
 pipeline/jobs/q36_mtr_compare.sbatch
 pipeline/jobs/q36_mtr_compare_semantic_commits.sbatch
+pipeline/jobs/q36_mtr_external_forest.sbatch
 pipeline/jobs/q36_mtr_external_score.sbatch
 pipeline/jobs/q36_mtr_live_preflight.sbatch
 pipeline/jobs/q36_mtr_materialize.sbatch
@@ -66,6 +67,7 @@ pipeline/score_q36_mtr.py
 pipeline/score_q36_mtr_draft_preview.py
 pipeline/score_q36_mtr_external.py
 pipeline/score_q36_mtr_external_consensus.py
+pipeline/score_q36_mtr_external_forest.py
 pipeline/seal_q36_mtr_terminal_evidence.py
 pipeline/select_q36_mtr_candidate_groups.py
 pipeline/select_q36_mtr_owner_trajectories.py
