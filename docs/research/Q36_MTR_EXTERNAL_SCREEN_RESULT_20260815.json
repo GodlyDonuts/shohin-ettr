@@ -1,0 +1,98 @@
+{
+  "schema": "shohin-q36-mtr-external-screen-result-summary-v1",
+  "status": "complete",
+  "date": "2026-08-15",
+  "host_model": "Qwen3.6-35B-A3B",
+  "partition": "source_disjoint_external_screen",
+  "rows": 256,
+  "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+  "assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+  "detailed_report": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/external_screen_da8556c3_r1/detailed_score.json",
+    "bytes": 84124,
+    "sha256": "d5b5a59448c15ce00f48cf3a44b524688503e9f7ad00c877761ebcd859673a45"
+  },
+  "arms": {
+    "unchanged": {
+      "correct": 111,
+      "accuracy": 0.43359375,
+      "domains": {
+        "math500": [31, 117],
+        "bbh_logic": [71, 128],
+        "mbpp": [9, 11]
+      }
+    },
+    "self_refinement": {
+      "correct": 121,
+      "accuracy": 0.47265625,
+      "gain_over_unchanged_count": 10,
+      "domains": {
+        "math500": [39, 117],
+        "bbh_logic": [76, 128],
+        "mbpp": [6, 11]
+      }
+    },
+    "draft_hidden": {
+      "correct": 122,
+      "accuracy": 0.4765625,
+      "gain_over_unchanged_count": 11,
+      "domains": {
+        "math500": [29, 117],
+        "bbh_logic": [83, 128],
+        "mbpp": [10, 11]
+      }
+    },
+    "interpolation": {
+      "correct": 137,
+      "accuracy": 0.53515625,
+      "gain_over_unchanged_count": 26,
+      "arm_only_correct": 31,
+      "unchanged_only_correct": 5,
+      "mcnemar_exact_two_sided_p": 1.2913485988974571e-05,
+      "domains": {
+        "math500": [43, 117],
+        "bbh_logic": [84, 128],
+        "mbpp": [10, 11]
+      }
+    },
+    "revision": {
+      "correct": 141,
+      "accuracy": 0.55078125,
+      "gain_over_unchanged_count": 30,
+      "gain_over_unchanged_percentage_points": 11.71875,
+      "arm_only_correct": 36,
+      "unchanged_only_correct": 6,
+      "mcnemar_exact_two_sided_p": 2.8288777684792876e-06,
+      "unchanged_correct_retained": 105,
+      "unchanged_correct_retention": 0.9459459459459459,
+      "domains": {
+        "math500": [45, 117],
+        "bbh_logic": [85, 128],
+        "mbpp": [11, 11]
+      }
+    }
+  },
+  "composers": {
+    "best_consensus": {
+      "name": "plurality",
+      "correct": 138,
+      "accuracy": 0.5390625,
+      "report_sha256": "d83b5fc0f1d70b8304ce6c00537f38870136a791554a46dc54001593ed03afee"
+    },
+    "nonlinear_selector": {
+      "name": "deterministic_random_feature_ridge",
+      "correct": 137,
+      "accuracy": 0.53515625,
+      "development_crossfit_correct": 664,
+      "development_interpolation_correct": 663,
+      "report_sha256": "09695abe3aa433aef0b6c789ca7e7ae73182e83362f9cab8d2f16ed95ee1e56c",
+      "selections_sha256": "c6684ea91bdf8e8ea72869a3afd67b7eda0a9aa0d7d7a82ab81399cf62ef9319"
+    }
+  },
+  "all_arm_oracle_correct": 158,
+  "oracle_gap_over_revision": 17,
+  "outcome_analysis_sha256": "4b89d82131d295ac35553353f2ffb477191c1cd0f41b0d951a98c58c9c8d6ea0",
+  "selected_architecture": "trained_revision",
+  "next_experiment": "tokenwise_temporal_owner_revision_gate",
+  "interpretation": "The trained model-owned-draft revision trajectory delivers a domain-broad, statistically decisive source-disjoint gain on the MoE host and beats both fixed output-space interpolation and answer-level composition. The remaining 17-example oracle gap motivates learned tokenwise routing between the exact owner and revision branches."
+}
