@@ -494,7 +494,7 @@ class MultiTrajectoryResidualGate(nn.Module):
         return native + mixed.to(native.dtype)
 
 
-_SUPPORTED_RESIDUAL_SURFACES = frozenset({"mlp", "mixer"})
+_SUPPORTED_RESIDUAL_SURFACES = frozenset({"block_sparse_moe", "mlp", "mixer"})
 
 
 def _state_name_pattern(module_attribute: str) -> re.Pattern[str]:

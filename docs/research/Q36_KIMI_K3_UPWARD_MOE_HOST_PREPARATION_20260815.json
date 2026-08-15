@@ -60,16 +60,24 @@
       "path": "train/kimi_k3_post_moe_revision.py",
       "sha256": "8885113fcf81e6fd251e1ffedd63dd9993cbb8031028df4e6cd1d04cc45188c8"
     },
+    "temporal_causal_gate": {
+      "path": "train/kimi_k3_temporal_gate.py",
+      "sha256": "1f007a9d1d505f82dc92ca2f1cd0631abe06c618ee46a5eab42acc6cf91ad58d"
+    },
+    "shared_temporal_runtime": {
+      "path": "train/temporal_residual_gate.py",
+      "sha256": "f54f5a04785fe8dd173a95aedea519a885905c6141e646747c97a4f4b66fe553"
+    },
     "distributed_plan": {
       "path": "pipeline/kimi_k3_upward_moe_plan.py",
       "sha256": "d82a89e8f70c26561377dbb8f81d640733bdd25c77c63a166eebfd2450112f2c"
     },
-    "runtime_allowlist_sha256": "1328ab535eb3743bfe3e8ccc99dcd278f698fd135c1d50036cffdf400dea896f",
-    "package_builder_sha256": "29b25e1432363f736cb23d2a38cd28c290ef8efb9869ec08ef1902b823398d0a"
+    "runtime_allowlist_sha256": "383b179a845347c402696c75ec234163d6d4cc6cef66f18c762cd2bcd2ebca63",
+    "package_builder_sha256": "d585ae8cff35e479cc68fadb940ee45245b5e5afa21dd0ca8bc871a175f79e27"
   },
   "validation": {
-    "focused_tests": "9_passed",
-    "upward_MoE_regression": "115_passed",
+    "focused_tests": "13_passed",
+    "upward_MoE_regression": "152_passed",
     "black": "pass",
     "ruff": "pass",
     "pycompile": "pass",

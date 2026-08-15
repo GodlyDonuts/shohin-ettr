@@ -143,6 +143,7 @@ UPWARD_REQUIRED = (REQUIRED - {"pipeline/dispatch_q36_mtr.py"}) | {
     "pipeline/jobs/select_upward_moe_temporal_promotion.sbatch",
     "pipeline/upward_moe_runtime_allowlist.txt",
     "train/kimi_k3_post_moe_revision.py",
+    "train/kimi_k3_temporal_gate.py",
     "train/q36_upward_moe_kimi_k3_host.py",
 }
 
