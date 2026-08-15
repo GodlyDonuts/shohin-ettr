@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-nemotron-ultra-direct-training-preparation-v1",
-  "status": "code_complete_tested_not_scheduled_highgpu_access_required",
+  "status": "code_complete_tested_pushed_and_staged_not_scheduled_highgpu_access_required",
   "date": "2026-08-15",
   "purpose": "Measure Shohin at 550B-total and 55B-active parameters with the same host-trained fixed-draft revision recipe used at the lower MoE points, while retaining the existing zero-label Super-to-Ultra lift as an independent portability control.",
   "host": {
@@ -46,6 +46,7 @@
     "interpretation": "The direct arm tests upward architectural scaling. The lifted arm separately tests whether the learned residual geometry transfers without Ultra labels or optimizer updates. Neither arm substitutes for the other."
   },
   "implementation": {
+    "source_commit": "0ced000541333e861b7c64f68117035d0bd3d11a",
     "training_worker": "train/hf_nemotron_ultra_train_revision.py",
     "training_worker_sha256": "855cdd7cfcb7f74fe0cd4276f9be2712cad92fe67bd8e61c3b72090b57911424",
     "training_wrapper": "train/jobs/nemotron_ultra_train_revision.sbatch",
@@ -56,6 +57,18 @@
     "evaluation_wrapper_sha256": "11603d9ef2b286bc6456b52d75c26b0cd4b1924fee696ac5eadbe357a49feb8e",
     "runtime_allowlist_sha256": "381f016ea60439ff6bc8a6294c9f3236734e1f42790f5f723f0ca0f50d6e7633",
     "runtime_packager_sha256": "9d7d3f9009cc4de87ad0db9bb4f82f3512a659dd6932bc5337b40fb2f7e64e4f"
+  },
+  "immutable_runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_0ced0005_r1",
+    "source_commit": "0ced000541333e861b7c64f68117035d0bd3d11a",
+    "sha256sums_sha256": "fbda7016954acb5e6123d10e9e7408dca793e330ab3a5286b4d25701fe8eec02",
+    "runtime_json_sha256": "ab23d6d577a2267400cb979dcbef4d9214d68eeadfe51606f5b38e3e24ae8aac",
+    "allowlisted_files": 165,
+    "regular_files_including_runtime_json_and_manifest": 167,
+    "symlinks": 0,
+    "writable_files": 0,
+    "writable_directories": 0,
+    "full_manifest_verification": "PASS"
   },
   "verification": {
     "direct_training_and_evaluation_focused_tests_passed": 12,
