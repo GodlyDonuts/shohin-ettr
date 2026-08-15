@@ -49,6 +49,10 @@
     "source_only_owner_trainer_sha256": "4b3d239834860cd620f1a893cf49651d881c6d12f27543e42501dd69895195e3",
     "source_only_owner_job": "train/jobs/upward_moe_train_owner.sbatch",
     "source_only_owner_job_sha256": "791bd32ff0ad86299215486055b716fb31a7b8ec3c9c13b827ce99027a0ca9ef",
+    "aligned_revision_trainer": "train/hf_upward_moe_train_aligned.py",
+    "aligned_revision_trainer_sha256": "d0c11609b9886bc549417512c53e4f52b60cb3523a69ee0a4a4bb5cf8368d8eb",
+    "aligned_revision_job": "train/jobs/upward_moe_train_aligned.sbatch",
+    "aligned_revision_job_sha256": "aa952618082fc34bfbbd6a15c7c5e1d76c9ae41c39b59d7bb2f128be5027f2f1",
     "test_module": "train/test_temporal_residual_gate.py",
     "test_module_sha256": "c026a79aa8e57ce20dae41098ca61efcf2307517f060d2eb39900d944f263346",
     "executable_host_model_tests": "train/test_upward_moe_temporal_gate.py",
@@ -59,6 +63,10 @@
     "source_only_owner_tests_sha256": "53f617c291875c01bf94a89373c3004fc5c7398bef9f64b0e5309ec75369cf91",
     "source_only_owner_job_tests": "train/jobs/test_upward_moe_train_owner_job.py",
     "source_only_owner_job_tests_sha256": "3e3d0a84eb5c2a1e534570db1879fd6eabb8987cfcfa7ed6bbdc5c686f0c6ac4",
+    "aligned_revision_tests": "train/test_hf_upward_moe_train_aligned.py",
+    "aligned_revision_tests_sha256": "966756021cc40ab0dca3589e166abced30f83ca25f0f624635a5900e656179fd",
+    "aligned_revision_job_tests": "train/jobs/test_upward_moe_train_aligned_job.py",
+    "aligned_revision_job_tests_sha256": "a58aeeb80fa66f410f993425e434ab7e4b58b455ac1a9fc0918a8627e9c1d3d7",
     "supported_exact_surfaces": [
       "mlp",
       "mixer"
@@ -70,7 +78,7 @@
   },
   "verification": {
     "focused_surface_tests": "29_passed",
-    "full_temporal_path_tests": "97_passed",
+    "full_temporal_path_tests": "103_passed",
     "owner_to_revision_warm_start_exact": true,
     "zero_start_aligned_revision_rejected": true,
     "cross_host_checkpoint_rejected": true,
@@ -84,6 +92,20 @@
       "learning_rate": 0.0002,
       "seed": 2026080711,
       "data_seed": 20260802,
+      "scheduled": false
+    },
+    "aligned_revision_fit": {
+      "data_kind": "host_owned_natural_trajectory_revision",
+      "presentations": 9655,
+      "updates": 256,
+      "gradient_accumulation": 8,
+      "consumed_presentations": 2048,
+      "max_sequence_length": 4096,
+      "learning_rate": 0.00002,
+      "seed": 2026080815,
+      "data_seed": 2026080814,
+      "owner_warm_start_required": true,
+      "internal_draft_visible": true,
       "scheduled": false
     },
     "black": "PASS",
