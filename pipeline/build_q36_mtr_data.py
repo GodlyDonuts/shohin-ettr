@@ -37,6 +37,26 @@ class Q36MTRDataError(RuntimeError):
     """The Q36-MTR natural-trajectory data boundary differs."""
 
 
+def _draft_contract(host: str | None) -> dict[str, Any]:
+    if host is None:
+        return {
+            "host": None,
+            "draft_schema": DRAFT_SCHEMA,
+            "report_schema": DRAFT_REPORT_SCHEMA,
+            "model_revision": MODEL_REVISION,
+        }
+    from hf_upward_moe_generate_drafts import SCHEMA as UPWARD_DRAFT_SCHEMA, host_spec
+    from merge_upward_moe_drafts import SCHEMA as UPWARD_REPORT_SCHEMA
+
+    spec = host_spec(host)
+    return {
+        "host": spec.host,
+        "draft_schema": UPWARD_DRAFT_SCHEMA,
+        "report_schema": UPWARD_REPORT_SCHEMA,
+        "model_revision": spec.model_revision,
+    }
+
+
 def _atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
     digest = hashlib.sha256()
     with path.open("xb") as handle:
@@ -61,15 +81,17 @@ def _load_drafts(
     drafts_path: Path,
     draft_report_path: Path,
     sources: dict[str, dict[str, Any]],
+    contract: dict[str, Any],
 ) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
     report = json.loads(draft_report_path.read_text(encoding="utf-8"))
     if (
-        report.get("schema") != DRAFT_REPORT_SCHEMA
+        report.get("schema") != contract["report_schema"]
         or report.get("status") != "complete"
         or report.get("output_sha256") != sha256_file(drafts_path)
         or Path(str(report.get("output", ""))).resolve() != drafts_path.resolve()
         or report.get("rows") != DRAFT_IDENTITIES
-        or report.get("model_revision") != MODEL_REVISION
+        or report.get("model_revision") != contract["model_revision"]
+        or (contract["host"] is not None and report.get("host") != contract["host"])
         or report.get("exact_identity_coverage") is not True
         or report.get("duplicate_identities") != 0
         or report.get("sealed_access") != {"holdout": 0, "product": 0, "public": 0}
@@ -84,14 +106,15 @@ def _load_drafts(
         identity = str(row.get("identity_sha256", ""))
         source = sources.get(identity)
         if (
-            row.get("schema") != DRAFT_SCHEMA
+            row.get("schema") != contract["draft_schema"]
+            or (contract["host"] is not None and row.get("host") != contract["host"])
             or source is None
             or identity in drafts
             or row.get("split") != source["split"]
             or row.get("task") != source["task"]
             or row.get("prompt_sha256")
             != hashlib.sha256(source["source_prompt"].encode()).hexdigest()
-            or row.get("model_revision") != MODEL_REVISION
+            or row.get("model_revision") != contract["model_revision"]
             or not isinstance(row.get("completion"), str)
             or not row["completion"].strip()
         ):
@@ -137,7 +160,10 @@ def materialize(args: argparse.Namespace) -> dict[str, Any]:
     if len(train) != TRAIN_IDENTITIES or len(development) != DEVELOPMENT_IDENTITIES:
         raise Q36MTRDataError("Q36-MTR source counts differ")
     sources = {**train, **development}
-    drafts, draft_report = _load_drafts(args.drafts, args.draft_report, sources)
+    contract = _draft_contract(getattr(args, "upward_host", None))
+    drafts, draft_report = _load_drafts(
+        args.drafts, args.draft_report, sources, contract
+    )
     assessor_receipt = json.loads(args.assessor_receipt.read_text(encoding="utf-8"))
     if (
         assessor_receipt.get("schema") != CONFIRMATION_ASSESSOR_RECEIPT_SCHEMA
@@ -272,7 +298,8 @@ def materialize(args: argparse.Namespace) -> dict[str, Any]:
         report = {
             "schema": REPORT_SCHEMA,
             "status": "complete",
-            "model_revision": MODEL_REVISION,
+            "model_revision": contract["model_revision"],
+            "draft_host": contract["host"] or "qwen3.6-35b-a3b",
             "freeze_report_sha256": sha256_file(args.source_root / "report.json"),
             "draft_report_sha256": sha256_file(args.draft_report),
             "drafts_sha256": sha256_file(args.drafts),
@@ -327,6 +354,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--drafts", type=Path, required=True)
     parser.add_argument("--draft-report", type=Path, required=True)
     parser.add_argument("--assessor-receipt", type=Path, required=True)
+    parser.add_argument("--upward-host", choices=("nemotron-super", "mixtral-8x22b"))
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 

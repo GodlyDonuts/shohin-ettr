@@ -33,6 +33,8 @@ pipeline/jobs/analyze_upward_moe_scaling.sbatch
 pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/fetch_mixtral_8x22b.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
+pipeline/jobs/materialize_upward_moe_data.sbatch
+pipeline/jobs/merge_upward_moe_drafts.sbatch
 pipeline/jobs/mixtral_8x22b_score.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
 pipeline/jobs/nemotron_ultra_score.sbatch
@@ -74,6 +76,7 @@ pipeline/jobs/render_upward_moe_scaling.sbatch
 pipeline/lift_nemotron_super_adapter_to_ultra.py
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
+pipeline/merge_upward_moe_drafts.py
 pipeline/mirror_q36_mtr_evidence.py
 pipeline/normalize_q36_mtr_score.py
 pipeline/package_q36_mtr_runtime.py
@@ -129,6 +132,7 @@ train/hf_q36_mtr_train_commit_256.py
 train/hf_q36_mtr_train_role.py
 train/hf_q36_mtr_train_setwise_commit.py
 train/hf_q36_mtr_train_temporal_gate.py
+train/hf_upward_moe_generate_drafts.py
 train/hf_upward_moe_train_aligned.py
 train/hf_upward_moe_train_owner.py
 train/integrated_reasoning_workspace.py
@@ -156,6 +160,7 @@ train/jobs/q36_mtr_train_commit_256.sbatch
 train/jobs/q36_mtr_train_role.sbatch
 train/jobs/q36_mtr_train_setwise_commit.sbatch
 train/jobs/q36_mtr_train_temporal_gate.sbatch
+train/jobs/upward_moe_generate_drafts.sbatch
 train/jobs/upward_moe_train_aligned.sbatch
 train/jobs/upward_moe_train_owner.sbatch
 train/mixtral_post_mlp_revision.py

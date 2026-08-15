@@ -53,6 +53,18 @@
     "aligned_revision_trainer_sha256": "d0c11609b9886bc549417512c53e4f52b60cb3523a69ee0a4a4bb5cf8368d8eb",
     "aligned_revision_job": "train/jobs/upward_moe_train_aligned.sbatch",
     "aligned_revision_job_sha256": "aa952618082fc34bfbbd6a15c7c5e1d76c9ae41c39b59d7bb2f128be5027f2f1",
+    "host_owned_draft_generator": "train/hf_upward_moe_generate_drafts.py",
+    "host_owned_draft_generator_sha256": "1b16a35cd5e504b8dc55049e50a974277f38c540cc4170fbcf947e681a1a49a2",
+    "host_owned_draft_job": "train/jobs/upward_moe_generate_drafts.sbatch",
+    "host_owned_draft_job_sha256": "648c2ce2cb67053cd2acdb74c6a246e2660b6fbed58f19139a32f468eac83b4c",
+    "host_owned_draft_merger": "pipeline/merge_upward_moe_drafts.py",
+    "host_owned_draft_merger_sha256": "48e4c74728fe23cc86b0e3bde2776e2a143ef375971c9e1df83c567e1289a0cd",
+    "host_owned_draft_merge_job": "pipeline/jobs/merge_upward_moe_drafts.sbatch",
+    "host_owned_draft_merge_job_sha256": "9e623b8f279578c96745289101dbd136c2192ca936097e987f1cd0b94ab99523",
+    "host_owned_data_materializer": "pipeline/build_q36_mtr_data.py",
+    "host_owned_data_materializer_sha256": "a6783ee71a599c31a5c5e5186254e0795bd4afbf02e562bf03a186b827fcc3d2",
+    "host_owned_data_materializer_job": "pipeline/jobs/materialize_upward_moe_data.sbatch",
+    "host_owned_data_materializer_job_sha256": "9df8873ee73d62dd67d58f2fc5ad133ad66d4d2edf3b5181886c283370b0e19e",
     "test_module": "train/test_temporal_residual_gate.py",
     "test_module_sha256": "c026a79aa8e57ce20dae41098ca61efcf2307517f060d2eb39900d944f263346",
     "executable_host_model_tests": "train/test_upward_moe_temporal_gate.py",
@@ -67,6 +79,10 @@
     "aligned_revision_tests_sha256": "966756021cc40ab0dca3589e166abced30f83ca25f0f624635a5900e656179fd",
     "aligned_revision_job_tests": "train/jobs/test_upward_moe_train_aligned_job.py",
     "aligned_revision_job_tests_sha256": "a58aeeb80fa66f410f993425e434ab7e4b58b455ac1a9fc0918a8627e9c1d3d7",
+    "host_owned_draft_flow_tests": "pipeline/test_upward_moe_draft_flow.py",
+    "host_owned_draft_flow_tests_sha256": "caa9a3304c430401c2f499e3331f2ea93b8685d580f87478a249942b0da2f29e",
+    "host_owned_draft_job_tests": "train/jobs/test_upward_moe_draft_jobs.py",
+    "host_owned_draft_job_tests_sha256": "fb88de328125eb9f3a6b9e71210de5132218c15e6ef7f654620ff3ce7ebab5a9",
     "supported_exact_surfaces": [
       "mlp",
       "mixer"
@@ -78,7 +94,7 @@
   },
   "verification": {
     "focused_surface_tests": "29_passed",
-    "full_temporal_path_tests": "103_passed",
+    "full_temporal_path_tests": "109_passed",
     "owner_to_revision_warm_start_exact": true,
     "zero_start_aligned_revision_rejected": true,
     "cross_host_checkpoint_rejected": true,
@@ -106,6 +122,24 @@
       "data_seed": 2026080814,
       "owner_warm_start_required": true,
       "internal_draft_visible": true,
+      "scheduled": false
+    },
+    "host_owned_draft_path": {
+      "hosts": [
+        "Nemotron-Super-120B-A12B",
+        "Mixtral-8x22B-141B-A39B"
+      ],
+      "source_identities": 7113,
+      "independent_shards_per_host": 16,
+      "h100s_per_shard": 2,
+      "generation_mode": "greedy",
+      "max_new_tokens": 768,
+      "seed": 2026080818,
+      "capability_scored": false,
+      "owner_checkpoint_restore_exact": true,
+      "cross_host_drafts_rejected": true,
+      "source_to_draft_identity_coverage_exact": true,
+      "draft_visible_revision_presentations": 9655,
       "scheduled": false
     },
     "black": "PASS",
