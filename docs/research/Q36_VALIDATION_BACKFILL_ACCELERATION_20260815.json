@@ -1,0 +1,92 @@
+{
+  "schema": "shohin-q36-validation-backfill-acceleration-v1",
+  "status": "applied",
+  "timestamp_utc": "2026-08-15T17:15:32Z",
+  "purpose": "Increase admission opportunities for already-authorized Qwen3.6-35B-A3B source-disjoint validation shards without changing scientific bytes or identity partitions.",
+  "invariants": {
+    "model_changed": false,
+    "checkpoint_changed": false,
+    "source_changed": false,
+    "identity_partition_changed": false,
+    "seed_changed": false,
+    "generation_settings_changed": false,
+    "output_path_changed": false,
+    "dependency_changed": false,
+    "requeue_enabled": false,
+    "job_duplicated": false,
+    "healthy_allocation_canceled": false
+  },
+  "admission_rule": {
+    "comparison": "Each 1,023-row validation array has 16 ordered shards of at most 64 identities; its matching 256-row screen used four 64-identity shards.",
+    "minimum_margin_over_measured_worst_shard_percent": 25.0,
+    "mutation": "Pending Slurm TimeLimit only"
+  },
+  "jobs": [
+    {
+      "array_job_id": 760179,
+      "arm": "multi_trajectory",
+      "screen_elapsed_seconds": [423, 327, 326, 416],
+      "screen_worst_seconds": 423,
+      "old_time_limit_seconds": 3600,
+      "new_time_limit_seconds": 600,
+      "margin_over_worst_percent": 41.843971631205676
+    },
+    {
+      "array_job_id": 760193,
+      "arm": "routing_only",
+      "screen_elapsed_seconds": [393, 329, 352, 362],
+      "screen_worst_seconds": 393,
+      "old_time_limit_seconds": 3600,
+      "new_time_limit_seconds": 600,
+      "margin_over_worst_percent": 52.67175572519084
+    },
+    {
+      "array_job_id": 760200,
+      "arm": "tri_trajectory",
+      "screen_elapsed_seconds": [1208, 1244, 1340, 1457],
+      "screen_worst_seconds": 1457,
+      "old_time_limit_seconds": 3600,
+      "new_time_limit_seconds": 1860,
+      "margin_over_worst_percent": 27.659574468085108
+    },
+    {
+      "array_job_id": 760214,
+      "arm": "tri_hierarchical",
+      "screen_elapsed_seconds": [1026, 779, 976, 1245],
+      "screen_worst_seconds": 1245,
+      "old_time_limit_seconds": 3600,
+      "new_time_limit_seconds": 1560,
+      "margin_over_worst_percent": 25.301204819277107
+    },
+    {
+      "array_job_id": 760286,
+      "arm": "causal_only",
+      "screen_elapsed_seconds": [318, 391, 322, 331],
+      "screen_worst_seconds": 391,
+      "old_time_limit_seconds": 3600,
+      "new_time_limit_seconds": 600,
+      "margin_over_worst_percent": 53.452685421994886
+    }
+  ],
+  "left_unchanged": [
+    {
+      "array_job_id": 760273,
+      "arm": "tri_geometry",
+      "time_limit_seconds": 1800,
+      "reason": "No successful same-runtime screen allocation yet establishes a shorter bound."
+    },
+    {
+      "job_id": 760283,
+      "arm": "supervised_fit_repair",
+      "time_limit_seconds": 5820,
+      "reason": "Training allocation; evaluation-shard evidence is not comparable."
+    }
+  ],
+  "post_update_verification": {
+    "all_five_arrays_pending": true,
+    "all_requeue_zero": true,
+    "all_restarts_zero": true,
+    "all_dependencies_null": true,
+    "scheduler_reason": "Priority"
+  }
+}
