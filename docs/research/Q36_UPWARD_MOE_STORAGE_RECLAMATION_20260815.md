@@ -92,3 +92,23 @@ checked disjoint from the live Qwen3.6, Nemotron Super, Q36 sources,
 checkpoints, candidates, scores, runtimes, and repository/configuration roots.
 Each target may then be renamed to a unique same-parent quarantine and only
 that literal quarantine permanently removed with one-filesystem protection.
+
+### Batch 2 execution receipt
+
+All 25 targets revalidated against the exact manifest, resolved under the
+literal shard root, remained owned by `sa305415`, and were absent from every
+active Q36/Nemotron Super batch script. Each target was renamed to its unique
+same-parent `.q36-upward-delete-b2-*-20260815` quarantine; only those literal
+quarantines were made owner-writable and removed with one-filesystem
+protection. Every original and quarantine is absent. The removal is permanent
+and not locally recoverable.
+
+- Pre-delete quota: 916,490,824 KiB and 701,644 inodes.
+- Stable post-delete quota at 12:18:00Z, 12:18:10Z, and 12:18:20Z:
+  840,234,260 KiB and 700,976 inodes.
+- Exact recovered quota: 76,256,564 KiB (78,086,721,536 bytes) and 668
+  inodes, exactly matching the manifest.
+- Current hard-limit headroom: 218,827,500 KiB and 309,024 inodes.
+- The live Qwen3.6 model, Nemotron Super model and overlay, current Q36
+  runtime, and current Q36 evidence root all revalidated present after the
+  transaction.
