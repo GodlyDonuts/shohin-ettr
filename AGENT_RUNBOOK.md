@@ -24,6 +24,14 @@
 > selector. Nemotron Ultra-550B-A55B remains the next scale target after
 > eight-H100 access and exact weight restoration.
 
+> **DENSE SCALING IS CLOSED — 2026-08-15:** do not allocate new compute to
+> dense-model scaling or smaller-MoE replicas. The upward ladder is fixed as
+> Qwen3.6-35B-A3B causal anchor -> Nemotron Super-120B-A12B and
+> Mixtral-141B-A39B cross-family screens -> exact host-owned temporal transfer
+> on the stronger larger host -> Nemotron Ultra-550B/55B-active. A complete
+> downward scale curve is not required; prioritize measurable capability and
+> conservative retention at larger total and active parameter counts.
+
 > **Q36-MTR INTERPOLATION SWEEP LIVE — 2026-08-14:** The current champion is
 > hierarchical synthesis at `664/1289`, versus matched production baseline
 > `539/1289`. Direct use of the new 256-update trained aligned reviser lost

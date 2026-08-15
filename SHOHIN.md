@@ -27,6 +27,16 @@ Once those host baselines close, the temporal causal gate is the leading
 architecture for cross-family upward transfer. Nemotron Ultra-550B-A55B is
 prepared after eight-H100 access and exact weight restoration.
 
+**Dense scaling is complete and no longer consumes experimental capacity.**
+The scale program moves upward through sparse hosts rather than spending on
+additional dense or smaller-MoE replicas: Qwen3.6-35B-A3B is the causal
+anchor, Nemotron Super-120B-A12B and Mixtral-141B-A39B are the first
+cross-family scale tests, the stronger successful host receives the exact
+host-owned owner/draft/revision/temporal-gate transfer, and Nemotron
+Ultra-550B/55B-active is the next large-scale target. Active-parameter count
+need not form a downward-complete curve; measurable improvement at materially
+larger total and active scale is the target.
+
 **Q36-MTR has demonstrated a material MoE improvement and is actively scaling
 it.** Hierarchical synthesis scores `664/1289` (`51.5128%`) versus the matched
 production baseline's `539/1289` (`41.8154%`), a gain of `125` answers /
