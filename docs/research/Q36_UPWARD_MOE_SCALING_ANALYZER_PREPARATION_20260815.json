@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-upward-moe-scaling-analyzer-preparation-v1",
-  "status": "implemented_tested_runtime_packaged_not_a_scientific_result",
+  "status": "implemented_tested_pushed_and_staged_in_immutable_newton_runtime_not_a_scientific_result",
   "date": "2026-08-15",
   "purpose": "Turn each completed source-disjoint Qwen35, Nemotron Super, Mixtral 8x22B, and Nemotron Ultra matched screen into one comparable upward MoE scaling point without inferring a scaling law from an underdetermined sample.",
   "measured_anchor_replay": {
@@ -26,6 +26,18 @@
       "shohin-mixtral-8x22b-fixed-draft-screen-score-v1",
       "shohin-nemotron-ultra-fixed-draft-screen-score-v1"
     ]
+  },
+  "immutable_runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_2d1aa188_r1",
+    "source_commit": "2d1aa188b0e361754b714795b69a2e7bc890f99a",
+    "sha256sums_sha256": "7db50e00925a994e0635bbcc1e1cc0d9e0f30183b1b29b27d4347027266a2da6",
+    "runtime_json_sha256": "91de1865533ff657696b024a77dc3277bf2a448b398c436991b60953089e297a",
+    "allowlisted_files": 163,
+    "regular_files_including_runtime_json_and_manifest": 165,
+    "symlinks": 0,
+    "writable_files": 0,
+    "writable_directories": 0,
+    "full_manifest_verification": "PASS"
   },
   "comparison_contract": {
     "matched_rows": 256,
