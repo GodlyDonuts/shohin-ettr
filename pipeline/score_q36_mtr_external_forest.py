@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fit the development-only five-arm forest and score an external partition."""
+"""Fit a development-only five-arm nonlinear selector and score a partition."""
 
 from __future__ import annotations
 
@@ -41,9 +41,8 @@ DEVELOPMENT_PATHS = {
     "interpolation": 16,
 }
 OUTER_SHARDS = 16
-N_ESTIMATORS = 400
-MIN_SAMPLES_LEAF = 20
-MAX_FEATURES = 0.7
+RANDOM_FEATURES = 128
+RIDGE_PENALTY = 1.0e-2
 RANDOM_STATE = 2026081436
 FEATURE_TASKS = ("bbh_logic", "math500", "mbpp")
 RETENTION_THRESHOLDS = {
@@ -242,18 +241,56 @@ def feature_vector(
     return values
 
 
-def _fit(matrix: Any, labels: Any, random_state: int) -> Any:
-    from sklearn.ensemble import ExtraTreesRegressor
+class _RandomFeatureRidge:
+    """Small deterministic nonlinear readout requiring only NumPy."""
 
-    model = ExtraTreesRegressor(
-        n_estimators=N_ESTIMATORS,
-        min_samples_leaf=MIN_SAMPLES_LEAF,
-        max_features=MAX_FEATURES,
-        n_jobs=-1,
-        random_state=random_state,
-    )
-    model.fit(matrix, labels)
-    return model
+    def __init__(self, matrix: Any, labels: Any, random_state: int) -> None:
+        import numpy as np
+
+        if matrix.ndim != 2 or labels.shape != (matrix.shape[0],):
+            raise Q36MTRExternalForestError("external selector fit geometry differs")
+        self.mean = matrix.mean(axis=0)
+        scale = matrix.std(axis=0)
+        self.scale = np.where(scale > 1.0e-6, scale, 1.0)
+        normalized = (matrix - self.mean) / self.scale
+        generator = np.random.default_rng(random_state)
+        self.projection = generator.normal(
+            0.0,
+            1.0 / math.sqrt(matrix.shape[1]),
+            size=(matrix.shape[1], RANDOM_FEATURES),
+        )
+        self.bias = generator.uniform(-math.pi, math.pi, size=RANDOM_FEATURES)
+        hidden = np.tanh(normalized @ self.projection + self.bias)
+        design = np.concatenate(
+            (np.ones((matrix.shape[0], 1)), normalized, hidden), axis=1
+        )
+        gram = design.T @ design
+        penalty = np.eye(gram.shape[0]) * RIDGE_PENALTY
+        penalty[0, 0] = 0.0
+        try:
+            self.coefficients = np.linalg.solve(gram + penalty, design.T @ labels)
+        except np.linalg.LinAlgError as error:
+            raise Q36MTRExternalForestError(
+                "external selector fit is singular"
+            ) from error
+
+    def predict(self, matrix: Any) -> Any:
+        import numpy as np
+
+        if matrix.ndim != 2 or matrix.shape[1] != self.mean.shape[0]:
+            raise Q36MTRExternalForestError(
+                "external selector prediction geometry differs"
+            )
+        normalized = (matrix - self.mean) / self.scale
+        hidden = np.tanh(normalized @ self.projection + self.bias)
+        design = np.concatenate(
+            (np.ones((matrix.shape[0], 1)), normalized, hidden), axis=1
+        )
+        return design @ self.coefficients
+
+
+def _fit(matrix: Any, labels: Any, random_state: int) -> Any:
+    return _RandomFeatureRidge(matrix, labels, random_state)
 
 
 def _choose(
@@ -426,10 +463,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             - interpolation_correct,
         },
         "model": {
-            "type": "ExtraTreesRegressor",
-            "estimators": N_ESTIMATORS,
-            "minimum_samples_leaf": MIN_SAMPLES_LEAF,
-            "maximum_features": MAX_FEATURES,
+            "type": "deterministic_random_feature_ridge",
+            "random_features": RANDOM_FEATURES,
+            "ridge_penalty": RIDGE_PENALTY,
             "random_state": RANDOM_STATE,
             "retention_thresholds": RETENTION_THRESHOLDS,
             "development_labels_only": True,

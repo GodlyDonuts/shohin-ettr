@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 
+import numpy as np
+
 import score_q36_mtr_external_forest as module
 
 
@@ -46,6 +48,17 @@ def test_retention_threshold_keeps_interpolation_without_clear_advantage():
     assert module._choose(identity, predictions, candidates) == "interpolation"
     predictions[(identity, "revision")] = 0.54
     assert module._choose(identity, predictions, candidates) == "revision"
+
+
+def test_random_feature_readout_is_deterministic_and_nonlinear():
+    matrix = np.asarray([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]] * 16)
+    labels = np.asarray([0.0, 1.0, 1.0, 0.0] * 16)
+    first = module._fit(matrix, labels, 17).predict(matrix)
+    second = module._fit(matrix, labels, 17).predict(matrix)
+    assert np.array_equal(first, second)
+    assert all(
+        (prediction > 0.5) == bool(label) for prediction, label in zip(first, labels)
+    )
 
 
 def test_development_interpolation_accepts_exact_legacy_draft_schema(
