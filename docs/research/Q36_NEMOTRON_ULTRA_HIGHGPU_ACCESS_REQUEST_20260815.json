@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-nemotron-ultra-highgpu-access-request-v1",
-  "status": "sealed_snapshot_and_exact_mechanics_ready_for_authenticated_form_entry_not_submitted",
+  "status": "official_research_computing_email_sent_ticket_creation_pending",
   "request": {
     "cluster": "Newton",
     "slurm_user": "sa305415",
@@ -104,5 +104,17 @@
     "current_page": "Northeastern_Microsoft_sign_in",
     "captcha_or_final_human_verification": "must_be_completed_by_user",
     "submitted": false
+  },
+  "official_support_request": {
+    "channel": "email_that_automatically_creates_a_servicenow_ticket",
+    "recipient": "rchelp@northeastern.edu",
+    "official_source": "https://rc.northeastern.edu/getting-help/",
+    "sent_at": "2026-08-15T16:24:00-04:00",
+    "subject": "Request: temporary 8x H100/H200 access for bounded MoE scaling experiment",
+    "requested_access": "one_eight_gpu_H100_or_H200_node_for_approximately_60_H100_hours",
+    "requested_scheduling_policy": "opportunistic_or_preemptable_if_supported",
+    "captcha_bypassed": false,
+    "scientific_jobs_submitted_by_this_request": 0,
+    "response_pending": true
   }
 }
