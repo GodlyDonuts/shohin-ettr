@@ -48,6 +48,7 @@ pipeline/jobs/q36_mtr_pairwise_guard.sbatch
 pipeline/jobs/q36_mtr_prepare_phase.sh
 pipeline/jobs/q36_mtr_score.sbatch
 pipeline/jobs/q36_mtr_score_draft_preview.sbatch
+pipeline/jobs/q36_mtr_score_temporal_gate.sbatch
 pipeline/jobs/q36_mtr_select_candidate_groups.sbatch
 pipeline/jobs/q36_mtr_select_owner_trajectories.sbatch
 pipeline/jobs/q36_mtr_sparse_router.sbatch
@@ -69,6 +70,7 @@ pipeline/score_q36_mtr_draft_preview.py
 pipeline/score_q36_mtr_external.py
 pipeline/score_q36_mtr_external_consensus.py
 pipeline/score_q36_mtr_external_forest.py
+pipeline/score_q36_mtr_temporal_gate.py
 pipeline/seal_q36_mtr_terminal_evidence.py
 pipeline/select_q36_mtr_candidate_groups.py
 pipeline/select_q36_mtr_owner_trajectories.py
