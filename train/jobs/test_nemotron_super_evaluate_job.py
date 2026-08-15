@@ -14,6 +14,8 @@ def test_super_evaluation_is_two_h100_sharded_and_nonrequeueing() -> None:
     assert "hf_nemotron_super_evaluate.py" in source
     assert "--mechanics-report" in source
     assert "--shard-index" in source
+    assert "q36_init_local_tmp" in source
+    assert "trap q36_cleanup_local_tmp EXIT" in source
 
 
 def test_super_evaluation_keeps_controls_and_revision_separate() -> None:

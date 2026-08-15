@@ -31,6 +31,9 @@ done
 for path in "$MODEL_MANIFEST" "$MECHANICS_REPORT" "$SOURCE"; do
   [[ -f "$path" && ! -L "$path" ]]
 done
+source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+q36_init_local_tmp
+trap q36_cleanup_local_tmp EXIT
 checkpoint_args=()
 if [[ "$ARM" == revision ]]; then
   [[ -n "${REVISION_CHECKPOINT:-}" ]]

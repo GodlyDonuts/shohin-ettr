@@ -19,6 +19,8 @@ def test_mechanics_job_is_two_h100_score_free_and_nonrequeueing() -> None:
     assert "ASSESSOR" not in source
     assert "TRANSFORMERS_OFFLINE=1" in source
     assert "HF_DATASETS_OFFLINE=1" in source
+    assert "q36_init_local_tmp" in source
+    assert "trap q36_cleanup_local_tmp EXIT" in source
 
 
 def test_mechanics_job_freezes_both_write_once_outputs() -> None:

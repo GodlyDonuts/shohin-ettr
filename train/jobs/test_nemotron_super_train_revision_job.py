@@ -16,6 +16,8 @@ def test_super_revision_fit_is_two_h100_nonrequeueing_and_dependency_ready() -> 
     assert "--mechanics-report" in source
     assert "--data" in source
     assert "TRANSFORMERS_OFFLINE=1" in source
+    assert "q36_init_local_tmp" in source
+    assert "trap q36_cleanup_local_tmp EXIT" in source
 
 
 def test_super_revision_fit_freezes_trainable_only_outputs() -> None:

@@ -44,3 +44,14 @@ def test_paired_report_is_exact_and_directional() -> None:
     assert report["right_only_correct"] == 1
     assert report["net_correct"] == 1
     assert report["mcnemar_exact_two_sided_p"] == 1.0
+
+
+def test_score_job_initializes_cluster_local_tmp() -> None:
+    source = (
+        Path(__file__)
+        .with_name("jobs")
+        .joinpath("nemotron_super_score.sbatch")
+        .read_text()
+    )
+    assert "q36_init_local_tmp" in source
+    assert "trap q36_cleanup_local_tmp EXIT" in source

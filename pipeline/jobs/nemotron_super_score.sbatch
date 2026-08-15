@@ -22,6 +22,9 @@ done
 [[ -f "$ASSESSORS" && ! -L "$ASSESSORS" ]]
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]]
 [[ ! -e "$SANDBOX_RECEIPT" && ! -L "$SANDBOX_RECEIPT" ]]
+source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+q36_init_local_tmp
+trap q36_cleanup_local_tmp EXIT
 args=()
 for arm in unchanged self_refinement revision; do
   option=${arm//_/-}

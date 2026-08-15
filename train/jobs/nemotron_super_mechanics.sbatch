@@ -22,7 +22,6 @@ set -euo pipefail
 : "${OVERLAY_MANIFEST:?OVERLAY_MANIFEST is required}"
 : "${CAUSAL_CONV_ROOT:?CAUSAL_CONV_ROOT is required}"
 : "${OUTPUT:?OUTPUT is required}"
-: "${SLURM_TMPDIR:?SLURM_TMPDIR is required}"
 
 [[ -x "$PYTHON" ]]
 [[ -d "$RUNTIME" && ! -L "$RUNTIME" ]]
@@ -33,6 +32,9 @@ set -euo pipefail
 [[ -d "$CAUSAL_CONV_ROOT" && ! -L "$CAUSAL_CONV_ROOT" ]]
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]]
 [[ "${SLURM_GPUS_ON_NODE:-}" == "2" ]]
+source "$RUNTIME/train/jobs/q36_mtr_common.sh"
+q36_init_local_tmp
+trap q36_cleanup_local_tmp EXIT
 mkdir -p logs "$(dirname "$OUTPUT")"
 
 export PATH=/apps/slurm/current/bin:/usr/bin:/bin
