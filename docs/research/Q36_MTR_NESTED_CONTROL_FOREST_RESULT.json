@@ -1,0 +1,89 @@
+{
+  "schema": "shohin-q36-mtr-nested-control-forest-result-v1",
+  "status": "complete_exploratory_engineering_best",
+  "date": "2026-08-14",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "base_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "evaluation_split": "development",
+    "identities": 1289
+  },
+  "architecture": {
+    "name": "nested_control_aware_forest_consensus",
+    "base": "six_model_owned_trajectory_nested_forest_consensus",
+    "challenger": "matched_unchanged_model_trajectory",
+    "learner": "ExtraTreesRegressor",
+    "learner_seed": 2026081433,
+    "estimators": 500,
+    "minimum_samples_per_leaf": 10,
+    "maximum_features_fraction": 0.7,
+    "outer_identity_shards": 16,
+    "outer_training_shards": 15,
+    "inner_training_shards_per_validation": 14,
+    "selection_rule": "predict_control_minus_nested_forest_correctness_from_generation_state_answer_agreement_and_base_forest_state; use_control_only_above_outer_training_selected_threshold",
+    "development_labels_used_for_training": true,
+    "heldout_identity_labels_read": 0,
+    "hyperparameters_selected_inside_outer_training_folds": true
+  },
+  "evaluation": {
+    "nested_control_forest_correct": 681,
+    "nested_control_forest_accuracy": 0.5283165244375485,
+    "nested_forest_correct": 676,
+    "gain_over_nested_forest_count": 5,
+    "gain_over_nested_forest_points": 0.3878975950349135,
+    "canonical_unchanged_correct": 539,
+    "gain_over_canonical_unchanged_count": 142,
+    "gain_over_canonical_unchanged_points": 11.016291698991467,
+    "domains": {
+      "bbh_logic": {"rows": 637, "correct": 360},
+      "math500": {"rows": 623, "correct": 301},
+      "mbpp": {"rows": 29, "correct": 20}
+    },
+    "control_overrides": 35,
+    "control_only_correct": 7,
+    "forest_only_correct_lost": 2,
+    "paired_vs_nested_forest": {
+      "both_correct": 674,
+      "nested_control_forest_only_correct": 7,
+      "nested_forest_only_correct": 2,
+      "both_wrong": 606,
+      "mcnemar_exact_two_sided_p": 0.1796875
+    }
+  },
+  "artifacts": {
+    "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/nested_control_forest_299d9da6_r1",
+    "candidates_sha256": "33a1883fa86011c61a24fbf8d2d4e03eae8b6af69b17316f40c6900292b32aaf",
+    "report_sha256": "c9ca3d1830fb7560e5145521f134aae821c64f1014c651f1ca82eaea8c04f454",
+    "selector_sha256": "4194864638bac6777b293a45cc452310f6fc196c737f86e593471f41394ad521",
+    "wrapper_sha256": "d1be4abfb4e928c5539bfb755242f450cb144343a25b938166e64641dab7ea2d"
+  },
+  "durable_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-nested-control-forest-077eb805-r1",
+    "files": 38,
+    "bytes": 6582605,
+    "sha256sums_sha256": "66e9ddd57a2e30289d84e81ee78dd2a10d030f986b00e74460a5ba325c2658ad"
+  },
+  "jobs": {
+    "failed_preflight": 759732,
+    "exact_replay": 759733,
+    "exact_replay_state": "COMPLETED",
+    "exact_replay_elapsed_seconds": 300,
+    "exact_replay_node": "evc21"
+  },
+  "verification": {
+    "focused_selector_tests": 35,
+    "black": "pass",
+    "ruff": "pass",
+    "bash_syntax": "pass",
+    "git_diff_check": "pass",
+    "implementation_commit": "299d9da6",
+    "wrapper_fix_commit": "077eb805"
+  },
+  "rejected_followups": {
+    "task_conditioned_random_forest": 676,
+    "nested_histogram_booster": 675,
+    "learned_forest_override_boundary": 672,
+    "joint_unchanged_self_refinement_nested_selector": 674
+  },
+  "interpretation": "strongest_current_Q36_development_crossfit_result; demonstrates selective_recovery_from_the_matched_unchanged_trajectory_above_the_model_owned_nested_forest; development_labels_train_the_crossfit_models_and this_is_not_yet_an_unseen_confirmation_result"
+}
