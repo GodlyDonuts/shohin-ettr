@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-qwen235-upward-moe-candidate-v1",
-  "status": "selected_not_downloaded_not_scheduled",
+  "status": "identified_not_admitted_runtime_incompatible_with_current_two_h100_shohin_attachment",
   "date": "2026-08-15",
   "purpose": "Add an upward, cross-family MoE scaling point between Nemotron Super-120B-A12B and Nemotron Ultra-550B-A55B without returning to dense or small-MoE hosts.",
   "candidate": {
@@ -17,6 +17,11 @@
     "experts": 128,
     "active_experts_per_token": 8,
     "quantization": "NVIDIA ModelOpt NVFP4",
+    "quantization_receipt_sha256": "6423e9dd81773597a783e1109ffeb8d8b6a30a85c0eb4e503524a4fdf5f7f98b",
+    "quantization_producer_version": "0.33.0",
+    "supported_runtime": "TensorRT-LLM",
+    "documented_tensor_parallel_size": 4,
+    "documented_test_hardware": "B200",
     "license": "Apache-2.0",
     "public": true,
     "gated": false,
@@ -30,17 +35,20 @@
     "successor": "NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
     "total_parameter_multiple_over_super": 1.9583333333333333,
     "active_parameter_multiple_over_super": 1.8333333333333333,
-    "reason": "Provides a 22B-active cross-family point on normal H100 infrastructure while the 55B-active Ultra host awaits highgpu access."
+    "reason": "Provides a useful 22B-active cross-family point only after a four-or-more-GPU runtime can preserve Shohin's trainable post-MoE residual; it is not a two-H100 normal-partition shortcut."
   },
   "admission": {
     "current_lustre_hard_headroom_bytes": 70800822272,
     "repository_only_shortfall_bytes": 63343494373,
+    "current_two_h100_runtime_compatibility": "fail",
+    "runtime_blocker": "The official checkpoint is documented for TensorRT-LLM inference with tensor_parallel_size=4 on B200. The current Shohin treatment requires PyTorch module access and gradients through a small post-MoE residual; an inference engine result would not test that architecture.",
     "download_authorized_now": false,
     "mechanics_authorized_now": false,
     "requirements": [
       "Seal all active 35B validation artifacts and hashes before reclaiming its model snapshot.",
       "Reclaim enough verified closed-work storage for the full repository plus conservative output headroom.",
       "Verify the complete revision-pinned tree and ModelOpt runtime before any model load.",
+      "Qualify a four-or-more-GPU PyTorch/ModelOpt attachment path; TensorRT-LLM inference alone is insufficient.",
       "Use the same model-owned draft to trained revision treatment and unchanged/self-refinement controls.",
       "Use source-disjoint fixed identities and exact paired capability and retention scoring.",
       "Require the 120B mechanics/result to determine whether two-H100 loading and the transfer attachment remain scientifically justified."
