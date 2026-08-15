@@ -48,6 +48,47 @@ def _qwen() -> dict:
     }
 
 
+def _qwen_revision() -> dict:
+    return {
+        "schema": "shohin-q36-mtr-external-screen-result-summary-v1",
+        "status": "complete",
+        "host_model": "Qwen3.6-35B-A3B",
+        "rows": 256,
+        "arms": {
+            "unchanged": {
+                "correct": 111,
+                "domains": {
+                    "bbh_logic": [71, 128],
+                    "math500": [31, 117],
+                    "mbpp": [9, 11],
+                },
+            },
+            "self_refinement": {
+                "correct": 121,
+                "domains": {
+                    "bbh_logic": [76, 128],
+                    "math500": [39, 117],
+                    "mbpp": [6, 11],
+                },
+            },
+            "revision": {
+                "correct": 141,
+                "gain_over_unchanged_count": 30,
+                "arm_only_correct": 36,
+                "unchanged_only_correct": 6,
+                "mcnemar_exact_two_sided_p": 2.8288777684792876e-06,
+                "unchanged_correct_retained": 105,
+                "unchanged_correct_retention": 105 / 111,
+                "domains": {
+                    "bbh_logic": [85, 128],
+                    "math500": [45, 117],
+                    "mbpp": [11, 11],
+                },
+            },
+        },
+    }
+
+
 def _matched(schema: str, host: str, total: int, active: int, gain: int) -> dict:
     unchanged = 112
     revision = unchanged + gain
@@ -97,7 +138,7 @@ def _matched(schema: str, host: str, total: int, active: int, gain: int) -> dict
 
 def test_three_points_fit_positive_active_curve(tmp_path: Path) -> None:
     points = [
-        _write(tmp_path / "qwen.json", _qwen()),
+        _write(tmp_path / "qwen.json", _qwen_revision()),
         _write(
             tmp_path / "super.json",
             _matched(
@@ -121,7 +162,13 @@ def test_three_points_fit_positive_active_curve(tmp_path: Path) -> None:
     ]
     result = analyze(points)
     assert result["status"] == "complete_curve"
-    assert result["claim"] == "positive_upward_cross_family_moe_scaling_supported"
+    assert result["capability_curve_claim"] == (
+        "positive_upward_cross_family_moe_capability_scaling_supported"
+    )
+    assert result["claim"] == (
+        "positive_moe_capability_scaling_with_conservative_retention_not_supported"
+    )
+    assert result["all_points_retention_at_least_95_percent"] is False
     assert (
         result["curve"]["active_parameter_fit"][
             "slope_percentage_points_per_log10_parameter"
@@ -137,7 +184,7 @@ def test_three_points_fit_positive_active_curve(tmp_path: Path) -> None:
 
 def test_two_points_refuse_scaling_claim(tmp_path: Path) -> None:
     points = [
-        _write(tmp_path / "qwen.json", _qwen()),
+        _write(tmp_path / "qwen.json", _qwen_revision()),
         _write(
             tmp_path / "super.json",
             _matched(
@@ -156,9 +203,10 @@ def test_two_points_refuse_scaling_claim(tmp_path: Path) -> None:
 
 
 def test_domain_geometry_mismatch_fails(tmp_path: Path) -> None:
-    qwen = _qwen()
-    qwen["source_disjoint_screen"]["domain_rows"]["math500"] = 118
-    qwen["source_disjoint_screen"]["domain_rows"]["mbpp"] = 10
+    qwen = _qwen_revision()
+    for arm in ("unchanged", "self_refinement", "revision"):
+        qwen["arms"][arm]["domains"]["math500"][1] = 116
+        qwen["arms"][arm]["domains"]["mbpp"][1] = 12
     matched = _matched(
         "shohin-nemotron-super-fixed-draft-screen-score-v1",
         "Nemotron-Super",
@@ -187,3 +235,20 @@ def test_paired_delta_tamper_fails(tmp_path: Path) -> None:
     forged["revision_vs_unchanged"]["net_correct"] = 31
     with pytest.raises(UpwardMoEScalingError, match="paired delta"):
         analyze([_write(tmp_path / "forged.json", forged)])
+
+
+def test_different_architecture_series_cannot_be_combined(tmp_path: Path) -> None:
+    matched = _matched(
+        "shohin-nemotron-super-fixed-draft-screen-score-v1",
+        "Nemotron-Super",
+        120_000_000_000,
+        12_000_000_000,
+        32,
+    )
+    with pytest.raises(UpwardMoEScalingError, match="architecture series"):
+        analyze(
+            [
+                _write(tmp_path / "multi.json", _qwen()),
+                _write(tmp_path / "super.json", matched),
+            ]
+        )

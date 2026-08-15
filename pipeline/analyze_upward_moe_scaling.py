@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 QWEN_SCHEMA = "shohin-q36-mtr-multi-trajectory-screen-result-v1"
+QWEN_REVISION_SCHEMA = "shohin-q36-mtr-external-screen-result-summary-v1"
 MATCHED_SCHEMAS = frozenset(
     {
         "shohin-nemotron-super-fixed-draft-screen-score-v1",
@@ -134,6 +135,7 @@ def _normalize_qwen(payload: dict[str, Any]) -> dict[str, Any]:
         raise UpwardMoEScalingError("Qwen retention differs")
     return {
         "host": host.get("model"),
+        "architecture_series": "multi_trajectory_best_system",
         "total_parameters": _billions(host.get("total_parameters"), "total parameters"),
         "active_parameters": _billions(
             host.get("active_parameters"), "active parameters"
@@ -150,6 +152,94 @@ def _normalize_qwen(payload: dict[str, Any]) -> dict[str, Any]:
         "paired_losses": result["paired_unchanged_only_correct"],
         "mcnemar_exact_two_sided_p": _finite(
             result.get("mcnemar_exact_two_sided_p"), "p value"
+        ),
+        "unchanged_correct_retained": retained,
+        "unchanged_correct_retention": retention,
+        "domains": domains,
+    }
+
+
+def _normalize_qwen_revision(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("status") != "complete" or payload.get("rows") != 256:
+        raise UpwardMoEScalingError("Qwen revision point is not complete")
+    arms = payload.get("arms")
+    if not isinstance(arms, dict):
+        raise UpwardMoEScalingError("Qwen revision arms differ")
+    required = {"unchanged", "self_refinement", "revision"}
+    if not required.issubset(arms) or not all(
+        isinstance(arms[arm], dict) for arm in required
+    ):
+        raise UpwardMoEScalingError("Qwen revision arms differ")
+    correct = {
+        arm: _integer(arms[arm].get("correct"), f"{arm}.correct") for arm in required
+    }
+    rows = 256
+    delta = correct["revision"] - correct["unchanged"]
+    wins = _integer(arms["revision"].get("arm_only_correct"), "paired wins")
+    losses = _integer(arms["revision"].get("unchanged_only_correct"), "paired losses")
+    if (
+        _integer(arms["revision"].get("gain_over_unchanged_count"), "gain") != delta
+        or wins - losses != delta
+    ):
+        raise UpwardMoEScalingError("Qwen revision paired delta differs")
+    totals: dict[str, int] = {}
+    treatment_domains: dict[str, int] = {}
+    unchanged_domains: dict[str, int] = {}
+    self_domains: dict[str, int] = {}
+    for domain in DOMAINS:
+        for arm, destination in (
+            ("revision", treatment_domains),
+            ("unchanged", unchanged_domains),
+            ("self_refinement", self_domains),
+        ):
+            value = arms[arm].get("domains", {}).get(domain)
+            if (
+                not isinstance(value, list)
+                or len(value) != 2
+                or any(
+                    isinstance(item, bool) or not isinstance(item, int)
+                    for item in value
+                )
+            ):
+                raise UpwardMoEScalingError("Qwen revision domain differs")
+            destination[domain] = _integer(value[0], f"{arm}.{domain}.correct")
+            total = _integer(value[1], f"{arm}.{domain}.total", 1)
+            if domain in totals and totals[domain] != total:
+                raise UpwardMoEScalingError("Qwen revision domain totals differ")
+            totals[domain] = total
+    domains = _domain_counts(treatment_domains, unchanged_domains, totals)
+    if (
+        sum(totals.values()) != rows
+        or sum(treatment_domains.values()) != correct["revision"]
+        or sum(unchanged_domains.values()) != correct["unchanged"]
+        or sum(self_domains.values()) != correct["self_refinement"]
+    ):
+        raise UpwardMoEScalingError("Qwen revision domain accounting differs")
+    retained = _integer(arms["revision"].get("unchanged_correct_retained"), "retained")
+    retention = _finite(
+        arms["revision"].get("unchanged_correct_retention"), "retention"
+    )
+    if correct["unchanged"] == 0 or retained / correct["unchanged"] != retention:
+        raise UpwardMoEScalingError("Qwen revision retention differs")
+    return {
+        "host": payload.get("host_model"),
+        "architecture_series": "trained_revision",
+        "total_parameters": 35_000_000_000,
+        "active_parameters": 3_000_000_000,
+        "rows": rows,
+        "treatment_arm": "revision",
+        "treatment_correct": correct["revision"],
+        "unchanged_correct": correct["unchanged"],
+        "self_refinement_correct": correct["self_refinement"],
+        "gain_over_unchanged_count": delta,
+        "gain_over_unchanged_percentage_points": 100.0 * delta / rows,
+        "gain_over_self_refinement_count": (
+            correct["revision"] - correct["self_refinement"]
+        ),
+        "paired_wins": wins,
+        "paired_losses": losses,
+        "mcnemar_exact_two_sided_p": _finite(
+            arms["revision"].get("mcnemar_exact_two_sided_p"), "p value"
         ),
         "unchanged_correct_retained": retained,
         "unchanged_correct_retention": retention,
@@ -230,6 +320,7 @@ def _normalize_matched(payload: dict[str, Any]) -> dict[str, Any]:
         raise UpwardMoEScalingError("matched retention differs")
     return {
         "host": payload.get("host"),
+        "architecture_series": "trained_revision",
         "total_parameters": _billions(
             payload.get("total_parameters"), "total parameters"
         ),
@@ -269,6 +360,8 @@ def normalize_point(path: Path) -> dict[str, Any]:
     schema = payload.get("schema")
     if schema == QWEN_SCHEMA:
         point = _normalize_qwen(payload)
+    elif schema == QWEN_REVISION_SCHEMA:
+        point = _normalize_qwen_revision(payload)
     elif schema in MATCHED_SCHEMAS:
         point = _normalize_matched(payload)
     else:
@@ -309,6 +402,9 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
     )
     if len({point["host"] for point in points}) != len(points):
         raise UpwardMoEScalingError("host is duplicated")
+    series = {point["architecture_series"] for point in points}
+    if len(series) != 1:
+        raise UpwardMoEScalingError("architecture series is not comparable")
     geometry = {
         (
             point["rows"],
@@ -326,6 +422,7 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
         "status": "complete_curve" if curve_ready else "complete_insufficient_points",
         "point_count": len(points),
         "minimum_points_for_curve": 3,
+        "architecture_series": next(iter(series)),
         "points": points,
         "all_points_positive_vs_unchanged": all(
             point["gain_over_unchanged_count"] > 0 for point in points
@@ -342,6 +439,8 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
             for domain in point["domains"].values()
         ),
         "curve": None,
+        "capability_curve_claim": "insufficient_completed_moe_points",
+        "conservative_retention_curve_claim": "insufficient_completed_moe_points",
         "claim": "insufficient_completed_moe_points_for_scaling_curve",
     }
     if curve_ready:
@@ -357,14 +456,31 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
             "active_parameter_fit": active_fit,
             "gain_monotonic_by_active_parameters": monotonic_gain,
         }
-        if (
+        capability_supported = (
             report["all_points_positive_vs_unchanged"]
             and report["all_points_positive_vs_self_refinement"]
-            and report["all_points_retention_at_least_95_percent"]
             and report["all_domains_nonnegative_at_every_point"]
             and active_fit["slope_percentage_points_per_log10_parameter"] > 0
-        ):
+        )
+        conservative_supported = (
+            capability_supported and report["all_points_retention_at_least_95_percent"]
+        )
+        report["capability_curve_claim"] = (
+            "positive_upward_cross_family_moe_capability_scaling_supported"
+            if capability_supported
+            else "positive_upward_moe_capability_scaling_not_supported"
+        )
+        report["conservative_retention_curve_claim"] = (
+            "positive_upward_cross_family_moe_scaling_with_retention_supported"
+            if conservative_supported
+            else "conservative_retention_scaling_not_supported"
+        )
+        if conservative_supported:
             report["claim"] = "positive_upward_cross_family_moe_scaling_supported"
+        elif capability_supported:
+            report["claim"] = (
+                "positive_moe_capability_scaling_with_conservative_retention_not_supported"
+            )
         else:
             report["claim"] = "moe_transfer_measured_without_positive_scaling_law"
     return report

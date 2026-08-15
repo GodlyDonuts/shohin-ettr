@@ -1,44 +1,36 @@
 {
   "schema": "shohin-q36-upward-moe-scaling-analyzer-preparation-v1",
-  "status": "implemented_tested_pushed_and_staged_in_immutable_newton_runtime_not_a_scientific_result",
+  "status": "implemented_tested_comparability_corrected_runtime_rebuild_pending_not_a_scientific_result",
   "date": "2026-08-15",
   "purpose": "Turn each completed source-disjoint Qwen35, Nemotron Super, Mixtral 8x22B, and Nemotron Ultra matched screen into one comparable upward MoE scaling point without inferring a scaling law from an underdetermined sample.",
   "measured_anchor_replay": {
-    "path": "docs/research/Q36_MULTI_TRAJECTORY_SCREEN_RESULT_20260815.json",
-    "sha256": "e111094afe78d8949afdd961a9b9052dfc93b316a30ccb66fa81f21582dad094",
+    "path": "docs/research/Q36_MTR_EXTERNAL_SCREEN_RESULT_20260815.json",
+    "sha256": "dbf6caa1c4f0546c1d1d11d0490edfa5e74ae573613c2978577a7ea5ab1941bb",
     "host": "Qwen3.6-35B-A3B",
     "total_parameters": 35000000000,
     "active_parameters": 3000000000,
     "gain_over_unchanged_percentage_points": 11.71875,
+    "unchanged_correct_retention": 0.9459459459459459,
+    "architecture_series": "trained_revision",
     "replay_status": "complete_insufficient_points",
     "replay_claim": "insufficient_completed_moe_points_for_scaling_curve"
   },
   "implementation": {
     "analyzer": "pipeline/analyze_upward_moe_scaling.py",
-    "analyzer_sha256": "8d1c588c1153a821aea3364a6c9ba9c858ac21ce1e72ad187a85f3d2b1011262",
+    "analyzer_sha256": "6ea8321c73da08181a6fcc2407cbdad283a4520e48b32a7f4d406e033fb2241f",
     "test": "pipeline/test_analyze_upward_moe_scaling.py",
-    "test_sha256": "29d8479185a5a0f0431f93bd2b9883e0952a2eb2770b3d4f439af0d4213d1608",
+    "test_sha256": "19089f2945beda4b9987b49ab7aedac3235f2e3d726747845fca2dd6846234ed",
     "runtime_allowlist_sha256": "f25e5dbe50ed5ab0a411eba1715c16b4e8958c7e622155d1b659b9ea651e3a26",
     "runtime_packager_sha256": "23f20817ad60bc0288cdb327f5c853a935967cbaa98576278fed5039e48af83b",
     "accepted_completed_schemas": [
       "shohin-q36-mtr-multi-trajectory-screen-result-v1",
+      "shohin-q36-mtr-external-screen-result-summary-v1",
       "shohin-nemotron-super-fixed-draft-screen-score-v1",
       "shohin-mixtral-8x22b-fixed-draft-screen-score-v1",
       "shohin-nemotron-ultra-fixed-draft-screen-score-v1"
     ]
   },
-  "immutable_runtime": {
-    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_2d1aa188_r1",
-    "source_commit": "2d1aa188b0e361754b714795b69a2e7bc890f99a",
-    "sha256sums_sha256": "7db50e00925a994e0635bbcc1e1cc0d9e0f30183b1b29b27d4347027266a2da6",
-    "runtime_json_sha256": "91de1865533ff657696b024a77dc3277bf2a448b398c436991b60953089e297a",
-    "allowlisted_files": 163,
-    "regular_files_including_runtime_json_and_manifest": 165,
-    "symlinks": 0,
-    "writable_files": 0,
-    "writable_directories": 0,
-    "full_manifest_verification": "PASS"
-  },
+  "immutable_runtime": null,
   "comparison_contract": {
     "matched_rows": 256,
     "matched_domains": {
@@ -63,10 +55,15 @@
       "nonnegative_correct_count_delta_in_every_domain_at_every_point",
       "positive_active_parameter_fit_slope"
     ],
+    "claim_layers": {
+      "capability_scaling": "Requires positive gains over both controls, nonnegative domain deltas, and a positive active-parameter slope.",
+      "conservative_retention_scaling": "Additionally requires at least 95 percent unchanged-correct retention at every point. The measured 35B trained-revision anchor is 94.59 percent, so this claim is currently false even though capability gain is positive."
+    },
     "tamper_boundaries": [
       "exact admitted schema",
       "complete status",
       "unique host",
+      "single exact architecture series",
       "identical row and domain geometry",
       "arm and domain count accounting",
       "paired win loss net equality",
@@ -75,7 +72,7 @@
     ]
   },
   "verification": {
-    "focused_analyzer_tests_passed": 4,
+    "focused_analyzer_tests_passed": 5,
     "upward_q36_nemotron_mixtral_regression_passed": 504,
     "upward_q36_nemotron_mixtral_regression_skipped": 1,
     "black": "PASS",
