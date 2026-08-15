@@ -1,0 +1,88 @@
+{
+  "schema": "shohin-q36-upward-moe-temporal-promotion-automation-v1",
+  "status": "dependency_staged_no_larger_host_result_yet",
+  "date": "2026-08-15",
+  "dense_scaling_status": "closed_not_in_active_graph",
+  "purpose": "Select the strongest qualified completed 120B/141B MoE host for the exact host-owned temporal transfer without a manual design pause.",
+  "scientific_inputs": {
+    "nemotron_super_score_job": 760388,
+    "nemotron_super_score": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_screen_glibc228_a14b1dff_r1/score.json",
+    "mixtral_8x22b_score_job": 760571,
+    "mixtral_8x22b_score": "/lustre/fs1/home/sa305415/shohin/artifacts/mixtral_8x22b_upward_trained_revision_cc88a6c_r1/score.json",
+    "rows_per_host": 256,
+    "arms": [
+      "unchanged",
+      "self_refinement",
+      "revision"
+    ]
+  },
+  "promotion_contract": {
+    "all_conditions_required": [
+      "revision_correct_greater_than_unchanged_correct",
+      "revision_correct_greater_than_self_refinement_correct",
+      "nonnegative_revision_minus_unchanged_correct_in_bbh_logic_math500_and_mbpp",
+      "at_least_95_percent_of_unchanged_correct_identities_retained"
+    ],
+    "ranking": [
+      "gain_over_unchanged_count",
+      "gain_over_self_refinement_count",
+      "revision_correct",
+      "unchanged_correct_retention",
+      "active_parameters",
+      "total_parameters",
+      "host"
+    ],
+    "qualified_action": "select_exact_host_for_host_owned_draft_revision_temporal_transfer",
+    "no_qualified_host_action": "preserve_both_results_and_launch_no_temporal_transfer",
+    "automatic_scientific_launch": false
+  },
+  "implementation": {
+    "git_commit": "d761caa466f29f97a1eafe0572aa0be699059185",
+    "private_branches": [
+      "codex/q36-mechanics-generation-prepare",
+      "codex/q36-moe-temporal-revision"
+    ],
+    "selector": "pipeline/select_upward_moe_temporal_promotion.py",
+    "job_wrapper": "pipeline/jobs/select_upward_moe_temporal_promotion.sbatch",
+    "focused_upward_moe_tests_passed": 62,
+    "selector_local_tests_passed": 21,
+    "black_ruff_pycompile_bash_allowlist_diff": "PASS"
+  },
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_d761caa4_r1",
+    "source_commit": "d761caa466f29f97a1eafe0572aa0be699059185",
+    "regular_files": 190,
+    "allowlisted_files": 188,
+    "symlinks_or_specials": 0,
+    "writable_members": 0,
+    "sha256sums_sha256": "7d1de76fcd44b63de94d8ff517134bf5bb054a033eeeec3af978a566265374ca",
+    "runtime_json_sha256": "13491f859c174ad297fede86249edb4c76ac5e7e7b2621de2934972455af8233",
+    "full_manifest_verification": "PASS"
+  },
+  "scheduler": {
+    "promotion_job": 760596,
+    "dependency": "afterok:760388:760571",
+    "resources": "CPU_only_2_cores_8GiB_10m",
+    "requeue": false,
+    "state_at_submission": "PENDING_dependency",
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_super120_mixtral141_r1/temporal_promotion.json",
+    "new_gpu_request": false,
+    "healthy_scientific_jobs_changed": false
+  },
+  "larger_host_state_at_submission": {
+    "nemotron_super_mechanics_job": 760382,
+    "nemotron_super_state": "PENDING_resources",
+    "nemotron_super_forecast": "2026-08-16T08:26:49-04:00",
+    "mixtral_mechanics_job": 760565,
+    "mixtral_state": "PENDING_priority",
+    "mixtral_forecast": "2026-08-16T09:12:00-04:00",
+    "larger_host_gpu_seconds_consumed": 0,
+    "larger_host_benchmark_result_available": false
+  },
+  "next_scale": {
+    "after_qualified_120B_or_141B_host": "exact_host_owned_temporal_transfer_on_selected_host",
+    "after_selected_host_transfer": "NVIDIA_Nemotron_3_Ultra_550B_A55B",
+    "post_ultra_frontier": "moonshotai_Kimi_K3_2_8T_A104B_distributed",
+    "small_moe_or_dense_retry": false
+  }
+}
