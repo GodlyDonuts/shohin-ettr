@@ -144,7 +144,11 @@ class TemporalResidualGate(nn.Module):
         )
 
     def routing_supervision_loss(
-        self, target: float, attention_mask: torch.Tensor
+        self,
+        target: float,
+        attention_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
     ) -> torch.Tensor:
         gate = self._last_gate
         if (
@@ -154,6 +158,7 @@ class TemporalResidualGate(nn.Module):
             or attention_mask.shape != gate.shape[:-1]
             or attention_mask.device != gate.device
             or not attention_mask.bool().any()
+            or objective != "soft_cross_entropy"
         ):
             raise TemporalResidualGateError("temporal routing supervision differs")
         # Probability-space BCE is deliberately retained because ``gate`` is

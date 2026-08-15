@@ -492,11 +492,19 @@ def test_routing_supervision_drives_owner_and_revision_extremes() -> None:
     block(hidden)
     owner_loss = block.routing_supervision_loss(0.0, attention)
     revision_loss = block.routing_supervision_loss(1.0, attention)
+    explicit_revision_loss = block.routing_supervision_loss(
+        1.0, attention, objective="soft_cross_entropy"
+    )
     assert owner_loss < revision_loss
+    torch.testing.assert_close(revision_loss, explicit_revision_loss)
     (owner_loss + revision_loss).backward()
     assert block.gate_weight.grad is not None
     with pytest.raises(TemporalResidualGateError):
         block.routing_supervision_loss(0.0, torch.ones(1, 3))
+    with pytest.raises(TemporalResidualGateError):
+        block.routing_supervision_loss(
+            1.0, attention, objective="correct_set_mass"
+        )
 
 
 def test_binary_routing_supervision_disables_outer_autocast(monkeypatch) -> None:
