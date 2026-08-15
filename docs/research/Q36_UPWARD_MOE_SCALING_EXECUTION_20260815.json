@@ -66,9 +66,9 @@
     "controlled_moe_layers": 16,
     "trainable_revision_parameters": 2359296,
     "native_router_expert_trainables": 0,
-    "mechanics_job": 760229,
+    "mechanics_job": 760252,
     "mechanics_h100s": 2,
-    "fit_job": 760243,
+    "fit_job": 760253,
     "fit_h100s": 2,
     "fit_updates": 256,
     "fit_gradient_accumulation": 8,
@@ -105,10 +105,10 @@
     },
     "shards_per_arm": 4,
     "h100s_per_shard": 2,
-    "unchanged_array": 760248,
-    "self_refinement_array": 760249,
-    "revision_array": 760250,
-    "score_job": 760251,
+    "unchanged_array": 760254,
+    "self_refinement_array": 760255,
+    "revision_array": 760256,
+    "score_job": 760257,
     "score_mode": "single_cpu_sandboxed_paired_reduction",
     "capability_fields": [
       "correct",
@@ -123,15 +123,15 @@
     ]
   },
   "implementation": {
-    "git_commit": "279caa44",
+    "git_commit": "e53d5ff329fa767b4578cd1592dce48af532741b",
     "private_branches": [
       "codex/q36-mechanics-generation-prepare",
       "codex/q36-moe-temporal-revision"
     ],
     "fit_runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_7be5c79f_r1",
     "fit_runtime_manifest_sha256": "373bc0967ef0aad2f7c239d0774c7dd4bd318ef25cf1ecf50f7c2609f7d2bbff",
-    "screen_runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_279caa44_r1",
-    "screen_runtime_manifest_sha256": "ad41087bc7e331404483cdb13755c06fd9c3bc95f358a28fb29efb30f991f549",
+    "screen_runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_e53d5ff3_r1",
+    "screen_runtime_manifest_sha256": "517ec112a1d35d62ae40d5f04823885645484730666822fb2f221c77c329bd4d",
     "screen_runtime_files": 140,
     "screen_runtime_writable_members": 0,
     "focused_tests_passed": 19,
@@ -149,6 +149,21 @@
     "scientific_outputs_published": 0,
     "cause": "generic host envelope differed from the revision-training envelope",
     "repair": "all matched arms now use the identical product-reasoning system prompt"
+  },
+  "preexecution_scratch_repair": {
+    "superseded_pending_jobs": [
+      760229,
+      760243,
+      760248,
+      760249,
+      760250,
+      760251
+    ],
+    "all_superseded_elapsed_seconds": 0,
+    "all_superseded_nodes": "None assigned",
+    "scientific_outputs_published": 0,
+    "cause": "Newton allocations do not guarantee SLURM_TMPDIR",
+    "repair": "every Super wrapper now creates and cleans a private node-local scratch root before runtime export"
   },
   "next_upward_point_after_measured_super_gain": {
     "host": "NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
