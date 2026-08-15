@@ -33,10 +33,10 @@ from q36_upward_moe_host import (
 SCHEMA = "shohin-nemotron-super-two-h100-mechanics-v1"
 SEED = 2026081521
 OVERLAY_MANIFEST_SHA256 = (
-    "e52a0095628e0c4eb58f69c4ebb6f4d1c7a929792eb9a55046bda670013a6ea2"
+    "cde0fa5b91d50d1509872cbc577cf016d0a6c6697bfb066d607f420c1b568e84"
 )
 OVERLAY_RECEIPT_SHA256 = (
-    "b6199edfa67d152836a202eaa4f5b607c79b4f0861440e5181e1e7981f991eeb"
+    "a917e093a2cdba7f5ce0cd2131a5d66fedd0c3fe086dc4ff2243dd7edb332a35"
 )
 MAMBA_VERSION = "2.3.2.post1"
 MODELOPT_VERSION = "0.43.0"
