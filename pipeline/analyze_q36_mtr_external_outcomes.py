@@ -187,6 +187,69 @@ def _candidate_results(
     return sorted(candidates, key=lambda row: (-row["correct"], row["architecture"]))
 
 
+def _failure_geometry(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
+    patterns: dict[str, dict[str, Any]] = {}
+    exclusive = {
+        arm: {"rows": 0, "by_task": {task: 0 for task in TASKS}} for arm in ARMS
+    }
+    all_wrong = {"rows": 0, "by_task": {task: 0 for task in TASKS}}
+    unanimous_correct = {"rows": 0, "by_task": {task: 0 for task in TASKS}}
+    disagreement = {"rows": 0, "by_task": {task: 0 for task in TASKS}}
+    for row in outcomes:
+        task = row["task"]
+        values = row["correct"]
+        bits = "".join("1" if values[arm] else "0" for arm in ARMS)
+        pattern = patterns.setdefault(
+            bits,
+            {"rows": 0, "by_task": {candidate: 0 for candidate in TASKS}},
+        )
+        pattern["rows"] += 1
+        pattern["by_task"][task] += 1
+        correct_arms = [arm for arm in ARMS if values[arm]]
+        if not correct_arms:
+            all_wrong["rows"] += 1
+            all_wrong["by_task"][task] += 1
+        elif len(correct_arms) == len(ARMS):
+            unanimous_correct["rows"] += 1
+            unanimous_correct["by_task"][task] += 1
+        else:
+            disagreement["rows"] += 1
+            disagreement["by_task"][task] += 1
+        if len(correct_arms) == 1:
+            arm = correct_arms[0]
+            exclusive[arm]["rows"] += 1
+            exclusive[arm]["by_task"][task] += 1
+
+    unchanged_correct = sum(row["correct"]["unchanged"] for row in outcomes)
+    retention = {}
+    for arm in ARMS:
+        retained = sum(
+            row["correct"]["unchanged"] and row["correct"][arm] for row in outcomes
+        )
+        lost = unchanged_correct - retained
+        repaired = sum(
+            not row["correct"]["unchanged"] and row["correct"][arm] for row in outcomes
+        )
+        retention[arm] = {
+            "unchanged_correct_retained": retained,
+            "unchanged_correct_lost": lost,
+            "unchanged_wrong_repaired": repaired,
+            "net_gain_over_unchanged": repaired - lost,
+            "unchanged_correct_retention_rate": (
+                retained / unchanged_correct if unchanged_correct else None
+            ),
+        }
+    return {
+        "arm_order": list(ARMS),
+        "correctness_patterns": dict(sorted(patterns.items())),
+        "all_fixed_arms_wrong": all_wrong,
+        "all_fixed_arms_correct": unanimous_correct,
+        "fixed_arm_disagreement": disagreement,
+        "exclusive_correct_by_arm": exclusive,
+        "retention_vs_unchanged": retention,
+    }
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     detailed = _load(args.detailed)
     outcomes = _validate_detailed(detailed)
@@ -224,6 +287,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "all_arm_oracle_correct": detailed["all_arm_oracle_correct"],
         "oracle_gap_over_best_fixed": detailed["all_arm_oracle_correct"]
         - detailed["arms"][best_fixed]["correct"],
+        "failure_geometry": _failure_geometry(outcomes),
     }
     _atomic_json(args.output, report)
     return report

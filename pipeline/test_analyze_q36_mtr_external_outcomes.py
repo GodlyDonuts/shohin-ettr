@@ -27,6 +27,7 @@ def _detailed():
                 ("math500", (False, True, True, False, True)),
                 ("bbh_logic", (True, False, True, False, False)),
                 ("mbpp", (False, False, False, False, True)),
+                ("math500", (False, False, False, False, False)),
             ]
         )
     ]
@@ -68,7 +69,7 @@ def test_outcome_analysis_reconstructs_pairwise_and_selects_companion(tmp_path):
             "schema": module.FOREST_SCHEMA,
             "status": "complete",
             "split": "external_validation_screen",
-            "rows": 3,
+            "rows": 4,
             "target": {"correct": 3},
         },
     )
@@ -78,7 +79,7 @@ def test_outcome_analysis_reconstructs_pairwise_and_selects_companion(tmp_path):
             "schema": module.CONSENSUS_SCHEMA,
             "status": "complete",
             "split": "external_validation_screen",
-            "rows": 3,
+            "rows": 4,
             "rules": {"plurality": {"correct": 2}},
         },
     )
@@ -93,6 +94,20 @@ def test_outcome_analysis_reconstructs_pairwise_and_selects_companion(tmp_path):
     assert report["selected_correct"] == 3
     assert report["best_fixed_arm"] == "revision"
     assert report["oracle_gap_over_best_fixed"] == 1
+    geometry = report["failure_geometry"]
+    assert geometry["all_fixed_arms_wrong"] == {
+        "rows": 1,
+        "by_task": {"math500": 1, "bbh_logic": 0, "mbpp": 0},
+    }
+    assert geometry["exclusive_correct_by_arm"]["interpolation"]["rows"] == 1
+    assert geometry["correctness_patterns"]["00000"]["rows"] == 1
+    assert geometry["retention_vs_unchanged"]["revision"] == {
+        "unchanged_correct_retained": 1,
+        "unchanged_correct_lost": 0,
+        "unchanged_wrong_repaired": 1,
+        "net_gain_over_unchanged": 1,
+        "unchanged_correct_retention_rate": 1.0,
+    }
     pair = report["pairwise"]["revision__vs__interpolation"]
     assert pair["left_only_correct"] == 1
     assert pair["right_only_correct"] == 1
