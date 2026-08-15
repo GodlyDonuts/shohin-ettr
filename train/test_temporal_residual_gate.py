@@ -8,6 +8,8 @@ from temporal_residual_gate import (
     TemporalResidualGate,
     TemporalResidualGateConfig,
     TemporalResidualGateError,
+    install_temporal_residual_gates,
+    temporal_branch_layers,
 )
 
 
@@ -129,3 +131,59 @@ def test_gate_rejects_invalid_config_or_branch_geometry() -> None:
             revision_a=torch.zeros(1, 2),
             revision_b=torch.zeros(2, 1),
         )
+
+
+class _DecoderLayer(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.mlp = _Native()
+
+
+class _TextModel(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.layers = nn.ModuleList([_DecoderLayer() for _ in range(3)])
+
+
+def _role_state(offset: float) -> dict[str, torch.Tensor]:
+    state = {}
+    for index in (1, 2):
+        state[f"backbone.model.layers.{index}.mlp.adapter_a.weight"] = torch.tensor(
+            [[1.0 + offset, 2.0 + offset]], dtype=torch.float32
+        )
+        state[f"backbone.model.layers.{index}.mlp.adapter_b.weight"] = torch.tensor(
+            [[3.0 + offset], [4.0 + offset]], dtype=torch.float32
+        )
+    return state
+
+
+def test_real_role_state_mapping_and_final_layer_installation() -> None:
+    config = TemporalResidualGateConfig(2, 1, 1.0)
+    owner = _role_state(0.0)
+    revision = _role_state(0.5)
+    branches = temporal_branch_layers(owner, revision, config, (1, 2))
+    assert set(branches) == {1, 2}
+    assert set(branches[1]) == {"owner_a", "owner_b", "revision_a", "revision_b"}
+    model = _TextModel()
+    native = model.layers[0].mlp
+    blocks = install_temporal_residual_gates(model, owner, revision, config, (1, 2))
+    assert model.layers[0].mlp is native
+    assert tuple(model.layers[index].mlp for index in (1, 2)) == blocks
+    assert all(isinstance(block, TemporalResidualGate) for block in blocks)
+    trainable = [
+        parameter for parameter in model.parameters() if parameter.requires_grad
+    ]
+    assert sum(parameter.numel() for parameter in trainable) == 6
+
+
+def test_real_role_state_mapping_rejects_missing_or_nonfinite_tensor() -> None:
+    config = TemporalResidualGateConfig(2, 1, 1.0)
+    owner = _role_state(0.0)
+    revision = _role_state(0.5)
+    revision.pop("backbone.model.layers.2.mlp.adapter_b.weight")
+    with pytest.raises(TemporalResidualGateError):
+        temporal_branch_layers(owner, revision, config, (1, 2))
+    revision = _role_state(0.5)
+    revision["backbone.model.layers.2.mlp.adapter_b.weight"][0, 0] = float("nan")
+    with pytest.raises(TemporalResidualGateError):
+        temporal_branch_layers(owner, revision, config, (1, 2))

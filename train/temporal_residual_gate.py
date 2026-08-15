@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Any
+import re
+from typing import Any, Mapping, Sequence
 
 import torch
 import torch.nn as nn
@@ -159,8 +160,104 @@ class TemporalResidualGate(nn.Module):
         return native + mixed.to(native.dtype)
 
 
+_STATE_NAME = re.compile(
+    r"^backbone\.model\.layers\.(?P<layer>[0-9]+)\.mlp\.adapter_(?P<factor>[ab])\.weight$"
+)
+
+
+def temporal_branch_layers(
+    owner_state: Mapping[str, torch.Tensor],
+    revision_state: Mapping[str, torch.Tensor],
+    config: TemporalResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+) -> dict[int, dict[str, torch.Tensor]]:
+    """Validate and align two real Q36 role states by decoder layer."""
+
+    config.validate()
+    indices = tuple(controlled_layer_indices)
+    if (
+        not indices
+        or len(indices) != len(set(indices))
+        or tuple(sorted(indices)) != indices
+        or any(
+            not isinstance(index, int) or isinstance(index, bool) for index in indices
+        )
+        or set(owner_state) != set(revision_state)
+    ):
+        raise TemporalResidualGateError("temporal role state identity differs")
+    expected_names = {
+        f"backbone.model.layers.{index}.mlp.adapter_{factor}.weight"
+        for index in indices
+        for factor in ("a", "b")
+    }
+    if set(owner_state) != expected_names:
+        raise TemporalResidualGateError("temporal role state names differ")
+    layers: dict[int, dict[str, torch.Tensor]] = {index: {} for index in indices}
+    for name in sorted(expected_names):
+        match = _STATE_NAME.fullmatch(name)
+        if match is None:
+            raise TemporalResidualGateError("temporal role state name differs")
+        index = int(match.group("layer"))
+        factor = match.group("factor")
+        expected_shape = (
+            (config.rank, config.hidden_size)
+            if factor == "a"
+            else (config.hidden_size, config.rank)
+        )
+        for role, state in (("owner", owner_state), ("revision", revision_state)):
+            tensor = state[name]
+            if (
+                not isinstance(tensor, torch.Tensor)
+                or tuple(tensor.shape) != expected_shape
+                or tensor.dtype != torch.float32
+                or not torch.isfinite(tensor).all()
+            ):
+                raise TemporalResidualGateError(f"temporal {role} role tensor differs")
+            layers[index][f"{role}_{factor}"] = tensor
+    return layers
+
+
+def install_temporal_residual_gates(
+    text_model: nn.Module,
+    owner_state: Mapping[str, torch.Tensor],
+    revision_state: Mapping[str, torch.Tensor],
+    config: TemporalResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+) -> tuple[TemporalResidualGate, ...]:
+    """Replace exact decoder MLPs with tokenwise temporal residual gates."""
+
+    model_layers = getattr(text_model, "layers", None)
+    if not isinstance(model_layers, nn.ModuleList):
+        raise TemporalResidualGateError("temporal decoder layers differ")
+    text_model.requires_grad_(False)
+    indices = tuple(controlled_layer_indices)
+    if indices != tuple(range(len(model_layers) - len(indices), len(model_layers))):
+        raise TemporalResidualGateError("temporal controlled layers differ")
+    branches = temporal_branch_layers(
+        owner_state, revision_state, config, controlled_layer_indices
+    )
+    installed = []
+    for index in indices:
+        layer = model_layers[index]
+        mlp = getattr(layer, "mlp", None)
+        if not isinstance(mlp, nn.Module) or isinstance(mlp, TemporalResidualGate):
+            raise TemporalResidualGateError("temporal native MLP differs")
+        block = TemporalResidualGate(mlp, config, **branches[index])
+        layer.mlp = block
+        installed.append(block)
+    expected_trainables = len(indices) * (config.hidden_size + 1)
+    if (
+        sum(block.trainable_parameter_count() for block in installed)
+        != expected_trainables
+    ):
+        raise TemporalResidualGateError("temporal gate parameter count differs")
+    return tuple(installed)
+
+
 __all__ = [
     "TemporalResidualGate",
     "TemporalResidualGateConfig",
     "TemporalResidualGateError",
+    "install_temporal_residual_gates",
+    "temporal_branch_layers",
 ]
