@@ -445,6 +445,23 @@
     ],
     "completed_rows": 192,
     "completed_unique_identities": 192,
+    "pending_shard_backfill_acceleration": {
+      "applied_at": "2026-08-15T12:48:29-04:00",
+      "pending_shards": "3:15",
+      "original_time_limit_seconds": 3600,
+      "revised_time_limit_seconds": 600,
+      "measured_comparable_completed_shard_seconds": [
+        343,
+        346,
+        347
+      ],
+      "measured_max_seconds": 347,
+      "required_25_percent_safety_seconds": 434,
+      "actual_safety_over_measured_max_percent": 72.91,
+      "scientific_bytes_changed": false,
+      "completed_or_running_jobs_cancelled": 0,
+      "purpose": "scheduler_backfill_only"
+    },
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "max_token_completions": 0,
