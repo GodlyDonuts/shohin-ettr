@@ -79,6 +79,31 @@ def test_gate_receives_gradient_while_frozen_surfaces_do_not() -> None:
     assert block.base.scale.grad is None
 
 
+def test_gate_learns_conditional_revision_beyond_any_global_blend() -> None:
+    block = _block(weight=0.5)
+    with torch.no_grad():
+        block.base.scale.zero_()
+    hidden = torch.tensor([[[1.0, 0.0], [0.0, 1.0]]])
+    target = hidden.clone()
+    global_blend = block(hidden).detach()
+    global_loss = torch.nn.functional.mse_loss(global_blend, target)
+    optimizer = torch.optim.AdamW(
+        [block.gate_weight, block.gate_bias], lr=0.1, weight_decay=0.0
+    )
+    for _ in range(500):
+        optimizer.zero_grad(set_to_none=True)
+        loss = torch.nn.functional.mse_loss(block(hidden), target)
+        loss.backward()
+        optimizer.step()
+    learned = block(hidden).detach()
+    learned_loss = torch.nn.functional.mse_loss(learned, target)
+    assert float(learned_loss) < 1e-4
+    assert float(learned_loss) < float(global_loss) / 1000.0
+    gates = block._gate(hidden).detach()
+    assert float(gates[0, 0, 0]) < 0.02
+    assert float(gates[0, 1, 0]) > 0.98
+
+
 def test_gate_can_recover_owner_or_revision_endpoints() -> None:
     block = _block()
     hidden = torch.tensor([[[4.0, 8.0]]])
