@@ -29,6 +29,13 @@
       "unchanged_correct_retention": 0.954954954954955,
       "result_document_sha256": "e111094afe78d8949afdd961a9b9052dfc93b316a30ccb66fa81f21582dad094"
     },
+    "trained_revision_branch": {
+      "correct": 141,
+      "capability_delta_vs_full_multi_trajectory": 0,
+      "unchanged_correct_retention": 0.9459459459459459,
+      "retained_unchanged_correct_delta_vs_full_multi_trajectory": -1,
+      "interpretation": "capability_tie_with_the_full_gate_and_the_exact_branch_scaled_to_120B_and_550B"
+    },
     "routing_supervision_only": {
       "correct": 138,
       "gain_correct": 27,
@@ -47,9 +54,9 @@
       "unchanged_correct_retention": 0.9819819819819819,
       "result_document_sha256": "140875fffa608a8d0b765c51885eaec580e1ccaecd2a8f080fc5c02d68f6c701"
     },
-    "causal_training_contribution_over_routing_only_correct": 3,
-    "capability_retention_tradeoff": "full_multi_trajectory_maximizes_capability_while_tri_hierarchical_maximizes_retention",
-    "upward_transfer_decision": "preserve_model_owned_draft_trained_revision_and_causal_trajectory_training_on_120B_and_550B_with_matched_unchanged_and_self_refinement_controls",
+    "causal_gate_training_contribution_over_routing_only_correct": 3,
+    "capability_retention_tradeoff": "trained_revision_and_full_multi_trajectory_tie_for_maximum_capability_the_gate_retains_one_additional_unchanged_correct_identity_and_tri_hierarchical_maximizes_retention",
+    "upward_transfer_decision": "scale_the_model_owned_draft_to_trained_revision_branch_that_ties_maximum_capability_to_120B_and_550B_with_matched_unchanged_and_self_refinement_controls_keep_the_multi_trajectory_gate_as_a_35B_retention_refinement",
     "new_variant_submitted": false
   },
   "new_qwen_fit_completions": {
