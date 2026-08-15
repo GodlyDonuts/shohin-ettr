@@ -1,5 +1,19 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **USER HOLD ACTIVE — 2026-08-15:** do not release or submit Shohin jobs.
+> Newton is settled at zero running/completing allocations and 210 pending
+> tasks held with `JobHeldUser`. Allocation `760606` / identity `759816_5`
+> was canceled after 457 seconds only because Slurm rejected requeue-hold on
+> the frozen no-requeue job; it produced no completed result. On explicit
+> resume, submit one and only one replacement for shard 5 and release roots
+> selectively. See `docs/research/SHOHIN_EXECUTION_HOLD_20260815.md`.
+
+> **DENSE PUBLIC CAMPAIGN PREPARED, NOT SUBMITTED:** Qwen3.5-9B,
+> SmolLM3-3B, and OLMo2-7B retain exact executable treatment paths after
+> pinned base restoration. Qwen0.8B/Qwen4B do not. The prepared 94-job graph
+> contains 75 exact single-H100 requests and remains unscheduled during the
+> hold.
+
 > **Q36 TEMPORAL CAUSAL GATE IS THE NUMERICAL 35B SCREEN LEADER —
 > 2026-08-15:** hidden-state causal gating between frozen owner and revision
 > residuals scores `143/256` versus unchanged `111/256`, a gain of `32` /

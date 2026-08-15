@@ -1,5 +1,21 @@
 # Shohin Native Reasoning Master Ledger
 
+## User execution hold — 2026-08-15
+
+All Shohin compute is paused for several days by explicit user request.
+Newton has zero running and zero completing allocations; 210 pending tasks are
+held as `JobHeldUser`. Q36 revision replacement `760606` (array identity
+`759816_5`) was the sole active allocation. Slurm rejected requeue-hold because
+the graph is deliberately no-requeue, so it was canceled after 457 seconds
+after holding its parent. It produced no completed benchmark result. Exact
+resumption evidence is in `docs/research/SHOHIN_EXECUTION_HOLD_20260815.md`.
+
+The dense public benchmark campaign is preparation only and was not
+submitted. It admits the three still-executable pairs (Qwen3.5-9B,
+SmolLM3-3B, OLMo2-7B), freezes paired MMLU-Pro/IFEval/MuSR screens, and
+serializes exact base restoration and reclamation. See
+`docs/research/SHOHIN_DENSE_PUBLIC_BENCHMARK_CAMPAIGN_20260815.md`.
+
 ## Q36 temporal causal gate and upward MoE scaling — 2026-08-15
 
 The strongest completed Qwen3.6-35B-A3B screen is now the 32,784-parameter

@@ -4,6 +4,22 @@
 
 ## Read this first
 
+**EXECUTION IS PAUSED BY USER REQUEST — 2026-08-15.** Newton now has zero
+running or completing Shohin jobs and 210 pending tasks held as
+`JobHeldUser`. The one active Q36 revision replacement (`760606`, array
+identity `759816_5`) could not be requeue-held because requeue was disabled;
+it was canceled after 457 seconds and produced no completed result. Resume by
+submitting exactly one replacement for shard 5, then selectively releasing
+only the desired held roots. Exact receipt:
+`docs/research/SHOHIN_EXECUTION_HOLD_20260815.md`.
+
+**A matched dense public-benchmark campaign is prepared but unscheduled.**
+Exact executable pairs survive for Qwen3.5-9B, SmolLM3-3B, and the historical
+negative OLMo2-7B. Qwen0.8B and Qwen4B are correctly marked historical-only
+because required treatment bytes are absent. No dense campaign job was
+submitted before the hold. Contract:
+`docs/research/SHOHIN_DENSE_PUBLIC_BENCHMARK_CAMPAIGN_20260815.md`.
+
 **The strongest completed Qwen3.6-35B-A3B architecture screen is now the
 temporal causal gate.** Its 32,784 trainables blend frozen owner and revision
 residuals tokenwise across the final 16 MoE layers. On the fixed 256-row
