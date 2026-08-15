@@ -2,6 +2,7 @@
 pipeline/analyze_q36_mtr_external_outcomes.py
 pipeline/analyze_q36_mtr_token_gates.py
 pipeline/analyze_q36_mtr_trajectory_state_geometry.py
+pipeline/analyze_upward_moe_scaling.py
 pipeline/apply_q36_mtr_owner_commit.py
 pipeline/apply_q36_mtr_synthesis_consensus.py
 pipeline/authorize_q36_mtr_mechanics_qualification.py

@@ -1,0 +1,80 @@
+{
+  "schema": "shohin-q36-upward-moe-scaling-analyzer-preparation-v1",
+  "status": "implemented_tested_runtime_packaged_not_a_scientific_result",
+  "date": "2026-08-15",
+  "purpose": "Turn each completed source-disjoint Qwen35, Nemotron Super, Mixtral 8x22B, and Nemotron Ultra matched screen into one comparable upward MoE scaling point without inferring a scaling law from an underdetermined sample.",
+  "measured_anchor_replay": {
+    "path": "docs/research/Q36_MULTI_TRAJECTORY_SCREEN_RESULT_20260815.json",
+    "sha256": "e111094afe78d8949afdd961a9b9052dfc93b316a30ccb66fa81f21582dad094",
+    "host": "Qwen3.6-35B-A3B",
+    "total_parameters": 35000000000,
+    "active_parameters": 3000000000,
+    "gain_over_unchanged_percentage_points": 11.71875,
+    "replay_status": "complete_insufficient_points",
+    "replay_claim": "insufficient_completed_moe_points_for_scaling_curve"
+  },
+  "implementation": {
+    "analyzer": "pipeline/analyze_upward_moe_scaling.py",
+    "analyzer_sha256": "8d1c588c1153a821aea3364a6c9ba9c858ac21ce1e72ad187a85f3d2b1011262",
+    "test": "pipeline/test_analyze_upward_moe_scaling.py",
+    "test_sha256": "29d8479185a5a0f0431f93bd2b9883e0952a2eb2770b3d4f439af0d4213d1608",
+    "runtime_allowlist_sha256": "f25e5dbe50ed5ab0a411eba1715c16b4e8958c7e622155d1b659b9ea651e3a26",
+    "runtime_packager_sha256": "23f20817ad60bc0288cdb327f5c853a935967cbaa98576278fed5039e48af83b",
+    "accepted_completed_schemas": [
+      "shohin-q36-mtr-multi-trajectory-screen-result-v1",
+      "shohin-nemotron-super-fixed-draft-screen-score-v1",
+      "shohin-mixtral-8x22b-fixed-draft-screen-score-v1",
+      "shohin-nemotron-ultra-fixed-draft-screen-score-v1"
+    ]
+  },
+  "comparison_contract": {
+    "matched_rows": 256,
+    "matched_domains": {
+      "bbh_logic": 128,
+      "math500": 117,
+      "mbpp": 11
+    },
+    "controls": [
+      "unchanged",
+      "self_refinement"
+    ],
+    "minimum_distinct_total_parameter_points": 3,
+    "minimum_distinct_active_parameter_points": 3,
+    "fits": [
+      "gain_percentage_points_vs_log10_total_parameters",
+      "gain_percentage_points_vs_log10_active_parameters"
+    ],
+    "positive_curve_claim_requires": [
+      "positive_gain_over_unchanged_at_every_point",
+      "positive_gain_over_self_refinement_at_every_point",
+      "at_least_95_percent_unchanged_correct_retention_at_every_point",
+      "nonnegative_correct_count_delta_in_every_domain_at_every_point",
+      "positive_active_parameter_fit_slope"
+    ],
+    "tamper_boundaries": [
+      "exact admitted schema",
+      "complete status",
+      "unique host",
+      "identical row and domain geometry",
+      "arm and domain count accounting",
+      "paired win loss net equality",
+      "retention numerator ratio equality",
+      "regular nonsymlink source files and SHA256 receipts"
+    ]
+  },
+  "verification": {
+    "focused_analyzer_tests_passed": 4,
+    "upward_q36_nemotron_mixtral_regression_passed": 504,
+    "upward_q36_nemotron_mixtral_regression_skipped": 1,
+    "black": "PASS",
+    "ruff": "PASS",
+    "py_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "scientific_state": {
+    "new_scientific_jobs_submitted": 0,
+    "new_benchmark_rows_opened": 0,
+    "new_scaling_law_claim": false,
+    "next_curve_point": "Nemotron Super 120B-A12B matched screen"
+  }
+}
