@@ -194,6 +194,26 @@
       "status": "not_staged_pending_super_measurement_and_distributed_runtime"
     }
   ],
+  "zero_label_super_to_ultra_transfer_preparation": {
+    "status": "embedding_alignment_cpu_job_pending",
+    "job": 760260,
+    "git_commit": "45562693a5662d6e47df3b6cfb57fa443ef60585",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_45562693_r1",
+    "runtime_manifest_sha256": "7f339b695fededd5c4853640194a7cfefef82e8ba79767261c41bcb5b0355749",
+    "ultra_basis_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/nemotron-ultra-transfer-basis-183968f_r1",
+    "ultra_basis_manifest_sha256": "047a261ce246c5c71f84454a491e7ab7448d320cdf2ab7c6836875183058688b",
+    "tokenizer_sha256": "623c34567aebb18582765289fbe23d901c62704d6518d71866e0e58db892b5b7",
+    "super_embedding_shard_sha256": "f30de33bed00fac1b451f06ef82e64468976ee52a811cb429bc3adc34cc48c5b",
+    "ultra_embedding_shard_sha256": "eea43a334457de1c87902bcd9c5621d206aba8e8e45fe39abc7752f31b6c6f5b",
+    "shared_vocabulary_size": 131072,
+    "super_hidden_size": 4096,
+    "ultra_hidden_size": 8192,
+    "anchor_token_identities": 1024,
+    "disjoint_holdout_token_identities": 4096,
+    "benchmark_rows_read": 0,
+    "label_rows_read": 0,
+    "purpose": "lift_the_trained_rank64_super_residual_into_ultra_through_the_shared_token_semantic_basis_without_ultra_training"
+  },
   "prohibited_active_work": [
     "dense_scaling",
     "small_moe_scaling",
