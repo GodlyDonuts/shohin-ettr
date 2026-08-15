@@ -1,0 +1,49 @@
+{
+  "artifact": {
+    "bytes_excluding_receipt_and_manifest": 616607735,
+    "files_excluding_receipt_and_manifest": 3801,
+    "manifest_entries": 3802,
+    "manifest_sha256": "e52a0095628e0c4eb58f69c4ebb6f4d1c7a929792eb9a55046bda670013a6ea2",
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_overlay_ee510631_r1",
+    "receipt_sha256": "b6199edfa67d152836a202eaa4f5b607c79b4f0861440e5181e1e7981f991eeb",
+    "tree_sha256": "9d1901555b8ae6b5c7edf023731b8815e4e9de980b1730c608f2c92cd6bd3244",
+    "writable_members": 0
+  },
+  "builder": {
+    "job_id": 760227,
+    "script_sha256": "cfaeda8193cc761fe5322d4e4c353d2634eccdf40cbca425022586ed7a57cce3",
+    "source_commit": "ee510631eb6fa8f43d1d888436b7e40c40be9af0",
+    "stderr_sha256": "71f4a37602a28a705b5c1686e18e4cb19ed2329e98d58a8e3e4375f7edd743b6",
+    "stdout_sha256": "4461dac3522c7924f1a95facfe2ee117be5e3a1a3dd9c6ace094be4e3c4e1790"
+  },
+  "custody": {
+    "gpu_requested": false,
+    "manifest_check_bad_entries": 0,
+    "restarts": 0,
+    "scientific_rows_read": 0,
+    "symlinks_or_special_members": 0
+  },
+  "packages": {
+    "causal_conv1d": "1.6.2.post1",
+    "cuda": "12.4",
+    "mamba_ssm": "2.3.2.post1",
+    "mamba_wheel_sha256": "8c7739d65bf6477631feb5f69a6cafe207aa8b698411c73594de4168502c16d2",
+    "nvidia_modelopt": "0.43.0",
+    "torch": "2.6.0+cu124"
+  },
+  "scheduler": {
+    "alloc_tres": "billing=8,cpu=8,mem=32G,node=1",
+    "elapsed_seconds": 73,
+    "exit_code": "0:0",
+    "node": "evc21",
+    "state": "COMPLETED"
+  },
+  "schema": "shohin-q36-nemotron-super-overlay-result-v1",
+  "status": "qualified_cpu_overlay",
+  "upward_moe_boundary": {
+    "h100_kernel_import": "deferred_to_no_score_mechanics_after_q36_screen_closes",
+    "host": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "host_revision": "7d7e5797b8a3c7abbab54033b6004e93e8b6bc91",
+    "scientific_job_submitted": false
+  }
+}
