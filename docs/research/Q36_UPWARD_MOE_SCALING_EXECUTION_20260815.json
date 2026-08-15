@@ -67,6 +67,20 @@
     "trainable_revision_parameters": 2359296,
     "native_router_expert_trainables": 0,
     "mechanics_job": 760275,
+    "mechanics_status": "infrastructure_failed_before_model_load_no_science",
+    "mechanics_infrastructure_failure": {
+      "elapsed_seconds": 162,
+      "exit_code": "1:0",
+      "restarts": 0,
+      "node": "evc40",
+      "cause": "upstream_mamba_wheel_requires_GLIBC_2_32_but_Newton_has_GLIBC_2_28",
+      "benchmark_rows_read": 0,
+      "scientific_updates": 0,
+      "mechanics_output_published": false
+    },
+    "glibc_2_28_overlay_rebuild_job": 760368,
+    "glibc_2_28_overlay_rebuild_commit": "673d314c1b00f8c13f5a12f7593317f76d84e7ff",
+    "glibc_2_28_overlay_rebuild_status": "queued_cpu_only_no_science",
     "mechanics_h100s": 2,
     "fit_job": 760278,
     "fit_h100s": 2,
@@ -175,7 +189,7 @@
     "status": "mechanics_and_exact_snapshot_staging_code_complete_not_submitted_pending_super_measurement_highgpu_access_and_storage_margin"
   },
   "qwen_full_validation_progress": {
-    "observed_at": "2026-08-15T11:10:57-04:00",
+    "observed_at": "2026-08-15T11:15:51-04:00",
     "array": 759815,
     "arm": "self_refinement",
     "total_rows": 1023,
@@ -188,10 +202,11 @@
       4,
       5,
       6,
-      7
+      7,
+      8
     ],
-    "completed_rows": 512,
-    "completed_unique_identities": 512,
+    "completed_rows": 576,
+    "completed_unique_identities": 576,
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "assessor_access_count": 0,
@@ -205,7 +220,8 @@
       "4": "b25fb26f0424087f1016fc09887e6dc019df21005a151e61b0ca2e0345486f43",
       "5": "af1ef47a5920709f94397b16cb6b3d156ee6a6514efbd9403547821a3584b857",
       "6": "d88660f2382f01158f0c8540705a85adcf757b7378fb27cb49f2110c8fec27a4",
-      "7": "9e1f2def6cee3700d8109dd9e06fa77782832f6ab426859dfe40a75e8a76b90b"
+      "7": "9e1f2def6cee3700d8109dd9e06fa77782832f6ab426859dfe40a75e8a76b90b",
+      "8": "ad50a2d871b222c7dd16b13dde7fb4f6c4fcc13bbc13c553448fd138f3d084db"
     },
     "report_sha256s": {
       "0": "9dde2b4939483049f10a44c1c25729b0e18ab70c6c7482e68d7cb044841b5adc",
@@ -215,7 +231,8 @@
       "4": "b2d16951f1614a6799345814c8c9d885dda62a8177558bb09227c16701b0f8c2",
       "5": "1adfc8a1de1e100f9ece13e09dc75ef39ed48a98b239155970b73165c54255cc",
       "6": "93031f60539e62d1c14977edb6a6ab7ac359f16753b997614afcd6e14c2d9bb7",
-      "7": "e0211d1a2628eaa39690f95ff1e0a6b065053996e9be8b46c5575c0a3ad29437"
+      "7": "e0211d1a2628eaa39690f95ff1e0a6b065053996e9be8b46c5575c0a3ad29437",
+      "8": "aec74a0a57e93bbfa825a3360001ee7f587c906129c14438ab3e97d5d3c47105"
     },
     "slurm": {
       "0": {
@@ -283,6 +300,15 @@
         "state": "COMPLETED",
         "elapsed_seconds": 2213,
         "node": "evc40",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1
+      },
+      "8": {
+        "job": 760348,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2299,
+        "node": "evc39",
         "exit_code": "0:0",
         "restarts": 0,
         "allocated_gpus": 1
