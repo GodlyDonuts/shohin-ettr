@@ -494,9 +494,16 @@ class MultiTrajectoryResidualGate(nn.Module):
         return native + mixed.to(native.dtype)
 
 
-_STATE_NAME = re.compile(
-    r"^backbone\.model\.layers\.(?P<layer>[0-9]+)\.mlp\.adapter_(?P<factor>[ab])\.weight$"
-)
+_SUPPORTED_RESIDUAL_SURFACES = frozenset({"mlp", "mixer"})
+
+
+def _state_name_pattern(module_attribute: str) -> re.Pattern[str]:
+    if module_attribute not in _SUPPORTED_RESIDUAL_SURFACES:
+        raise TemporalResidualGateError("temporal residual surface differs")
+    return re.compile(
+        rf"^backbone\.model\.layers\.(?P<layer>[0-9]+)\."
+        rf"{re.escape(module_attribute)}\.adapter_(?P<factor>[ab])\.weight$"
+    )
 
 
 def temporal_branch_layers(
@@ -504,10 +511,13 @@ def temporal_branch_layers(
     revision_state: Mapping[str, torch.Tensor],
     config: TemporalResidualGateConfig,
     controlled_layer_indices: Sequence[int],
+    *,
+    module_attribute: str = "mlp",
 ) -> dict[int, dict[str, torch.Tensor]]:
-    """Validate and align two real Q36 role states by decoder layer."""
+    """Validate and align two role states on a pinned MoE residual surface."""
 
     config.validate()
+    state_name = _state_name_pattern(module_attribute)
     indices = tuple(controlled_layer_indices)
     if (
         not indices
@@ -520,7 +530,7 @@ def temporal_branch_layers(
     ):
         raise TemporalResidualGateError("temporal role state identity differs")
     expected_names = {
-        f"backbone.model.layers.{index}.mlp.adapter_{factor}.weight"
+        f"backbone.model.layers.{index}.{module_attribute}.adapter_{factor}.weight"
         for index in indices
         for factor in ("a", "b")
     }
@@ -528,7 +538,7 @@ def temporal_branch_layers(
         raise TemporalResidualGateError("temporal role state names differ")
     layers: dict[int, dict[str, torch.Tensor]] = {index: {} for index in indices}
     for name in sorted(expected_names):
-        match = _STATE_NAME.fullmatch(name)
+        match = state_name.fullmatch(name)
         if match is None:
             raise TemporalResidualGateError("temporal role state name differs")
         index = int(match.group("layer"))
@@ -557,8 +567,10 @@ def install_temporal_residual_gates(
     revision_state: Mapping[str, torch.Tensor],
     config: TemporalResidualGateConfig,
     controlled_layer_indices: Sequence[int],
+    *,
+    module_attribute: str = "mlp",
 ) -> tuple[TemporalResidualGate, ...]:
-    """Replace exact decoder MLPs with tokenwise temporal residual gates."""
+    """Replace exact decoder residual surfaces with tokenwise temporal gates."""
 
     model_layers = getattr(text_model, "layers", None)
     if not isinstance(model_layers, nn.ModuleList):
@@ -568,16 +580,22 @@ def install_temporal_residual_gates(
     if indices != tuple(range(len(model_layers) - len(indices), len(model_layers))):
         raise TemporalResidualGateError("temporal controlled layers differ")
     branches = temporal_branch_layers(
-        owner_state, revision_state, config, controlled_layer_indices
+        owner_state,
+        revision_state,
+        config,
+        controlled_layer_indices,
+        module_attribute=module_attribute,
     )
     installed = []
     for index in indices:
         layer = model_layers[index]
-        mlp = getattr(layer, "mlp", None)
-        if not isinstance(mlp, nn.Module) or isinstance(mlp, TemporalResidualGate):
-            raise TemporalResidualGateError("temporal native MLP differs")
-        block = TemporalResidualGate(mlp, config, **branches[index])
-        layer.mlp = block
+        native = getattr(layer, module_attribute, None)
+        if not isinstance(native, nn.Module) or isinstance(
+            native, TemporalResidualGate
+        ):
+            raise TemporalResidualGateError("temporal native residual differs")
+        block = TemporalResidualGate(native, config, **branches[index])
+        setattr(layer, module_attribute, block)
         installed.append(block)
     expected_trainables = len(indices) * (config.hidden_size + 1)
     if (
@@ -825,6 +843,7 @@ class TemporalGatedProductModel(nn.Module):
         owner_state: Mapping[str, torch.Tensor],
         revision_state: Mapping[str, torch.Tensor],
         controlled_layer_indices: Sequence[int],
+        module_attribute: str = "mlp",
     ) -> None:
         super().__init__()
         if not all(
@@ -838,6 +857,7 @@ class TemporalGatedProductModel(nn.Module):
         self.lm_head = lm_head
         self.config = config
         self.controlled_layer_indices = tuple(controlled_layer_indices)
+        self.module_attribute = module_attribute
         self.blocks = nn.ModuleList(
             install_temporal_residual_gates(
                 text_model,
@@ -845,6 +865,7 @@ class TemporalGatedProductModel(nn.Module):
                 revision_state,
                 config,
                 self.controlled_layer_indices,
+                module_attribute=self.module_attribute,
             )
         )
         self._generation_prompt_attention: torch.Tensor | None = None

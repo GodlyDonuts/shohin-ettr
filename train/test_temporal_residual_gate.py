@@ -378,6 +378,13 @@ def _role_state(offset: float) -> dict[str, torch.Tensor]:
     return state
 
 
+def _surface_role_state(offset: float, surface: str) -> dict[str, torch.Tensor]:
+    return {
+        name.replace(".mlp.", f".{surface}."): tensor.clone()
+        for name, tensor in _role_state(offset).items()
+    }
+
+
 def test_real_role_state_mapping_and_final_layer_installation() -> None:
     config = TemporalResidualGateConfig(2, 1, 1.0)
     owner = _role_state(0.0)
@@ -395,6 +402,65 @@ def test_real_role_state_mapping_and_final_layer_installation() -> None:
         parameter for parameter in model.parameters() if parameter.requires_grad
     ]
     assert sum(parameter.numel() for parameter in trainable) == 6
+
+
+def test_nemotron_mixer_role_state_mapping_and_installation() -> None:
+    config = TemporalResidualGateConfig(2, 1, 1.0)
+    owner = _surface_role_state(0.0, "mixer")
+    revision = _surface_role_state(0.5, "mixer")
+    model = _TextModel()
+    for layer in model.layers:
+        layer.mixer = layer.mlp
+        del layer.mlp
+    native = model.layers[0].mixer
+    branches = temporal_branch_layers(
+        owner,
+        revision,
+        config,
+        (1, 2),
+        module_attribute="mixer",
+    )
+    blocks = install_temporal_residual_gates(
+        model,
+        owner,
+        revision,
+        config,
+        (1, 2),
+        module_attribute="mixer",
+    )
+    assert set(branches) == {1, 2}
+    assert model.layers[0].mixer is native
+    assert tuple(model.layers[index].mixer for index in (1, 2)) == blocks
+    assert (
+        sum(
+            parameter.numel()
+            for parameter in model.parameters()
+            if parameter.requires_grad
+        )
+        == 6
+    )
+
+
+def test_temporal_surface_rejects_unknown_or_cross_surface_state() -> None:
+    config = TemporalResidualGateConfig(2, 1, 1.0)
+    owner = _role_state(0.0)
+    revision = _role_state(0.5)
+    with pytest.raises(TemporalResidualGateError):
+        temporal_branch_layers(
+            owner,
+            revision,
+            config,
+            (1, 2),
+            module_attribute="experts",
+        )
+    with pytest.raises(TemporalResidualGateError):
+        temporal_branch_layers(
+            owner,
+            revision,
+            config,
+            (1, 2),
+            module_attribute="mixer",
+        )
 
 
 def test_real_role_state_mapping_rejects_missing_or_nonfinite_tensor() -> None:

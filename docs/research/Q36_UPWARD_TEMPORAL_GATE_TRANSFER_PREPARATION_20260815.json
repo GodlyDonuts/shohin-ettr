@@ -1,0 +1,74 @@
+{
+  "schema": "shohin-q36-upward-temporal-gate-transfer-preparation-v1",
+  "status": "code_complete_tested_unscheduled",
+  "scientific_result": false,
+  "gpu_jobs_submitted": 0,
+  "objective": "Transfer the numerically strongest Qwen35 temporal causal gate upward without changing native MoE routers or experts.",
+  "source_result": {
+    "host": "Qwen3.6-35B-A3B",
+    "architecture": "q36-tokenwise-temporal-residual-gate-v1",
+    "rows": 256,
+    "unchanged_correct": 111,
+    "temporal_gate_correct": 143,
+    "gain_correct": 32,
+    "gain_percentage_points": 12.5,
+    "paired_wins": 38,
+    "paired_losses": 6,
+    "exact_mcnemar_p": 9.430375484953402e-7,
+    "unchanged_correct_retention": 0.9459459459459459,
+    "causal_loss_weight": 1.0,
+    "routing_supervision_weight": 0.0,
+    "gate_trainable_parameters": 32784
+  },
+  "transfer_surfaces": {
+    "Nemotron-Super-120B-A12B": {
+      "native_module_attribute": "mixer",
+      "controlled_layers": 16,
+      "hidden_size": 4096,
+      "rank_per_frozen_trajectory": 18,
+      "trainable_parameters_per_frozen_trajectory": 2359296,
+      "temporal_gate_trainable_parameters": 65552
+    },
+    "Mixtral-8x22B-141B-A39B": {
+      "native_module_attribute": "mlp",
+      "controlled_layers": 16,
+      "hidden_size": 6144,
+      "rank_per_frozen_trajectory": 18,
+      "trainable_parameters_per_frozen_trajectory": 3538944,
+      "temporal_gate_trainable_parameters": 98320
+    }
+  },
+  "implementation": {
+    "module": "train/temporal_residual_gate.py",
+    "module_sha256": "dab0bbb93049216a5880546cc0a2282824a2ff22ece523f46905d07459f4416e",
+    "test_module": "train/test_temporal_residual_gate.py",
+    "test_module_sha256": "87bf15fc796096c6e6dc968e7f682b9c803c9a270a4b005890ea15720d7e8310",
+    "supported_exact_surfaces": [
+      "mlp",
+      "mixer"
+    ],
+    "qwen_default_api_preserved": true,
+    "cross_surface_state_rejected": true,
+    "unknown_surface_rejected": true,
+    "native_router_expert_trainables": 0
+  },
+  "verification": {
+    "focused_surface_tests": "29_passed",
+    "full_temporal_path_tests": "63_passed",
+    "black": "PASS",
+    "ruff": "PASS",
+    "py_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "promotion_rule": {
+    "input_evidence": "completed matched 256-row source-disjoint Nemotron Super and Mixtral screens",
+    "target": "the larger host with the strongest positive paired trained-revision gain that preserves nonnegative domain deltas",
+    "next_architecture": "host-owned owner trajectory -> aligned trained revision trajectory -> causal-only hidden-state temporal gate",
+    "matched_controls": [
+      "unchanged",
+      "self_refinement",
+      "trained_revision"
+    ],
+    "no_speculative_gpu_launch_before_input_evidence": true
+  }
+}
