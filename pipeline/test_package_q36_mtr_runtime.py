@@ -59,6 +59,21 @@ def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() 
     assert "pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch" in entries
 
 
+def test_upward_moe_allowlist_has_one_exact_temporal_dispatcher() -> None:
+    root = Path(__file__).resolve().parents[1]
+    entries = load_allowlist(root / "pipeline/upward_moe_runtime_allowlist.txt")
+    assert entries == sorted(entries)
+    assert all((root / entry).is_file() for entry in entries)
+    assert [entry for entry in entries if "dispatch" in entry.casefold()] == [
+        "pipeline/dispatch_upward_moe_temporal.py"
+    ]
+    assert "pipeline/dispatch_q36_mtr.py" not in entries
+    assert "pipeline/launch_upward_moe_temporal_promotion.py" in entries
+    assert "pipeline/jobs/launch_upward_moe_temporal_promotion.sbatch" in entries
+    assert "pipeline/select_upward_moe_temporal_promotion.py" in entries
+    assert "pipeline/upward_moe_runtime_allowlist.txt" in entries
+
+
 @pytest.mark.parametrize(
     "entry",
     (

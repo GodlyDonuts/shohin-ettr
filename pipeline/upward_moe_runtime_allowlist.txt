@@ -1,4 +1,4 @@
-# Deterministic Q36-MTR preparation/runtime closure. Sorted, one path per line.
+# Deterministic upward-MoE temporal runtime closure. Sorted, one path per line.
 pipeline/analyze_q36_mtr_external_outcomes.py
 pipeline/analyze_q36_mtr_token_gates.py
 pipeline/analyze_q36_mtr_trajectory_state_geometry.py
@@ -27,11 +27,12 @@ pipeline/compare_q36_mtr.py
 pipeline/compare_q36_mtr_semantic_commits.py
 pipeline/compile_q36_mtr_plan.py
 pipeline/cross_validate_q36_mtr_sparse_router.py
-pipeline/dispatch_q36_mtr.py
+pipeline/dispatch_upward_moe_temporal.py
 pipeline/fetch_mixtral_8x22b.py
 pipeline/jobs/analyze_upward_moe_scaling.sbatch
 pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/fetch_mixtral_8x22b.sbatch
+pipeline/jobs/launch_upward_moe_temporal_promotion.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
 pipeline/jobs/materialize_upward_moe_data.sbatch
 pipeline/jobs/merge_upward_moe_drafts.sbatch
@@ -75,6 +76,7 @@ pipeline/jobs/q36_mtr_validate_commit_application.sbatch
 pipeline/jobs/render_upward_moe_scaling.sbatch
 pipeline/jobs/score_upward_moe_temporal_gate.sbatch
 pipeline/jobs/select_upward_moe_temporal_promotion.sbatch
+pipeline/launch_upward_moe_temporal_promotion.py
 pipeline/lift_nemotron_super_adapter_to_ultra.py
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
@@ -84,7 +86,6 @@ pipeline/normalize_q36_mtr_score.py
 pipeline/package_q36_mtr_runtime.py
 pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_evidence.py
-pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/read_upward_moe_data_receipt.py
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/render_upward_moe_scaling.py
@@ -108,6 +109,7 @@ pipeline/train_apply_q36_mtr_calibration_direct_commit.py
 pipeline/train_apply_q36_mtr_calibration_stack.py
 pipeline/train_apply_q36_mtr_pairwise_guard.py
 pipeline/train_apply_q36_mtr_sparse_router.py
+pipeline/upward_moe_runtime_allowlist.txt
 pipeline/validate_q36_mtr_commit_application.py
 pipeline/validate_q36_mtr_live_preflight.py
 train/hf_aqc1_train_commit.py

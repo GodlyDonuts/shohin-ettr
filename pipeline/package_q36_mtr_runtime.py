@@ -133,6 +133,15 @@ REQUIRED = {
     "train/upward_moe_temporal_gate.py",
     "train/upward_moe_role_lineage.py",
 }
+UPWARD_ALLOWLIST_NAME = "upward_moe_runtime_allowlist.txt"
+UPWARD_REQUIRED = (REQUIRED - {"pipeline/dispatch_q36_mtr.py"}) | {
+    "pipeline/dispatch_upward_moe_temporal.py",
+    "pipeline/launch_upward_moe_temporal_promotion.py",
+    "pipeline/jobs/launch_upward_moe_temporal_promotion.sbatch",
+    "pipeline/select_upward_moe_temporal_promotion.py",
+    "pipeline/jobs/select_upward_moe_temporal_promotion.sbatch",
+    "pipeline/upward_moe_runtime_allowlist.txt",
+}
 
 
 class Q36MTRRuntimeError(RuntimeError):
@@ -165,7 +174,8 @@ def load_allowlist(path: Path) -> list[str]:
             or any(term in entry.casefold() for term in PROHIBITED)
         ):
             raise Q36MTRRuntimeError(f"prohibited Q36-MTR runtime member: {entry}")
-    missing = REQUIRED - set(entries)
+    required = UPWARD_REQUIRED if path.name == UPWARD_ALLOWLIST_NAME else REQUIRED
+    missing = required - set(entries)
     if missing:
         raise Q36MTRRuntimeError(
             f"missing Q36-MTR runtime dependencies: {sorted(missing)}"
