@@ -323,6 +323,8 @@ class TemporalGatedProductModel(nn.Module):
 
     def prepare_generation_draft_attention(
         self,
+        tokenizer: Any,
+        rendered: list[str],
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
     ) -> None:
@@ -330,6 +332,7 @@ class TemporalGatedProductModel(nn.Module):
             input_ids.ndim != 2
             or attention_mask.shape != input_ids.shape
             or input_ids.device != attention_mask.device
+            or len(rendered) != input_ids.shape[0]
         ):
             raise TemporalResidualGateError("temporal generation prompt differs")
         position_ids = attention_mask.long().cumsum(dim=-1) - 1

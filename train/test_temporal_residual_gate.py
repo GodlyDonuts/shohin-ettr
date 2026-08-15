@@ -214,7 +214,9 @@ def test_product_surface_exposes_exact_trainables_and_generation_state() -> None
     }
     ids = torch.tensor([[0, 1, 2], [3, 4, 0]])
     attention = torch.tensor([[1, 1, 1], [1, 1, 0]])
-    model.prepare_generation_draft_attention(ids, attention)
+    model.prepare_generation_draft_attention(
+        object(), ["prompt one", "prompt two"], ids, attention
+    )
     assert model.generation_position_ids().tolist() == [[0, 1, 2], [0, 1, 0]]
     embeddings, observed_attention = model.generation_embeddings(ids, attention)
     assert embeddings.shape == (2, 3, 2)
