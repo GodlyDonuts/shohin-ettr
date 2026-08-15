@@ -23,6 +23,36 @@
     "revision_and_draft_hidden_presentations": 114,
     "revision_only_presentations": 110
   },
+  "evidence_reverification": {
+    "development_data_sha256": "6fac389a588553fa2315fd57d92bf0374b673d7fb7029d06fb719c89dc52326b",
+    "recomputed_presentations": 1189,
+    "recomputed_source_identities": 691,
+    "routing_pattern_counts_recomputed_from_positive_target_support": true
+  },
+  "initial_gradient_analysis": {
+    "branch_probability_initialization": {
+      "draft_hidden": 0.1,
+      "owner": 0.1,
+      "revision": 0.8
+    },
+    "interpretation": "Under gradient descent, the negative owner-logit derivative increases owner mass and the positive conditional-revision derivative decreases revision mass toward draft-hidden. Correct-set-mass reduces both aggregate displacements while leaving every sole-correct presentation fully supervised.",
+    "mean_loss": {
+      "correct_set_mass": 1.008995,
+      "soft_cross_entropy": 1.708834
+    },
+    "mean_owner_vs_adapted_logit_derivative": {
+      "correct_set_mass": -0.16221848425380808,
+      "magnitude_reduction_percent": 39.3656781585106,
+      "soft_cross_entropy": -0.2675357443229605
+    },
+    "mean_revision_vs_draft_hidden_logit_derivative": {
+      "correct_set_mass": 0.15996428163515353,
+      "magnitude_reduction_percent": 42.179436656720895,
+      "soft_cross_entropy": 0.2766563872535277
+    },
+    "method": "Exact routing-pattern aggregation at the frozen 0.1/0.8/0.1 initialization, independently checked by centered finite differences over the hierarchical two-logit parameterization.",
+    "scientific_prediction": "If a current screen shows that routing gains are accompanied by excessive unchanged-case loss or drift away from revision, correct-set-mass is the evidence-matched next promotion because it analytically removes equalization pressure from 345 all-correct and 246 two-correct presentations. It is not promoted merely from this analytical result."
+  },
   "implementation": {
     "git_commit": "169cce4d42a7415e0cd34a8d648637de457d3472",
     "private_branches": [
