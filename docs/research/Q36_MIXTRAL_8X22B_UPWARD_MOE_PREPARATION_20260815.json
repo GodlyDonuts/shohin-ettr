@@ -1,0 +1,63 @@
+{
+  "schema": "shohin-q36-mixtral-8x22b-upward-moe-preparation-v1",
+  "status": "host_and_attachment_code_prepared_not_downloaded_not_scheduled",
+  "date": "2026-08-15",
+  "purpose": "Prepare a Transformers-native cross-family MoE point above Nemotron Super in active parameters while preserving the exact Shohin post-MoE residual treatment.",
+  "host": {
+    "repository": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "model_card": "https://huggingface.co/mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "api_receipt": "https://huggingface.co/api/models/mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "config_sha256": "9c4a6138d84029ab666943613e3d5844d2ea8fd6149f44f77188c62e2915e0f5",
+    "repository_bytes": 281260955124,
+    "total_parameters": 141000000000,
+    "active_parameters": 39000000000,
+    "architecture": "MixtralForCausalLM",
+    "model_type": "mixtral",
+    "hidden_size": 6144,
+    "layers": 56,
+    "experts": 8,
+    "active_experts_per_token": 2,
+    "intermediate_size": 16384,
+    "license": "Apache-2.0",
+    "transformers_native": true,
+    "official_bf16_gpu_memory_gb": 283,
+    "official_fp4_gpu_memory_gb": 71
+  },
+  "shohin_attachment": {
+    "architecture": "shohin-mixtral-8x22b-shared-post-mlp-v1",
+    "surface": "post-mlp-residual",
+    "controlled_layer_indices": [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55],
+    "rank": 18,
+    "alpha": 18.0,
+    "trainable_parameters_per_role": 3538944,
+    "native_router_expert_trainables": 0,
+    "host_contract": "train/q36_upward_moe_mixtral_host.py",
+    "attachment_code": "train/mixtral_post_mlp_revision.py"
+  },
+  "verification": {
+    "focused_tests": 8,
+    "focused_tests_passed": 8,
+    "cross_host_residual_regression_tests": 17,
+    "cross_host_residual_regression_tests_passed": 17,
+    "black": "pass",
+    "ruff": "pass",
+    "py_compile": "pass",
+    "tests": [
+      "train/test_q36_upward_moe_mixtral_host.py",
+      "train/test_mixtral_post_mlp_revision.py"
+    ],
+    "zero_initialized_residual_preserves_native_output": true,
+    "residual_gradient_flow_verified": true,
+    "native_router_expert_freeze_verified": true,
+    "topology_drift_fails_closed": true
+  },
+  "execution_admission": {
+    "download_job": null,
+    "mechanics_job": null,
+    "scientific_result": false,
+    "current_durable_storage_fit": false,
+    "next_gate": "Do not download or schedule until the active 35B evidence is sealed, storage or an exact node-local staging path is qualified, and the 120B result justifies another upward host.",
+    "no_new_router_variant": true
+  }
+}
