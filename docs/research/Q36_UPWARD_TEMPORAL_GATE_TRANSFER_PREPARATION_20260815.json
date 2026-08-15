@@ -3,6 +3,17 @@
   "status": "code_complete_tested_unscheduled",
   "scientific_result": false,
   "gpu_jobs_submitted": 0,
+  "runtime_package": {
+    "source_commit": "2c06001a4bac006ad6ebed2e16de64943038bc53",
+    "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_upward_temporal_runtime_2c06001a_r1",
+    "manifest_sha256": "ae4b1a8b5ec4f072b756a893d27d82ae059791950731e3e6cf4733066a9efc63",
+    "runtime_json_sha256": "9377b46bfd00c08169a27b0e6953dbe381c89becad33a76d443f28767630feb1",
+    "regular_files": 188,
+    "manifest_full_check": "PASS",
+    "symlinks_or_special_files": 0,
+    "writable_members": 0,
+    "installed_on_newton": true
+  },
   "objective": "Transfer the numerically strongest Qwen35 temporal causal gate upward without changing native MoE routers or experts.",
   "source_result": {
     "host": "Qwen3.6-35B-A3B",
