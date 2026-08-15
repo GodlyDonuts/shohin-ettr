@@ -30,7 +30,8 @@ done
 
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 ARCHITECTURE=${ARCHITECTURE:-temporal}
-[[ "$ARCHITECTURE" == temporal || "$ARCHITECTURE" == multi_trajectory ]] || \
+[[ "$ARCHITECTURE" == temporal || "$ARCHITECTURE" == multi_trajectory || \
+  "$ARCHITECTURE" == tri_trajectory ]] || \
   q36_die "temporal evaluation architecture differs"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
@@ -43,7 +44,7 @@ q36_require_file "$REVISION_CHECKPOINT"
 q36_require_file "$GATE_CHECKPOINT"
 architecture_args=(--architecture "$ARCHITECTURE")
 arm=temporal_gate
-if [[ "$ARCHITECTURE" == multi_trajectory ]]; then
+if [[ "$ARCHITECTURE" == multi_trajectory || "$ARCHITECTURE" == tri_trajectory ]]; then
   [[ -n "${DRAFT_HIDDEN_CHECKPOINT:-}" ]] || \
     q36_die "multi-trajectory draft-hidden checkpoint is required"
   q36_require_file "$DRAFT_HIDDEN_CHECKPOINT"

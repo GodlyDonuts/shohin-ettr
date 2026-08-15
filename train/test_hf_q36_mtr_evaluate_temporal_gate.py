@@ -123,7 +123,9 @@ def test_multi_loader_binds_two_sibling_trajectories(monkeypatch) -> None:
         "draft_hidden_checkpoint_sha256": "3" * 64,
     }
     monkeypatch.setattr(
-        module, "_role_bank", lambda owner, revision, hidden: ({}, role_receipt)
+        module,
+        "_role_bank",
+        lambda owner, revision, hidden, **kwargs: ({}, role_receipt),
     )
     monkeypatch.setattr(
         module, "load_product_backbone", lambda *args, **kwargs: (object(), "causal")

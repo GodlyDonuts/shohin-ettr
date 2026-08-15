@@ -15,6 +15,7 @@ pipeline/build_q36_mtr_multi_trajectory_gate_data.py
 pipeline/build_q36_mtr_owner_commit_pairs.py
 pipeline/build_q36_mtr_setwise_commit_rows.py
 pipeline/build_q36_mtr_synthesis_training.py
+pipeline/build_q36_mtr_tri_trajectory_gate_data.py
 pipeline/capture_pcf1_environment.py
 pipeline/capture_q36_mtr_accounting.py
 pipeline/capture_q36_mtr_cluster_preflight.py

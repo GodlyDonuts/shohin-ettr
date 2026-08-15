@@ -60,6 +60,8 @@ SCHEMA = "shohin-q36-mtr-temporal-gate-training-v1"
 CHECKPOINT_SCHEMA = "shohin-q36-mtr-temporal-gate-checkpoint-v1"
 MULTI_SCHEMA = "shohin-q36-mtr-multi-trajectory-gate-training-v1"
 MULTI_CHECKPOINT_SCHEMA = "shohin-q36-mtr-multi-trajectory-gate-checkpoint-v1"
+TRI_SCHEMA = "shohin-q36-mtr-tri-trajectory-gate-training-v1"
+TRI_CHECKPOINT_SCHEMA = "shohin-q36-mtr-tri-trajectory-gate-checkpoint-v1"
 GATE_SEED = 2026081511
 GATE_LEARNING_RATE = 2e-4
 GATE_GRADIENT_ACCUMULATION = 8
@@ -75,6 +77,13 @@ MULTI_DATA_SEED = 2026081514
 MULTI_GATE_PARAMETERS = (
     len(CONTROLLED_LAYER_INDICES) * len(MULTI_BRANCHES) * (HIDDEN_SIZE + 1)
 )
+TRI_BRANCHES = ("owner", "revision", "draft_hidden")
+TRI_INITIAL_WEIGHTS = (0.1, 0.8, 0.1)
+TRI_PRESENTATIONS = 1_189
+TRI_DATA_SEED = 2026081517
+TRI_GATE_PARAMETERS = (
+    len(CONTROLLED_LAYER_INDICES) * len(TRI_BRANCHES) * (HIDDEN_SIZE + 1)
+)
 LOSS_CHUNK_SIZE = 512
 ROUTING_TARGETS = {
     "base_only": 0.0,
@@ -83,6 +92,7 @@ ROUTING_TARGETS = {
     "expert_only": 1.0,
 }
 MULTI_ROW_SCHEMA = "shohin-q36-mtr-multi-trajectory-gate-train-v1"
+TRI_ROW_SCHEMA = "shohin-q36-mtr-tri-trajectory-gate-train-v1"
 
 
 class Q36MTRTemporalGateTrainingError(RuntimeError):
@@ -158,8 +168,10 @@ def _role_bank(
     owner_checkpoint: Path,
     revision_checkpoint: Path,
     draft_hidden_checkpoint: Path,
+    *,
+    include_owner: bool = False,
 ) -> tuple[dict[str, dict[str, torch.Tensor]], dict[str, Any]]:
-    """Load two sibling revision trajectories and bind their owner lineage."""
+    """Load sibling trajectories and optionally expose their shared owner."""
 
     try:
         owner = load_role_checkpoint_payload(owner_checkpoint)
@@ -199,6 +211,8 @@ def _role_bank(
         "owner_checkpoint_sha256": owner_checkpoint_sha,
         "owner_state_sha256": owner_state_sha,
     }
+    if include_owner:
+        role_states["owner"] = owner["trainable_state"]
     for branch, role, payload in branches:
         metadata = payload["metadata"]
         state = payload["trainable_state"]
@@ -231,11 +245,15 @@ def _routing_rows_with_sha256(
 ) -> tuple[list[dict[str, Any]], str]:
     """Hash and shuffle routing rows without dropping supervisor targets."""
 
-    expected_schema = (
-        MULTI_ROW_SCHEMA
-        if architecture == "multi_trajectory"
-        else "shohin-q36-mtr-revision-train-v1"
-    )
+    categorical = architecture in {"multi_trajectory", "tri_trajectory"}
+    branch_names = TRI_BRANCHES if architecture == "tri_trajectory" else MULTI_BRANCHES
+    expected_schema = {
+        "temporal": "shohin-q36-mtr-revision-train-v1",
+        "multi_trajectory": MULTI_ROW_SCHEMA,
+        "tri_trajectory": TRI_ROW_SCHEMA,
+    }.get(architecture)
+    if expected_schema is None:
+        raise Q36MTRTemporalGateTrainingError("temporal architecture differs")
     digest = hashlib.sha256()
     rows: list[dict[str, Any]] = []
     with path.open("rb") as handle:
@@ -257,12 +275,12 @@ def _routing_rows_with_sha256(
                 or not isinstance(row.get("outcome_class"), str)
             ):
                 raise Q36MTRTemporalGateTrainingError("temporal routing row differs")
-            if architecture == "multi_trajectory":
+            if categorical:
                 target = row.get("routing_target")
                 if (
-                    row.get("branch_names") != list(MULTI_BRANCHES)
+                    row.get("branch_names") != list(branch_names)
                     or not isinstance(target, list)
-                    or len(target) != len(MULTI_BRANCHES)
+                    or len(target) != len(branch_names)
                     or any(
                         isinstance(value, bool)
                         or not isinstance(value, (int, float))
@@ -380,27 +398,42 @@ def restore_gate_checkpoint(
 
 def _validate_args(args: argparse.Namespace) -> None:
     architecture = getattr(args, "architecture", "temporal")
-    multi = architecture == "multi_trajectory"
-    if architecture not in {"temporal", "multi_trajectory"}:
+    categorical = architecture in {"multi_trajectory", "tri_trajectory"}
+    if architecture not in {"temporal", "multi_trajectory", "tri_trajectory"}:
         raise Q36MTRTemporalGateTrainingError("temporal gate architecture differs")
+    presentations = {
+        "temporal": REVISION_PRESENTATIONS,
+        "multi_trajectory": MULTI_PRESENTATIONS,
+        "tri_trajectory": TRI_PRESENTATIONS,
+    }[architecture]
+    data_seed = {
+        "temporal": REVISION_DATA_SEED,
+        "multi_trajectory": MULTI_DATA_SEED,
+        "tri_trajectory": TRI_DATA_SEED,
+    }[architecture]
+    initial_weights = (
+        TRI_INITIAL_WEIGHTS
+        if architecture == "tri_trajectory"
+        else MULTI_INITIAL_WEIGHTS
+    )
     expected = {
         "model_revision": MODEL_REVISION,
         "model_config_sha256": MODEL_CONFIG_SHA256,
         "updates": REVISION_UPDATES,
-        "max_rows": MULTI_PRESENTATIONS if multi else REVISION_PRESENTATIONS,
+        "max_rows": presentations,
         "max_sequence_length": REVISION_MAX_SEQUENCE_LENGTH,
         "learning_rate": GATE_LEARNING_RATE,
         "gradient_accumulation": GATE_GRADIENT_ACCUMULATION,
         "batch_size": GATE_BATCH_SIZE,
         "seed": GATE_SEED,
-        "data_seed": MULTI_DATA_SEED if multi else REVISION_DATA_SEED,
+        "data_seed": data_seed,
         "initial_revision_weight": GATE_INITIAL_REVISION_WEIGHT,
         "loss_chunk_size": LOSS_CHUNK_SIZE,
     }
     observed = {key: getattr(args, key) for key in expected}
     supervision = (
         {GATE_ROUTING_SUPERVISION_WEIGHT}
-        if multi
+        if categorical
         else {
             0.0,
             GATE_ROUTING_SUPERVISION_WEIGHT,
@@ -411,11 +444,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         observed != expected
         or args.routing_supervision_weight not in supervision
         or causal_loss_weight not in GATE_CAUSAL_LOSS_WEIGHTS
-        or (not multi and causal_loss_weight != 1.0)
+        or (not categorical and causal_loss_weight != 1.0)
         or (
-            multi
-            and tuple(getattr(args, "initial_branch_weights", ()))
-            != MULTI_INITIAL_WEIGHTS
+            categorical
+            and tuple(getattr(args, "initial_branch_weights", ())) != initial_weights
         )
     ):
         raise Q36MTRTemporalGateTrainingError(
@@ -428,7 +460,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     _validate_args(args)
     architecture = getattr(args, "architecture", "temporal")
-    multi = architecture == "multi_trajectory"
+    categorical = architecture in {"multi_trajectory", "tri_trajectory"}
+    branch_names = TRI_BRANCHES if architecture == "tri_trajectory" else MULTI_BRANCHES
+    initial_weights = (
+        TRI_INITIAL_WEIGHTS
+        if architecture == "tri_trajectory"
+        else MULTI_INITIAL_WEIGHTS
+    )
     if not torch.cuda.is_available():
         raise Q36MTRTemporalGateTrainingError("temporal gate training requires CUDA")
     if args.output.exists() or args.output.is_symlink():
@@ -468,7 +506,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     routing_targets: list[float | list[float] | None] = [
         (
             [float(value) for value in row["routing_target"]]
-            if multi
+            if categorical
             else ROUTING_TARGETS[row["outcome_class"]]
         )
         for row in rows
@@ -484,14 +522,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         gradient_accumulation=args.gradient_accumulation,
         batch_size=args.batch_size,
     )
-    if multi:
+    if categorical:
         draft_hidden_checkpoint = getattr(args, "draft_hidden_checkpoint", None)
         if not isinstance(draft_hidden_checkpoint, Path):
             raise Q36MTRTemporalGateTrainingError(
                 "multi-trajectory draft-hidden checkpoint is absent"
             )
         role_states, role_receipt = _role_bank(
-            args.owner_checkpoint, args.revision_checkpoint, draft_hidden_checkpoint
+            args.owner_checkpoint,
+            args.revision_checkpoint,
+            draft_hidden_checkpoint,
+            include_owner=architecture == "tri_trajectory",
         )
     else:
         owner_state, revision_state, role_receipt = _role_pair(
@@ -516,7 +557,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         CONTROLLED_LAYER_INDICES
     ):
         raise Q36MTRTemporalGateTrainingError("temporal gate backbone differs")
-    if multi:
+    if categorical:
         model = MultiTrajectoryGatedProductModel(
             backbone,
             text_model,
@@ -525,14 +566,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 HIDDEN_SIZE,
                 RANK,
                 ALPHA,
-                MULTI_BRANCHES,
-                MULTI_INITIAL_WEIGHTS,
+                branch_names,
+                initial_weights,
             ),
             role_states=role_states,
             controlled_layer_indices=CONTROLLED_LAYER_INDICES,
         )
-        gate_parameters = MULTI_GATE_PARAMETERS
-        checkpoint_schema = MULTI_CHECKPOINT_SCHEMA
+        gate_parameters = (
+            TRI_GATE_PARAMETERS
+            if architecture == "tri_trajectory"
+            else MULTI_GATE_PARAMETERS
+        )
+        checkpoint_schema = (
+            TRI_CHECKPOINT_SCHEMA
+            if architecture == "tri_trajectory"
+            else MULTI_CHECKPOINT_SCHEMA
+        )
     else:
         model = TemporalGatedProductModel(
             backbone,
@@ -678,11 +727,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if initial_sha256 == final_sha256:
         raise Q36MTRTemporalGateTrainingError("temporal gate update is absent")
     metadata = {
-        "schema": MULTI_SCHEMA if multi else SCHEMA,
+        "schema": (
+            TRI_SCHEMA
+            if architecture == "tri_trajectory"
+            else MULTI_SCHEMA if categorical else SCHEMA
+        ),
         "architecture": (
-            "q36-tokenwise-multi-trajectory-residual-gate-v1"
-            if multi
-            else "q36-tokenwise-temporal-residual-gate-v1"
+            "q36-tokenwise-tri-trajectory-residual-gate-v1"
+            if architecture == "tri_trajectory"
+            else (
+                "q36-tokenwise-multi-trajectory-residual-gate-v1"
+                if categorical
+                else "q36-tokenwise-temporal-residual-gate-v1"
+            )
         ),
         "model_revision": MODEL_REVISION,
         "model_config_sha256": MODEL_CONFIG_SHA256,
@@ -690,17 +747,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "backbone_layout": backbone_layout,
         "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
         "gate_parameters": gate_parameters,
-        "branch_names": list(MULTI_BRANCHES) if multi else ["owner", "revision"],
+        "branch_names": list(branch_names) if categorical else ["owner", "revision"],
         "initial_branch_weights": (
-            list(MULTI_INITIAL_WEIGHTS)
-            if multi
+            list(initial_weights)
+            if categorical
             else [1.0 - args.initial_revision_weight, args.initial_revision_weight]
         ),
         "initial_revision_weight": args.initial_revision_weight,
         "routing_supervision_weight": args.routing_supervision_weight,
         "causal_loss_weight": args.causal_loss_weight,
         "routing_supervision_targets": (
-            "per-row-soft-target" if multi else ROUTING_TARGETS
+            "per-row-soft-target" if categorical else ROUTING_TARGETS
         ),
         "routing_supervision_mask": "response_tokens_only",
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
@@ -773,7 +830,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--architecture",
-        choices=("temporal", "multi_trajectory"),
+        choices=("temporal", "multi_trajectory", "tri_trajectory"),
         default="temporal",
     )
     parser.add_argument("--model-root", type=Path, required=True)
@@ -808,7 +865,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--initial-branch-weights",
         type=float,
-        nargs=2,
+        nargs="+",
         default=MULTI_INITIAL_WEIGHTS,
     )
     parser.add_argument("--routing-supervision-weight", type=float, default=0.0)

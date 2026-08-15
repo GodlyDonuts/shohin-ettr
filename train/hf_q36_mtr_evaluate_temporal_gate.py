@@ -40,6 +40,10 @@ from hf_q36_mtr_train_temporal_gate import (
     MULTI_CHECKPOINT_SCHEMA,
     MULTI_GATE_PARAMETERS,
     MULTI_INITIAL_WEIGHTS,
+    TRI_BRANCHES,
+    TRI_CHECKPOINT_SCHEMA,
+    TRI_GATE_PARAMETERS,
+    TRI_INITIAL_WEIGHTS,
     _role_pair,
     _role_bank,
     restore_gate_checkpoint,
@@ -141,9 +145,23 @@ def load_multi_trajectory_gate_model(
     revision_checkpoint: Path,
     draft_hidden_checkpoint: Path,
     gate_checkpoint: Path,
+    *,
+    architecture: str = "multi_trajectory",
 ) -> tuple[MultiTrajectoryGatedProductModel, dict[str, Any], str, dict[str, Any]]:
+    if architecture not in {"multi_trajectory", "tri_trajectory"}:
+        raise Q36MTRTemporalGateEvaluationError(
+            "categorical trajectory architecture differs"
+        )
+    tri = architecture == "tri_trajectory"
+    branch_names = TRI_BRANCHES if tri else MULTI_BRANCHES
+    initial_weights = TRI_INITIAL_WEIGHTS if tri else MULTI_INITIAL_WEIGHTS
+    gate_parameters = TRI_GATE_PARAMETERS if tri else MULTI_GATE_PARAMETERS
+    checkpoint_schema = TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
     role_states, role_receipt = _role_bank(
-        owner_checkpoint, revision_checkpoint, draft_hidden_checkpoint
+        owner_checkpoint,
+        revision_checkpoint,
+        draft_hidden_checkpoint,
+        include_owner=tri,
     )
     backbone, loader = load_product_backbone(
         model_root,
@@ -164,7 +182,7 @@ def load_multi_trajectory_gate_model(
         text_model,
         lm_head,
         MultiTrajectoryResidualGateConfig(
-            HIDDEN_SIZE, RANK, ALPHA, MULTI_BRANCHES, MULTI_INITIAL_WEIGHTS
+            HIDDEN_SIZE, RANK, ALPHA, branch_names, initial_weights
         ),
         role_states=role_states,
         controlled_layer_indices=CONTROLLED_LAYER_INDICES,
@@ -172,24 +190,28 @@ def load_multi_trajectory_gate_model(
     update, metadata = restore_gate_checkpoint(
         gate_checkpoint,
         model,
-        checkpoint_schema=MULTI_CHECKPOINT_SCHEMA,
-        gate_parameters=MULTI_GATE_PARAMETERS,
+        checkpoint_schema=checkpoint_schema,
+        gate_parameters=gate_parameters,
     )
     expected = {
-        "architecture": "q36-tokenwise-multi-trajectory-residual-gate-v1",
+        "architecture": (
+            "q36-tokenwise-tri-trajectory-residual-gate-v1"
+            if tri
+            else "q36-tokenwise-multi-trajectory-residual-gate-v1"
+        ),
         "model_revision": MODEL_REVISION,
         "model_config_sha256": MODEL_CONFIG_SHA256,
         "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
-        "gate_parameters": MULTI_GATE_PARAMETERS,
-        "branch_names": list(MULTI_BRANCHES),
-        "initial_branch_weights": list(MULTI_INITIAL_WEIGHTS),
+        "gate_parameters": gate_parameters,
+        "branch_names": list(branch_names),
+        "initial_branch_weights": list(initial_weights),
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "role_receipt": role_receipt,
     }
     if (
         update != 256
         or any(metadata.get(key) != value for key, value in expected.items())
-        or model.trainable_parameter_count() != MULTI_GATE_PARAMETERS
+        or model.trainable_parameter_count() != gate_parameters
     ):
         raise Q36MTRTemporalGateEvaluationError(
             "multi-trajectory gate checkpoint differs"
@@ -213,9 +235,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     from transformers import AutoTokenizer
 
     architecture = getattr(args, "architecture", "temporal")
-    multi = architecture == "multi_trajectory"
+    categorical = architecture in {"multi_trajectory", "tri_trajectory"}
     if (
-        architecture not in {"temporal", "multi_trajectory"}
+        architecture not in {"temporal", "multi_trajectory", "tri_trajectory"}
         or args.model_revision != MODEL_REVISION
         or args.seed != SEED
         or args.expected_rows not in SHARD_COUNTS
@@ -238,7 +260,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    if multi:
+    if categorical:
         draft_hidden_checkpoint = getattr(args, "draft_hidden_checkpoint", None)
         if not isinstance(draft_hidden_checkpoint, Path):
             raise Q36MTRTemporalGateEvaluationError(
@@ -250,6 +272,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             args.revision_checkpoint,
             draft_hidden_checkpoint,
             args.gate_checkpoint,
+            architecture=architecture,
         )
         arm = MULTI_ARM
     else:
@@ -317,7 +340,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "owner_checkpoint_sha256": sha256_file(args.owner_checkpoint),
         "revision_checkpoint_sha256": sha256_file(args.revision_checkpoint),
         "draft_hidden_checkpoint_sha256": (
-            sha256_file(args.draft_hidden_checkpoint) if multi else None
+            sha256_file(args.draft_hidden_checkpoint) if categorical else None
         ),
         "trainable_parameters": model.trainable_parameter_count(),
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
@@ -353,7 +376,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--architecture",
-        choices=("temporal", "multi_trajectory"),
+        choices=("temporal", "multi_trajectory", "tri_trajectory"),
         default="temporal",
     )
     parser.add_argument("--model-root", type=Path, required=True)
