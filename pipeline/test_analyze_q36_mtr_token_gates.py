@@ -110,6 +110,24 @@ def test_analysis_distinguishes_routing_only_multi_trajectory(tmp_path) -> None:
     assert report["winner"] == "multi_routing_only"
 
 
+def test_analysis_distinguishes_tri_geometry_router(tmp_path) -> None:
+    tri = tmp_path / "q36_tri_geometry" / "score.json"
+    routing = tmp_path / "q36_tri_trajectory" / "score.json"
+    unchanged = set(range(100))
+    _score(tri, "multi_trajectory_gate", set(range(130)), unchanged, rows=200)
+    _score(routing, "multi_trajectory_gate", set(range(120)), unchanged, rows=200)
+    report = module.run(
+        argparse.Namespace(
+            score=[tri, routing],
+            incumbent_revision_correct=125,
+            incumbent_score=None,
+            output=tmp_path / "analysis.json",
+        )
+    )
+    assert sorted(report["variants"]) == ["tri_geometry", "tri_trajectory"]
+    assert report["winner"] == "tri_geometry"
+
+
 def test_analysis_loads_matched_revision_incumbent(tmp_path) -> None:
     first = tmp_path / "q36_supervised" / "validation" / "score.json"
     second = tmp_path / "q36_multi" / "validation" / "score.json"

@@ -231,6 +231,10 @@ def test_routing_loader_accepts_tri_trajectory_targets(tmp_path) -> None:
         path, 1, module.TRI_DATA_SEED, architecture="tri_trajectory"
     )
     assert loaded[0]["routing_target"] == [0.5, 0.5, 0.0]
+    geometry, _ = module._routing_rows_with_sha256(
+        path, 1, module.TRI_DATA_SEED, architecture="tri_geometry"
+    )
+    assert geometry == loaded
 
 
 def test_multi_settings_require_soft_supervision() -> None:
@@ -262,6 +266,8 @@ def test_tri_settings_bind_retention_aware_geometry() -> None:
     args.initial_branch_weights = module.TRI_INITIAL_WEIGHTS
     args.routing_supervision_weight = module.GATE_ROUTING_SUPERVISION_WEIGHT
     args.causal_loss_weight = 0.0
+    module._validate_args(args)
+    args.architecture = "tri_geometry"
     module._validate_args(args)
     args.initial_branch_weights = module.MULTI_INITIAL_WEIGHTS
     with pytest.raises(module.Q36MTRTemporalGateTrainingError):

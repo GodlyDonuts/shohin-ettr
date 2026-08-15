@@ -190,6 +190,12 @@ class MultiTrajectoryResidualGateConfig:
     alpha: float
     branch_names: tuple[str, ...]
     initial_weights: tuple[float, ...]
+    router_features: str = "hidden_only"
+
+    @property
+    def geometry_feature_count(self) -> int:
+        branches = len(self.branch_names)
+        return 2 * branches + branches * (branches - 1) // 2
 
     def validate(self) -> None:
         if (
@@ -201,6 +207,7 @@ class MultiTrajectoryResidualGateConfig:
             or len(self.branch_names) != len(self.initial_weights)
             or len(set(self.branch_names)) != len(self.branch_names)
             or any(not name.isidentifier() for name in self.branch_names)
+            or self.router_features not in {"hidden_only", "trajectory_geometry"}
             or any(
                 not math.isfinite(weight) or weight <= 0.0
                 for weight in self.initial_weights
@@ -213,7 +220,14 @@ class MultiTrajectoryResidualGateConfig:
 
 
 class MultiTrajectoryResidualGate(nn.Module):
-    """Frozen residual bank with a learned per-token categorical gate."""
+    """Frozen residual bank with a learned per-token categorical gate.
+
+    The optional trajectory-geometry router exposes signals that a linear
+    hidden-state router cannot represent directly: per-branch residual energy,
+    residual/hidden alignment, and pairwise branch disagreement.  Its geometry
+    projection starts at exactly zero, preserving the same initial categorical
+    mixture while allowing routing to react to causal trajectory conflict.
+    """
 
     def __init__(
         self,
@@ -268,6 +282,16 @@ class MultiTrajectoryResidualGate(nn.Module):
                 dtype=torch.float32,
             )
         )
+        if config.router_features == "trajectory_geometry":
+            self.geometry_weight = nn.Parameter(
+                torch.zeros(
+                    (len(config.branch_names), config.geometry_feature_count),
+                    device=device,
+                    dtype=torch.float32,
+                )
+            )
+        else:
+            self.register_parameter("geometry_weight", None)
         self.scale = config.alpha / config.rank
         self.reset_receipt()
 
@@ -290,7 +314,10 @@ class MultiTrajectoryResidualGate(nn.Module):
         }
 
     def trainable_parameter_count(self) -> int:
-        return self.gate_weight.numel() + self.gate_bias.numel()
+        geometry = (
+            self.geometry_weight.numel() if self.geometry_weight is not None else 0
+        )
+        return self.gate_weight.numel() + self.gate_bias.numel() + geometry
 
     def _residuals(self, hidden_states: torch.Tensor) -> torch.Tensor:
         def project(values: torch.Tensor) -> torch.Tensor:
@@ -304,9 +331,68 @@ class MultiTrajectoryResidualGate(nn.Module):
                 return project(hidden_states)
         return project(hidden_states.float())
 
-    def _gate(self, hidden_states: torch.Tensor) -> torch.Tensor:
+    def _geometry_features(
+        self, hidden_states: torch.Tensor, residuals: torch.Tensor
+    ) -> torch.Tensor:
+        branches = len(self.config.branch_names)
+        if residuals.shape[:-2] != hidden_states.shape[:-1] or residuals.shape[-2:] != (
+            branches,
+            self.config.hidden_size,
+        ):
+            raise TemporalResidualGateError("multi-trajectory geometry features differ")
+        values = residuals.float()
+        hidden = hidden_states.float()
+        epsilon = torch.finfo(torch.float32).eps
+        residual_rms = values.square().mean(dim=-1).clamp_min(epsilon).sqrt()
+        hidden_norm = (
+            hidden.square().sum(dim=-1, keepdim=True).clamp_min(epsilon).sqrt()
+        )
+        residual_norm = values.square().sum(dim=-1).clamp_min(epsilon).sqrt()
+        alignment = (values * hidden.unsqueeze(-2)).sum(dim=-1) / (
+            residual_norm * hidden_norm
+        )
+        disagreement = []
+        for left in range(branches):
+            for right in range(left + 1, branches):
+                disagreement.append(
+                    (values[..., left, :] - values[..., right, :])
+                    .square()
+                    .mean(dim=-1)
+                    .clamp_min(epsilon)
+                    .sqrt()
+                )
+        features = torch.cat(
+            (
+                torch.log1p(residual_rms),
+                alignment,
+                torch.stack(disagreement, dim=-1),
+            ),
+            dim=-1,
+        )
+        if (
+            features.shape[-1] != self.config.geometry_feature_count
+            or not torch.isfinite(features).all()
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory geometry feature receipt differs"
+            )
+        return features
+
+    def _gate(
+        self,
+        hidden_states: torch.Tensor,
+        residuals: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         def route(values: torch.Tensor) -> torch.Tensor:
-            return F.softmax(F.linear(values, self.gate_weight, self.gate_bias), dim=-1)
+            logits = F.linear(values, self.gate_weight, self.gate_bias)
+            if self.geometry_weight is not None:
+                if residuals is None:
+                    raise TemporalResidualGateError(
+                        "multi-trajectory geometry residuals are absent"
+                    )
+                features = self._geometry_features(values, residuals)
+                logits = logits + F.linear(features, self.geometry_weight)
+            return F.softmax(logits, dim=-1)
 
         if hidden_states.device.type == "cuda":
             with torch.autocast("cuda", dtype=torch.bfloat16):
@@ -342,7 +428,7 @@ class MultiTrajectoryResidualGate(nn.Module):
                 "multi-trajectory native block geometry differs"
             )
         residuals = self._residuals(hidden_states)
-        gate = self._gate(hidden_states)
+        gate = self._gate(hidden_states, residuals)
         self._last_gate = gate
         mixed = (gate.unsqueeze(-1) * residuals).sum(dim=-2)
         with torch.no_grad():

@@ -43,6 +43,8 @@ from hf_q36_mtr_train_temporal_gate import (
     TRI_BRANCHES,
     TRI_CHECKPOINT_SCHEMA,
     TRI_GATE_PARAMETERS,
+    TRI_GEOMETRY_CHECKPOINT_SCHEMA,
+    TRI_GEOMETRY_GATE_PARAMETERS,
     TRI_INITIAL_WEIGHTS,
     _role_pair,
     _role_bank,
@@ -148,15 +150,29 @@ def load_multi_trajectory_gate_model(
     *,
     architecture: str = "multi_trajectory",
 ) -> tuple[MultiTrajectoryGatedProductModel, dict[str, Any], str, dict[str, Any]]:
-    if architecture not in {"multi_trajectory", "tri_trajectory"}:
+    if architecture not in {
+        "multi_trajectory",
+        "tri_trajectory",
+        "tri_geometry",
+    }:
         raise Q36MTRTemporalGateEvaluationError(
             "categorical trajectory architecture differs"
         )
-    tri = architecture == "tri_trajectory"
+    tri = architecture in {"tri_trajectory", "tri_geometry"}
+    geometry = architecture == "tri_geometry"
     branch_names = TRI_BRANCHES if tri else MULTI_BRANCHES
     initial_weights = TRI_INITIAL_WEIGHTS if tri else MULTI_INITIAL_WEIGHTS
-    gate_parameters = TRI_GATE_PARAMETERS if tri else MULTI_GATE_PARAMETERS
-    checkpoint_schema = TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+    gate_parameters = (
+        TRI_GEOMETRY_GATE_PARAMETERS
+        if geometry
+        else TRI_GATE_PARAMETERS if tri else MULTI_GATE_PARAMETERS
+    )
+    checkpoint_schema = (
+        TRI_GEOMETRY_CHECKPOINT_SCHEMA
+        if geometry
+        else TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+    )
+    router_features = "trajectory_geometry" if geometry else "hidden_only"
     role_states, role_receipt = _role_bank(
         owner_checkpoint,
         revision_checkpoint,
@@ -182,7 +198,7 @@ def load_multi_trajectory_gate_model(
         text_model,
         lm_head,
         MultiTrajectoryResidualGateConfig(
-            HIDDEN_SIZE, RANK, ALPHA, branch_names, initial_weights
+            HIDDEN_SIZE, RANK, ALPHA, branch_names, initial_weights, router_features
         ),
         role_states=role_states,
         controlled_layer_indices=CONTROLLED_LAYER_INDICES,
@@ -192,12 +208,17 @@ def load_multi_trajectory_gate_model(
         model,
         checkpoint_schema=checkpoint_schema,
         gate_parameters=gate_parameters,
+        router_features=router_features,
     )
     expected = {
         "architecture": (
-            "q36-tokenwise-tri-trajectory-residual-gate-v1"
-            if tri
-            else "q36-tokenwise-multi-trajectory-residual-gate-v1"
+            "q36-tokenwise-tri-trajectory-geometry-gate-v1"
+            if geometry
+            else (
+                "q36-tokenwise-tri-trajectory-residual-gate-v1"
+                if tri
+                else "q36-tokenwise-multi-trajectory-residual-gate-v1"
+            )
         ),
         "model_revision": MODEL_REVISION,
         "model_config_sha256": MODEL_CONFIG_SHA256,
@@ -205,6 +226,7 @@ def load_multi_trajectory_gate_model(
         "gate_parameters": gate_parameters,
         "branch_names": list(branch_names),
         "initial_branch_weights": list(initial_weights),
+        "router_features": router_features,
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "role_receipt": role_receipt,
     }
@@ -235,9 +257,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     from transformers import AutoTokenizer
 
     architecture = getattr(args, "architecture", "temporal")
-    categorical = architecture in {"multi_trajectory", "tri_trajectory"}
+    categorical = architecture in {
+        "multi_trajectory",
+        "tri_trajectory",
+        "tri_geometry",
+    }
     if (
-        architecture not in {"temporal", "multi_trajectory", "tri_trajectory"}
+        architecture
+        not in {
+            "temporal",
+            "multi_trajectory",
+            "tri_trajectory",
+            "tri_geometry",
+        }
         or args.model_revision != MODEL_REVISION
         or args.seed != SEED
         or args.expected_rows not in SHARD_COUNTS
@@ -376,7 +408,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--architecture",
-        choices=("temporal", "multi_trajectory", "tri_trajectory"),
+        choices=(
+            "temporal",
+            "multi_trajectory",
+            "tri_trajectory",
+            "tri_geometry",
+        ),
         default="temporal",
     )
     parser.add_argument("--model-root", type=Path, required=True)

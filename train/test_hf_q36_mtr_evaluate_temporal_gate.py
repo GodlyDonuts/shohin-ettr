@@ -23,7 +23,15 @@ class _TemporalModel:
 
 
 class _MultiModel(_TemporalModel):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__()
+        self.config = args[3]
+
     def trainable_parameter_count(self) -> int:
+        if self.config.router_features == "trajectory_geometry":
+            return module.TRI_GEOMETRY_GATE_PARAMETERS
+        if self.config.branch_names == module.TRI_BRANCHES:
+            return module.TRI_GATE_PARAMETERS
         return module.MULTI_GATE_PARAMETERS
 
 
@@ -152,6 +160,7 @@ def test_multi_loader_binds_two_sibling_trajectories(monkeypatch) -> None:
         "gate_parameters": module.MULTI_GATE_PARAMETERS,
         "branch_names": list(module.MULTI_BRANCHES),
         "initial_branch_weights": list(module.MULTI_INITIAL_WEIGHTS),
+        "router_features": "hidden_only",
         "trainable_master_dtype": module.TRAINABLE_MASTER_DTYPE,
         "role_receipt": role_receipt,
     }
@@ -170,3 +179,53 @@ def test_multi_loader_binds_two_sibling_trajectories(monkeypatch) -> None:
     assert observed == metadata
     assert loader == "causal"
     assert receipt["role_receipt"] == role_receipt
+
+
+def test_geometry_loader_binds_tri_branch_features(monkeypatch) -> None:
+    role_receipt = {"owner_checkpoint_sha256": "1" * 64}
+    monkeypatch.setattr(
+        module,
+        "_role_bank",
+        lambda owner, revision, hidden, **kwargs: ({}, role_receipt),
+    )
+    monkeypatch.setattr(
+        module, "load_product_backbone", lambda *args, **kwargs: (object(), "causal")
+    )
+    monkeypatch.setattr(
+        module,
+        "validate_backbone_geometry",
+        lambda backbone: list(module.CONTROLLED_LAYER_INDICES),
+    )
+    monkeypatch.setattr(module, "validate_backbone_moe_surface", lambda backbone: {})
+    monkeypatch.setattr(
+        module,
+        "resolve_product_backbone_layout",
+        lambda backbone: (object(), object(), module.HIDDEN_SIZE, "causal"),
+    )
+    monkeypatch.setattr(module, "MultiTrajectoryGatedProductModel", _MultiModel)
+    metadata = {
+        "architecture": "q36-tokenwise-tri-trajectory-geometry-gate-v1",
+        "model_revision": module.MODEL_REVISION,
+        "model_config_sha256": module.MODEL_CONFIG_SHA256,
+        "controlled_layer_indices": list(module.CONTROLLED_LAYER_INDICES),
+        "gate_parameters": module.TRI_GEOMETRY_GATE_PARAMETERS,
+        "branch_names": list(module.TRI_BRANCHES),
+        "initial_branch_weights": list(module.TRI_INITIAL_WEIGHTS),
+        "router_features": "trajectory_geometry",
+        "trainable_master_dtype": module.TRAINABLE_MASTER_DTYPE,
+        "role_receipt": role_receipt,
+    }
+    monkeypatch.setattr(
+        module, "restore_gate_checkpoint", lambda *args, **kwargs: (256, metadata)
+    )
+    model, observed, _, _ = module.load_multi_trajectory_gate_model(
+        Path("model"),
+        Path("owner"),
+        Path("revision"),
+        Path("hidden"),
+        Path("gate"),
+        architecture="tri_geometry",
+    )
+    assert observed == metadata
+    assert model.config.router_features == "trajectory_geometry"
+    assert model.config.branch_names == module.TRI_BRANCHES

@@ -85,7 +85,9 @@ def _variant_name(path: Path, arm: str, occupied: set[str]) -> str:
     lineage = "/".join(
         parent.name.casefold() for parent in (path.parent.parent, path.parent)
     )
-    if arm == "multi_trajectory_gate" and "tri_trajectory" in lineage:
+    if arm == "multi_trajectory_gate" and "tri_geometry" in lineage:
+        candidate = "tri_geometry"
+    elif arm == "multi_trajectory_gate" and "tri_trajectory" in lineage:
         candidate = "tri_trajectory"
     elif arm == "multi_trajectory_gate" and "routing_only" in lineage:
         candidate = "multi_routing_only"

@@ -138,7 +138,9 @@ def test_gate_rejects_invalid_config_or_branch_geometry() -> None:
         )
 
 
-def _multi_block() -> MultiTrajectoryResidualGate:
+def _multi_block(
+    router_features: str = "hidden_only",
+) -> MultiTrajectoryResidualGate:
     return MultiTrajectoryResidualGate(
         _Native(),
         MultiTrajectoryResidualGateConfig(
@@ -147,6 +149,7 @@ def _multi_block() -> MultiTrajectoryResidualGate:
             alpha=1.0,
             branch_names=("owner", "revision", "draft_hidden"),
             initial_weights=(0.8, 0.1, 0.1),
+            router_features=router_features,
         ),
         branches={
             "owner": (
@@ -196,6 +199,64 @@ def test_multi_trajectory_supervision_moves_probability_to_selected_branch() -> 
         loss.backward()
         optimizer.step()
     assert block._gate(hidden).detach()[0, 0, 2] > initial + 0.8
+
+
+def test_geometry_router_preserves_initial_mix_and_exposes_disagreement() -> None:
+    block = _multi_block("trajectory_geometry")
+    hidden = torch.tensor([[[4.0, 8.0], [2.0, -1.0]]])
+    residuals = block._residuals(hidden)
+    features = block._geometry_features(hidden, residuals)
+    assert features.shape == (1, 2, 9)
+    assert torch.isfinite(features).all()
+    torch.testing.assert_close(
+        block._gate(hidden, residuals),
+        torch.tensor([[[0.8, 0.1, 0.1], [0.8, 0.1, 0.1]]]),
+    )
+    assert block.geometry_weight is not None
+    assert block.trainable_parameter_count() == 36
+
+
+def test_geometry_router_learns_from_trajectory_conflict_with_hidden_head_frozen() -> (
+    None
+):
+    block = _multi_block("trajectory_geometry")
+    hidden = torch.tensor([[[1.0, 0.0], [0.0, 1.0]]])
+    residuals = block._residuals(hidden).detach()
+    with torch.no_grad():
+        block.gate_weight.zero_()
+    block.gate_weight.requires_grad_(False)
+    optimizer = torch.optim.AdamW(
+        [block.geometry_weight, block.gate_bias], lr=0.1, weight_decay=0.0
+    )
+    target = torch.tensor([0, 2])
+    initial = block._gate(hidden, residuals).detach()
+    for _ in range(150):
+        optimizer.zero_grad(set_to_none=True)
+        probabilities = block._gate(hidden, residuals)
+        loss = torch.nn.functional.nll_loss(
+            probabilities.squeeze(0).clamp_min(1.0e-8).log(), target
+        )
+        loss.backward()
+        optimizer.step()
+    learned = block._gate(hidden, residuals).detach()
+    assert learned[0, 0, 0] > initial[0, 0, 0]
+    assert learned[0, 1, 2] > initial[0, 1, 2] + 0.8
+    assert float(learned[0, 0, 0]) > 0.98
+
+
+def test_geometry_router_requires_residuals_and_valid_mode() -> None:
+    block = _multi_block("trajectory_geometry")
+    with pytest.raises(TemporalResidualGateError, match="residuals are absent"):
+        block._gate(torch.ones(1, 1, 2))
+    with pytest.raises(TemporalResidualGateError):
+        MultiTrajectoryResidualGateConfig(
+            2,
+            1,
+            1.0,
+            ("owner", "revision"),
+            (0.9, 0.1),
+            "unknown",
+        ).validate()
 
 
 def test_multi_trajectory_gate_rejects_branch_order_or_invalid_target() -> None:
