@@ -109,15 +109,24 @@ def _role_pair(
         or set(owner["trainable_state"]) != set(revision["trainable_state"])
     ):
         raise Q36MTRTemporalGateTrainingError("temporal gate role pair differs")
+    owner_checkpoint_sha = sha256_file(owner_checkpoint)
     owner_sha = trainable_state_sha256(owner["trainable_state"])
     revision_sha = trainable_state_sha256(revision["trainable_state"])
-    if owner_sha == revision_sha:
-        raise Q36MTRTemporalGateTrainingError("temporal gate role states are identical")
+    if (
+        owner_sha == revision_sha
+        or owner_metadata.get("final_trainable_state_sha256") != owner_sha
+        or owner_metadata.get("warm_start_checkpoint") is not None
+        or owner_metadata.get("warm_start_checkpoint_sha256") is not None
+        or revision_metadata.get("warm_start_checkpoint_sha256") != owner_checkpoint_sha
+        or revision_metadata.get("warm_start_update") != REVISION_UPDATES
+        or revision_metadata.get("initial_trainable_state_sha256") != owner_sha
+    ):
+        raise Q36MTRTemporalGateTrainingError("temporal gate role lineage differs")
     return (
         owner["trainable_state"],
         revision["trainable_state"],
         {
-            "owner_checkpoint_sha256": sha256_file(owner_checkpoint),
+            "owner_checkpoint_sha256": owner_checkpoint_sha,
             "revision_checkpoint_sha256": sha256_file(revision_checkpoint),
             "owner_state_sha256": owner_sha,
             "revision_state_sha256": revision_sha,

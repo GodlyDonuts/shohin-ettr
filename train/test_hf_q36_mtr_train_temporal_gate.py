@@ -89,14 +89,29 @@ def test_role_pair_binds_owner_and_aligned_states(monkeypatch, tmp_path) -> None
         "trainable_parameters": 1_179_648,
         "trainable_master_dtype": module.TRAINABLE_MASTER_DTYPE,
     }
+    owner_state = {"state": torch.tensor([1.0])}
+    revision_state = {"state": torch.tensor([2.0])}
+    owner_state_sha256 = trainable_state_sha256(owner_state)
     payloads = {
         owner_path: {
-            "metadata": {**shared, "role": "owner"},
-            "trainable_state": {"state": torch.tensor([1.0])},
+            "metadata": {
+                **shared,
+                "role": "owner",
+                "final_trainable_state_sha256": owner_state_sha256,
+                "warm_start_checkpoint": None,
+                "warm_start_checkpoint_sha256": None,
+            },
+            "trainable_state": owner_state,
         },
         revision_path: {
-            "metadata": {**shared, "role": "aligned"},
-            "trainable_state": {"state": torch.tensor([2.0])},
+            "metadata": {
+                **shared,
+                "role": "aligned",
+                "warm_start_checkpoint_sha256": owner_path.name * 4,
+                "warm_start_update": module.REVISION_UPDATES,
+                "initial_trainable_state_sha256": owner_state_sha256,
+            },
+            "trainable_state": revision_state,
         },
     }
     monkeypatch.setattr(module, "load_role_checkpoint_payload", payloads.__getitem__)
@@ -105,6 +120,12 @@ def test_role_pair_binds_owner_and_aligned_states(monkeypatch, tmp_path) -> None
     assert float(owner["state"][0]) == 1.0
     assert float(revision["state"][0]) == 2.0
     assert receipt["owner_state_sha256"] != receipt["revision_state_sha256"]
+    payloads[revision_path]["metadata"]["warm_start_checkpoint_sha256"] = "0" * 64
+    with pytest.raises(module.Q36MTRTemporalGateTrainingError):
+        module._role_pair(owner_path, revision_path)
+    payloads[revision_path]["metadata"]["warm_start_checkpoint_sha256"] = (
+        owner_path.name * 4
+    )
     payloads[revision_path]["metadata"]["role"] = "draft_hidden"
     with pytest.raises(module.Q36MTRTemporalGateTrainingError):
         module._role_pair(owner_path, revision_path)
