@@ -112,3 +112,29 @@ and not locally recoverable.
 - The live Qwen3.6 model, Nemotron Super model and overlay, current Q36
   runtime, and current Q36 evidence root all revalidated present after the
   transaction.
+
+## Batch 3 manifest — retired dense hosts and closed legacy corpora
+
+This manifest was recorded before mutation. Dense scaling, PCF17, OCR2, R12,
+ETTR-IL, and the legacy reasoning-data lane are closed; their compact results,
+model revisions, manifests, and conclusions are pushed to Git. None of the
+active Q36 or Nemotron Super batch scripts references any target below. The
+eight literal roots are resolved, nonsymbolic, owned by `sa305415`, and contain
+92,373,024,768 allocated bytes (86.03 GiB) across 3,732 path inodes.
+
+| Mtime (EDT) | Allocated bytes | Inodes | Exact target |
+|---|---:|---:|---|
+| 2026-08-09 02:19:04 | 35,706,695,680 | 64 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/ministral-3-8b-reasoning-2512-81eaece` |
+| 2026-08-09 08:22:30 | 19,329,429,504 | 45 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-9b-c202236` |
+| 2026-08-08 17:17:28 | 5,862,699,008 | 409 | `/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-0.8b-2fc0636` |
+| 2026-08-07 23:08:39 | 1,907,191,808 | 67 | `/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e` |
+| 2026-08-02 17:00:08 | 11,306,930,176 | 1,839 | `/lustre/fs1/home/sa305415/shohin/artifacts/r12` |
+| 2026-08-07 15:24:12 | 5,567,107,072 | 887 | `/lustre/fs1/home/sa305415/shohin/artifacts/reasoning` |
+| 2026-07-30 07:18:53 | 1,136,029,696 | 79 | `/lustre/fs1/home/sa305415/shohin/artifacts/ettr_il_v3` |
+| 2026-08-04 20:05:54 | 11,556,941,824 | 342 | `/lustre/fs1/home/sa305415/shohin_data` |
+
+The active Qwen3.6 35B-A3B host, Nemotron Super 120B-A12B host and overlay,
+current Q36 data/checkpoints/candidates/scores/runtimes, repositories,
+credentials, and cluster configuration are explicit exclusions. Every target
+must be revalidated byte/inode-identical immediately before same-parent
+quarantine and literal one-filesystem removal.
