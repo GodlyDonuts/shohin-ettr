@@ -181,7 +181,9 @@ def _validate_mechanics(
     return report
 
 
-def _load_nemotron(args: argparse.Namespace) -> LoadedHost:
+def _load_nemotron(
+    args: argparse.Namespace, *, attach_revision: bool = True
+) -> LoadedHost:
     from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -242,7 +244,7 @@ def _load_nemotron(args: argparse.Namespace) -> LoadedHost:
     device_map = getattr(backbone, "hf_device_map", None)
     if not isinstance(device_map, dict) or set(device_map.values()) - {0, 1}:
         raise UpwardMoEOwnerTrainingError("Nemotron owner device map differs")
-    model = NemotronSuperRevisionModel(backbone)
+    model = NemotronSuperRevisionModel(backbone) if attach_revision else backbone
     return LoadedHost(
         model=model,
         tokenizer=tokenizer,
@@ -255,7 +257,9 @@ def _load_nemotron(args: argparse.Namespace) -> LoadedHost:
     )
 
 
-def _load_mixtral(args: argparse.Namespace) -> LoadedHost:
+def _load_mixtral(
+    args: argparse.Namespace, *, attach_revision: bool = True
+) -> LoadedHost:
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
     from hf_mixtral_8x22b_mechanics import (
@@ -315,7 +319,7 @@ def _load_mixtral(args: argparse.Namespace) -> LoadedHost:
         or any(value in {"cpu", "disk"} for value in device_map.values())
     ):
         raise UpwardMoEOwnerTrainingError("Mixtral owner device map differs")
-    model = MixtralRevisionModel(backbone)
+    model = MixtralRevisionModel(backbone) if attach_revision else backbone
     return LoadedHost(
         model=model,
         tokenizer=tokenizer,
@@ -325,13 +329,15 @@ def _load_mixtral(args: argparse.Namespace) -> LoadedHost:
     )
 
 
-def _load_host(args: argparse.Namespace) -> LoadedHost:
+def _load_host(args: argparse.Namespace, *, attach_revision: bool = True) -> LoadedHost:
     if torch.cuda.device_count() != 2 or any(
         "H100" not in torch.cuda.get_device_name(index).upper() for index in range(2)
     ):
         raise UpwardMoEOwnerTrainingError("owner training requires exactly two H100s")
     return (
-        _load_nemotron(args) if args.host == "nemotron-super" else _load_mixtral(args)
+        _load_nemotron(args, attach_revision=attach_revision)
+        if args.host == "nemotron-super"
+        else _load_mixtral(args, attach_revision=attach_revision)
     )
 
 
