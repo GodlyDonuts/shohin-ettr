@@ -22,6 +22,7 @@ MATCHED_SCHEMAS = frozenset(
 )
 REPORT_SCHEMA = "shohin-upward-moe-scaling-analysis-v1"
 DOMAINS = ("bbh_logic", "math500", "mbpp")
+Z95 = 1.959963984540054
 
 
 class UpwardMoEScalingError(RuntimeError):
@@ -393,6 +394,90 @@ def _ols(points: list[dict[str, Any]], parameter_field: str) -> dict[str, float]
     }
 
 
+def _paired_gain_sampling(point: dict[str, Any]) -> dict[str, Any]:
+    rows = _integer(point.get("rows"), "rows", 2)
+    wins = _integer(point.get("paired_wins"), "paired wins")
+    losses = _integer(point.get("paired_losses"), "paired losses")
+    treatment = _integer(point.get("treatment_correct"), "treatment correct")
+    unchanged = _integer(point.get("unchanged_correct"), "unchanged correct")
+    if (
+        wins + losses > rows
+        or wins - losses != treatment - unchanged
+        or treatment > rows
+        or unchanged > rows
+    ):
+        raise UpwardMoEScalingError("paired sampling accounting differs")
+    mean = (wins - losses) / rows
+    sum_squares = wins + losses
+    # A perfectly agreeing finite screen has zero empirical discordance but
+    # must not receive infinite weight in a cross-host fit. One conservative
+    # effective discordant row supplies a deterministic finite variance floor.
+    effective_sum_squares = max(sum_squares, 1)
+    sample_variance = (effective_sum_squares - rows * mean * mean) / (rows - 1)
+    if sample_variance <= 0.0:
+        raise UpwardMoEScalingError("paired sampling variance differs")
+    standard_error = 100.0 * math.sqrt(sample_variance / rows)
+    mean_percentage_points = 100.0 * mean
+    return {
+        "model": "paired_outcome_normal_approximation",
+        "gain_percentage_points": mean_percentage_points,
+        "standard_error_percentage_points": standard_error,
+        "observed_discordant_rows": sum_squares,
+        "variance_floor_discordant_rows": effective_sum_squares,
+        "ci95_percentage_points": [
+            mean_percentage_points - Z95 * standard_error,
+            mean_percentage_points + Z95 * standard_error,
+        ],
+    }
+
+
+def _sampling_weighted_ols(
+    points: list[dict[str, Any]], parameter_field: str
+) -> dict[str, Any]:
+    xs = [math.log10(point[parameter_field]) for point in points]
+    ys = [point["gain_over_unchanged_percentage_points"] for point in points]
+    standard_errors = [
+        point["paired_gain_sampling"]["standard_error_percentage_points"]
+        for point in points
+    ]
+    weights = [
+        1.0 / (standard_error * standard_error) for standard_error in standard_errors
+    ]
+    total_weight = sum(weights)
+    x_mean = sum(weight * x for weight, x in zip(weights, xs)) / total_weight
+    y_mean = sum(weight * y for weight, y in zip(weights, ys)) / total_weight
+    denominator = sum(weight * (x - x_mean) ** 2 for weight, x in zip(weights, xs))
+    if denominator <= 0.0:
+        raise UpwardMoEScalingError("weighted parameter scale is not distinct")
+    slope = (
+        sum(
+            weight * (x - x_mean) * (y - y_mean)
+            for weight, x, y in zip(weights, xs, ys)
+        )
+        / denominator
+    )
+    intercept = y_mean - slope * x_mean
+    slope_standard_error = math.sqrt(1.0 / denominator)
+    predicted = [intercept + slope * x for x in xs]
+    residual = sum(
+        weight * (y - estimate) ** 2
+        for weight, y, estimate in zip(weights, ys, predicted)
+    )
+    total = sum(weight * (y - y_mean) ** 2 for weight, y in zip(weights, ys))
+    lower = slope - Z95 * slope_standard_error
+    upper = slope + Z95 * slope_standard_error
+    return {
+        "sampling_model": "independent_marginal_paired_outcome_normal_approximation",
+        "slope_percentage_points_per_log10_parameter": slope,
+        "slope_standard_error_percentage_points": slope_standard_error,
+        "slope_ci95_percentage_points": [lower, upper],
+        "intercept_percentage_points": intercept,
+        "weighted_r_squared": 1.0 - residual / total if total else 1.0,
+        "positive_slope_ci95_lower_bound_above_zero": lower > 0.0,
+        "cross_host_identity_covariance_modeled": False,
+    }
+
+
 def analyze(paths: list[Path]) -> dict[str, Any]:
     if not paths:
         raise UpwardMoEScalingError("at least one completed point is required")
@@ -417,6 +502,8 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
     distinct_total = len({point["total_parameters"] for point in points})
     distinct_active = len({point["active_parameters"] for point in points})
     curve_ready = len(points) >= 3 and distinct_total >= 3 and distinct_active >= 3
+    for point in points:
+        point["paired_gain_sampling"] = _paired_gain_sampling(point)
     report: dict[str, Any] = {
         "schema": REPORT_SCHEMA,
         "status": "complete_curve" if curve_ready else "complete_insufficient_points",
@@ -454,6 +541,12 @@ def analyze(paths: list[Path]) -> dict[str, Any]:
         report["curve"] = {
             "total_parameter_fit": total_fit,
             "active_parameter_fit": active_fit,
+            "paired_sampling_weighted_total_parameter_fit": (
+                _sampling_weighted_ols(points, "total_parameters")
+            ),
+            "paired_sampling_weighted_active_parameter_fit": (
+                _sampling_weighted_ols(points, "active_parameters")
+            ),
             "gain_monotonic_by_active_parameters": monotonic_gain,
         }
         capability_supported = (

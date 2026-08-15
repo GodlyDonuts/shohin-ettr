@@ -176,6 +176,26 @@ def test_three_points_fit_positive_active_curve(tmp_path: Path) -> None:
         ]
         > 0
     )
+    weighted = result["curve"]["paired_sampling_weighted_active_parameter_fit"]
+    assert weighted["sampling_model"] == (
+        "independent_marginal_paired_outcome_normal_approximation"
+    )
+    assert weighted["slope_percentage_points_per_log10_parameter"] > 0
+    assert weighted["slope_standard_error_percentage_points"] > 0
+    assert len(weighted["slope_ci95_percentage_points"]) == 2
+    assert weighted["cross_host_identity_covariance_modeled"] is False
+    for point in result["points"]:
+        sampling = point["paired_gain_sampling"]
+        assert sampling["model"] == "paired_outcome_normal_approximation"
+        assert sampling["gain_percentage_points"] == (
+            point["gain_over_unchanged_percentage_points"]
+        )
+        assert sampling["standard_error_percentage_points"] > 0
+        assert (
+            sampling["ci95_percentage_points"][0]
+            < sampling["gain_percentage_points"]
+            < sampling["ci95_percentage_points"][1]
+        )
     assert [point["active_parameters"] for point in result["points"]] == [
         3_000_000_000,
         12_000_000_000,
@@ -236,6 +256,27 @@ def test_paired_delta_tamper_fails(tmp_path: Path) -> None:
     forged["revision_vs_unchanged"]["net_correct"] = 31
     with pytest.raises(UpwardMoEScalingError, match="paired delta"):
         analyze([_write(tmp_path / "forged.json", forged)])
+
+
+def test_exact_agreement_receives_finite_variance_floor(tmp_path: Path) -> None:
+    matched = _matched(
+        "shohin-nemotron-super-fixed-draft-screen-score-v1",
+        "Nemotron-Super",
+        120_000_000_000,
+        12_000_000_000,
+        0,
+    )
+    matched["revision_vs_unchanged"] = {
+        "left_only_correct": 0,
+        "right_only_correct": 0,
+        "net_correct": 0,
+        "mcnemar_exact_two_sided_p": 1.0,
+    }
+    result = analyze([_write(tmp_path / "agreement.json", matched)])
+    sampling = result["points"][0]["paired_gain_sampling"]
+    assert sampling["observed_discordant_rows"] == 0
+    assert sampling["variance_floor_discordant_rows"] == 1
+    assert sampling["standard_error_percentage_points"] > 0
 
 
 def test_different_architecture_series_cannot_be_combined(tmp_path: Path) -> None:
