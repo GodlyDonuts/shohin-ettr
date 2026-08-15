@@ -6,6 +6,7 @@ pipeline/apply_q36_mtr_owner_commit.py
 pipeline/apply_q36_mtr_synthesis_consensus.py
 pipeline/authorize_q36_mtr_mechanics_qualification.py
 pipeline/authorize_q36_mtr_phase.py
+pipeline/build_nemotron_scale_transfer_basis.py
 pipeline/build_pcf1_data.py
 pipeline/build_q36_mtr_commit_pairs.py
 pipeline/build_q36_mtr_custody.py
@@ -26,6 +27,7 @@ pipeline/compare_q36_mtr_semantic_commits.py
 pipeline/compile_q36_mtr_plan.py
 pipeline/cross_validate_q36_mtr_sparse_router.py
 pipeline/dispatch_q36_mtr.py
+pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
 pipeline/jobs/q36_mtr_authorize_score.sbatch
 pipeline/jobs/q36_mtr_build_final_custody.sbatch
