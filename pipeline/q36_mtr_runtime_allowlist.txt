@@ -1,4 +1,5 @@
 # Deterministic Q36-MTR preparation/runtime closure. Sorted, one path per line.
+pipeline/analyze_q36_mtr_external_outcomes.py
 pipeline/apply_q36_mtr_owner_commit.py
 pipeline/apply_q36_mtr_synthesis_consensus.py
 pipeline/authorize_q36_mtr_mechanics_qualification.py
