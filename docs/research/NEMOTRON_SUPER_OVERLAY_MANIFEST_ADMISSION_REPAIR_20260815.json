@@ -33,6 +33,16 @@
     "gate_changed": false,
     "implementation": "Accept either installation or lexical row order after exact manifest-byte authentication; retain unique safe relative paths and exact per-member SHA-256 verification."
   },
+  "post_repair_read_only_verification": {
+    "status": "pass",
+    "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_c05e8581_r1",
+    "manifest_sha256": "e52a0095628e0c4eb58f69c4ebb6f4d1c7a929792eb9a55046bda670013a6ea2",
+    "manifest_entries": 3802,
+    "covered_bytes": 616608288,
+    "all_member_hashes_verified": true,
+    "scientific_rows_read": 0,
+    "model_loaded": false
+  },
   "continuation": {
     "replacement_mechanics": 760275,
     "replacement_runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_c05e8581_r1",
