@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-mixtral-storage-reclamation-batch-v1",
-  "status": "authorized_preexecution_manifest",
+  "status": "complete_verified_permanent",
   "batch": 2,
   "purpose": "Remove closed pre-Q36 ETTR runtime tar copies to increase post-Qwen/post-Super Mixtral staging margin.",
   "host": "newton",
@@ -40,5 +40,26 @@
     {"mtime_epoch": 1785593678, "allocated_bytes": 827371520, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-cf875bc-r2.tar"},
     {"mtime_epoch": 1785580003, "allocated_bytes": 826793984, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_ettr_runtime_f174a58_1785580001.tar"}
   ],
-  "recovery": null
+  "recovery": {
+    "settled_observations_utc": [
+      "2026-08-15T17:54:13Z",
+      "2026-08-15T17:54:23Z",
+      "2026-08-15T17:54:33Z"
+    ],
+    "observations_identical": true,
+    "post_used_kib": 935790212,
+    "post_hard_limit_kib": 1059061760,
+    "post_headroom_kib": 123271548,
+    "post_headroom_bytes": 126230065152,
+    "post_used_inodes": 533464,
+    "post_headroom_inodes": 476536,
+    "recovered_kib": 17022196,
+    "recovered_bytes": 17430728704,
+    "recovered_inodes": 21,
+    "targets_deleted": 21,
+    "all_originals_absent": true,
+    "all_quarantines_absent": true,
+    "local_recovery_possible": false,
+    "queue_preserved": true
+  }
 }
