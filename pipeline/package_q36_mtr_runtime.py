@@ -84,9 +84,11 @@ REQUIRED = {
     "pipeline/lift_nemotron_super_adapter_to_ultra.py",
     "train/jobs/q36_mtr_mechanics_qualification.sbatch",
     "train/nemotron_super_post_mixer_revision.py",
+    "train/nemotron_ultra_post_mixer_revision.py",
     "train/pcf1_code_sandbox.py",
     "train/q36_mtr_roles.py",
     "train/q36_upward_moe_host.py",
+    "train/q36_upward_moe_ultra_host.py",
     "train/shared_post_mlp_revision.py",
     "train/temporal_residual_gate.py",
 }

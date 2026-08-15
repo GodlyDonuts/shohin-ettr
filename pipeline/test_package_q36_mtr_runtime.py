@@ -34,6 +34,8 @@ def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() 
     assert "train/jobs/nemotron_super_train_revision.sbatch" in entries
     assert "train/nemotron_super_post_mixer_revision.py" in entries
     assert "train/q36_upward_moe_host.py" in entries
+    assert "train/nemotron_ultra_post_mixer_revision.py" in entries
+    assert "train/q36_upward_moe_ultra_host.py" in entries
     assert "pipeline/build_nemotron_scale_transfer_basis.py" in entries
     assert "pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch" in entries
     assert "pipeline/lift_nemotron_super_adapter_to_ultra.py" in entries
