@@ -1,0 +1,92 @@
+{
+  "schema": "shohin-q36-mixtral-8x22b-upward-graph-launch-v1",
+  "status": "complete_dependency_staged_measurement_pending",
+  "date": "2026-08-15",
+  "host": {
+    "model": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "total_parameters": 141000000000,
+    "active_parameters": 39000000000,
+    "architecture": "MixtralForCausalLM",
+    "expected_model_manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7",
+    "expected_config_sha256": "9c4a6138d84029ab666943613e3d5844d2ea8fd6149f44f77188c62e2915e0f5",
+    "expected_source_revision_sha256": "8642b7c629dc46cc5ab978b352bcf020ad64b826cf933154396aa0cf041b0340",
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/mixtral-8x22b-instruct-cc88a6c"
+  },
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_33c3289f_r1",
+    "source_commit": "33c3289f4a67d5eb1c8f3bb5e9632e9f595d16dc",
+    "sha256sums_sha256": "c98f7df71d89de763db101d2eadea5ae75e48505d735f2d1de432950063aadd4",
+    "runtime_json_sha256": "6427f8d7bbb0df53002d3554fcd8749a3b83453ac1a8028b1ce91e83339c0938"
+  },
+  "inputs": {
+    "revision_training_data": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/data/revision_train.jsonl",
+    "revision_training_data_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "screen_sources": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/external_validation_b453c451_r1/screen_sources.jsonl",
+    "screen_sources_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "screen_assessors": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/external_validation_b453c451_r1/screen_assessors.jsonl",
+    "screen_assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "screen_rows": 256,
+    "domains": {
+      "bbh_logic": 128,
+      "math500": 117,
+      "mbpp": 11
+    },
+    "fixed_qwen_model_owned_draft_sha256s": [
+      "505b42345dda545b0967090bb8fd35fc73400841816d5008ef780bd0cacbc7a8",
+      "642b3cf4d923d4e8f83366e7c6c39925bacd65a6a50d1bd619c4cccedf750629",
+      "8fcabbe9e2dfb2052ce9fe51708e0651fe31e43bbd52d1739c4ea5a4397921fa",
+      "2b64429234d1667d0d83282eedb15626602e38117973d99108beb0e3b06cd8f0"
+    ]
+  },
+  "graph": {
+    "acquisition_job": 760561,
+    "mechanics_job": 760565,
+    "mechanics_dependency": "afterok:760561",
+    "fit_job": 760566,
+    "fit_dependency": "afterok:760565",
+    "unchanged_array": 760567,
+    "unchanged_dependency": "afterok:760565",
+    "self_refinement_array": 760568,
+    "self_refinement_dependency": "afterok:760565",
+    "revision_array": 760569,
+    "revision_dependency": "afterok:760566",
+    "score_job": 760571,
+    "score_dependency": "afterok:760567_*:760568_*:760569_*",
+    "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/mixtral_8x22b_upward_trained_revision_cc88a6c_r1",
+    "requeue": false,
+    "duplicate_outputs_at_submission": 0
+  },
+  "resources": {
+    "mechanics": "2_H100_x_1h",
+    "fit": "2_H100_x_6h",
+    "each_eval_shard": "2_H100_x_4h",
+    "eval_shards_per_arm": 4,
+    "eval_arms": 3,
+    "score": "CPU_4_cores_x_20m",
+    "maximum_eligible_eval_jobs_concurrently": 8,
+    "maximum_eligible_h100s_concurrently": 16,
+    "maximum_requested_h100_hours": 110.0
+  },
+  "scientific_contract": {
+    "architecture": "shohin-mixtral-8x22b-shared-post-mlp-v1",
+    "trained_revision_is_scaling_series_arm": true,
+    "matched_controls": [
+      "unchanged",
+      "self_refinement"
+    ],
+    "generation_mode": "greedy",
+    "seed": 2026080816,
+    "max_new_tokens": 768,
+    "single_paired_scorer": true,
+    "source_disjoint": true,
+    "result_available": false,
+    "automatic_successor": false
+  },
+  "submission_notes": {
+    "first_score_submission_created_job": false,
+    "first_score_submission_failure": "Slurm rejected array wildcard dependency syntax before creating a job",
+    "corrected_score_dependency": "plain array job IDs; Slurm resolved each to the exact array-wide afterok condition",
+    "healthy_existing_jobs_cancelled_or_modified": 0
+  }
+}
