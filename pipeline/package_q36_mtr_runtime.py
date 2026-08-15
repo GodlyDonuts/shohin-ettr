@@ -59,6 +59,7 @@ REQUIRED = {
     "train/hf_q36_mtr_mechanics.py",
     "train/hf_q36_mtr_train_commit.py",
     "train/hf_q36_mtr_train_role.py",
+    "train/hf_q36_mtr_train_temporal_gate.py",
     "train/jobs/q36_mtr_common.sh",
     "train/jobs/q36_mtr_external_evaluate.sbatch",
     "pipeline/jobs/q36_mtr_external_score.sbatch",
@@ -66,6 +67,7 @@ REQUIRED = {
     "train/pcf1_code_sandbox.py",
     "train/q36_mtr_roles.py",
     "train/shared_post_mlp_revision.py",
+    "train/temporal_residual_gate.py",
 }
 
 
