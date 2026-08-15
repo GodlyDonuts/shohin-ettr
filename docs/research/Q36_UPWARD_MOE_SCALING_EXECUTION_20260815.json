@@ -619,6 +619,24 @@
       "status": "not_staged_pending_super_measurement_and_distributed_runtime"
     }
   ],
+  "current_upward_resource_state": {
+    "observed_at": "2026-08-15T12:52:36-04:00",
+    "newton_quota_used_kib": 989920264,
+    "newton_quota_hard_limit_kib": 1059061760,
+    "newton_quota_headroom_kib": 69141496,
+    "newton_inodes_used": 701481,
+    "newton_inodes_hard_limit": 1010000,
+    "newton_inode_headroom": 308519,
+    "august_gpu_hours_from_completed_and_running_sacct_allocations": 1134.136,
+    "nominal_august_gpu_hour_cap": 2000,
+    "nominal_august_gpu_hours_remaining": 865.864,
+    "normal_partition_120b_job": 760382,
+    "normal_partition_120b_job_state": "PENDING_PRIORITY",
+    "normal_partition_120b_requested_h100s": 2,
+    "highgpu_observed_idle_eight_h100_nodes": 2,
+    "highgpu_account_association_present": false,
+    "highgpu_request_status": "official_form_opened_microsoft_sign_in_and_human_captcha_submission_required"
+  },
   "post_ultra_true_upward_frontier": {
     "host": "moonshotai/Kimi-K3",
     "model_revision_observed_2026_08_15": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
