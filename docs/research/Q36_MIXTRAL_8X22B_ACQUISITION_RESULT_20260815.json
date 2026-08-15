@@ -1,0 +1,65 @@
+{
+  "schema": "shohin-q36-mixtral-8x22b-acquisition-result-v1",
+  "status": "complete_snapshot_sealed_mechanics_released_to_scheduler",
+  "date": "2026-08-15",
+  "job": {
+    "job_id": 760561,
+    "state": "COMPLETED",
+    "elapsed_seconds": 4345,
+    "exit_code": "0:0",
+    "node": "evc21",
+    "restarts": 0,
+    "allocation": "8_CPU_32GiB_zero_GPU",
+    "max_rss_kib": 29948388,
+    "stdout_sha256": "fa1e6f560d168829f25266ef5164ee234dd8f1e0f9963731b0b1a6f7581c95f9",
+    "stderr_sha256": "3f275f4c46eeef611c57b7697f92452f89e40b55c2236584b3c05b18ff7c3bdf"
+  },
+  "snapshot": {
+    "model_id": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "model_revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/mixtral-8x22b-instruct-cc88a6c",
+    "model_manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7",
+    "source_revision_sha256": "8642b7c629dc46cc5ab978b352bcf020ad64b826cf933154396aa0cf041b0340",
+    "config_sha256": "9c4a6138d84029ab666943613e3d5844d2ea8fd6149f44f77188c62e2915e0f5",
+    "acquisition_report": "/lustre/fs1/home/sa305415/shohin/artifacts/external/mixtral-8x22b-instruct-cc88a6c.acquisition.json",
+    "acquisition_report_sha256": "89f54e4c351a9952b984b555b333842e7d6804e7a5d4f810a00d51c35494a53d",
+    "manifest_entries": 70,
+    "regular_files_including_manifest": 71,
+    "weight_shards": 59,
+    "covered_bytes": 281263818779,
+    "allocated_kib": 274672000,
+    "symlinks_or_specials": 0,
+    "writable_members": 0,
+    "root_mode": "0555",
+    "exact_membership": true,
+    "independent_full_content_hash_passes": 3
+  },
+  "quota": {
+    "filesystem": "/lustre/fs1",
+    "used_kib": 866425384,
+    "hard_kib": 1059061760,
+    "headroom_kib": 192636376,
+    "used_inodes": 534626,
+    "hard_inodes": 1010000,
+    "headroom_inodes": 475374,
+    "scientific_output_headroom": "pass"
+  },
+  "graph_release": {
+    "mechanics_job": 760565,
+    "mechanics_state_after_acquisition": "PENDING_PRIORITY",
+    "forecast_at_receipt": "2026-08-17T19:41:52-04:00",
+    "fit_job": 760566,
+    "unchanged_array": 760567,
+    "self_refinement_array": 760568,
+    "revision_array": 760569,
+    "score_job": 760571,
+    "curve_job": 760575
+  },
+  "boundary": {
+    "benchmark_rows_read": 0,
+    "scientific_updates": 0,
+    "scientific_result": false,
+    "qwen_or_nemotron_jobs_modified": false,
+    "automatic_architecture_successor": false
+  }
+}
