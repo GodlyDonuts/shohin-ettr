@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-mixtral-8x22b-acquisition-launch-v1",
-  "status": "cpu_acquisition_submitted_scientific_compute_not_submitted",
+  "status": "first_cpu_launch_failed_before_worker_replacement_cpu_acquisition_submitted_scientific_compute_not_submitted",
   "date": "2026-08-15",
   "job": {
     "job_id": 760560,
@@ -12,6 +12,28 @@
     "initial_state": "PENDING",
     "initial_reason": "Priority",
     "workdir": "/lustre/fs1/home/sa305415/shohin"
+  },
+  "verified_infrastructure_failure": {
+    "job_id": 760560,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 2,
+    "node": "evc1",
+    "restarts": 0,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "output_or_partial_stage_created": false,
+    "cause": "the acquisition wrapper tested ambient SLURM_TMPDIR before invoking q36_init_local_tmp, while this CPU allocation did not define that optional cluster variable",
+    "scientific_or_model_work_reached": false
+  },
+  "replacement_job": {
+    "job_id": 760561,
+    "state_at_submission": "PENDING",
+    "reason_at_submission": "Priority",
+    "dependency": null,
+    "duplicate_model_bytes": false,
+    "launch_correction": "export SLURM_TMPDIR=/tmp solely to satisfy the stale precondition; q36_init_local_tmp immediately replaces it with the exact job-owned /tmp/q36-mtr-${SLURM_JOB_ID} root before any cache or download access",
+    "source_fix": "the repository wrapper now initializes the job-owned temporary root before validating it"
   },
   "model": {
     "repository": "mistralai/Mixtral-8x22B-Instruct-v0.1",

@@ -90,6 +90,10 @@ def test_fetch_job_is_cpu_only_quota_gated_and_nonrequeueing() -> None:
     assert "fetch_mixtral_8x22b.py" in source
     assert "sha256sum -c SHA256SUMS" in source
     assert 'chmod -R a-w "$OUTPUT" "$REPORT"' in source
+    assert source.index("q36_init_local_tmp") < source.index(
+        '[[ -d "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]]'
+    )
+    assert '[[ -n "${SLURM_TMPDIR:-}"' not in source
 
 
 def test_preparation_receipt_does_not_claim_a_download() -> None:

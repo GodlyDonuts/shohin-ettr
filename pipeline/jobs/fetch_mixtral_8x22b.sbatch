@@ -24,7 +24,6 @@ set -euo pipefail
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]]
 [[ ! -e "$REPORT" && ! -L "$REPORT" ]]
 [[ "$(dirname "$OUTPUT")" == "$(dirname "$REPORT")" ]]
-[[ -n "${SLURM_TMPDIR:-}" && -d "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]]
 
 read -r filesystem used_kib quota_kib hard_kib _ < <(lfs quota -u sa305415 /lustre/fs1 | tail -1)
 [[ "$filesystem" == /lustre/fs1 ]]
@@ -40,6 +39,7 @@ fi
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
+[[ -d "$SLURM_TMPDIR" && ! -L "$SLURM_TMPDIR" ]]
 mkdir -p logs
 
 export PATH=/apps/slurm/current/bin:/usr/bin:/bin
