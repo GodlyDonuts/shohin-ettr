@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-mixtral-8x22b-upward-moe-preparation-v1",
-  "status": "host_and_attachment_code_prepared_not_downloaded_not_scheduled",
+  "status": "host_attachment_and_two_h100_mechanics_code_prepared_not_downloaded_not_scheduled",
   "date": "2026-08-15",
   "purpose": "Prepare a Transformers-native cross-family MoE point above Nemotron Super in active parameters while preserving the exact Shohin post-MoE residual treatment.",
   "host": {
@@ -33,19 +33,29 @@
     "trainable_parameters_per_role": 3538944,
     "native_router_expert_trainables": 0,
     "host_contract": "train/q36_upward_moe_mixtral_host.py",
-    "attachment_code": "train/mixtral_post_mlp_revision.py"
+    "attachment_code": "train/mixtral_post_mlp_revision.py",
+    "mechanics_worker": "train/hf_mixtral_8x22b_mechanics.py",
+    "mechanics_wrapper": "train/jobs/mixtral_8x22b_mechanics.sbatch",
+    "mechanics_devices": "one_node_two_H100_PCIe",
+    "mechanics_quantization": "bitsandbytes_NF4_double_quant",
+    "mechanics_score_rows": 0,
+    "mechanics_benchmark_rows": 0
   },
   "verification": {
     "focused_tests": 8,
     "focused_tests_passed": 8,
     "cross_host_residual_regression_tests": 17,
     "cross_host_residual_regression_tests_passed": 17,
+    "mechanics_and_runtime_closure_tests": 20,
+    "mechanics_and_runtime_closure_tests_passed": 20,
     "black": "pass",
     "ruff": "pass",
     "py_compile": "pass",
     "tests": [
       "train/test_q36_upward_moe_mixtral_host.py",
-      "train/test_mixtral_post_mlp_revision.py"
+      "train/test_mixtral_post_mlp_revision.py",
+      "train/test_hf_mixtral_8x22b_mechanics.py",
+      "pipeline/test_package_q36_mtr_runtime.py"
     ],
     "zero_initialized_residual_preserves_native_output": true,
     "residual_gradient_flow_verified": true,
