@@ -15,6 +15,7 @@ from score_q36_mtr_external import _mcnemar_exact, sha256_file
 
 SCHEMA = "shohin-q36-mtr-token-gate-comparison-v1"
 SCORE_SCHEMA = "shohin-q36-mtr-temporal-gate-score-v1"
+EXTERNAL_SCORE_SCHEMA = "shohin-q36-mtr-external-score-v1"
 ARMS = ("temporal_gate", "multi_trajectory_gate")
 TASKS = ("math500", "bbh_logic", "mbpp")
 
@@ -124,12 +125,51 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             raise Q36MTRTokenGateAnalysisError("token-gate benchmark identity differs")
         variants[name] = {**loaded, "path": path}
     assert identities is not None and unchanged is not None and row_count is not None
+    unchanged_correct = sum(unchanged.values())
+    if unchanged_correct <= 0:
+        raise Q36MTRTokenGateAnalysisError("unchanged capability is absent")
+    incumbent_score_receipt = None
+    incumbent_revision_correct = args.incumbent_revision_correct
+    incumbent_score = getattr(args, "incumbent_score", None)
+    if incumbent_score is not None:
+        if incumbent_revision_correct is not None:
+            raise Q36MTRTokenGateAnalysisError("incumbent revision is ambiguous")
+        try:
+            incumbent_payload = json.loads(incumbent_score.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise Q36MTRTokenGateAnalysisError(
+                "incumbent revision score is unreadable"
+            ) from error
+        arms = (
+            incumbent_payload.get("arms")
+            if isinstance(incumbent_payload, dict)
+            else None
+        )
+        revision = arms.get("revision") if isinstance(arms, dict) else None
+        baseline = arms.get("unchanged") if isinstance(arms, dict) else None
+        incumbent_revision_correct = (
+            revision.get("correct") if isinstance(revision, dict) else None
+        )
+        if (
+            incumbent_payload.get("schema") != EXTERNAL_SCORE_SCHEMA
+            or incumbent_payload.get("status") != "complete"
+            or incumbent_payload.get("rows") != row_count
+            or not isinstance(incumbent_revision_correct, int)
+            or isinstance(incumbent_revision_correct, bool)
+            or not 0 <= incumbent_revision_correct <= row_count
+            or not isinstance(baseline, dict)
+            or baseline.get("correct") != unchanged_correct
+        ):
+            raise Q36MTRTokenGateAnalysisError("incumbent revision score differs")
+        incumbent_score_receipt = {
+            "path": str(incumbent_score.resolve()),
+            "sha256": sha256_file(incumbent_score),
+        }
     if (
-        args.incumbent_revision_correct is not None
-        and not 0 <= args.incumbent_revision_correct <= row_count
+        incumbent_revision_correct is not None
+        and not 0 <= incumbent_revision_correct <= row_count
     ):
         raise Q36MTRTokenGateAnalysisError("incumbent revision count differs")
-    unchanged_correct = sum(unchanged.values())
     summaries: dict[str, Any] = {}
     for name, loaded in variants.items():
         outcomes = loaded["outcomes"]
@@ -191,15 +231,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "status": "complete",
         "rows": row_count,
         "unchanged_correct": unchanged_correct,
-        "incumbent_revision_correct": args.incumbent_revision_correct,
+        "incumbent_revision_correct": incumbent_revision_correct,
+        "incumbent_score": incumbent_score_receipt,
         "variants": summaries,
         "pairwise": pairwise,
         "ranking": ranked,
         "winner": winner,
         "winner_correct": summaries[winner]["correct"],
         "winner_beats_incumbent_revision": (
-            summaries[winner]["correct"] > args.incumbent_revision_correct
-            if args.incumbent_revision_correct is not None
+            summaries[winner]["correct"] > incumbent_revision_correct
+            if incumbent_revision_correct is not None
             else None
         ),
         "winner_retention_at_least_90_percent": math.isfinite(
@@ -223,6 +264,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--score", type=Path, action="append", required=True)
     parser.add_argument("--incumbent-revision-correct", type=int)
+    parser.add_argument("--incumbent-score", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 

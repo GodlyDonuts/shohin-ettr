@@ -43,6 +43,7 @@ def test_analysis_selects_correct_then_retention_winner(tmp_path) -> None:
         argparse.Namespace(
             score=[supervised, multi],
             incumbent_revision_correct=141,
+            incumbent_score=None,
             output=output,
         )
     )
@@ -66,6 +67,7 @@ def test_analysis_rejects_mismatched_baseline(tmp_path) -> None:
             argparse.Namespace(
                 score=[first, second],
                 incumbent_revision_correct=141,
+                incumbent_score=None,
                 output=tmp_path / "result.json",
             )
         )
@@ -81,9 +83,43 @@ def test_analysis_supports_full_validation_geometry(tmp_path) -> None:
         argparse.Namespace(
             score=[first, second],
             incumbent_revision_correct=None,
+            incumbent_score=None,
             output=tmp_path / "result.json",
         )
     )
     assert report["rows"] == 1023
     assert report["winner"] == "multi_trajectory"
     assert report["winner_beats_incumbent_revision"] is None
+
+
+def test_analysis_loads_matched_revision_incumbent(tmp_path) -> None:
+    first = tmp_path / "q36_supervised" / "validation" / "score.json"
+    second = tmp_path / "q36_multi" / "validation" / "score.json"
+    unchanged = set(range(80))
+    _score(first, "temporal_gate", set(range(110)), unchanged, rows=200)
+    _score(second, "multi_trajectory_gate", set(range(120)), unchanged, rows=200)
+    incumbent = tmp_path / "detailed_score.json"
+    incumbent.write_text(
+        json.dumps(
+            {
+                "schema": module.EXTERNAL_SCORE_SCHEMA,
+                "status": "complete",
+                "rows": 200,
+                "arms": {
+                    "revision": {"correct": 115},
+                    "unchanged": {"correct": 80},
+                },
+            }
+        )
+    )
+    report = module.run(
+        argparse.Namespace(
+            score=[first, second],
+            incumbent_revision_correct=None,
+            incumbent_score=incumbent,
+            output=tmp_path / "result.json",
+        )
+    )
+    assert report["incumbent_revision_correct"] == 115
+    assert report["winner_beats_incumbent_revision"] is True
+    assert report["incumbent_score"]["sha256"] == module.sha256_file(incumbent)
