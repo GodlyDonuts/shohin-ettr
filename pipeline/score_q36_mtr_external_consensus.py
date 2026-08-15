@@ -18,7 +18,7 @@ from pcf1_code_sandbox import (
 )
 from score_q36_mtr_external import (
     ARMS,
-    ROWS,
+    PARTITIONS,
     TASKS,
     _mcnemar_exact,
     load_assessors,
@@ -115,11 +115,14 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
-    assessors = load_assessors(args.assessors)
+    expected = PARTITIONS.get(args.split)
+    if expected != (args.expected_rows, args.shard_count):
+        raise Q36MTRExternalConsensusError("external partition geometry differs")
+    assessors = load_assessors(args.assessors, args.expected_rows)
     identities = set(assessors)
     path_groups = {arm: getattr(args, f"{arm}_candidates") for arm in ARMS}
     candidates = {
-        arm: load_candidates(arm, paths, identities)
+        arm: load_candidates(arm, paths, identities, args.shard_count)
         for arm, paths in path_groups.items()
     }
     sandbox = qualify_allocation()
@@ -129,9 +132,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     task_rows = Counter(row["task"] for row in assessors.values())
-    correctness: dict[str, dict[str, bool]] = {rule: {} for rule in RULES}
-    selected_arms: dict[str, Counter[str]] = {rule: Counter() for rule in RULES}
-    task_correct: dict[str, Counter[str]] = {rule: Counter() for rule in RULES}
+    selected_rules = (args.fixed_rule,) if args.fixed_rule else RULES
+    correctness: dict[str, dict[str, bool]] = {rule: {} for rule in selected_rules}
+    selected_arms: dict[str, Counter[str]] = {
+        rule: Counter() for rule in selected_rules
+    }
+    task_correct: dict[str, Counter[str]] = {rule: Counter() for rule in selected_rules}
     unchanged_correct: dict[str, bool] = {}
     for identity in sorted(identities):
         assessor_row = assessors[identity]
@@ -143,7 +149,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             assessor_row["assessor"], rows["unchanged"]["completion"]
         )
         unchanged_correct[identity] = bool(unchanged_score["correct"])
-        for rule in RULES:
+        for rule in selected_rules:
             selected = choose(rule, task, rows)
             score = score_completion(
                 assessor_row["assessor"], rows[selected]["completion"]
@@ -157,7 +163,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     reports: dict[str, Any] = {}
     base_correct = sum(unchanged_correct.values())
-    for rule in RULES:
+    for rule in selected_rules:
         correct = sum(correctness[rule].values())
         rule_only = sum(
             correctness[rule][identity] and not unchanged_correct[identity]
@@ -169,8 +175,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         reports[rule] = {
             "correct": correct,
-            "total": ROWS,
-            "accuracy": correct / ROWS,
+            "total": args.expected_rows,
+            "accuracy": correct / args.expected_rows,
             "gain_over_unchanged_count": correct - base_correct,
             "selection_counts": dict(sorted(selected_arms[rule].items())),
             "domains": {
@@ -186,12 +192,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "mcnemar_exact_two_sided_p": _mcnemar_exact(rule_only, unchanged_only),
             },
         }
-    best = max(RULES, key=lambda rule: (reports[rule]["correct"], -RULES.index(rule)))
+    best = max(
+        selected_rules,
+        key=lambda rule: (reports[rule]["correct"], -RULES.index(rule)),
+    )
     report = {
         "schema": SCHEMA,
         "status": "complete",
-        "split": "external_validation_screen",
-        "rows": ROWS,
+        "split": args.split,
+        "rows": args.expected_rows,
+        "shard_count": args.shard_count,
+        "selection_mode": "fixed" if args.fixed_rule else "screen_selection",
+        "fixed_rule": args.fixed_rule,
         "rules": reports,
         "best_rule": best,
         "best_correct": reports[best]["correct"],
@@ -211,6 +223,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assessors", type=Path, required=True)
+    parser.add_argument("--split", choices=tuple(PARTITIONS), required=True)
+    parser.add_argument("--expected-rows", type=int, required=True)
+    parser.add_argument("--shard-count", type=int, required=True)
+    parser.add_argument("--fixed-rule", choices=RULES)
     for arm in ARMS:
         parser.add_argument(
             f"--{arm.replace('_', '-')}-candidates",

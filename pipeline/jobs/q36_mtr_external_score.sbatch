@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-required=(RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON SCORE_SCRIPT SCORE_SCRIPT_SHA256 ASSESSORS ASSESSORS_SHA256 INPUT_ROOT OUTPUT SANDBOX_RECEIPT)
+required=(RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON SCORE_SCRIPT SCORE_SCRIPT_SHA256 ASSESSORS ASSESSORS_SHA256 INPUT_ROOT OUTPUT SANDBOX_RECEIPT SPLIT EXPECTED_ROWS SHARD_COUNT)
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
@@ -27,17 +27,24 @@ q36_verify_sha256 "$ASSESSORS" "$ASSESSORS_SHA256"
 args=()
 for arm in unchanged self_refinement revision draft_hidden interpolation; do
   option=${arm//_/-}
-  for shard in 00 01 02 03; do
+  for ((index=0; index<SHARD_COUNT; index++)); do
+    printf -v shard '%02d' "$index"
     path=$INPUT_ROOT/$arm/shard_$shard/candidates.jsonl
     [[ -f "$path" && ! -L "$path" ]] || q36_die "external candidate differs"
     args+=(--$option-candidates "$path")
   done
 done
+score_mode_args=()
+if [[ -n "${FIXED_RULE:-}" ]]; then
+  score_mode_args+=(--fixed-rule "$FIXED_RULE")
+fi
 mkdir -p "$(dirname "$OUTPUT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export PYTHONDONTWRITEBYTECODE=1
 q36_export_pythonpath
 "$PYTHON" "$SCORE_SCRIPT" --assessors "$ASSESSORS" "${args[@]}" \
+  --split "$SPLIT" --expected-rows "$EXPECTED_ROWS" --shard-count "$SHARD_COUNT" \
+  "${score_mode_args[@]}" \
   --sandbox-receipt "$SANDBOX_RECEIPT" --output "$OUTPUT"
 test -f "$OUTPUT" && test -f "$SANDBOX_RECEIPT"
 chmod a-w "$OUTPUT" "$SANDBOX_RECEIPT"

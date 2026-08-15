@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score matched Q36 arms on the fresh external-validation screen."""
+"""Score matched Q36 arms on a source-disjoint external partition."""
 
 from __future__ import annotations
 
@@ -24,7 +24,11 @@ CANDIDATE_SCHEMA = "shohin-q36-mtr-candidate-v1"
 REPORT_SCHEMA = "shohin-q36-mtr-external-score-v1"
 ARMS = ("unchanged", "self_refinement", "revision", "draft_hidden", "interpolation")
 TASKS = ("math500", "bbh_logic", "mbpp")
-ROWS = 256
+PARTITIONS = {
+    "external_validation_screen": (256, 4),
+    "external_validation": (1_023, 16),
+    "external_validation_full": (1_279, 16),
+}
 
 
 class Q36MTRExternalScoreError(RuntimeError):
@@ -49,7 +53,7 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def load_assessors(path: Path) -> dict[str, dict[str, Any]]:
+def load_assessors(path: Path, expected_rows: int) -> dict[str, dict[str, Any]]:
     assessors: dict[str, dict[str, Any]] = {}
     for row in _load_jsonl(path):
         identity = row.get("identity_sha256")
@@ -66,17 +70,17 @@ def load_assessors(path: Path) -> dict[str, dict[str, Any]]:
         ):
             raise Q36MTRExternalScoreError("external assessor row differs")
         assessors[identity] = row
-    if len(assessors) != ROWS or {row["task"] for row in assessors.values()} != set(
-        TASKS
-    ):
+    if len(assessors) != expected_rows or {
+        row["task"] for row in assessors.values()
+    } != set(TASKS):
         raise Q36MTRExternalScoreError("external assessor coverage differs")
     return assessors
 
 
 def load_candidates(
-    arm: str, paths: list[Path], identities: set[str]
+    arm: str, paths: list[Path], identities: set[str], expected_shards: int
 ) -> dict[str, dict[str, Any]]:
-    if arm not in ARMS or len(paths) != 4:
+    if arm not in ARMS or len(paths) != expected_shards:
         raise Q36MTRExternalScoreError("external candidate geometry differs")
     candidates: dict[str, dict[str, Any]] = {}
     for path in paths:
@@ -125,11 +129,14 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
 def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.output.exists() or args.output.is_symlink():
         raise Q36MTRExternalScoreError("external score output exists")
-    assessors = load_assessors(args.assessors)
+    expected = PARTITIONS.get(args.split)
+    if expected != (args.expected_rows, args.shard_count):
+        raise Q36MTRExternalScoreError("external partition geometry differs")
+    assessors = load_assessors(args.assessors, args.expected_rows)
     identities = set(assessors)
     path_groups = {arm: getattr(args, f"{arm}_candidates") for arm in ARMS}
     candidates = {
-        arm: load_candidates(arm, paths, identities)
+        arm: load_candidates(arm, paths, identities, args.shard_count)
         for arm, paths in path_groups.items()
     }
     sandbox = qualify_allocation()
@@ -173,8 +180,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         arm_reports[arm] = {
             "correct": correct,
-            "total": ROWS,
-            "accuracy": correct / ROWS,
+            "total": args.expected_rows,
+            "accuracy": correct / args.expected_rows,
             "domains": {
                 task: {
                     "correct": task_correct[arm][task],
@@ -198,15 +205,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     report = {
         "schema": REPORT_SCHEMA,
         "status": "complete",
-        "split": "external_validation_screen",
-        "rows": ROWS,
+        "split": args.split,
+        "rows": args.expected_rows,
+        "shard_count": args.shard_count,
         "assessors_sha256": sha256_file(args.assessors),
         "sandbox_receipt_sha256": sandbox_sha256,
         "sandbox_probe_sha256": sandbox.get("probe_sha256"),
         "mbpp_setup_qualification_count": len(setup_receipts),
         "arms": arm_reports,
         "all_arm_oracle_correct": oracle,
-        "all_arm_oracle_accuracy": oracle / ROWS,
+        "all_arm_oracle_accuracy": oracle / args.expected_rows,
     }
     _atomic_json(args.output, report)
     return report
@@ -215,6 +223,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--assessors", type=Path, required=True)
+    parser.add_argument("--split", choices=tuple(PARTITIONS), required=True)
+    parser.add_argument("--expected-rows", type=int, required=True)
+    parser.add_argument("--shard-count", type=int, required=True)
     for arm in ARMS:
         parser.add_argument(
             f"--{arm.replace('_', '-')}-candidates",

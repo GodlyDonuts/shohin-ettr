@@ -31,7 +31,7 @@ def test_external_score_computes_matched_results(tmp_path, monkeypatch):
         )
     assessor_path = tmp_path / "assessors.jsonl"
     _write_jsonl(assessor_path, assessors)
-    monkeypatch.setattr(module, "ROWS", 3)
+    monkeypatch.setitem(module.PARTITIONS, "external_validation_screen", (3, 4))
     candidate_groups = {}
     for arm_index, arm in enumerate(module.ARMS):
         path = tmp_path / f"{arm}.jsonl"
@@ -52,7 +52,8 @@ def test_external_score_computes_matched_results(tmp_path, monkeypatch):
         )
         candidate_groups[f"{arm}_candidates"] = [path, path, path, path]
 
-    def load_once(arm, paths, identities):
+    def load_once(arm, paths, identities, expected_shards):
+        assert expected_shards == 4
         return {row["identity_sha256"]: row for row in module._load_jsonl(paths[0])}
 
     monkeypatch.setattr(module, "load_candidates", load_once)
@@ -68,6 +69,9 @@ def test_external_score_computes_matched_results(tmp_path, monkeypatch):
     )
     args = argparse.Namespace(
         assessors=assessor_path,
+        split="external_validation_screen",
+        expected_rows=3,
+        shard_count=4,
         sandbox_receipt=tmp_path / "sandbox.json",
         output=tmp_path / "score.json",
         **candidate_groups,
