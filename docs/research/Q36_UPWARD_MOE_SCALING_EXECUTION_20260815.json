@@ -304,6 +304,32 @@
       "status": "not_staged_pending_super_measurement_and_distributed_runtime"
     }
   ],
+  "post_ultra_true_upward_frontier": {
+    "host": "moonshotai/Kimi-K3",
+    "model_revision_observed_2026_08_15": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+    "architecture": "Stable_LatentMoE_with_KDA_and_Gated_MLA",
+    "total_parameters": 2800000000000,
+    "active_parameters": 104000000000,
+    "scale_over_ultra_total": 5.090909090909091,
+    "scale_over_ultra_active": 1.8909090909090909,
+    "experts": 896,
+    "experts_per_token": 16,
+    "official_quantization": "MXFP4_weights_MXFP8_activations",
+    "repository_files": 118,
+    "repository_bytes": 1560998984390,
+    "safetensor_files": 96,
+    "safetensor_bytes": 1560936091448,
+    "model_index_sha256": "a1c5210650ce71d2d3ae9ec5a101ac4afd3cf4b10091be589853437eb967febd",
+    "current_newton_user_hard_limit_bytes": 1084479242240,
+    "current_two_highgpu_node_raw_h100_memory_bytes": 1374389534720,
+    "minimum_h100_80gib_for_raw_weight_bytes_only": 19,
+    "conservative_execution_target_h100s": 24,
+    "local_feasibility": "not_executable_on_current_two_node_highgpu_and_user_quota",
+    "required_expansion": "at_least_three_eight_H100_nodes_and_at_least_1_8_TB_durable_model_capacity",
+    "status": "metadata_only_frontier_target_no_download_no_compute_no_architecture_branch",
+    "official_model_card": "https://huggingface.co/moonshotai/Kimi-K3/blob/main/README.md",
+    "selection_reason": "first_identified_open_weight_point_above_Nemotron_Ultra_in_both_total_and_active_parameters"
+  },
   "zero_label_super_to_ultra_transfer_preparation": {
     "status": "embedding_alignment_complete_holdout_correlation_pass",
     "job": 760260,
