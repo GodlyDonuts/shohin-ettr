@@ -84,6 +84,7 @@ pipeline/package_q36_mtr_runtime.py
 pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_evidence.py
 pipeline/q36_mtr_runtime_allowlist.txt
+pipeline/read_upward_moe_data_receipt.py
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/render_upward_moe_scaling.py
 pipeline/score_mixtral_8x22b_screen.py

@@ -11,7 +11,8 @@ def test_aligned_job_is_two_h100_nonrequeueing_and_owner_bound() -> None:
     assert "#SBATCH --gres=gpu:nvidia_h100_pcie:2" in text
     assert "#SBATCH --no-requeue" in text
     assert '[[ "${SLURM_GPUS_ON_NODE:-}" == "2" ]]' in text
-    assert "EXPECTED_DATA_SHA256 OWNER_CHECKPOINT" in text
+    assert "DATA DATA_REPORT OWNER_CHECKPOINT" in text
+    assert "read_upward_moe_data_receipt.py" in text
     assert 'q36_verify_sha256 "$DATA" "$EXPECTED_DATA_SHA256"' in text
     assert "hf_upward_moe_train_aligned.py" in text
     assert '--owner-checkpoint "$OWNER_CHECKPOINT"' in text

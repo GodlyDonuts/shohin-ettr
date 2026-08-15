@@ -15,7 +15,7 @@
 set -euo pipefail
 required=(
   HOST ARM PYTHON RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_MANIFEST
-  MECHANICS_REPORT DATA EXPECTED_DATA_SHA256 OWNER_CHECKPOINT
+  MECHANICS_REPORT DATA DATA_REPORT OWNER_CHECKPOINT
   REVISION_CHECKPOINT OUTPUT_ROOT
 )
 for variable in "${required[@]}"; do
@@ -26,8 +26,7 @@ done
   "$ARM" == aligned_revision || "$ARM" == temporal_gate ]]
 [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]]
 [[ "${SLURM_GPUS_ON_NODE:-}" == 2 ]]
-[[ "$EXPECTED_DATA_SHA256" =~ ^[0-9a-f]{64}$ ]]
-for path in "$MODEL_MANIFEST" "$MECHANICS_REPORT" "$DATA" \
+for path in "$MODEL_MANIFEST" "$MECHANICS_REPORT" "$DATA" "$DATA_REPORT" \
   "$OWNER_CHECKPOINT" "$REVISION_CHECKPOINT"; do
   [[ -f "$path" && ! -L "$path" ]]
 done
@@ -46,6 +45,10 @@ source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
+EXPECTED_DATA_SHA256=$(PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train" \
+  "$PYTHON" -P -s -B "$RUNTIME/pipeline/read_upward_moe_data_receipt.py" \
+  --host "$HOST" --report "$DATA_REPORT" --kind development --data "$DATA")
+[[ "$EXPECTED_DATA_SHA256" =~ ^[0-9a-f]{64}$ ]]
 q36_verify_sha256 "$DATA" "$EXPECTED_DATA_SHA256"
 mkdir -p "$(dirname "$OUTPUT")" logs
 host_args=(--host "$HOST")

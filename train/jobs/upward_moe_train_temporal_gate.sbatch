@@ -15,17 +15,16 @@
 set -euo pipefail
 required=(
   HOST PYTHON RUNTIME RUNTIME_MANIFEST_SHA256 MODEL_ROOT MODEL_MANIFEST
-  MECHANICS_REPORT DATA EXPECTED_DATA_SHA256 OWNER_CHECKPOINT
+  MECHANICS_REPORT DATA DATA_REPORT OWNER_CHECKPOINT
   REVISION_CHECKPOINT OUTPUT
 )
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 [[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b ]]
-[[ "$EXPECTED_DATA_SHA256" =~ ^[0-9a-f]{64}$ ]]
 [[ "${SLURM_GPUS_ON_NODE:-}" == 2 ]]
 [[ -x "$PYTHON" && -d "$RUNTIME" && ! -L "$RUNTIME" ]]
-for path in "$MODEL_MANIFEST" "$MECHANICS_REPORT" "$DATA" \
+for path in "$MODEL_MANIFEST" "$MECHANICS_REPORT" "$DATA" "$DATA_REPORT" \
   "$OWNER_CHECKPOINT" "$REVISION_CHECKPOINT"; do
   [[ -f "$path" && ! -L "$path" ]]
 done
@@ -35,6 +34,10 @@ source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
+EXPECTED_DATA_SHA256=$(PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train" \
+  "$PYTHON" -P -s -B "$RUNTIME/pipeline/read_upward_moe_data_receipt.py" \
+  --host "$HOST" --report "$DATA_REPORT" --kind revision_train --data "$DATA")
+[[ "$EXPECTED_DATA_SHA256" =~ ^[0-9a-f]{64}$ ]]
 q36_verify_sha256 "$DATA" "$EXPECTED_DATA_SHA256"
 mkdir -p logs "$(dirname "$OUTPUT")"
 

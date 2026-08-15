@@ -60,6 +60,7 @@ REQUIRED = {
     "pipeline/normalize_q36_mtr_score.py",
     "pipeline/q36_mtr_evidence.py",
     "pipeline/render_q36_mtr_publication_figure.py",
+    "pipeline/read_upward_moe_data_receipt.py",
     "pipeline/score_mixtral_8x22b_screen.py",
     "pipeline/score_q36_mtr_external.py",
     "pipeline/score_nemotron_super_screen.py",
