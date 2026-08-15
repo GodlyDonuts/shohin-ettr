@@ -609,6 +609,20 @@
       "actual_safety_over_measured_max_percent": 41.84
     }
   },
+  "qwen_pending_validation_admission_precheck": {
+    "observed_at": "2026-08-15T13:04:22-04:00",
+    "revision_pending_shards": 13,
+    "draft_hidden_pending_shards": 16,
+    "interpolation_pending_shards": 16,
+    "pending_shard_output_collisions": 0,
+    "premature_final_score_outputs": 0,
+    "array_dependencies": "none",
+    "array_throttle_per_arm": 16,
+    "time_limit_seconds_per_pending_shard": 600,
+    "requeue": false,
+    "reason": "Priority",
+    "result": "PASS_ready_for_scheduler_admission"
+  },
   "ultra_snapshot_staging_preparation": {
     "git_commit": "5976ce33acc8b9d29440baf6f0866e7b9c07e7a2",
     "wrapper": "pipeline/jobs/q36_stage_nemotron_ultra.sbatch",
