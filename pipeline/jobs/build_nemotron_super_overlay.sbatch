@@ -65,28 +65,33 @@ PYTHONPATH="$partial:$CAUSAL_CONV_ROOT" "$BASE_PYTHON" -P -s -B - \
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import importlib.metadata
 import json
 from pathlib import Path
 import stat
 import sys
 
-import causal_conv1d
-import mamba_ssm
 import modelopt
 import torch
 
 root = Path(sys.argv[1]).resolve(strict=True)
 causal_root = Path(sys.argv[2]).resolve(strict=True)
+mamba_spec = importlib.util.find_spec("mamba_ssm")
+causal_spec = importlib.util.find_spec("causal_conv1d")
 if (
     importlib.metadata.version("mamba-ssm") != "2.3.2.post1"
     or importlib.metadata.version("nvidia-modelopt") != "0.43.0"
     or importlib.metadata.version("causal-conv1d") != "1.6.2.post1"
     or torch.__version__ != "2.6.0+cu124"
     or torch.version.cuda != "12.4"
-    or not Path(mamba_ssm.__file__).resolve().is_relative_to(root)
+    or mamba_spec is None
+    or mamba_spec.origin is None
+    or not Path(mamba_spec.origin).resolve().is_relative_to(root)
     or not Path(modelopt.__file__).resolve().is_relative_to(root)
-    or not Path(causal_conv1d.__file__).resolve().is_relative_to(causal_root)
+    or causal_spec is None
+    or causal_spec.origin is None
+    or not Path(causal_spec.origin).resolve().is_relative_to(causal_root)
 ):
     raise SystemExit("Nemotron Super overlay package binding differs")
 
@@ -120,6 +125,7 @@ receipt = {
     "tree_sha256": hashlib.sha256(tree_payload).hexdigest(),
     "scientific_rows_read": 0,
     "gpu_requested": False,
+    "gpu_kernel_import_deferred_to_h100_mechanics": True,
 }
 (root / "overlay_receipt.json").write_text(
     json.dumps(receipt, sort_keys=True, indent=2) + "\n"
