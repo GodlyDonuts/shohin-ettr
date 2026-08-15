@@ -88,6 +88,7 @@ train/hf_product_reasoning_eval.py
 train/hf_product_reasoning_train.py
 train/hf_q36_mtr_apply_multi_owner_commit.py
 train/hf_q36_mtr_evaluate.py
+train/hf_q36_mtr_evaluate_temporal_gate.py
 train/hf_q36_mtr_external_evaluate.py
 train/hf_q36_mtr_generate_drafts.py
 train/hf_q36_mtr_mechanics.py
@@ -101,6 +102,7 @@ train/integrated_reasoning_workspace.py
 train/jobs/q36_mtr_apply_multi_owner_commit.sbatch
 train/jobs/q36_mtr_common.sh
 train/jobs/q36_mtr_evaluate.sbatch
+train/jobs/q36_mtr_evaluate_temporal_gate.sbatch
 train/jobs/q36_mtr_external_evaluate.sbatch
 train/jobs/q36_mtr_generate_drafts.sbatch
 train/jobs/q36_mtr_generate_owner_preview.sbatch
