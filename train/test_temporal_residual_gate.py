@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from temporal_residual_gate import (
     MultiTrajectoryResidualGate,
@@ -496,3 +497,22 @@ def test_routing_supervision_drives_owner_and_revision_extremes() -> None:
     assert block.gate_weight.grad is not None
     with pytest.raises(TemporalResidualGateError):
         block.routing_supervision_loss(0.0, torch.ones(1, 3))
+
+
+def test_binary_routing_supervision_disables_outer_autocast(monkeypatch) -> None:
+    block = _block(weight=0.1)
+    hidden = torch.tensor([[[1.0, -1.0], [0.5, 0.5]]])
+    attention = torch.tensor([[1, 1]])
+    block(hidden)
+    original = F.binary_cross_entropy
+    observed: list[bool] = []
+
+    def checked_binary_cross_entropy(*args, **kwargs):
+        observed.append(torch.is_autocast_enabled("cpu"))
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(F, "binary_cross_entropy", checked_binary_cross_entropy)
+    with torch.autocast("cpu", dtype=torch.bfloat16):
+        loss = block.routing_supervision_loss(1.0, attention)
+    assert torch.isfinite(loss)
+    assert observed == [False]

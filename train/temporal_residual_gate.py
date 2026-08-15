@@ -156,9 +156,19 @@ class TemporalResidualGate(nn.Module):
             or not attention_mask.bool().any()
         ):
             raise TemporalResidualGateError("temporal routing supervision differs")
-        losses = F.binary_cross_entropy(
-            gate.float(), torch.full_like(gate.float(), target), reduction="none"
-        ).squeeze(-1)
+        # Probability-space BCE is deliberately retained because ``gate`` is
+        # also the exact routed mixture weight.  PyTorch forbids BCE while a
+        # CUDA autocast region is active, even when both operands are promoted
+        # to float32.  Disable autocast only for this scalar supervision loss;
+        # the native model and residual branches remain under their existing
+        # mixed-precision policy.
+        with torch.autocast(device_type=gate.device.type, enabled=False):
+            gate_float = gate.float()
+            losses = F.binary_cross_entropy(
+                gate_float,
+                torch.full_like(gate_float, target),
+                reduction="none",
+            ).squeeze(-1)
         return losses.masked_select(attention_mask.bool()).mean()
 
     def forward(
