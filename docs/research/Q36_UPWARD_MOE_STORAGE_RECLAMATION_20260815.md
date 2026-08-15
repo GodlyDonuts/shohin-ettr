@@ -138,3 +138,22 @@ current Q36 data/checkpoints/candidates/scores/runtimes, repositories,
 credentials, and cluster configuration are explicit exclusions. Every target
 must be revalidated byte/inode-identical immediately before same-parent
 quarantine and literal one-filesystem removal.
+
+### Batch 3 execution receipt
+
+All eight targets revalidated exactly, remained absent from active Q36/Super
+batch scripts, and were renamed to unique same-parent
+`.q36-upward-delete-b3-*-20260815` quarantines. Only those literal quarantines
+were made owner-writable and permanently removed with one-filesystem
+protection. Every original and quarantine is absent. The removal is not
+locally recoverable.
+
+- Pre-delete quota: 840,234,260 KiB and 700,976 inodes.
+- Stable post-delete quota at 12:20:43Z, 12:20:53Z, and 12:21:03Z:
+  750,026,332 KiB and 697,246 inodes.
+- Actual recovered quota: 90,207,928 KiB (92,372,918,272 bytes) and 3,730
+  inodes. The 106,496-byte/two-inode difference from path totals reflects
+  hard-linked storage retained outside the target set.
+- Current hard-limit headroom: 309,035,428 KiB and 312,754 inodes.
+- The active Qwen3.6 and Nemotron Super model roots, Super overlay, current Q36
+  runtime/evidence roots, and repository remained present after deletion.
