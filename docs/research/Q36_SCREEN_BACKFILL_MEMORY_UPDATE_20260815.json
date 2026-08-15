@@ -1,0 +1,45 @@
+{
+  "comparison_jobs": [
+    {
+      "elapsed_seconds": 423,
+      "job_id": 760221,
+      "max_rss_gib": 70.13
+    },
+    {
+      "elapsed_seconds": 327,
+      "job_id": 760223,
+      "max_rss_gib": 70.18
+    },
+    {
+      "elapsed_seconds": 326,
+      "job_id": 760224,
+      "max_rss_gib": 70.05
+    }
+  ],
+  "frozen_science": {
+    "candidate_bytes_changed": false,
+    "identity_partition_changed": false,
+    "model_or_checkpoint_changed": false,
+    "prompt_changed": false,
+    "scoring_changed": false,
+    "seed_changed": false
+  },
+  "memory_request": {
+    "measured_peak_gib": 70.18,
+    "new_gib": 90,
+    "old_gib": 128,
+    "safety_margin_over_peak_fraction": 0.282416642917,
+    "minimum_25_percent_margin_gib": 87.725
+  },
+  "schema": "shohin-q36-screen-backfill-memory-update-v1",
+  "status": "applied_to_pending_jobs_only",
+  "updated_jobs": [
+    "760170_3",
+    "760173_[0-3]",
+    "760176_[0-3]",
+    "760191_[0-3]",
+    "760198_[0-3]",
+    "760205_[0-3]",
+    "760212_[0-3]"
+  ]
+}
