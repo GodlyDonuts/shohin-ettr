@@ -30,6 +30,7 @@ pipeline/dispatch_q36_mtr.py
 pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
+pipeline/jobs/nemotron_ultra_score.sbatch
 pipeline/jobs/q36_mtr_authorize_score.sbatch
 pipeline/jobs/q36_mtr_build_final_custody.sbatch
 pipeline/jobs/q36_mtr_build_multi_owner_commit_pairs.sbatch
@@ -75,6 +76,7 @@ pipeline/q36_mtr_evidence.py
 pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/score_nemotron_super_screen.py
+pipeline/score_nemotron_ultra_screen.py
 pipeline/score_q36_mtr.py
 pipeline/score_q36_mtr_draft_preview.py
 pipeline/score_q36_mtr_external.py
@@ -97,6 +99,7 @@ train/hf_cvg1_completion_verifier.py
 train/hf_nemotron_super_evaluate.py
 train/hf_nemotron_super_mechanics.py
 train/hf_nemotron_super_train_revision.py
+train/hf_nemotron_ultra_evaluate.py
 train/hf_nemotron_ultra_mechanics.py
 train/hf_pcf1_evaluate.py
 train/hf_pcf1_train_commit.py
@@ -118,6 +121,7 @@ train/integrated_reasoning_workspace.py
 train/jobs/nemotron_super_evaluate.sbatch
 train/jobs/nemotron_super_mechanics.sbatch
 train/jobs/nemotron_super_train_revision.sbatch
+train/jobs/nemotron_ultra_evaluate.sbatch
 train/jobs/nemotron_ultra_mechanics.sbatch
 train/jobs/q36_mtr_apply_multi_owner_commit.sbatch
 train/jobs/q36_mtr_common.sh

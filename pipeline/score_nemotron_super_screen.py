@@ -36,7 +36,11 @@ class NemotronSuperScoreError(RuntimeError):
 
 
 def load_candidates(
-    arm: str, paths: list[Path], identities: set[str]
+    arm: str,
+    paths: list[Path],
+    identities: set[str],
+    *,
+    candidate_schema: str = CANDIDATE_SCHEMA,
 ) -> dict[str, dict[str, Any]]:
     if arm not in ARMS or len(paths) != SHARDS:
         raise NemotronSuperScoreError("candidate shard geometry differs")
@@ -47,7 +51,7 @@ def load_candidates(
         for row in _load_jsonl(path):
             identity = row.get("identity_sha256")
             if (
-                row.get("schema") != CANDIDATE_SCHEMA
+                row.get("schema") != candidate_schema
                 or row.get("arm") != arm
                 or row.get("task") not in TASKS
                 or not isinstance(identity, str)
@@ -93,13 +97,29 @@ def paired_report(
     }
 
 
-def run(args: argparse.Namespace) -> dict[str, Any]:
+def run(
+    args: argparse.Namespace,
+    *,
+    candidate_schema: str = CANDIDATE_SCHEMA,
+    report_schema: str = REPORT_SCHEMA,
+    host: str = "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    total_parameters: int = 120_000_000_000,
+    active_parameters: int = 12_000_000_000,
+) -> dict[str, Any]:
     if args.output.exists() or args.output.is_symlink():
         raise NemotronSuperScoreError("score output exists")
     assessors = load_assessors(args.assessors, ROWS)
     identities = set(assessors)
     paths = {arm: getattr(args, f"{arm}_candidates") for arm in ARMS}
-    candidates = {arm: load_candidates(arm, paths[arm], identities) for arm in ARMS}
+    candidates = {
+        arm: load_candidates(
+            arm,
+            paths[arm],
+            identities,
+            candidate_schema=candidate_schema,
+        )
+        for arm in ARMS
+    }
     sandbox = qualify_allocation()
     sandbox_sha256 = sandbox_atomic_json(args.sandbox_receipt, sandbox)
     setup_receipts = qualify_mbpp_assessor_setups(
@@ -170,11 +190,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for identity in sorted(identities)
     ]
     report = {
-        "schema": REPORT_SCHEMA,
+        "schema": report_schema,
         "status": "complete",
-        "host": "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
-        "total_parameters": 120_000_000_000,
-        "active_parameters": 12_000_000_000,
+        "host": host,
+        "total_parameters": total_parameters,
+        "active_parameters": active_parameters,
         "rows": ROWS,
         "shards_per_arm": SHARDS,
         "assessors_sha256": sha256_file(args.assessors),
