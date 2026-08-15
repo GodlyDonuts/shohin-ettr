@@ -23,6 +23,13 @@
     "scientific_rows_read": 0,
     "symlinks_or_special_members": 0
   },
+  "mechanics_runtime": {
+    "manifest_entries": 133,
+    "manifest_sha256": "0af97981148825951c8974a8d03eb9327b7557b447f6e601f0b42ef073b9fea0",
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_b60f6948_r1",
+    "source_commit": "b60f6948a7cc6dfdb13e3463244ca2a3e717ea74",
+    "writable_members": 0
+  },
   "packages": {
     "causal_conv1d": "1.6.2.post1",
     "cuda": "12.4",
