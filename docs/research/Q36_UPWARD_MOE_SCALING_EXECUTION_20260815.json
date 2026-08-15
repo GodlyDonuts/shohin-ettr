@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-upward-moe-scaling-execution-v1",
-  "status": "qwen_full_validation_running_nemotron_super_graph_staged_ultra_mechanics_and_snapshot_staging_ready",
+  "status": "qwen_full_validation_running_nemotron_super_graph_staged_ultra_snapshot_sealed_and_mechanics_ready",
   "dense_scaling_status": "closed_not_in_active_graph",
   "measured_anchor": {
     "host": "Qwen3.6-35B-A3B",
@@ -16,6 +16,41 @@
     "mcnemar_exact_two_sided_p": 1.382612026645802e-06,
     "unchanged_correct_retention": 0.954954954954955,
     "result_sha256": "acf04f4fc42df8edffe9518a513715d145590f0a0e3f8d777601bd16d375cbdc"
+  },
+  "architecture_selection_from_measured_causal_boundary": {
+    "screen_rows": 256,
+    "unchanged_correct": 111,
+    "full_multi_trajectory": {
+      "correct": 141,
+      "gain_correct": 30,
+      "gain_percentage_points": 11.71875,
+      "paired_wins": 35,
+      "paired_losses": 5,
+      "unchanged_correct_retention": 0.954954954954955,
+      "result_document_sha256": "e111094afe78d8949afdd961a9b9052dfc93b316a30ccb66fa81f21582dad094"
+    },
+    "routing_supervision_only": {
+      "correct": 138,
+      "gain_correct": 27,
+      "gain_percentage_points": 10.546875,
+      "paired_wins": 33,
+      "paired_losses": 6,
+      "unchanged_correct_retention": 0.9459459459459459,
+      "result_document_sha256": "8cc366752f02dd3712f02fd05d9a5e338a4c27192a144e7aacc1a3405c37cdfb"
+    },
+    "tri_hierarchical": {
+      "correct": 132,
+      "gain_correct": 21,
+      "gain_percentage_points": 8.203125,
+      "paired_wins": 23,
+      "paired_losses": 2,
+      "unchanged_correct_retention": 0.9819819819819819,
+      "result_document_sha256": "140875fffa608a8d0b765c51885eaec580e1ccaecd2a8f080fc5c02d68f6c701"
+    },
+    "causal_training_contribution_over_routing_only_correct": 3,
+    "capability_retention_tradeoff": "full_multi_trajectory_maximizes_capability_while_tri_hierarchical_maximizes_retention",
+    "upward_transfer_decision": "preserve_model_owned_draft_trained_revision_and_causal_trajectory_training_on_120B_and_550B_with_matched_unchanged_and_self_refinement_controls",
+    "new_variant_submitted": false
   },
   "new_qwen_fit_completions": {
     "hierarchical_trajectory_gate": {
