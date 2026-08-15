@@ -157,6 +157,15 @@ def _validate_gate_state(state: dict[str, torch.Tensor]) -> None:
         raise Q36MTRTemporalGateTrainingError("temporal gate state differs")
 
 
+def _response_routing_mask(labels: torch.Tensor) -> torch.Tensor:
+    if labels.ndim != 2 or labels.dtype != torch.long:
+        raise Q36MTRTemporalGateTrainingError("temporal routing label geometry differs")
+    mask = labels.ne(-100)
+    if not mask.any():
+        raise Q36MTRTemporalGateTrainingError("temporal routing response mask is empty")
+    return mask
+
+
 def save_gate_checkpoint(
     path: Path,
     model: TemporalGatedProductModel,
@@ -391,10 +400,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 model.lm_head,
                 args.loss_chunk_size,
             )
+            routing_mask = _response_routing_mask(labels)
             routing_loss = None
             loss = causal_loss
             if args.routing_supervision_weight and routing_target is not None:
-                routing_loss = model.routing_supervision_loss(routing_target, attention)
+                routing_loss = model.routing_supervision_loss(
+                    routing_target, routing_mask
+                )
                 loss = loss + args.routing_supervision_weight * routing_loss
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
@@ -419,6 +431,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     float(routing_loss.detach()) if routing_loss is not None else None
                 ),
                 "routing_target": routing_target,
+                "routing_supervised_tokens": (
+                    int(routing_mask.sum()) if routing_target is not None else 0
+                ),
                 "outcome_class": batch_outcomes[0],
                 "gradient_norm": float(gradient_norm),
                 "learning_rate": learning_rate,
@@ -444,6 +459,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "initial_revision_weight": args.initial_revision_weight,
         "routing_supervision_weight": args.routing_supervision_weight,
         "routing_supervision_targets": ROUTING_TARGETS,
+        "routing_supervision_mask": "response_tokens_only",
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "data": str(args.data.resolve()),

@@ -57,6 +57,15 @@ def test_temporal_gate_settings_are_exact() -> None:
         module._validate_args(supervised)
 
 
+def test_routing_supervision_masks_prompt_tokens() -> None:
+    labels = torch.tensor([[-100, -100, 17, 23]], dtype=torch.long)
+    assert module._response_routing_mask(labels).tolist() == [
+        [False, False, True, True]
+    ]
+    with pytest.raises(module.Q36MTRTemporalGateTrainingError):
+        module._response_routing_mask(torch.full((1, 4), -100, dtype=torch.long))
+
+
 def test_gate_checkpoint_is_trainable_only_and_restores(tmp_path) -> None:
     model = _GateModel()
     state = trainable_state(model)
