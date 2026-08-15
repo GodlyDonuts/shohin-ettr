@@ -11,6 +11,7 @@ import pytest
 from analyze_upward_moe_scaling import UpwardMoEScalingError, analyze
 
 DOMAINS = {"bbh_logic": 128, "math500": 117, "mbpp": 11}
+JOB = Path(__file__).with_name("jobs") / "analyze_upward_moe_scaling.sbatch"
 
 
 def _write(path: Path, payload: dict) -> Path:
@@ -252,3 +253,14 @@ def test_different_architecture_series_cannot_be_combined(tmp_path: Path) -> Non
                 _write(tmp_path / "super.json", matched),
             ]
         )
+
+
+def test_curve_job_is_dependency_safe_cpu_only_and_runtime_bound() -> None:
+    source = JOB.read_text(encoding="utf-8")
+    assert "#SBATCH --no-requeue" in source
+    assert "#SBATCH --gres" not in source
+    assert "RUNTIME_MANIFEST_SHA256" in source
+    assert "q36_verify_runtime" in source
+    assert source.count("--point") == 3
+    assert "analyze_upward_moe_scaling.py" in source
+    assert '[[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]]' in source

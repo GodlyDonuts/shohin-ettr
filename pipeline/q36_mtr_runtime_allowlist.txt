@@ -29,6 +29,7 @@ pipeline/compile_q36_mtr_plan.py
 pipeline/cross_validate_q36_mtr_sparse_router.py
 pipeline/dispatch_q36_mtr.py
 pipeline/fetch_mixtral_8x22b.py
+pipeline/jobs/analyze_upward_moe_scaling.sbatch
 pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/fetch_mixtral_8x22b.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
