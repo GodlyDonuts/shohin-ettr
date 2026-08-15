@@ -175,7 +175,7 @@
     "status": "mechanics_and_exact_snapshot_staging_code_complete_not_submitted_pending_super_measurement_highgpu_access_and_storage_margin"
   },
   "qwen_full_validation_progress": {
-    "observed_at": "2026-08-15T11:09:33-04:00",
+    "observed_at": "2026-08-15T11:10:57-04:00",
     "array": 759815,
     "arm": "self_refinement",
     "total_rows": 1023,
@@ -187,10 +187,11 @@
       3,
       4,
       5,
-      6
+      6,
+      7
     ],
-    "completed_rows": 448,
-    "completed_unique_identities": 448,
+    "completed_rows": 512,
+    "completed_unique_identities": 512,
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "assessor_access_count": 0,
@@ -203,7 +204,8 @@
       "3": "a0a1bb66e03bb259f0a13210ea944e073096ea9e3a9af974002f2b5c14d08ed8",
       "4": "b25fb26f0424087f1016fc09887e6dc019df21005a151e61b0ca2e0345486f43",
       "5": "af1ef47a5920709f94397b16cb6b3d156ee6a6514efbd9403547821a3584b857",
-      "6": "d88660f2382f01158f0c8540705a85adcf757b7378fb27cb49f2110c8fec27a4"
+      "6": "d88660f2382f01158f0c8540705a85adcf757b7378fb27cb49f2110c8fec27a4",
+      "7": "9e1f2def6cee3700d8109dd9e06fa77782832f6ab426859dfe40a75e8a76b90b"
     },
     "report_sha256s": {
       "0": "9dde2b4939483049f10a44c1c25729b0e18ab70c6c7482e68d7cb044841b5adc",
@@ -212,7 +214,8 @@
       "3": "d4b8763209e449d3b3e32ef24ac9938a9dd2229d863c5be2b5ed3215ac004354",
       "4": "b2d16951f1614a6799345814c8c9d885dda62a8177558bb09227c16701b0f8c2",
       "5": "1adfc8a1de1e100f9ece13e09dc75ef39ed48a98b239155970b73165c54255cc",
-      "6": "93031f60539e62d1c14977edb6a6ab7ac359f16753b997614afcd6e14c2d9bb7"
+      "6": "93031f60539e62d1c14977edb6a6ab7ac359f16753b997614afcd6e14c2d9bb7",
+      "7": "e0211d1a2628eaa39690f95ff1e0a6b065053996e9be8b46c5575c0a3ad29437"
     },
     "slurm": {
       "0": {
@@ -271,6 +274,15 @@
         "state": "COMPLETED",
         "elapsed_seconds": 2188,
         "node": "evc28",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1
+      },
+      "7": {
+        "job": 760345,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2213,
+        "node": "evc40",
         "exit_code": "0:0",
         "restarts": 0,
         "allocated_gpus": 1
