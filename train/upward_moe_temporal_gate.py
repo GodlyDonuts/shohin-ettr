@@ -17,6 +17,8 @@ from q36_upward_moe_host import (
     ALPHA as NEMOTRON_ALPHA,
     CONTROLLED_LAYER_INDICES as NEMOTRON_CONTROLLED_LAYER_INDICES,
     HIDDEN_SIZE as NEMOTRON_HIDDEN_SIZE,
+    MODEL_CONFIG_SHA256 as NEMOTRON_MODEL_CONFIG_SHA256,
+    MODEL_REVISION as NEMOTRON_MODEL_REVISION,
     RANK as NEMOTRON_RANK,
     validate_loaded_surface as validate_nemotron_surface,
 )
@@ -25,6 +27,8 @@ from q36_upward_moe_mixtral_host import (
     ATTACHMENT_SURFACE as MIXTRAL_ATTACHMENT_SURFACE,
     CONTROLLED_LAYER_INDICES as MIXTRAL_CONTROLLED_LAYER_INDICES,
     HIDDEN_SIZE as MIXTRAL_HIDDEN_SIZE,
+    MODEL_CONFIG_SHA256 as MIXTRAL_MODEL_CONFIG_SHA256,
+    MODEL_REVISION as MIXTRAL_MODEL_REVISION,
     RANK as MIXTRAL_RANK,
     validate_loaded_surface as validate_mixtral_surface,
 )
@@ -45,6 +49,8 @@ class UpwardMoETemporalGateError(RuntimeError):
 @dataclass(frozen=True)
 class UpwardMoETemporalGateSpec:
     host: str
+    model_revision: str
+    model_config_sha256: str
     architecture: str
     attachment_surface: str
     module_attribute: str
@@ -61,6 +67,8 @@ class UpwardMoETemporalGateSpec:
     def receipt(self) -> dict[str, Any]:
         return {
             "host": self.host,
+            "model_revision": self.model_revision,
+            "model_config_sha256": self.model_config_sha256,
             "architecture": self.architecture,
             "attachment_surface": self.attachment_surface,
             "module_attribute": self.module_attribute,
@@ -76,6 +84,8 @@ class UpwardMoETemporalGateSpec:
 
 NEMOTRON_SPEC = UpwardMoETemporalGateSpec(
     host="Nemotron-Super-120B-A12B",
+    model_revision=NEMOTRON_MODEL_REVISION,
+    model_config_sha256=NEMOTRON_MODEL_CONFIG_SHA256,
     architecture=NEMOTRON_ARCHITECTURE,
     attachment_surface=NEMOTRON_ATTACHMENT_SURFACE,
     module_attribute="mixer",
@@ -88,6 +98,8 @@ NEMOTRON_SPEC = UpwardMoETemporalGateSpec(
 
 MIXTRAL_SPEC = UpwardMoETemporalGateSpec(
     host="Mixtral-8x22B-141B-A39B",
+    model_revision=MIXTRAL_MODEL_REVISION,
+    model_config_sha256=MIXTRAL_MODEL_CONFIG_SHA256,
     architecture=MIXTRAL_ARCHITECTURE,
     attachment_surface=MIXTRAL_ATTACHMENT_SURFACE,
     module_attribute="mlp",

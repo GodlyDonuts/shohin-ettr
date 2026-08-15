@@ -42,11 +42,15 @@
     "module": "train/temporal_residual_gate.py",
     "module_sha256": "e82140054ba3aa9dcc1973552911ed002ba50e47bdea7dd56ea8728fa19f3da2",
     "executable_host_models": "train/upward_moe_temporal_gate.py",
-    "executable_host_models_sha256": "7023afe633b296b04c159edcb9cc89c2c6036472698614e1766c1c47bc1f5342",
+    "executable_host_models_sha256": "c9c50aa0093befdd496e5c4502b57ec1946fa1e2f01f636bfc3b122c793fc80e",
+    "role_lineage": "train/upward_moe_role_lineage.py",
+    "role_lineage_sha256": "dc7f5e9c16e16fec0a9bd9552bfc27b152a142014233f63bec4ecd37f2f1dced",
     "test_module": "train/test_temporal_residual_gate.py",
     "test_module_sha256": "c026a79aa8e57ce20dae41098ca61efcf2307517f060d2eb39900d944f263346",
     "executable_host_model_tests": "train/test_upward_moe_temporal_gate.py",
     "executable_host_model_tests_sha256": "6a3a7df4bf1784550a4f992cefd773f442538afe7a659c0e41519d197d5f8a13",
+    "role_lineage_tests": "train/test_upward_moe_role_lineage.py",
+    "role_lineage_tests_sha256": "59d14ffd2b370e01f630d0e83bc3a667894b0587fd86eb92b980ec02270a858e",
     "supported_exact_surfaces": [
       "mlp",
       "mixer"
@@ -58,7 +62,10 @@
   },
   "verification": {
     "focused_surface_tests": "29_passed",
-    "full_temporal_path_tests": "68_passed",
+    "full_temporal_path_tests": "72_passed",
+    "owner_to_revision_warm_start_exact": true,
+    "zero_start_aligned_revision_rejected": true,
+    "cross_host_checkpoint_rejected": true,
     "black": "PASS",
     "ruff": "PASS",
     "py_compile": "PASS",

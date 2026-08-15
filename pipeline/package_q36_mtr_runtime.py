@@ -115,6 +115,7 @@ REQUIRED = {
     "train/shared_post_mlp_revision.py",
     "train/temporal_residual_gate.py",
     "train/upward_moe_temporal_gate.py",
+    "train/upward_moe_role_lineage.py",
 }
 
 
