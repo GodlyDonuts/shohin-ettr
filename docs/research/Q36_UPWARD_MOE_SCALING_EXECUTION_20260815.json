@@ -175,7 +175,7 @@
     "status": "mechanics_and_exact_snapshot_staging_code_complete_not_submitted_pending_super_measurement_highgpu_access_and_storage_margin"
   },
   "qwen_full_validation_progress": {
-    "observed_at": "2026-08-15T10:10:18-04:00",
+    "observed_at": "2026-08-15T10:32:41-04:00",
     "array": 759815,
     "arm": "self_refinement",
     "total_rows": 1023,
@@ -183,10 +183,11 @@
     "completed_shards": [
       0,
       1,
-      2
+      2,
+      4
     ],
-    "completed_rows": 192,
-    "completed_unique_identities": 192,
+    "completed_rows": 256,
+    "completed_unique_identities": 256,
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "assessor_access_count": 0,
@@ -195,12 +196,14 @@
     "candidate_sha256s": {
       "0": "e9f288b84c7c3167a35aa1c4a8c1a20e21c0cd5701b3e034e00df755680e83b2",
       "1": "68e1c47aff04bbc6bebc17ed8f4001ab80b36320a829bc0ac646ee61b7bb844b",
-      "2": "89e19b3c4707c0b39433066511b17468bf3863a0073609247ae79854141a4b7b"
+      "2": "89e19b3c4707c0b39433066511b17468bf3863a0073609247ae79854141a4b7b",
+      "4": "b25fb26f0424087f1016fc09887e6dc019df21005a151e61b0ca2e0345486f43"
     },
     "report_sha256s": {
       "0": "9dde2b4939483049f10a44c1c25729b0e18ab70c6c7482e68d7cb044841b5adc",
       "1": "df995a3731f220c7302733521a649454226cf033e60c0c1a26786d382c80ba45",
-      "2": "75ab69e75fdc25df1bc5660e6c1dd258917bd77707f58090b1217f1f4fd39c72"
+      "2": "75ab69e75fdc25df1bc5660e6c1dd258917bd77707f58090b1217f1f4fd39c72",
+      "4": "b2d16951f1614a6799345814c8c9d885dda62a8177558bb09227c16701b0f8c2"
     },
     "slurm": {
       "0": {
@@ -226,6 +229,15 @@
         "node": "evc39",
         "exit_code": "0:0",
         "restarts": 0
+      },
+      "4": {
+        "job": 760339,
+        "state": "COMPLETED",
+        "elapsed_seconds": 1881,
+        "node": "evc28",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1
       }
     },
     "scientific_result_status": "not_scored_until_all_frozen_shards_complete"
