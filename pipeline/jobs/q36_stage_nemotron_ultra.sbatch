@@ -131,15 +131,6 @@ verify_sha256 "$STAGE_ROOT/generation_config.json" "$EXPECTED_GENERATION_CONFIG_
 
 /usr/bin/printf '%s\n' "$REVISION" > "$STAGE_ROOT/SOURCE_REVISION"
 verify_sha256 "$STAGE_ROOT/SOURCE_REVISION" "$EXPECTED_SOURCE_REVISION_SHA256"
-(
-  cd "$STAGE_ROOT"
-  /usr/bin/find . -type f ! -name SHA256SUMS ! -name snapshot_receipt.json -printf '%P\0' \
-    | /usr/bin/sort -z \
-    | /usr/bin/xargs -0 /usr/bin/sha256sum -- \
-    > SHA256SUMS
-  [[ "$(/usr/bin/wc -l < SHA256SUMS | /usr/bin/tr -d ' ')" == 244 ]]
-  /usr/bin/sha256sum -c SHA256SUMS
-)
 
 env -i \
   PATH=/usr/bin:/bin \
@@ -177,7 +168,6 @@ payload = {
         "headroom_bytes": int(os.environ["HEADROOM_BYTES"]),
         "headroom_inodes": int(os.environ["HEADROOM_INODES"]),
     },
-    "sha256sums_sha256": hashlib.sha256((root / "SHA256SUMS").read_bytes()).hexdigest(),
     "source_revision_sha256": hashlib.sha256((root / "SOURCE_REVISION").read_bytes()).hexdigest(),
 }
 path = root / "snapshot_receipt.json"
@@ -187,6 +177,19 @@ with path.open("x", encoding="utf-8") as handle:
     handle.flush()
     os.fsync(handle.fileno())
 PY
+
+# The manifest is deliberately built after the receipt so exact-membership
+# verification covers every candidate-visible model-tree byte. SHA256SUMS is
+# the sole excluded file and its digest is supplied independently downstream.
+(
+  cd "$STAGE_ROOT"
+  /usr/bin/find . -type f ! -name SHA256SUMS -printf '%P\0' \
+    | /usr/bin/sort -z \
+    | /usr/bin/xargs -0 /usr/bin/sha256sum -- \
+    > SHA256SUMS
+  [[ "$(/usr/bin/wc -l < SHA256SUMS | /usr/bin/tr -d ' ')" == 245 ]]
+  /usr/bin/sha256sum -c SHA256SUMS
+)
 
 /usr/bin/chmod -R a-w "$STAGE_ROOT"
 /usr/bin/mv -- "$STAGE_ROOT" "$FINAL_ROOT"

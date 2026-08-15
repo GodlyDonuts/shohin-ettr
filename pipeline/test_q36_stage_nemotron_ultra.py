@@ -44,6 +44,10 @@ def test_ultra_stage_is_write_once_hash_bound_and_non_scientific() -> None:
     assert "files_metadata=True" in source
     assert "sha256sum -c SHA256SUMS" in source
     assert "snapshot_receipt.json" in source
+    receipt = source.index('path = root / "snapshot_receipt.json"')
+    manifest = source.index("/usr/bin/find . -type f ! -name SHA256SUMS")
+    assert receipt < manifest
+    assert "== 245 ]]" in source
     assert '/usr/bin/chmod -R a-w "$STAGE_ROOT"' in source
     assert '/usr/bin/mv -- "$STAGE_ROOT" "$FINAL_ROOT"' in source
     for forbidden in (

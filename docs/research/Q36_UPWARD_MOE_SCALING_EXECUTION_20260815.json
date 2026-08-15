@@ -238,7 +238,7 @@
     "upstream_files": 243,
     "upstream_bytes": 352381245521,
     "critical_metadata_hashes_pinned": 6,
-    "manifest_members_after_source_revision": 244,
+    "manifest_members_after_source_revision_and_snapshot_receipt": 245,
     "required_post_download_safety_bytes": 68719476736,
     "required_pre_download_headroom_bytes": 421100722257,
     "status": "code_complete_tested_and_pushed_not_submitted_current_quota_fails_closed"
