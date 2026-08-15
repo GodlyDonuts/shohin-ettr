@@ -36,6 +36,8 @@ def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() 
     assert "train/q36_upward_moe_host.py" in entries
     assert "pipeline/build_nemotron_scale_transfer_basis.py" in entries
     assert "pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch" in entries
+    assert "pipeline/lift_nemotron_super_adapter_to_ultra.py" in entries
+    assert "pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch" in entries
 
 
 @pytest.mark.parametrize(

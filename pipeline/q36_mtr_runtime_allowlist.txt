@@ -28,6 +28,7 @@ pipeline/compile_q36_mtr_plan.py
 pipeline/cross_validate_q36_mtr_sparse_router.py
 pipeline/dispatch_q36_mtr.py
 pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
+pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
 pipeline/jobs/q36_mtr_authorize_score.sbatch
 pipeline/jobs/q36_mtr_build_final_custody.sbatch
@@ -63,6 +64,7 @@ pipeline/jobs/q36_mtr_sparse_router_cv.sbatch
 pipeline/jobs/q36_mtr_stack_sparse_commit.sbatch
 pipeline/jobs/q36_mtr_synthesis_consensus.sbatch
 pipeline/jobs/q36_mtr_validate_commit_application.sbatch
+pipeline/lift_nemotron_super_adapter_to_ultra.py
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
 pipeline/mirror_q36_mtr_evidence.py
