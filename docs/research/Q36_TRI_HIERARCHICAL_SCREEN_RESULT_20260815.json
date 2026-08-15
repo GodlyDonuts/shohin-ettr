@@ -1,0 +1,127 @@
+{
+  "schema": "shohin-q36-tri-hierarchical-screen-result-v1",
+  "status": "complete",
+  "date": "2026-08-15",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "total_parameters_billions": 35,
+    "active_parameters_billions": 3,
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "architecture": {
+    "name": "tri_hierarchical",
+    "branches": [
+      "owner",
+      "revision",
+      "draft_hidden"
+    ],
+    "controlled_moe_layers": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "fit_updates": 256,
+    "fit_report_sha256": "e8f0dcf98da5825102e2c246ad73ebe129d0633d65d82a72e274e8af73fd057e",
+    "checkpoint_sha256": "51d59297c5f3d25eabbc9f5d9396efe98796e6f3e2c005201e392094ca6bb356"
+  },
+  "screen": {
+    "rows": 256,
+    "source_disjoint": true,
+    "unchanged_correct": 111,
+    "unchanged_accuracy": 0.43359375,
+    "shohin_correct": 132,
+    "shohin_accuracy": 0.515625,
+    "absolute_gain_correct": 21,
+    "absolute_gain_percentage_points": 8.203125,
+    "paired_wins": 23,
+    "paired_losses": 2,
+    "mcnemar_exact_two_sided_p": 1.9431114196777344e-05,
+    "retained_unchanged_correct": 109,
+    "unchanged_correct_retention": 0.9819819819819819,
+    "empty_completions": 0,
+    "max_token_exhausted": 16,
+    "domains": {
+      "bbh_logic": {
+        "unchanged_correct": 71,
+        "shohin_correct": 83,
+        "total": 128,
+        "delta": 12
+      },
+      "math500": {
+        "unchanged_correct": 31,
+        "shohin_correct": 39,
+        "total": 117,
+        "delta": 8
+      },
+      "mbpp": {
+        "unchanged_correct": 9,
+        "shohin_correct": 10,
+        "total": 11,
+        "delta": 1
+      }
+    }
+  },
+  "routing": {
+    "token_layer_events": 4023488,
+    "aggregate_mean_branch_weights": {
+      "owner": 0.6394219540866287,
+      "revision": 0.2764476793750253,
+      "draft_hidden": 0.08411063486094662
+    },
+    "first_controlled_layer_mean_branch_weights": {
+      "owner": 0.5135562482959437,
+      "revision": 0.38266821224791464,
+      "draft_hidden": 0.10374040458160153
+    },
+    "last_controlled_layer_mean_branch_weights": {
+      "owner": 0.7705907036926045,
+      "revision": 0.15406590065391879,
+      "draft_hidden": 0.0753357783340366
+    }
+  },
+  "custody": {
+    "score_sha256": "f2314789ea3f2421ae16696667f055f19bbd8480eaed5f081de2935feb03f0ff",
+    "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "report_sha256s": [
+      "7fd48bad3a82883a4be21cf5a9b075ac5299a5fe7692f1d1cc5a58a95c06add1",
+      "dc362d643524cae208a2299f8d7a01a0353071a372477ca0a02aa0e7a5ea27d1",
+      "2dc9e9f4ccb5c7bb118888732221f906fbecb13e1c919a9f6302e9f596564d94",
+      "a9c2b3451ee507f91e1444906d67c867939ae36785e18ffbcc75585cd6800159"
+    ],
+    "candidate_sha256s": [
+      "26ff574d3277113c5b448e9523fb2f97c6287cca602270b417fad7d1530421ac",
+      "f8238d64640216081d23ebc49589dd01bac0fc4e07ade0f6f3bb618ecbf3295e",
+      "a62fcf38c5b0f68df24e827a061d4f885cbdf0f7c5b1e59df754d5a6d70af108",
+      "e7e2c99e366f05688a1b52812f09f0b87942205661bbfc441b7f05c105a433e5"
+    ],
+    "evaluation_jobs": [
+      760264,
+      760265,
+      760270,
+      760212
+    ],
+    "score_job": 760213,
+    "restarts": 0,
+    "peak_gpu_memory_bytes": 67751820800
+  },
+  "promotion": {
+    "decision": "promote_to_existing_source_disjoint_1023_row_validation",
+    "validation_array_job": 760214,
+    "validation_score_job": 760215,
+    "new_architecture_submitted": false,
+    "reason": "The screen improves all three domains, wins 23-to-2 paired, retains 109 of 111 unchanged-correct cases, and supplies direct non-degenerate routing evidence."
+  }
+}

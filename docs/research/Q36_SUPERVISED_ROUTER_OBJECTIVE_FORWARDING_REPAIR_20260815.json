@@ -30,7 +30,10 @@
     "negative_control": "correct_set_mass remains rejected for the binary temporal gate"
   },
   "continuation": {
-    "replacement_fit": "pending immutable runtime packaging",
+    "replacement_fit": 760283,
+    "replacement_runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_39f3d3ab_r1",
+    "replacement_runtime_manifest_sha256": "c72b95cc53ba981d30d9b8bf3e993ef5c6906ba1d752289c2b84955363d6fdf3",
+    "environment_receipt_sha256": "93703daf346bf5c3eaaf5d7cc895594adbe102effe3103f5e376bc956f9eecab",
     "screen_rows": 256,
     "validation_rows": 1023,
     "instruction": "Run the exact existing supervised-response fit once under the repaired runtime and retain the existing matched screen/validation arms."

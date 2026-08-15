@@ -34,9 +34,11 @@
     "implementation": "Accept either installation or lexical row order after exact manifest-byte authentication; retain unique safe relative paths and exact per-member SHA-256 verification."
   },
   "continuation": {
-    "replacement_mechanics": "pending immutable runtime packaging",
-    "fit_job": 760253,
-    "fit_state_after_failure": "DependencyNeverSatisfied",
+    "replacement_mechanics": 760275,
+    "replacement_runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_c05e8581_r1",
+    "replacement_runtime_manifest_sha256": "7baf795cc3712506e3f65334f95a2cf06550908287b7dd74828f52818f84d820",
+    "fit_job": 760278,
+    "fit_state_after_failure": "replaced_before_start",
     "fit_scientific_updates": 0,
     "instruction": "Resubmit the exact two-H100 mechanics gate and attach the unchanged Super fit/evaluation graph only after mechanics PASS."
   }
