@@ -1,0 +1,80 @@
+{
+  "schema": "shohin-q36-mtr-external-partial-result-summary-v1",
+  "status": "interim_four_arm_complete",
+  "date": "2026-08-15",
+  "host_model": "Qwen3.6-35B-A3B",
+  "partition": "source_disjoint_external_screen",
+  "rows": 256,
+  "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+  "assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+  "detailed_report": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/external_screen_da8556c3_r1/partial_four_arm_score.json",
+    "bytes": 74622,
+    "sha256": "f8f68609b52a72473a63527e4c4b18c7b5db6227d041d3971a053249fe2fcc0a"
+  },
+  "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+  "arms": {
+    "unchanged": {
+      "correct": 111,
+      "accuracy": 0.43359375,
+      "domains": {
+        "math500": [31, 117],
+        "bbh_logic": [71, 128],
+        "mbpp": [9, 11]
+      }
+    },
+    "self_refinement": {
+      "correct": 121,
+      "accuracy": 0.47265625,
+      "gain_over_unchanged_count": 10,
+      "arm_only_correct": 17,
+      "unchanged_only_correct": 7,
+      "mcnemar_exact_two_sided_p": 0.06391465663909912,
+      "domains": {
+        "math500": [39, 117],
+        "bbh_logic": [76, 128],
+        "mbpp": [6, 11]
+      }
+    },
+    "draft_hidden": {
+      "correct": 122,
+      "accuracy": 0.4765625,
+      "gain_over_unchanged_count": 11,
+      "arm_only_correct": 34,
+      "unchanged_only_correct": 23,
+      "mcnemar_exact_two_sided_p": 0.18485048241641847,
+      "domains": {
+        "math500": [29, 117],
+        "bbh_logic": [83, 128],
+        "mbpp": [10, 11]
+      }
+    },
+    "revision": {
+      "correct": 141,
+      "accuracy": 0.55078125,
+      "gain_over_unchanged_count": 30,
+      "gain_over_unchanged_percentage_points": 11.71875,
+      "arm_only_correct": 36,
+      "unchanged_only_correct": 6,
+      "mcnemar_exact_two_sided_p": 2.8288777684792876e-06,
+      "unchanged_correct_retained": 105,
+      "unchanged_correct_retention": 0.9459459459459459,
+      "revision_exclusive_correct": 7,
+      "domains": {
+        "math500": [45, 117],
+        "bbh_logic": [85, 128],
+        "mbpp": [11, 11]
+      },
+      "candidate_sha256s": [
+        "2018a7ea2cbf10d28a693b893371a78e84871294d3cae87decaf6a6b4deaaf32",
+        "f678ed566159abc324aca5321de20a055c1ecc7f371261375284a9fa66dd5a401",
+        "72b0bee173b7508de906435461f0976877c627adfbfac9eb9fec57076c5090f7",
+        "7c56fa9729778e0643f0efcbcc7f06642da36ad437cd6f4de8515e28ce96d367"
+      ]
+    }
+  },
+  "four_arm_oracle_correct": 157,
+  "four_arm_all_wrong": 99,
+  "four_arm_all_correct": 81,
+  "interpretation": "The trained model-owned-draft revision arm produces a large, domain-broad, statistically decisive source-disjoint gain on the MoE host while retaining 94.6% of unchanged-correct cases. Interpolation and learned temporal-gate results remain pending."
+}
