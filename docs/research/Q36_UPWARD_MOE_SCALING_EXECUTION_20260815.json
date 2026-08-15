@@ -197,7 +197,7 @@
     "status": "mechanics_and_exact_snapshot_staging_code_complete_not_submitted_pending_super_measurement_highgpu_access_and_storage_margin"
   },
   "qwen_full_validation_progress": {
-    "observed_at": "2026-08-15T11:54:38-04:00",
+    "observed_at": "2026-08-15T11:59:54-04:00",
     "array": 759815,
     "arm": "self_refinement",
     "total_rows": 1023,
@@ -214,10 +214,11 @@
       8,
       9,
       10,
-      11
+      11,
+      12
     ],
-    "completed_rows": 768,
-    "completed_unique_identities": 768,
+    "completed_rows": 832,
+    "completed_unique_identities": 832,
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "assessor_access_count": 0,
@@ -235,7 +236,8 @@
       "8": "ad50a2d871b222c7dd16b13dde7fb4f6c4fcc13bbc13c553448fd138f3d084db",
       "9": "cff7deb930f06b4acb3c8e380391fdcda423b4146c838e0d7110c4a39d17a414",
       "10": "7d55d12d9bb7e18dd6b8886e22a0eba2185f49186949f1d22033a1c35d3ae338",
-      "11": "0bc104c2e365ff899378943c7a5341d7b97d0cff9fb376aaf9e47aa66b5253d3"
+      "11": "0bc104c2e365ff899378943c7a5341d7b97d0cff9fb376aaf9e47aa66b5253d3",
+      "12": "e4401b68087007123b2df7c0bfeeea03076268bfaeb55d53f56ce0812987a7d1"
     },
     "report_sha256s": {
       "0": "9dde2b4939483049f10a44c1c25729b0e18ab70c6c7482e68d7cb044841b5adc",
@@ -249,7 +251,8 @@
       "8": "aec74a0a57e93bbfa825a3360001ee7f587c906129c14438ab3e97d5d3c47105",
       "9": "aaa5f46066215fe27eaa3f0bddec9d5d7e33b451dc739eb5d33f4f1c0eec8f0c",
       "10": "f845b47dd0c2e261291ca277178c231e91c1d6e6c98254298e1ac3ebcbeaf9cd",
-      "11": "37f934cad06419ecfac8bc6febd8fa1174e56a1edbd2e10b5cb9f1650f5a3117"
+      "11": "37f934cad06419ecfac8bc6febd8fa1174e56a1edbd2e10b5cb9f1650f5a3117",
+      "12": "9a025674ecf5cbd99cf337f019698431ac044ce0a86760a7d78ebd4e46c76aee"
     },
     "slurm": {
       "0": {
@@ -356,6 +359,21 @@
         "exit_code": "0:0",
         "restarts": 0,
         "allocated_gpus": 1
+      },
+      "12": {
+        "job": 760367,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2456,
+        "node": "evc39",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1,
+        "ordered_source_slice": "768:832",
+        "empty_completions": 0,
+        "max_token_completions": 25,
+        "generated_tokens": 29216,
+        "peak_gpu_memory_bytes": 67678822912,
+        "report_elapsed_seconds": 2202.471897041425
       }
     },
     "scientific_result_status": "not_scored_until_all_frozen_shards_complete"
