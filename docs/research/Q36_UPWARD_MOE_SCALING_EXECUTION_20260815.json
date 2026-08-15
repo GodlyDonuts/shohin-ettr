@@ -197,7 +197,7 @@
     "status": "mechanics_and_exact_snapshot_staging_code_complete_not_submitted_pending_super_measurement_highgpu_access_and_storage_margin"
   },
   "qwen_full_validation_progress": {
-    "observed_at": "2026-08-15T11:49:30-04:00",
+    "observed_at": "2026-08-15T11:54:38-04:00",
     "array": 759815,
     "arm": "self_refinement",
     "total_rows": 1023,
@@ -212,10 +212,12 @@
       6,
       7,
       8,
-      9
+      9,
+      10,
+      11
     ],
-    "completed_rows": 640,
-    "completed_unique_identities": 640,
+    "completed_rows": 768,
+    "completed_unique_identities": 768,
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "assessor_access_count": 0,
@@ -231,7 +233,9 @@
       "6": "d88660f2382f01158f0c8540705a85adcf757b7378fb27cb49f2110c8fec27a4",
       "7": "9e1f2def6cee3700d8109dd9e06fa77782832f6ab426859dfe40a75e8a76b90b",
       "8": "ad50a2d871b222c7dd16b13dde7fb4f6c4fcc13bbc13c553448fd138f3d084db",
-      "9": "cff7deb930f06b4acb3c8e380391fdcda423b4146c838e0d7110c4a39d17a414"
+      "9": "cff7deb930f06b4acb3c8e380391fdcda423b4146c838e0d7110c4a39d17a414",
+      "10": "7d55d12d9bb7e18dd6b8886e22a0eba2185f49186949f1d22033a1c35d3ae338",
+      "11": "0bc104c2e365ff899378943c7a5341d7b97d0cff9fb376aaf9e47aa66b5253d3"
     },
     "report_sha256s": {
       "0": "9dde2b4939483049f10a44c1c25729b0e18ab70c6c7482e68d7cb044841b5adc",
@@ -243,7 +247,9 @@
       "6": "93031f60539e62d1c14977edb6a6ab7ac359f16753b997614afcd6e14c2d9bb7",
       "7": "e0211d1a2628eaa39690f95ff1e0a6b065053996e9be8b46c5575c0a3ad29437",
       "8": "aec74a0a57e93bbfa825a3360001ee7f587c906129c14438ab3e97d5d3c47105",
-      "9": "aaa5f46066215fe27eaa3f0bddec9d5d7e33b451dc739eb5d33f4f1c0eec8f0c"
+      "9": "aaa5f46066215fe27eaa3f0bddec9d5d7e33b451dc739eb5d33f4f1c0eec8f0c",
+      "10": "f845b47dd0c2e261291ca277178c231e91c1d6e6c98254298e1ac3ebcbeaf9cd",
+      "11": "37f934cad06419ecfac8bc6febd8fa1174e56a1edbd2e10b5cb9f1650f5a3117"
     },
     "slurm": {
       "0": {
@@ -329,6 +335,24 @@
         "state": "COMPLETED",
         "elapsed_seconds": 2147,
         "node": "evc28",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1
+      },
+      "10": {
+        "job": 760365,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2272,
+        "node": "evc40",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1
+      },
+      "11": {
+        "job": 760366,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2124,
+        "node": "evc40",
         "exit_code": "0:0",
         "restarts": 0,
         "allocated_gpus": 1
