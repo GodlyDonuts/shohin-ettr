@@ -26,6 +26,7 @@ pipeline/compare_q36_mtr_semantic_commits.py
 pipeline/compile_q36_mtr_plan.py
 pipeline/cross_validate_q36_mtr_sparse_router.py
 pipeline/dispatch_q36_mtr.py
+pipeline/jobs/nemotron_super_score.sbatch
 pipeline/jobs/q36_mtr_authorize_score.sbatch
 pipeline/jobs/q36_mtr_build_final_custody.sbatch
 pipeline/jobs/q36_mtr_build_multi_owner_commit_pairs.sbatch
@@ -69,6 +70,7 @@ pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_evidence.py
 pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
+pipeline/score_nemotron_super_screen.py
 pipeline/score_q36_mtr.py
 pipeline/score_q36_mtr_draft_preview.py
 pipeline/score_q36_mtr_external.py
