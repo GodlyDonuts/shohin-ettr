@@ -128,6 +128,24 @@ def test_analysis_distinguishes_tri_geometry_router(tmp_path) -> None:
     assert report["winner"] == "tri_geometry"
 
 
+def test_analysis_distinguishes_hierarchical_router(tmp_path) -> None:
+    hierarchy = tmp_path / "q36_tri_hierarchical" / "score.json"
+    geometry = tmp_path / "q36_tri_geometry" / "score.json"
+    unchanged = set(range(100))
+    _score(hierarchy, "multi_trajectory_gate", set(range(140)), unchanged, rows=200)
+    _score(geometry, "multi_trajectory_gate", set(range(130)), unchanged, rows=200)
+    report = module.run(
+        argparse.Namespace(
+            score=[hierarchy, geometry],
+            incumbent_revision_correct=125,
+            incumbent_score=None,
+            output=tmp_path / "analysis.json",
+        )
+    )
+    assert sorted(report["variants"]) == ["tri_geometry", "tri_hierarchical"]
+    assert report["winner"] == "tri_hierarchical"
+
+
 def test_analysis_loads_matched_revision_incumbent(tmp_path) -> None:
     first = tmp_path / "q36_supervised" / "validation" / "score.json"
     second = tmp_path / "q36_multi" / "validation" / "score.json"

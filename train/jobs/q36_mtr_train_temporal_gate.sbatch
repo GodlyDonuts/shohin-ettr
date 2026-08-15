@@ -27,7 +27,8 @@ done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 ARCHITECTURE=${ARCHITECTURE:-temporal}
 [[ "$ARCHITECTURE" == temporal || "$ARCHITECTURE" == multi_trajectory || \
-  "$ARCHITECTURE" == tri_trajectory || "$ARCHITECTURE" == tri_geometry ]] || \
+  "$ARCHITECTURE" == tri_trajectory || "$ARCHITECTURE" == tri_geometry || \
+  "$ARCHITECTURE" == tri_hierarchical ]] || \
   q36_die "temporal gate architecture differs"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
@@ -39,12 +40,13 @@ q36_verify_sha256 "$OWNER_CHECKPOINT" "$(q36_sha256 "$OWNER_CHECKPOINT")"
 q36_verify_sha256 "$REVISION_CHECKPOINT" "$(q36_sha256 "$REVISION_CHECKPOINT")"
 architecture_args=(--architecture "$ARCHITECTURE")
 if [[ "$ARCHITECTURE" == multi_trajectory || "$ARCHITECTURE" == tri_trajectory || \
-  "$ARCHITECTURE" == tri_geometry ]]; then
+  "$ARCHITECTURE" == tri_geometry || "$ARCHITECTURE" == tri_hierarchical ]]; then
   [[ -n "${DRAFT_HIDDEN_CHECKPOINT:-}" ]] || \
     q36_die "multi-trajectory draft-hidden checkpoint is required"
   q36_verify_sha256 "$DRAFT_HIDDEN_CHECKPOINT" "$(q36_sha256 "$DRAFT_HIDDEN_CHECKPOINT")"
   architecture_args+=(--draft-hidden-checkpoint "$DRAFT_HIDDEN_CHECKPOINT")
-  if [[ "$ARCHITECTURE" == tri_trajectory || "$ARCHITECTURE" == tri_geometry ]]; then
+  if [[ "$ARCHITECTURE" == tri_trajectory || "$ARCHITECTURE" == tri_geometry || \
+    "$ARCHITECTURE" == tri_hierarchical ]]; then
     architecture_args+=(
       --max-rows 1189
       --data-seed 2026081517
@@ -77,6 +79,7 @@ if [[ -n "${CAUSAL_LOSS_WEIGHT:-}" ]]; then
     q36_die "temporal causal loss weight differs"
   [[ "$ARCHITECTURE" == multi_trajectory || "$ARCHITECTURE" == tri_trajectory || \
     "$ARCHITECTURE" == tri_geometry || \
+    "$ARCHITECTURE" == tri_hierarchical || \
     "$CAUSAL_LOSS_WEIGHT" == "1.0" ]] || \
     q36_die "temporal causal loss cannot be disabled"
   causal=(--causal-loss-weight "$CAUSAL_LOSS_WEIGHT")

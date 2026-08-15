@@ -140,6 +140,7 @@ def test_gate_rejects_invalid_config_or_branch_geometry() -> None:
 
 def _multi_block(
     router_features: str = "hidden_only",
+    routing_structure: str = "flat",
 ) -> MultiTrajectoryResidualGate:
     return MultiTrajectoryResidualGate(
         _Native(),
@@ -150,6 +151,7 @@ def _multi_block(
             branch_names=("owner", "revision", "draft_hidden"),
             initial_weights=(0.8, 0.1, 0.1),
             router_features=router_features,
+            routing_structure=routing_structure,
         ),
         branches={
             "owner": (
@@ -270,6 +272,43 @@ def test_geometry_router_requires_residuals_and_valid_mode() -> None:
             ("owner", "revision"),
             (0.9, 0.1),
             "unknown",
+        ).validate()
+
+
+def test_hierarchical_router_preserves_mix_and_decouples_sibling_choice() -> None:
+    block = _multi_block("trajectory_geometry", "hierarchical")
+    hidden = torch.tensor([[[1.0, 0.0], [0.0, 1.0]]])
+    residuals = block._residuals(hidden)
+    initial = block._gate(hidden, residuals)
+    torch.testing.assert_close(
+        initial,
+        torch.tensor([[[0.8, 0.1, 0.1], [0.8, 0.1, 0.1]]]),
+    )
+    assert block.trainable_parameter_count() == 24
+    with torch.no_grad():
+        block.gate_weight.zero_()
+        block.geometry_weight.zero_()
+        block.gate_bias[0] = -30.0
+        block.gate_bias[1] = 30.0
+    revision = block._gate(hidden, residuals)
+    assert revision[..., 0].max() < 1e-6
+    assert revision[..., 1].min() > 0.999
+    with torch.no_grad():
+        block.gate_bias[1] = -30.0
+    draft = block._gate(hidden, residuals)
+    assert draft[..., 2].min() > 0.999
+
+
+def test_hierarchical_router_requires_exact_role_semantics() -> None:
+    with pytest.raises(TemporalResidualGateError):
+        MultiTrajectoryResidualGateConfig(
+            2,
+            1,
+            1.0,
+            ("revision", "draft_hidden"),
+            (0.9, 0.1),
+            "trajectory_geometry",
+            "hierarchical",
         ).validate()
 
 

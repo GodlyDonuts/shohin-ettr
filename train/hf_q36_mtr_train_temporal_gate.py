@@ -64,6 +64,10 @@ TRI_SCHEMA = "shohin-q36-mtr-tri-trajectory-gate-training-v1"
 TRI_CHECKPOINT_SCHEMA = "shohin-q36-mtr-tri-trajectory-gate-checkpoint-v1"
 TRI_GEOMETRY_SCHEMA = "shohin-q36-mtr-tri-geometry-gate-training-v1"
 TRI_GEOMETRY_CHECKPOINT_SCHEMA = "shohin-q36-mtr-tri-geometry-gate-checkpoint-v1"
+TRI_HIERARCHICAL_SCHEMA = "shohin-q36-mtr-tri-hierarchical-gate-training-v1"
+TRI_HIERARCHICAL_CHECKPOINT_SCHEMA = (
+    "shohin-q36-mtr-tri-hierarchical-gate-checkpoint-v1"
+)
 GATE_SEED = 2026081511
 GATE_LEARNING_RATE = 2e-4
 GATE_GRADIENT_ACCUMULATION = 8
@@ -91,6 +95,9 @@ TRI_GEOMETRY_FEATURES = (
 )
 TRI_GEOMETRY_GATE_PARAMETERS = TRI_GATE_PARAMETERS + (
     len(CONTROLLED_LAYER_INDICES) * len(TRI_BRANCHES) * TRI_GEOMETRY_FEATURES
+)
+TRI_HIERARCHICAL_GATE_PARAMETERS = (
+    len(CONTROLLED_LAYER_INDICES) * 2 * (HIDDEN_SIZE + 1 + TRI_GEOMETRY_FEATURES)
 )
 LOSS_CHUNK_SIZE = 512
 ROUTING_TARGETS = {
@@ -257,10 +264,11 @@ def _routing_rows_with_sha256(
         "multi_trajectory",
         "tri_trajectory",
         "tri_geometry",
+        "tri_hierarchical",
     }
     branch_names = (
         TRI_BRANCHES
-        if architecture in {"tri_trajectory", "tri_geometry"}
+        if architecture in {"tri_trajectory", "tri_geometry", "tri_hierarchical"}
         else MULTI_BRANCHES
     )
     expected_schema = {
@@ -268,6 +276,7 @@ def _routing_rows_with_sha256(
         "multi_trajectory": MULTI_ROW_SCHEMA,
         "tri_trajectory": TRI_ROW_SCHEMA,
         "tri_geometry": TRI_ROW_SCHEMA,
+        "tri_hierarchical": TRI_ROW_SCHEMA,
     }.get(architecture)
     if expected_schema is None:
         raise Q36MTRTemporalGateTrainingError("temporal architecture differs")
@@ -431,12 +440,14 @@ def _validate_args(args: argparse.Namespace) -> None:
         "multi_trajectory",
         "tri_trajectory",
         "tri_geometry",
+        "tri_hierarchical",
     }
     if architecture not in {
         "temporal",
         "multi_trajectory",
         "tri_trajectory",
         "tri_geometry",
+        "tri_hierarchical",
     }:
         raise Q36MTRTemporalGateTrainingError("temporal gate architecture differs")
     presentations = {
@@ -444,16 +455,18 @@ def _validate_args(args: argparse.Namespace) -> None:
         "multi_trajectory": MULTI_PRESENTATIONS,
         "tri_trajectory": TRI_PRESENTATIONS,
         "tri_geometry": TRI_PRESENTATIONS,
+        "tri_hierarchical": TRI_PRESENTATIONS,
     }[architecture]
     data_seed = {
         "temporal": REVISION_DATA_SEED,
         "multi_trajectory": MULTI_DATA_SEED,
         "tri_trajectory": TRI_DATA_SEED,
         "tri_geometry": TRI_DATA_SEED,
+        "tri_hierarchical": TRI_DATA_SEED,
     }[architecture]
     initial_weights = (
         TRI_INITIAL_WEIGHTS
-        if architecture in {"tri_trajectory", "tri_geometry"}
+        if architecture in {"tri_trajectory", "tri_geometry", "tri_hierarchical"}
         else MULTI_INITIAL_WEIGHTS
     )
     expected = {
@@ -504,9 +517,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "multi_trajectory",
         "tri_trajectory",
         "tri_geometry",
+        "tri_hierarchical",
     }
-    tri = architecture in {"tri_trajectory", "tri_geometry"}
-    geometry = architecture == "tri_geometry"
+    tri = architecture in {"tri_trajectory", "tri_geometry", "tri_hierarchical"}
+    geometry = architecture in {"tri_geometry", "tri_hierarchical"}
+    hierarchical = architecture == "tri_hierarchical"
     branch_names = TRI_BRANCHES if tri else MULTI_BRANCHES
     initial_weights = TRI_INITIAL_WEIGHTS if tri else MULTI_INITIAL_WEIGHTS
     if not torch.cuda.is_available():
@@ -611,19 +626,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 branch_names,
                 initial_weights,
                 "trajectory_geometry" if geometry else "hidden_only",
+                "hierarchical" if hierarchical else "flat",
             ),
             role_states=role_states,
             controlled_layer_indices=CONTROLLED_LAYER_INDICES,
         )
         gate_parameters = (
-            TRI_GEOMETRY_GATE_PARAMETERS
-            if geometry
-            else TRI_GATE_PARAMETERS if tri else MULTI_GATE_PARAMETERS
+            TRI_HIERARCHICAL_GATE_PARAMETERS
+            if hierarchical
+            else (
+                TRI_GEOMETRY_GATE_PARAMETERS
+                if geometry
+                else TRI_GATE_PARAMETERS if tri else MULTI_GATE_PARAMETERS
+            )
         )
         checkpoint_schema = (
-            TRI_GEOMETRY_CHECKPOINT_SCHEMA
-            if geometry
-            else TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+            TRI_HIERARCHICAL_CHECKPOINT_SCHEMA
+            if hierarchical
+            else (
+                TRI_GEOMETRY_CHECKPOINT_SCHEMA
+                if geometry
+                else TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+            )
         )
     else:
         model = TemporalGatedProductModel(
@@ -774,20 +798,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise Q36MTRTemporalGateTrainingError("temporal gate update is absent")
     metadata = {
         "schema": (
-            TRI_GEOMETRY_SCHEMA
-            if geometry
-            else TRI_SCHEMA if tri else MULTI_SCHEMA if categorical else SCHEMA
+            TRI_HIERARCHICAL_SCHEMA
+            if hierarchical
+            else (
+                TRI_GEOMETRY_SCHEMA
+                if geometry
+                else TRI_SCHEMA if tri else MULTI_SCHEMA if categorical else SCHEMA
+            )
         ),
         "architecture": (
-            "q36-tokenwise-tri-trajectory-geometry-gate-v1"
-            if geometry
+            "q36-tokenwise-tri-trajectory-hierarchical-gate-v1"
+            if hierarchical
             else (
-                "q36-tokenwise-tri-trajectory-residual-gate-v1"
-                if tri
+                "q36-tokenwise-tri-trajectory-geometry-gate-v1"
+                if geometry
                 else (
-                    "q36-tokenwise-multi-trajectory-residual-gate-v1"
-                    if categorical
-                    else "q36-tokenwise-temporal-residual-gate-v1"
+                    "q36-tokenwise-tri-trajectory-residual-gate-v1"
+                    if tri
+                    else (
+                        "q36-tokenwise-multi-trajectory-residual-gate-v1"
+                        if categorical
+                        else "q36-tokenwise-temporal-residual-gate-v1"
+                    )
                 )
             )
         ),
@@ -805,6 +837,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "initial_revision_weight": args.initial_revision_weight,
         "router_features": router_features,
+        "routing_structure": "hierarchical" if hierarchical else "flat",
         "routing_supervision_weight": args.routing_supervision_weight,
         "causal_loss_weight": args.causal_loss_weight,
         "routing_supervision_targets": (
@@ -888,6 +921,7 @@ def parse_args() -> argparse.Namespace:
             "multi_trajectory",
             "tri_trajectory",
             "tri_geometry",
+            "tri_hierarchical",
         ),
         default="temporal",
     )

@@ -45,6 +45,8 @@ from hf_q36_mtr_train_temporal_gate import (
     TRI_GATE_PARAMETERS,
     TRI_GEOMETRY_CHECKPOINT_SCHEMA,
     TRI_GEOMETRY_GATE_PARAMETERS,
+    TRI_HIERARCHICAL_CHECKPOINT_SCHEMA,
+    TRI_HIERARCHICAL_GATE_PARAMETERS,
     TRI_INITIAL_WEIGHTS,
     _role_pair,
     _role_bank,
@@ -154,23 +156,33 @@ def load_multi_trajectory_gate_model(
         "multi_trajectory",
         "tri_trajectory",
         "tri_geometry",
+        "tri_hierarchical",
     }:
         raise Q36MTRTemporalGateEvaluationError(
             "categorical trajectory architecture differs"
         )
-    tri = architecture in {"tri_trajectory", "tri_geometry"}
-    geometry = architecture == "tri_geometry"
+    tri = architecture in {"tri_trajectory", "tri_geometry", "tri_hierarchical"}
+    geometry = architecture in {"tri_geometry", "tri_hierarchical"}
+    hierarchical = architecture == "tri_hierarchical"
     branch_names = TRI_BRANCHES if tri else MULTI_BRANCHES
     initial_weights = TRI_INITIAL_WEIGHTS if tri else MULTI_INITIAL_WEIGHTS
     gate_parameters = (
-        TRI_GEOMETRY_GATE_PARAMETERS
-        if geometry
-        else TRI_GATE_PARAMETERS if tri else MULTI_GATE_PARAMETERS
+        TRI_HIERARCHICAL_GATE_PARAMETERS
+        if hierarchical
+        else (
+            TRI_GEOMETRY_GATE_PARAMETERS
+            if geometry
+            else TRI_GATE_PARAMETERS if tri else MULTI_GATE_PARAMETERS
+        )
     )
     checkpoint_schema = (
-        TRI_GEOMETRY_CHECKPOINT_SCHEMA
-        if geometry
-        else TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+        TRI_HIERARCHICAL_CHECKPOINT_SCHEMA
+        if hierarchical
+        else (
+            TRI_GEOMETRY_CHECKPOINT_SCHEMA
+            if geometry
+            else TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+        )
     )
     router_features = "trajectory_geometry" if geometry else "hidden_only"
     role_states, role_receipt = _role_bank(
@@ -198,7 +210,13 @@ def load_multi_trajectory_gate_model(
         text_model,
         lm_head,
         MultiTrajectoryResidualGateConfig(
-            HIDDEN_SIZE, RANK, ALPHA, branch_names, initial_weights, router_features
+            HIDDEN_SIZE,
+            RANK,
+            ALPHA,
+            branch_names,
+            initial_weights,
+            router_features,
+            "hierarchical" if hierarchical else "flat",
         ),
         role_states=role_states,
         controlled_layer_indices=CONTROLLED_LAYER_INDICES,
@@ -212,12 +230,16 @@ def load_multi_trajectory_gate_model(
     )
     expected = {
         "architecture": (
-            "q36-tokenwise-tri-trajectory-geometry-gate-v1"
-            if geometry
+            "q36-tokenwise-tri-trajectory-hierarchical-gate-v1"
+            if hierarchical
             else (
-                "q36-tokenwise-tri-trajectory-residual-gate-v1"
-                if tri
-                else "q36-tokenwise-multi-trajectory-residual-gate-v1"
+                "q36-tokenwise-tri-trajectory-geometry-gate-v1"
+                if geometry
+                else (
+                    "q36-tokenwise-tri-trajectory-residual-gate-v1"
+                    if tri
+                    else "q36-tokenwise-multi-trajectory-residual-gate-v1"
+                )
             )
         ),
         "model_revision": MODEL_REVISION,
@@ -227,6 +249,7 @@ def load_multi_trajectory_gate_model(
         "branch_names": list(branch_names),
         "initial_branch_weights": list(initial_weights),
         "router_features": router_features,
+        "routing_structure": "hierarchical" if hierarchical else "flat",
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "role_receipt": role_receipt,
     }
@@ -261,6 +284,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "multi_trajectory",
         "tri_trajectory",
         "tri_geometry",
+        "tri_hierarchical",
     }
     if (
         architecture
@@ -269,6 +293,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "multi_trajectory",
             "tri_trajectory",
             "tri_geometry",
+            "tri_hierarchical",
         }
         or args.model_revision != MODEL_REVISION
         or args.seed != SEED
@@ -413,6 +438,7 @@ def parse_args() -> argparse.Namespace:
             "multi_trajectory",
             "tri_trajectory",
             "tri_geometry",
+            "tri_hierarchical",
         ),
         default="temporal",
     )

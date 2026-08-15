@@ -191,6 +191,7 @@ class MultiTrajectoryResidualGateConfig:
     branch_names: tuple[str, ...]
     initial_weights: tuple[float, ...]
     router_features: str = "hidden_only"
+    routing_structure: str = "flat"
 
     @property
     def geometry_feature_count(self) -> int:
@@ -208,6 +209,11 @@ class MultiTrajectoryResidualGateConfig:
             or len(set(self.branch_names)) != len(self.branch_names)
             or any(not name.isidentifier() for name in self.branch_names)
             or self.router_features not in {"hidden_only", "trajectory_geometry"}
+            or self.routing_structure not in {"flat", "hierarchical"}
+            or (
+                self.routing_structure == "hierarchical"
+                and self.branch_names != ("owner", "revision", "draft_hidden")
+            )
             or any(
                 not math.isfinite(weight) or weight <= 0.0
                 for weight in self.initial_weights
@@ -268,24 +274,35 @@ class MultiTrajectoryResidualGate(nn.Module):
         self.config = config
         self.register_buffer("branch_a", torch.stack(factors_a), persistent=True)
         self.register_buffer("branch_b", torch.stack(factors_b), persistent=True)
+        router_logits = (
+            2 if config.routing_structure == "hierarchical" else len(branches)
+        )
         self.gate_weight = nn.Parameter(
             torch.zeros(
-                (len(config.branch_names), config.hidden_size),
+                (router_logits, config.hidden_size),
                 device=device,
                 dtype=torch.float32,
             )
         )
-        self.gate_bias = nn.Parameter(
-            torch.tensor(
-                [math.log(weight) for weight in config.initial_weights],
-                device=device,
-                dtype=torch.float32,
+        if config.routing_structure == "hierarchical":
+            owner_weight = config.initial_weights[0]
+            adapted_weight = config.initial_weights[1] + config.initial_weights[2]
+            conditional_revision = config.initial_weights[1] / adapted_weight
+            initial_logits = (
+                math.log(owner_weight / adapted_weight),
+                math.log(conditional_revision / (1.0 - conditional_revision)),
             )
+        else:
+            initial_logits = tuple(
+                math.log(weight) for weight in config.initial_weights
+            )
+        self.gate_bias = nn.Parameter(
+            torch.tensor(initial_logits, device=device, dtype=torch.float32)
         )
         if config.router_features == "trajectory_geometry":
             self.geometry_weight = nn.Parameter(
                 torch.zeros(
-                    (len(config.branch_names), config.geometry_feature_count),
+                    (router_logits, config.geometry_feature_count),
                     device=device,
                     dtype=torch.float32,
                 )
@@ -392,6 +409,18 @@ class MultiTrajectoryResidualGate(nn.Module):
                     )
                 features = self._geometry_features(values, residuals)
                 logits = logits + F.linear(features, self.geometry_weight)
+            if self.config.routing_structure == "hierarchical":
+                owner = torch.sigmoid(logits[..., :1])
+                revision_given_adapted = torch.sigmoid(logits[..., 1:2])
+                adapted = 1.0 - owner
+                return torch.cat(
+                    (
+                        owner,
+                        adapted * revision_given_adapted,
+                        adapted * (1.0 - revision_given_adapted),
+                    ),
+                    dim=-1,
+                )
             return F.softmax(logits, dim=-1)
 
         if hidden_states.device.type == "cuda":
@@ -610,7 +639,15 @@ def install_multi_trajectory_residual_gates(
         block = MultiTrajectoryResidualGate(mlp, config, branches=branches[index])
         layer.mlp = block
         installed.append(block)
-    expected = len(indices) * len(config.branch_names) * (config.hidden_size + 1)
+    router_logits = (
+        2 if config.routing_structure == "hierarchical" else len(config.branch_names)
+    )
+    geometry = (
+        router_logits * config.geometry_feature_count
+        if config.router_features == "trajectory_geometry"
+        else 0
+    )
+    expected = len(indices) * (router_logits * (config.hidden_size + 1) + geometry)
     if sum(block.trainable_parameter_count() for block in installed) != expected:
         raise TemporalResidualGateError("multi-trajectory gate parameter count differs")
     return tuple(installed)

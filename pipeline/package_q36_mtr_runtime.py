@@ -26,6 +26,7 @@ PROHIBITED = (
 REQUIRED = {
     "pipeline/analyze_q36_mtr_external_outcomes.py",
     "pipeline/analyze_q36_mtr_token_gates.py",
+    "pipeline/analyze_q36_mtr_trajectory_state_geometry.py",
     "pipeline/authorize_q36_mtr_mechanics_qualification.py",
     "pipeline/authorize_q36_mtr_phase.py",
     "pipeline/build_q36_mtr_external_validation.py",
