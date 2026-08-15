@@ -7,6 +7,7 @@ pipeline/build_pcf1_data.py
 pipeline/build_q36_mtr_commit_pairs.py
 pipeline/build_q36_mtr_custody.py
 pipeline/build_q36_mtr_data.py
+pipeline/build_q36_mtr_external_validation.py
 pipeline/build_q36_mtr_multi_owner_commit_pairs.py
 pipeline/build_q36_mtr_owner_commit_pairs.py
 pipeline/build_q36_mtr_setwise_commit_rows.py
@@ -34,6 +35,7 @@ pipeline/jobs/q36_mtr_capture_environment.sbatch
 pipeline/jobs/q36_mtr_commit_pairs.sbatch
 pipeline/jobs/q36_mtr_compare.sbatch
 pipeline/jobs/q36_mtr_compare_semantic_commits.sbatch
+pipeline/jobs/q36_mtr_external_score.sbatch
 pipeline/jobs/q36_mtr_live_preflight.sbatch
 pipeline/jobs/q36_mtr_materialize.sbatch
 pipeline/jobs/q36_mtr_merge_drafts.sbatch
@@ -62,6 +64,8 @@ pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/score_q36_mtr.py
 pipeline/score_q36_mtr_draft_preview.py
+pipeline/score_q36_mtr_external.py
+pipeline/score_q36_mtr_external_consensus.py
 pipeline/seal_q36_mtr_terminal_evidence.py
 pipeline/select_q36_mtr_candidate_groups.py
 pipeline/select_q36_mtr_owner_trajectories.py
@@ -81,6 +85,7 @@ train/hf_product_reasoning_eval.py
 train/hf_product_reasoning_train.py
 train/hf_q36_mtr_apply_multi_owner_commit.py
 train/hf_q36_mtr_evaluate.py
+train/hf_q36_mtr_external_evaluate.py
 train/hf_q36_mtr_generate_drafts.py
 train/hf_q36_mtr_mechanics.py
 train/hf_q36_mtr_synthesize_trajectories.py
@@ -92,6 +97,7 @@ train/integrated_reasoning_workspace.py
 train/jobs/q36_mtr_apply_multi_owner_commit.sbatch
 train/jobs/q36_mtr_common.sh
 train/jobs/q36_mtr_evaluate.sbatch
+train/jobs/q36_mtr_external_evaluate.sbatch
 train/jobs/q36_mtr_generate_drafts.sbatch
 train/jobs/q36_mtr_generate_owner_preview.sbatch
 train/jobs/q36_mtr_mechanics.sbatch

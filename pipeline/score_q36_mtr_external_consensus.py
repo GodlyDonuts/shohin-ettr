@@ -25,7 +25,12 @@ from score_q36_mtr_external import (
     load_candidates,
     sha256_file,
 )
-from select_q36_mtr_consensus import normalized_answer
+from hf_product_reasoning_eval import (
+    _normalize_math,
+    _normalize_short_answer,
+    extract_boxed,
+    extract_short_answer,
+)
 
 SCHEMA = "shohin-q36-mtr-external-consensus-score-v1"
 RULES = (
@@ -45,6 +50,16 @@ PREFERENCE = (
 
 class Q36MTRExternalConsensusError(RuntimeError):
     """External consensus inputs or decisions differ."""
+
+
+def normalized_answer(task: str, completion: str) -> str | None:
+    if task == "bbh_logic":
+        return _normalize_short_answer(extract_short_answer(completion))
+    if task == "math500":
+        return _normalize_math(extract_boxed(completion))
+    if task == "mbpp":
+        return None
+    raise Q36MTRExternalConsensusError("external consensus task differs")
 
 
 def _answers(task: str, rows: dict[str, dict[str, Any]]) -> dict[str, str | None]:
