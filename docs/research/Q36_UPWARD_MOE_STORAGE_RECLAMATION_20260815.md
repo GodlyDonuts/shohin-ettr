@@ -49,3 +49,46 @@ deletion is permanent and not locally recoverable.
 - The excluded symbolic `hf_cache` remains present and untouched.
 - Every explicit Q36/Nemotron/Qwen9B/Ministral protected anchor remained
   present after the transaction.
+
+## Batch 2 manifest — closed dense pretraining shards
+
+This manifest was recorded before mutation. Dense scaling and the phase-2
+small-model lane are closed, and none of the active Q36 or Nemotron Super batch
+scripts references `/lustre/fs1/home/sa305415/shohin/artifacts/shards`. The 25
+literal child directories below are resolved, nonsymbolic, owned by
+`sa305415`, and contain 78,086,721,536 allocated bytes (72.72 GiB) across 668
+path inodes. The parent shard root itself is not a deletion target.
+
+| Mtime (EDT) | Allocated bytes | Inodes | Exact target |
+|---|---:|---:|---|
+| 2026-07-31 07:05:15 | 404,815,872 | 7 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_phase2_exact_r1` |
+| 2026-08-08 17:39:57 | 395,104,256 | 6 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_phase2_exact_smollm2_49k_r4` |
+| 2026-07-30 05:03:01 | 404,819,968 | 7 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_reasoning_core_1b` |
+| 2026-08-08 17:44:19 | 126,889,984 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdf_core_smollm2_49k_r2` |
+| 2026-07-29 21:37:33 | 8,044,449,792 | 64 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_core_10b` |
+| 2026-07-30 00:26:37 | 129,871,872 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_core_100m_bed4596` |
+| 2026-07-29 23:23:45 | 4,096 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_core_100m_e587807.partial` |
+| 2026-07-30 00:05:17 | 131,366,912 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_residual_100m_bed4596` |
+| 2026-07-29 23:35:21 | 131,366,912 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_residual_100m_e587807.partial` |
+| 2026-07-31 07:24:59 | 13,418,856,448 | 91 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_phase2_exact_r1` |
+| 2026-08-08 20:27:47 | 13,079,957,504 | 88 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_phase2_exact_smollm2_49k_r2` |
+| 2026-07-28 21:27:03 | 4,096 | 1 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_score4_core_10b.partial` |
+| 2026-07-29 02:52:37 | 8,327,168 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_score4_core_10b_r1.partial` |
+| 2026-07-30 07:29:13 | 13,418,790,912 | 91 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_score4_core_10b_r2` |
+| 2026-07-29 02:59:56 | 6,062,080 | 10 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_tokenizer_batch_canary_754466` |
+| 2026-07-31 07:01:43 | 78,684,160 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/formal_logic_phase2_exact_r1` |
+| 2026-07-29 07:44:40 | 78,696,448 | 5 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/nemotron_formal_logic_13fa979_challenger_128m` |
+| 2026-07-29 10:28:54 | 5,331,808,256 | 47 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_domain_balanced_50m_r1` |
+| 2026-07-29 14:01:18 | 5,331,804,160 | 47 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_domain_balanced_50m_r1_sensitive_residual_v1` |
+| 2026-08-11 03:55:34 | 20,869,120 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_selected_core_10b.partial` |
+| 2026-07-29 09:30:01 | 11,900,739,584 | 103 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_selected_core_10b_r2` |
+| 2026-08-08 18:53:46 | 5,233,700,864 | 46 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_sensitive_smollm2_49k_r2` |
+| 2026-07-29 04:07:00 | 4,743,168 | 10 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_tokenizer_batch_canary_754483` |
+| 2026-08-08 16:35:14 | 4,096 | 1 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/phase2_holdouts_3ab418c_r1` |
+| 2026-08-08 16:52:26 | 404,983,808 | 18 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/phase2_holdouts_3ab418c_r2` |
+
+Every target must be revalidated against the exact bytes/inodes above and
+checked disjoint from the live Qwen3.6, Nemotron Super, Q36 sources,
+checkpoints, candidates, scores, runtimes, and repository/configuration roots.
+Each target may then be renamed to a unique same-parent quarantine and only
+that literal quarantine permanently removed with one-filesystem protection.
