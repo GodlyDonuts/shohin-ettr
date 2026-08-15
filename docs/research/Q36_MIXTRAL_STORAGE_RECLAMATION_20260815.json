@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-mixtral-storage-reclamation-v1",
-  "status": "authorized_preexecution_manifest",
+  "status": "complete_verified_permanent",
   "purpose": "Create durable headroom for the upward-only 141B-total/39B-active Mixtral transfer point without deleting the active Qwen35, Nemotron Super, or Nemotron Ultra model roots.",
   "host": "newton",
   "filesystem": "/lustre/fs1",
@@ -62,5 +62,33 @@
     "qualified 9B release",
     "private GitHub branches and local authoring repository"
   ],
-  "recovery": null
+  "recovery": {
+    "execution_finished_utc": "2026-08-15T17:50:34Z",
+    "settled_observations_utc": [
+      "2026-08-15T17:50:54Z",
+      "2026-08-15T17:51:04Z",
+      "2026-08-15T17:51:14Z"
+    ],
+    "observations_identical": true,
+    "post_used_kib": 952812408,
+    "post_hard_limit_kib": 1059061760,
+    "post_headroom_kib": 106249352,
+    "post_headroom_bytes": 108799336448,
+    "post_used_inodes": 533485,
+    "post_hard_limit_inodes": 1010000,
+    "post_headroom_inodes": 476515,
+    "recovered_kib": 37107924,
+    "recovered_bytes": 37998514176,
+    "recovered_inodes": 168000,
+    "manifest_vs_quota_difference_reason": "Path totals counted hard-linked objects more than once; settled Lustre quota is authoritative.",
+    "targets_deleted": 22,
+    "all_originals_absent": true,
+    "all_quarantines_absent": true,
+    "local_recovery_possible": false,
+    "queue_preserved": true,
+    "active_qwen_model_present": true,
+    "active_nemotron_super_model_present": true,
+    "active_nemotron_ultra_model_present": true,
+    "active_q36_runtime_present": true
+  }
 }
