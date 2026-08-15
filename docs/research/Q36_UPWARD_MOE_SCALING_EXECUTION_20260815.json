@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-upward-moe-scaling-execution-v1",
-  "status": "qwen_screens_running_nemotron_super_graph_staged_ultra_transfer_basis_qualified",
+  "status": "qwen_full_validation_running_nemotron_super_graph_staged_ultra_mechanics_and_snapshot_staging_ready",
   "dense_scaling_status": "closed_not_in_active_graph",
   "measured_anchor": {
     "host": "Qwen3.6-35B-A3B",
@@ -66,9 +66,9 @@
     "controlled_moe_layers": 16,
     "trainable_revision_parameters": 2359296,
     "native_router_expert_trainables": 0,
-    "mechanics_job": 760252,
+    "mechanics_job": 760275,
     "mechanics_h100s": 2,
-    "fit_job": 760253,
+    "fit_job": 760278,
     "fit_h100s": 2,
     "fit_updates": 256,
     "fit_gradient_accumulation": 8,
@@ -105,10 +105,10 @@
     },
     "shards_per_arm": 4,
     "h100s_per_shard": 2,
-    "unchanged_array": 760254,
-    "self_refinement_array": 760255,
-    "revision_array": 760256,
-    "score_job": 760257,
+    "unchanged_array": 760279,
+    "self_refinement_array": 760280,
+    "revision_array": 760281,
+    "score_job": 760282,
     "score_mode": "single_cpu_sandboxed_paired_reduction",
     "capability_fields": [
       "correct",
@@ -172,7 +172,76 @@
     "active_parameters": 55000000000,
     "repository_bytes": 352381245521,
     "minimum_h100s": 8,
-    "status": "not_submitted_pending_super_measurement"
+    "status": "mechanics_and_exact_snapshot_staging_code_complete_not_submitted_pending_super_measurement_highgpu_access_and_storage_margin"
+  },
+  "qwen_full_validation_progress": {
+    "observed_at": "2026-08-15T10:10:18-04:00",
+    "array": 759815,
+    "arm": "self_refinement",
+    "total_rows": 1023,
+    "shards": 16,
+    "completed_shards": [
+      0,
+      1,
+      2
+    ],
+    "completed_rows": 192,
+    "completed_unique_identities": 192,
+    "ordered_source_slice_coverage": true,
+    "empty_completions": 0,
+    "assessor_access_count": 0,
+    "development_labels_read": 0,
+    "adapter_checkpoint_sha256": "8d22a8b882a12cdd64a42d3159a187dcfa2d74d6537fc5cf6a94d49e929a4b2c",
+    "candidate_sha256s": {
+      "0": "e9f288b84c7c3167a35aa1c4a8c1a20e21c0cd5701b3e034e00df755680e83b2",
+      "1": "68e1c47aff04bbc6bebc17ed8f4001ab80b36320a829bc0ac646ee61b7bb844b",
+      "2": "89e19b3c4707c0b39433066511b17468bf3863a0073609247ae79854141a4b7b"
+    },
+    "report_sha256s": {
+      "0": "9dde2b4939483049f10a44c1c25729b0e18ab70c6c7482e68d7cb044841b5adc",
+      "1": "df995a3731f220c7302733521a649454226cf033e60c0c1a26786d382c80ba45",
+      "2": "75ab69e75fdc25df1bc5660e6c1dd258917bd77707f58090b1217f1f4fd39c72"
+    },
+    "slurm": {
+      "0": {
+        "job": 760274,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2126,
+        "node": "evc40",
+        "exit_code": "0:0",
+        "restarts": 0
+      },
+      "1": {
+        "job": 760276,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2119,
+        "node": "evc28",
+        "exit_code": "0:0",
+        "restarts": 0
+      },
+      "2": {
+        "job": 760285,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2071,
+        "node": "evc39",
+        "exit_code": "0:0",
+        "restarts": 0
+      }
+    },
+    "scientific_result_status": "not_scored_until_all_frozen_shards_complete"
+  },
+  "ultra_snapshot_staging_preparation": {
+    "git_commit": "5976ce33acc8b9d29440baf6f0866e7b9c07e7a2",
+    "wrapper": "pipeline/jobs/q36_stage_nemotron_ultra.sbatch",
+    "repository": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
+    "revision": "183968f87ae4cedce3039313cac1fd43d112c578",
+    "upstream_files": 243,
+    "upstream_bytes": 352381245521,
+    "critical_metadata_hashes_pinned": 6,
+    "manifest_members_after_source_revision": 244,
+    "required_post_download_safety_bytes": 68719476736,
+    "required_pre_download_headroom_bytes": 421100722257,
+    "status": "code_complete_tested_and_pushed_not_submitted_current_quota_fails_closed"
   },
   "cross_family_upward_points_after_super": [
     {
