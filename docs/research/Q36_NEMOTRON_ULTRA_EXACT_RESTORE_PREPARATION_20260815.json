@@ -1,0 +1,69 @@
+{
+  "schema": "shohin-q36-nemotron-ultra-exact-restore-preparation-v1",
+  "status": "prepared_verified_not_submitted_storage_gate_false",
+  "date": "2026-08-15",
+  "purpose": "Restore the previously verified Nemotron Ultra 550B snapshot byte-for-byte from its preserved custody capsule while fetching only the removed weight shards.",
+  "source_parent_commit": "73ffaf8e5883d0411402a8e0371ace509fd69a44",
+  "restore_job": {
+    "path": "pipeline/jobs/q36_restore_nemotron_ultra.sbatch",
+    "sha256": "7fe5727ba7041a324fec0719fd5877f50deb65e0bcbdca2a4cdb3b6ed8ffca32",
+    "no_requeue": true,
+    "scientific_gpu_request": false,
+    "submitted": false
+  },
+  "test": {
+    "path": "pipeline/test_q36_restore_nemotron_ultra.py",
+    "sha256": "7b8575ca9d2ca690da6dde27dfab1acec34ad4db3e426e402d731fd97bd7e0c0",
+    "combined_restore_and_acquisition_tests": "9 passed",
+    "black": "pass",
+    "ruff": "pass",
+    "bash_syntax": "pass",
+    "diff_check": "pass"
+  },
+  "immutable_source": {
+    "repository": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
+    "revision": "183968f87ae4cedce3039313cac1fd43d112c578",
+    "upstream_files": 243,
+    "upstream_bytes": 352381245521,
+    "weight_shards_to_fetch": 113,
+    "nonweight_files_to_fetch": 0
+  },
+  "preserved_custody": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_ultra_snapshot_evidence_183968f_r1",
+    "capsule_files": 134,
+    "capsule_manifest_entries": 133,
+    "capsule_manifest_sha256": "4f2b30d3c5090f81765b32d8afc51c9d6379999379a5247c8d9497fe9cb68641",
+    "original_model_manifest_entries": 245,
+    "original_model_manifest_sha256": "e20d8aad607dd1146ee83d49c31f65e7fc24033348137a57a93615436484751a",
+    "original_snapshot_receipt_sha256": "6b9b50ed6bdb644c0bf059c3c9f8cff2a2775d936fb8c6d1b65f0c953aba731a",
+    "source_revision_sha256": "72b9c31cfe862b4bb903d0ba7da4452df43875fdf32cd2c388ca836164338c8c"
+  },
+  "restore_contract": {
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/nemotron-3-ultra-550b-a55b-nvfp4-183968f",
+    "final_regular_files": 246,
+    "manifest_replay_before_publication": true,
+    "manifest_replay_after_publication": true,
+    "exact_membership_check": true,
+    "symlinks_or_specials_allowed": false,
+    "writable_final_members_allowed": false,
+    "restoration_receipt_outside_model_tree": true,
+    "byte_exact_original_tree": true
+  },
+  "current_storage_gate": {
+    "observed_used_kib": 866439660,
+    "hard_limit_kib": 1059061760,
+    "observed_headroom_bytes": 197245030400,
+    "required_headroom_bytes": 421100722257,
+    "deficit_bytes": 223855691857,
+    "required_headroom_inodes": 20000,
+    "gate": "false",
+    "action": "do not submit restoration until the exact preflight passes"
+  },
+  "active_scientific_boundary": {
+    "nemotron_super_mechanics_job": 760382,
+    "mixtral_mechanics_job": 760565,
+    "healthy_jobs_changed": false,
+    "ultra_scientific_job_submitted": false,
+    "new_external_access_request_created": false
+  }
+}
