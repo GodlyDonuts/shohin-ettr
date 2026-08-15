@@ -36,15 +36,26 @@ trap q36_cleanup_local_tmp EXIT
 
 checkpoint_args=()
 if [[ "$ARM" == revision ]]; then
-  [[ -n "${REVISION_CHECKPOINT:-}" && -n "${TRANSFER_REPORT:-}" ]]
+  [[ -n "${REVISION_CHECKPOINT:-}" ]]
   [[ -f "$REVISION_CHECKPOINT" && ! -L "$REVISION_CHECKPOINT" ]]
-  [[ -f "$TRANSFER_REPORT" && ! -L "$TRANSFER_REPORT" ]]
-  checkpoint_args=(
-    --revision-checkpoint "$REVISION_CHECKPOINT"
-    --transfer-report "$TRANSFER_REPORT"
-  )
-elif [[ -n "${REVISION_CHECKPOINT:-}" || -n "${TRANSFER_REPORT:-}" ]]; then
-  printf 'Ultra transfer inputs supplied to a control arm\n' >&2
+  if [[ -n "${TRANSFER_REPORT:-}" && -z "${REVISION_TRAINING_REPORT:-}" ]]; then
+    [[ -f "$TRANSFER_REPORT" && ! -L "$TRANSFER_REPORT" ]]
+    checkpoint_args=(
+      --revision-checkpoint "$REVISION_CHECKPOINT"
+      --transfer-report "$TRANSFER_REPORT"
+    )
+  elif [[ -n "${REVISION_TRAINING_REPORT:-}" && -z "${TRANSFER_REPORT:-}" ]]; then
+    [[ -f "$REVISION_TRAINING_REPORT" && ! -L "$REVISION_TRAINING_REPORT" ]]
+    checkpoint_args=(
+      --revision-checkpoint "$REVISION_CHECKPOINT"
+      --revision-training-report "$REVISION_TRAINING_REPORT"
+    )
+  else
+    printf 'Ultra revision requires exactly one checkpoint report\n' >&2
+    exit 2
+  fi
+elif [[ -n "${REVISION_CHECKPOINT:-}" || -n "${TRANSFER_REPORT:-}" || -n "${REVISION_TRAINING_REPORT:-}" ]]; then
+  printf 'Ultra revision inputs supplied to a control arm\n' >&2
   exit 2
 fi
 

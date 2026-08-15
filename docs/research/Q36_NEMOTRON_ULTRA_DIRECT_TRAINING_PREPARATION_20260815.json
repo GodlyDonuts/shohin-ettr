@@ -1,0 +1,82 @@
+{
+  "schema": "shohin-q36-nemotron-ultra-direct-training-preparation-v1",
+  "status": "code_complete_tested_not_scheduled_highgpu_access_required",
+  "date": "2026-08-15",
+  "purpose": "Measure Shohin at 550B-total and 55B-active parameters with the same host-trained fixed-draft revision recipe used at the lower MoE points, while retaining the existing zero-label Super-to-Ultra lift as an independent portability control.",
+  "host": {
+    "model": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
+    "revision": "183968f87ae4cedce3039313cac1fd43d112c578",
+    "total_parameters": 550000000000,
+    "active_parameters": 55000000000,
+    "h100s": 8,
+    "model_snapshot_status": "sealed_and_manifest_verified"
+  },
+  "direct_training": {
+    "data_schema": "shohin-q36-mtr-revision-train-v1",
+    "data_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "data_presentations": 9655,
+    "consumed_presentations": 2048,
+    "optimizer_updates": 256,
+    "gradient_accumulation": 8,
+    "learning_rate": 0.00002,
+    "maximum_sequence_length": 4096,
+    "seed": 2026080815,
+    "attachment_surface": "post-mixer-residual",
+    "controlled_moe_layers": 16,
+    "rank": 18,
+    "trainable_parameters": 4718592,
+    "native_router_expert_trainables": 0,
+    "checkpoint": "trainable_only",
+    "requested_walltime_hours": 24,
+    "requested_gpu_hours": 192
+  },
+  "comparison_design": {
+    "primary_revision": "direct_ultra_host_training",
+    "portability_control": "zero_label_super_to_ultra_lift",
+    "matched_controls": [
+      "unchanged",
+      "self_refinement"
+    ],
+    "source_disjoint_rows": 256,
+    "domains": {
+      "bbh_logic": 128,
+      "math500": 117,
+      "mbpp": 11
+    },
+    "interpretation": "The direct arm tests upward architectural scaling. The lifted arm separately tests whether the learned residual geometry transfers without Ultra labels or optimizer updates. Neither arm substitutes for the other."
+  },
+  "implementation": {
+    "training_worker": "train/hf_nemotron_ultra_train_revision.py",
+    "training_worker_sha256": "855cdd7cfcb7f74fe0cd4276f9be2712cad92fe67bd8e61c3b72090b57911424",
+    "training_wrapper": "train/jobs/nemotron_ultra_train_revision.sbatch",
+    "training_wrapper_sha256": "54c819d3a8f449a75d60dafd26f0aa6c1e8bd8f3c303891e2405937ea915a0a5",
+    "evaluation_worker": "train/hf_nemotron_ultra_evaluate.py",
+    "evaluation_worker_sha256": "b24f236344d4a01350540a68949d1629fd459d038464ac6c0bb60ada8a22b9c1",
+    "evaluation_wrapper": "train/jobs/nemotron_ultra_evaluate.sbatch",
+    "evaluation_wrapper_sha256": "11603d9ef2b286bc6456b52d75c26b0cd4b1924fee696ac5eadbe357a49feb8e",
+    "runtime_allowlist_sha256": "381f016ea60439ff6bc8a6294c9f3236734e1f42790f5f723f0ca0f50d6e7633",
+    "runtime_packager_sha256": "9d7d3f9009cc4de87ad0db9bb4f82f3512a659dd6932bc5337b40fb2f7e64e4f"
+  },
+  "verification": {
+    "direct_training_and_evaluation_focused_tests_passed": 12,
+    "full_upward_moe_regression_passed": 514,
+    "full_upward_moe_regression_skipped": 1,
+    "black": "PASS",
+    "ruff": "PASS",
+    "py_compile": "PASS",
+    "bash_syntax": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "execution_state": {
+    "mechanics_job": null,
+    "direct_training_job": null,
+    "evaluation_jobs": [],
+    "score_job": null,
+    "scientific_result": false,
+    "submission_authorized_after": [
+      "highgpu_account_association",
+      "eight_H100_mechanics_pass",
+      "completed_lower_MoE_points_or_explicit_compute_priority_decision"
+    ]
+  }
+}

@@ -28,6 +28,7 @@ def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() 
     assert "train/hf_nemotron_super_mechanics.py" in entries
     assert "train/hf_nemotron_ultra_mechanics.py" in entries
     assert "train/hf_nemotron_ultra_evaluate.py" in entries
+    assert "train/hf_nemotron_ultra_train_revision.py" in entries
     assert "train/hf_nemotron_super_evaluate.py" in entries
     assert "pipeline/score_nemotron_super_screen.py" in entries
     assert "pipeline/score_nemotron_ultra_screen.py" in entries
@@ -35,6 +36,7 @@ def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() 
     assert "train/jobs/nemotron_super_mechanics.sbatch" in entries
     assert "train/jobs/nemotron_ultra_mechanics.sbatch" in entries
     assert "train/jobs/nemotron_ultra_evaluate.sbatch" in entries
+    assert "train/jobs/nemotron_ultra_train_revision.sbatch" in entries
     assert "train/jobs/nemotron_super_evaluate.sbatch" in entries
     assert "pipeline/jobs/nemotron_super_score.sbatch" in entries
     assert "pipeline/jobs/nemotron_ultra_score.sbatch" in entries

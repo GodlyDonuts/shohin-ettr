@@ -12,6 +12,7 @@ import hf_nemotron_ultra_evaluate as ultra_evaluate
 from hf_nemotron_ultra_evaluate import (
     NemotronUltraEvaluationError,
     _atomic_json,
+    load_direct_checkpoint,
     load_transferred_checkpoint,
     validate_mechanics_report,
 )
@@ -26,6 +27,13 @@ from q36_upward_moe_ultra_host import (
     MINIMUM_H100S,
     MODEL_REVISION,
     TRAINABLE_PARAMETERS_PER_ROLE,
+)
+from hf_nemotron_ultra_train_revision import (
+    CHECKPOINT_SCHEMA as DIRECT_CHECKPOINT_SCHEMA,
+    DATA_SHA256 as DIRECT_DATA_SHA256,
+    GRADIENT_ACCUMULATION as DIRECT_GRADIENT_ACCUMULATION,
+    SCHEMA as DIRECT_TRAINING_SCHEMA,
+    UPDATES as DIRECT_UPDATES,
 )
 
 
@@ -132,3 +140,57 @@ def test_ultra_transfer_restore_is_hash_bound(
     torch.save(["not", "a", "checkpoint"], checkpoint)
     with pytest.raises(NemotronUltraEvaluationError, match="checkpoint differs"):
         load_transferred_checkpoint(checkpoint, report, _TinyRevision())
+
+
+def test_ultra_direct_training_restore_is_hash_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(ultra_evaluate, "TRAINABLE_PARAMETERS_PER_ROLE", 1)
+    state = {"adapter": torch.tensor([4.0], dtype=torch.float32)}
+    manifest = "a" * 64
+    metadata = {
+        "schema": DIRECT_TRAINING_SCHEMA,
+        "model_revision": MODEL_REVISION,
+        "model_manifest_sha256": manifest,
+        "data_sha256": DIRECT_DATA_SHA256,
+        "updates": DIRECT_UPDATES,
+        "gradient_accumulation": DIRECT_GRADIENT_ACCUMULATION,
+        "trainable_parameters": 1,
+        "final_trainable_state_sha256": _state_sha256(state),
+        "native_router_expert_trainables": 0,
+        "checkpoint_trainable_only": True,
+        "revision_source": "direct_host_training",
+    }
+    checkpoint = tmp_path / "direct.pt"
+    torch.save(
+        {
+            "schema": DIRECT_CHECKPOINT_SCHEMA,
+            "update": DIRECT_UPDATES,
+            "trainable_state": state,
+            "metadata": metadata,
+        },
+        checkpoint,
+    )
+    report = tmp_path / "training.json"
+    report.write_text(
+        json.dumps(
+            {
+                **metadata,
+                "status": "complete",
+                "checkpoint_sha256": ultra_evaluate.sha256_file(checkpoint),
+                "serialization_restore_exact": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    model = _TinyRevision()
+    assert load_direct_checkpoint(checkpoint, report, model, manifest) == metadata
+    assert model.adapter.item() == 4.0
+    altered = json.loads(report.read_text(encoding="utf-8"))
+    altered["model_manifest_sha256"] = "b" * 64
+    report.write_text(json.dumps(altered), encoding="utf-8")
+    with pytest.raises(NemotronUltraEvaluationError, match="checkpoint differs"):
+        load_direct_checkpoint(checkpoint, report, _TinyRevision(), manifest)
+    torch.save(["not", "a", "checkpoint"], checkpoint)
+    with pytest.raises(NemotronUltraEvaluationError, match="checkpoint differs"):
+        load_direct_checkpoint(checkpoint, report, _TinyRevision(), manifest)

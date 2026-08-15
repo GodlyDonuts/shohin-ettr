@@ -31,6 +31,13 @@ from hf_nemotron_ultra_mechanics import (
     TORCH_VERSION,
     verify_manifest,
 )
+from hf_nemotron_ultra_train_revision import (
+    CHECKPOINT_SCHEMA as DIRECT_CHECKPOINT_SCHEMA,
+    DATA_SHA256 as DIRECT_DATA_SHA256,
+    GRADIENT_ACCUMULATION as DIRECT_GRADIENT_ACCUMULATION,
+    SCHEMA as DIRECT_TRAINING_SCHEMA,
+    UPDATES as DIRECT_UPDATES,
+)
 from hf_product_reasoning_eval import (
     GENERATED_ONLY_SEQUENCE_CONTRACT,
     _generate_completions,
@@ -193,10 +200,74 @@ def load_transferred_checkpoint(
     return metadata
 
 
+def load_direct_checkpoint(
+    checkpoint: Path,
+    training_report: Path,
+    model: NemotronUltraRevisionModel,
+    expected_model_manifest_sha256: str,
+) -> dict[str, Any]:
+    if any(
+        path.is_symlink() or not path.is_file()
+        for path in (checkpoint, training_report)
+    ):
+        raise NemotronUltraEvaluationError("Ultra direct-training input is absent")
+    report = json.loads(training_report.read_text(encoding="utf-8"))
+    payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    state = payload.get("trainable_state") if isinstance(payload, dict) else None
+    metadata = payload.get("metadata") if isinstance(payload, dict) else None
+    current = {
+        name: parameter
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+    }
+    if (
+        not isinstance(payload, dict)
+        or not isinstance(report, dict)
+        or payload.get("schema") != DIRECT_CHECKPOINT_SCHEMA
+        or payload.get("update") != DIRECT_UPDATES
+        or not isinstance(state, dict)
+        or set(state) != set(current)
+        or not isinstance(metadata, dict)
+        or metadata.get("schema") != DIRECT_TRAINING_SCHEMA
+        or metadata.get("model_revision") != MODEL_REVISION
+        or metadata.get("model_manifest_sha256") != expected_model_manifest_sha256
+        or metadata.get("data_sha256") != DIRECT_DATA_SHA256
+        or metadata.get("updates") != DIRECT_UPDATES
+        or metadata.get("gradient_accumulation") != DIRECT_GRADIENT_ACCUMULATION
+        or metadata.get("trainable_parameters") != TRAINABLE_PARAMETERS_PER_ROLE
+        or metadata.get("final_trainable_state_sha256") != _state_sha256(state)
+        or metadata.get("native_router_expert_trainables") != 0
+        or metadata.get("checkpoint_trainable_only") is not True
+        or metadata.get("revision_source") != "direct_host_training"
+        or report.get("schema") != DIRECT_TRAINING_SCHEMA
+        or report.get("status") != "complete"
+        or report.get("checkpoint_sha256") != sha256_file(checkpoint)
+        or report.get("serialization_restore_exact") is not True
+        or any(report.get(key) != value for key, value in metadata.items())
+    ):
+        raise NemotronUltraEvaluationError("Ultra direct-training checkpoint differs")
+    with torch.no_grad():
+        for name, parameter in current.items():
+            value = state[name]
+            if value.shape != parameter.shape or value.dtype != parameter.dtype:
+                raise NemotronUltraEvaluationError(
+                    "Ultra direct-training tensor geometry differs"
+                )
+            parameter.copy_(value.to(parameter.device))
+    if model.trainable_state_sha256() != metadata["final_trainable_state_sha256"]:
+        raise NemotronUltraEvaluationError("Ultra direct-training restore differs")
+    return metadata
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
+    transfer_selected = args.transfer_report is not None
+    direct_selected = args.revision_training_report is not None
+    revision_inputs_complete = (
+        args.revision_checkpoint is not None and transfer_selected != direct_selected
+    )
     if (
         args.arm not in ARMS
         or args.seed != SEED
@@ -207,8 +278,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or args.candidates_output.exists()
         or args.report.exists()
         or sha256_file(args.source) != SOURCE_SHA256
-        or (args.arm == "revision")
-        != (args.revision_checkpoint is not None and args.transfer_report is not None)
+        or (args.arm == "revision") != revision_inputs_complete
+        or (args.arm != "revision")
+        and any(
+            value is not None
+            for value in (
+                args.revision_checkpoint,
+                args.transfer_report,
+                args.revision_training_report,
+            )
+        )
         or (args.arm != "unchanged") != bool(args.draft_candidates)
     ):
         raise NemotronUltraEvaluationError("Ultra evaluation settings differ")
@@ -265,9 +344,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     revision_model = None
     if args.arm == "revision":
         revision_model = NemotronUltraRevisionModel(backbone)
-        metadata = load_transferred_checkpoint(
-            args.revision_checkpoint, args.transfer_report, revision_model
-        )
+        if direct_selected:
+            metadata = load_direct_checkpoint(
+                args.revision_checkpoint,
+                args.revision_training_report,
+                revision_model,
+                args.expected_model_manifest_sha256,
+            )
+        else:
+            metadata = load_transferred_checkpoint(
+                args.revision_checkpoint, args.transfer_report, revision_model
+            )
         revision_model.eval()
         revision_model.reset_receipt()
     else:
@@ -334,7 +421,28 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             if args.transfer_report is not None
             else None
         ),
+        "revision_training_report_sha256": (
+            sha256_file(args.revision_training_report)
+            if args.revision_training_report is not None
+            else None
+        ),
+        "revision_source": (
+            "direct_host_training"
+            if args.revision_training_report is not None
+            else (
+                "zero_label_super_transfer"
+                if args.transfer_report is not None
+                else None
+            )
+        ),
         "transfer_metadata_sha256": (
+            hashlib.sha256(
+                json.dumps(metadata, sort_keys=True, separators=(",", ":")).encode()
+            ).hexdigest()
+            if metadata is not None and args.transfer_report is not None
+            else None
+        ),
+        "revision_metadata_sha256": (
             hashlib.sha256(
                 json.dumps(metadata, sort_keys=True, separators=(",", ":")).encode()
             ).hexdigest()
@@ -392,6 +500,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mechanics-report", type=Path, required=True)
     parser.add_argument("--revision-checkpoint", type=Path)
     parser.add_argument("--transfer-report", type=Path)
+    parser.add_argument("--revision-training-report", type=Path)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--draft-candidates", type=Path, action="append", default=[])
     parser.add_argument("--candidates-output", type=Path, required=True)

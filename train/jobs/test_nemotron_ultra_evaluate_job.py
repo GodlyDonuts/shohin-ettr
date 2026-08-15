@@ -17,9 +17,10 @@ def test_ultra_evaluation_is_four_shards_eight_h100_and_nonrequeueing() -> None:
     assert "--expected-model-manifest-sha256" in source
 
 
-def test_ultra_controls_reject_transferred_checkpoint_and_outputs_are_frozen() -> None:
+def test_ultra_controls_reject_revision_checkpoint_and_outputs_are_frozen() -> None:
     source = SCRIPT.read_text(encoding="utf-8")
-    assert "Ultra transfer inputs supplied to a control arm" in source
+    assert "Ultra revision inputs supplied to a control arm" in source
+    assert "--revision-training-report" in source
     assert '[[ "$DRAFT_CANDIDATES" == none ]]' in source
     assert 'chmod a-w "$candidates" "$report" "$output_dir"' in source
     assert "TRANSFORMERS_OFFLINE=1" in source
