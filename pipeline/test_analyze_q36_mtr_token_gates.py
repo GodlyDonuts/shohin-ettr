@@ -92,6 +92,24 @@ def test_analysis_supports_full_validation_geometry(tmp_path) -> None:
     assert report["winner_beats_incumbent_revision"] is None
 
 
+def test_analysis_distinguishes_routing_only_multi_trajectory(tmp_path) -> None:
+    unchanged = set(range(80))
+    causal = tmp_path / "q36_multi" / "score.json"
+    routing = tmp_path / "q36_multi_routing_only" / "score.json"
+    _score(causal, "multi_trajectory_gate", set(range(110)), unchanged, rows=200)
+    _score(routing, "multi_trajectory_gate", set(range(120)), unchanged, rows=200)
+    report = module.run(
+        argparse.Namespace(
+            score=[causal, routing],
+            incumbent_revision_correct=115,
+            incumbent_score=None,
+            output=tmp_path / "result.json",
+        )
+    )
+    assert sorted(report["variants"]) == ["multi_routing_only", "multi_trajectory"]
+    assert report["winner"] == "multi_routing_only"
+
+
 def test_analysis_loads_matched_revision_incumbent(tmp_path) -> None:
     first = tmp_path / "q36_supervised" / "validation" / "score.json"
     second = tmp_path / "q36_multi" / "validation" / "score.json"

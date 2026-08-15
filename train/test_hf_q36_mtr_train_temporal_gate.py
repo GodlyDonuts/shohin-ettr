@@ -40,6 +40,7 @@ def _args() -> argparse.Namespace:
         data_seed=module.REVISION_DATA_SEED,
         initial_revision_weight=module.GATE_INITIAL_REVISION_WEIGHT,
         routing_supervision_weight=0.0,
+        causal_loss_weight=1.0,
         loss_chunk_size=module.LOSS_CHUNK_SIZE,
     )
 
@@ -222,5 +223,13 @@ def test_multi_settings_require_soft_supervision() -> None:
     args.routing_supervision_weight = module.GATE_ROUTING_SUPERVISION_WEIGHT
     module._validate_args(args)
     args.routing_supervision_weight = 0.0
+    with pytest.raises(module.Q36MTRTemporalGateTrainingError):
+        module._validate_args(args)
+    args.routing_supervision_weight = module.GATE_ROUTING_SUPERVISION_WEIGHT
+    args.causal_loss_weight = 0.0
+    module._validate_args(args)
+    args.architecture = "temporal"
+    args.max_rows = module.REVISION_PRESENTATIONS
+    args.data_seed = module.REVISION_DATA_SEED
     with pytest.raises(module.Q36MTRTemporalGateTrainingError):
         module._validate_args(args)

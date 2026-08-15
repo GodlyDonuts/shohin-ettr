@@ -61,6 +61,14 @@ if [[ -n "${ROUTING_SUPERVISION_WEIGHT:-}" ]]; then
     q36_die "temporal routing supervision differs"
   routing=(--routing-supervision-weight "$ROUTING_SUPERVISION_WEIGHT")
 fi
+causal=()
+if [[ -n "${CAUSAL_LOSS_WEIGHT:-}" ]]; then
+  [[ "$CAUSAL_LOSS_WEIGHT" == "0.0" || "$CAUSAL_LOSS_WEIGHT" == "1.0" ]] || \
+    q36_die "temporal causal loss weight differs"
+  [[ "$ARCHITECTURE" == multi_trajectory || "$CAUSAL_LOSS_WEIGHT" == "1.0" ]] || \
+    q36_die "temporal causal loss cannot be disabled"
+  causal=(--causal-loss-weight "$CAUSAL_LOSS_WEIGHT")
+fi
 model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
@@ -81,6 +89,7 @@ nvidia-smi
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
   "${routing[@]}" \
+  "${causal[@]}" \
   --output "$OUTPUT"
 
 test -f "$OUTPUT/checkpoint_0000256.pt" && test -f "$OUTPUT/report.json"

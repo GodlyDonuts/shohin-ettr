@@ -66,6 +66,7 @@ GATE_GRADIENT_ACCUMULATION = 8
 GATE_BATCH_SIZE = 1
 GATE_INITIAL_REVISION_WEIGHT = 0.1
 GATE_ROUTING_SUPERVISION_WEIGHT = 0.1
+GATE_CAUSAL_LOSS_WEIGHTS = (0.0, 1.0)
 GATE_PARAMETERS = len(CONTROLLED_LAYER_INDICES) * (HIDDEN_SIZE + 1)
 MULTI_BRANCHES = ("revision", "draft_hidden")
 MULTI_INITIAL_WEIGHTS = (0.9, 0.1)
@@ -405,9 +406,12 @@ def _validate_args(args: argparse.Namespace) -> None:
             GATE_ROUTING_SUPERVISION_WEIGHT,
         }
     )
+    causal_loss_weight = getattr(args, "causal_loss_weight", 1.0)
     if (
         observed != expected
         or args.routing_supervision_weight not in supervision
+        or causal_loss_weight not in GATE_CAUSAL_LOSS_WEIGHTS
+        or (not multi and causal_loss_weight != 1.0)
         or (
             multi
             and tuple(getattr(args, "initial_branch_weights", ()))
@@ -603,20 +607,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 position_ids=full_sequence_position_ids(attention),
                 use_cache=False,
             )
-            causal_loss = chunked_causal_cross_entropy(
-                outputs.last_hidden_state,
-                labels,
-                model.lm_head,
-                args.loss_chunk_size,
+            causal_loss = (
+                chunked_causal_cross_entropy(
+                    outputs.last_hidden_state,
+                    labels,
+                    model.lm_head,
+                    args.loss_chunk_size,
+                )
+                if args.causal_loss_weight
+                else None
             )
             routing_mask = _response_routing_mask(labels)
             routing_loss = None
-            loss = causal_loss
+            loss = (
+                args.causal_loss_weight * causal_loss
+                if causal_loss is not None
+                else None
+            )
             if args.routing_supervision_weight and routing_target is not None:
                 routing_loss = model.routing_supervision_loss(
                     routing_target, routing_mask
                 )
-                loss = loss + args.routing_supervision_weight * routing_loss
+                routing_term = args.routing_supervision_weight * routing_loss
+                loss = routing_term if loss is None else loss + routing_term
+            if loss is None:
+                raise Q36MTRTemporalGateTrainingError(
+                    "temporal gate has no training objective"
+                )
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
         charged_tokens += int(charged)
@@ -635,7 +652,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             event = {
                 "update": update,
                 "loss": float(loss.detach()),
-                "causal_loss": float(causal_loss.detach()),
+                "causal_loss": (
+                    float(causal_loss.detach()) if causal_loss is not None else None
+                ),
+                "causal_loss_weight": args.causal_loss_weight,
                 "routing_supervision_loss": (
                     float(routing_loss.detach()) if routing_loss is not None else None
                 ),
@@ -678,6 +698,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "initial_revision_weight": args.initial_revision_weight,
         "routing_supervision_weight": args.routing_supervision_weight,
+        "causal_loss_weight": args.causal_loss_weight,
         "routing_supervision_targets": (
             "per-row-soft-target" if multi else ROUTING_TARGETS
         ),
@@ -791,6 +812,7 @@ def parse_args() -> argparse.Namespace:
         default=MULTI_INITIAL_WEIGHTS,
     )
     parser.add_argument("--routing-supervision-weight", type=float, default=0.0)
+    parser.add_argument("--causal-loss-weight", type=float, default=1.0)
     parser.add_argument("--loss-chunk-size", type=int, default=LOSS_CHUNK_SIZE)
     parser.add_argument("--log-interval", type=int, default=8)
     return parser.parse_args()
