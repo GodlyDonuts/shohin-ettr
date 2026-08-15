@@ -1,0 +1,168 @@
+{
+  "schema": "shohin-q36-upward-moe-scaling-execution-v1",
+  "status": "qwen_screens_fitting_complete_nemotron_super_graph_staged",
+  "dense_scaling_status": "closed_not_in_active_graph",
+  "measured_anchor": {
+    "host": "Qwen3.6-35B-A3B",
+    "total_parameters": 35000000000,
+    "active_parameters": 3000000000,
+    "rows": 256,
+    "shohin_correct": 141,
+    "unchanged_correct": 111,
+    "gain_count": 30,
+    "gain_percentage_points": 11.71875,
+    "paired_wins": 35,
+    "paired_losses": 5,
+    "mcnemar_exact_two_sided_p": 1.382612026645802e-06,
+    "unchanged_correct_retention": 0.954954954954955,
+    "result_sha256": "acf04f4fc42df8edffe9518a513715d145590f0a0e3f8d777601bd16d375cbdc"
+  },
+  "new_qwen_fit_completions": {
+    "hierarchical_trajectory_gate": {
+      "job": 760211,
+      "state": "COMPLETED",
+      "elapsed_seconds": 4362,
+      "updates": 256,
+      "checkpoint_sha256": "51d59297c5f3d25eabbc9f5d9396efe98796e6f3e2c005201e392094ca6bb356",
+      "report_sha256": "e8f0dcf98da5825102e2c246ad73ebe129d0633d65d82a72e274e8af73fd057e",
+      "gate_parameters": 65856,
+      "assessor_access_count": 0,
+      "screen_array": 760212,
+      "screen_time_limit_minutes": 22
+    },
+    "causal_only_temporal_gate": {
+      "job": 760220,
+      "state": "COMPLETED",
+      "elapsed_seconds": 4197,
+      "updates": 256,
+      "checkpoint_sha256": "803219a9ac797d6bb8f1dfd5dd028b075ef3cd1fba19762ce507c347d2208cbe",
+      "report_sha256": "7b916cdbd7c7db98ce3a9fb48f02046dfa1ebc6f2859df9d6ac2d0d845e57339",
+      "gate_parameters": 32784,
+      "assessor_access_count": 0,
+      "screen_array": 760176,
+      "screen_time_limit_minutes": 13
+    },
+    "tri_trajectory_geometry_gate": {
+      "job": 760222,
+      "state": "COMPLETED",
+      "elapsed_seconds": 4184,
+      "updates": 256,
+      "checkpoint_sha256": "d4ee0191e4a05adcf229d3e3182f350079058b7751395de97de02b5288383410",
+      "report_sha256": "ce175fde2fb4f07e3ec061910de738dc5a981daec779389793415eecaa778135",
+      "gate_parameters": 98784,
+      "assessor_access_count": 0,
+      "screen_array": 760205,
+      "screen_time_limit_minutes": 22
+    }
+  },
+  "first_upward_point": {
+    "host": "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "model_revision": "7d7e5797b8a3c7abbab54033b6004e93e8b6bc91",
+    "model_manifest_sha256": "8bb8bb898794651791de9d79c1041fe0ec6ad0f54a97b03f52620bd6e245ce92",
+    "total_parameters": 120000000000,
+    "active_parameters": 12000000000,
+    "scale_over_qwen_total": 3.4285714285714284,
+    "scale_over_qwen_active": 4.0,
+    "controlled_moe_layers": 16,
+    "trainable_revision_parameters": 2359296,
+    "native_router_expert_trainables": 0,
+    "mechanics_job": 760229,
+    "mechanics_h100s": 2,
+    "fit_job": 760243,
+    "fit_h100s": 2,
+    "fit_updates": 256,
+    "fit_gradient_accumulation": 8,
+    "fit_learning_rate": 2e-05,
+    "fit_max_sequence_length": 4096,
+    "fit_data_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff"
+  },
+  "matched_screen": {
+    "rows": 256,
+    "domains": {
+      "bbh_logic": 128,
+      "math500": 117,
+      "mbpp": 11
+    },
+    "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "assessor_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "fixed_draft_sha256s": [
+      "505b42345dda545b0967090bb8fd35fc73400841816d5008ef780bd0cacbc7a8",
+      "642b3cf4d923d4e8f83366e7c6c39925bacd65a6a50d1bd619c4cccedf750629",
+      "8fcabbe9e2dfb2052ce9fe51708e0651fe31e43bbd52d1739c4ea5a4397921fa",
+      "2b64429234d1667d0d83282eedb15626602e38117973d99108beb0e3b06cd8f0"
+    ],
+    "arms": [
+      "unchanged",
+      "self_refinement",
+      "revision"
+    ],
+    "prompt_envelope": "identical_product_reasoning_system_prompt_all_arms",
+    "draft_control": "identical_qwen_model_owned_draft_for_self_refinement_and_revision",
+    "generation": {
+      "mode": "greedy",
+      "seed": 2026080816,
+      "max_new_tokens": 768
+    },
+    "shards_per_arm": 4,
+    "h100s_per_shard": 2,
+    "unchanged_array": 760248,
+    "self_refinement_array": 760249,
+    "revision_array": 760250,
+    "score_job": 760251,
+    "score_mode": "single_cpu_sandboxed_paired_reduction",
+    "capability_fields": [
+      "correct",
+      "accuracy",
+      "paired_wins_losses",
+      "exact_mcnemar_p",
+      "domain_counts"
+    ],
+    "retention_fields": [
+      "unchanged_correct_retained",
+      "unchanged_correct_retention"
+    ]
+  },
+  "implementation": {
+    "git_commit": "279caa44",
+    "private_branches": [
+      "codex/q36-mechanics-generation-prepare",
+      "codex/q36-moe-temporal-revision"
+    ],
+    "fit_runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_7be5c79f_r1",
+    "fit_runtime_manifest_sha256": "373bc0967ef0aad2f7c239d0774c7dd4bd318ef25cf1ecf50f7c2609f7d2bbff",
+    "screen_runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_279caa44_r1",
+    "screen_runtime_manifest_sha256": "ad41087bc7e331404483cdb13755c06fd9c3bc95f358a28fb29efb30f991f549",
+    "screen_runtime_files": 140,
+    "screen_runtime_writable_members": 0,
+    "focused_tests_passed": 19,
+    "format_lint_shell_and_diff_checks": "PASS"
+  },
+  "preexecution_prompt_repair": {
+    "superseded_pending_jobs": [
+      760244,
+      760245,
+      760246,
+      760247
+    ],
+    "all_superseded_elapsed_seconds": 0,
+    "all_superseded_nodes": "None assigned",
+    "scientific_outputs_published": 0,
+    "cause": "generic host envelope differed from the revision-training envelope",
+    "repair": "all matched arms now use the identical product-reasoning system prompt"
+  },
+  "next_upward_point_after_measured_super_gain": {
+    "host": "NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
+    "total_parameters": 550000000000,
+    "active_parameters": 55000000000,
+    "minimum_h100s": 8,
+    "status": "not_submitted_pending_super_measurement"
+  },
+  "prohibited_active_work": [
+    "dense_scaling",
+    "small_moe_scaling",
+    "set_mass_eighth_variant",
+    "edit_selector",
+    "KCR",
+    "VTE"
+  ]
+}
