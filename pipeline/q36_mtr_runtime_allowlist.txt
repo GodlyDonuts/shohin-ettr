@@ -74,6 +74,7 @@ pipeline/jobs/q36_mtr_synthesis_consensus.sbatch
 pipeline/jobs/q36_mtr_validate_commit_application.sbatch
 pipeline/jobs/render_upward_moe_scaling.sbatch
 pipeline/jobs/score_upward_moe_temporal_gate.sbatch
+pipeline/jobs/select_upward_moe_temporal_promotion.sbatch
 pipeline/lift_nemotron_super_adapter_to_ultra.py
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
@@ -100,6 +101,7 @@ pipeline/score_upward_moe_temporal_gate.py
 pipeline/seal_q36_mtr_terminal_evidence.py
 pipeline/select_q36_mtr_candidate_groups.py
 pipeline/select_q36_mtr_owner_trajectories.py
+pipeline/select_upward_moe_temporal_promotion.py
 pipeline/stack_q36_mtr_sparse_commit.py
 pipeline/train_apply_q36_mtr_calibration_correctness.py
 pipeline/train_apply_q36_mtr_calibration_direct_commit.py
