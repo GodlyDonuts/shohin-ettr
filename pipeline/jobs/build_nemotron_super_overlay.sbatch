@@ -47,8 +47,18 @@ printf '%s  %s\n' "$MAMBA_WHEEL_SHA256" "$download/$MAMBA_WHEEL" | sha256sum -c 
 
 "$BASE_PYTHON" -m pip install --no-input --no-deps --target "$partial" \
   "$download/$MAMBA_WHEEL"
-"$BASE_PYTHON" -m pip install --no-input --target "$partial" \
-  "nvidia-modelopt==$MODELOPT_VERSION"
+"$BASE_PYTHON" -m pip install --no-input --no-deps --target "$partial" \
+  "nvidia-modelopt==$MODELOPT_VERSION" \
+  "ninja==1.13.0" \
+  "nvidia-ml-py==13.610.43" \
+  "omegaconf==2.3.1" \
+  "pulp==3.3.2" \
+  "pydantic==2.13.4" \
+  "pydantic-core==2.46.4" \
+  "scipy==1.18.0" \
+  "antlr4-python3-runtime==4.9.3" \
+  "annotated-types==0.8.0" \
+  "typing-inspection==0.4.4"
 
 PYTHONPATH="$partial:$CAUSAL_CONV_ROOT" "$BASE_PYTHON" -P -s -B - \
   "$partial" "$CAUSAL_CONV_ROOT" "$MAMBA_WHEEL_SHA256" <<'PY'
