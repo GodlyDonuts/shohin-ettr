@@ -79,6 +79,16 @@
     "topology_drift_fails_closed": true
   },
   "execution_admission": {
+    "runtime": {
+      "source_commit": "69de9de82bb6cb6176d047057e84f219c810e799",
+      "newton_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_69de9de8_r1",
+      "sha256sums_sha256": "ef78a585e699cb0113e0e92805abe7fdde37509c815978bb017844cb401cdb06",
+      "runtime_json_sha256": "d99bf0380f9d039d5fed49d9803c7965277c5595364f341751beded54c3cac47",
+      "regular_files": 162,
+      "symlinks": 0,
+      "manifest_verification": "pass",
+      "writable_members": 0
+    },
     "download_job": null,
     "mechanics_job": null,
     "scientific_result": false,
