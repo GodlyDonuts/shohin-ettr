@@ -569,6 +569,7 @@ def install_temporal_residual_gates(
     controlled_layer_indices: Sequence[int],
     *,
     module_attribute: str = "mlp",
+    require_final_contiguous: bool = True,
 ) -> tuple[TemporalResidualGate, ...]:
     """Replace exact decoder residual surfaces with tokenwise temporal gates."""
 
@@ -577,8 +578,18 @@ def install_temporal_residual_gates(
         raise TemporalResidualGateError("temporal decoder layers differ")
     text_model.requires_grad_(False)
     indices = tuple(controlled_layer_indices)
-    if indices != tuple(range(len(model_layers) - len(indices), len(model_layers))):
+    if not isinstance(require_final_contiguous, bool) or (
+        require_final_contiguous
+        and indices != tuple(range(len(model_layers) - len(indices), len(model_layers)))
+    ):
         raise TemporalResidualGateError("temporal controlled layers differ")
+    if not require_final_contiguous and (
+        not indices
+        or indices != tuple(sorted(set(indices)))
+        or indices[0] < 0
+        or indices[-1] >= len(model_layers)
+    ):
+        raise TemporalResidualGateError("temporal explicit controlled layers differ")
     branches = temporal_branch_layers(
         owner_state,
         revision_state,
@@ -844,6 +855,7 @@ class TemporalGatedProductModel(nn.Module):
         revision_state: Mapping[str, torch.Tensor],
         controlled_layer_indices: Sequence[int],
         module_attribute: str = "mlp",
+        require_final_contiguous: bool = True,
     ) -> None:
         super().__init__()
         if not all(
@@ -858,6 +870,7 @@ class TemporalGatedProductModel(nn.Module):
         self.config = config
         self.controlled_layer_indices = tuple(controlled_layer_indices)
         self.module_attribute = module_attribute
+        self.require_final_contiguous = require_final_contiguous
         self.blocks = nn.ModuleList(
             install_temporal_residual_gates(
                 text_model,
@@ -866,6 +879,7 @@ class TemporalGatedProductModel(nn.Module):
                 config,
                 self.controlled_layer_indices,
                 module_attribute=self.module_attribute,
+                require_final_contiguous=self.require_final_contiguous,
             )
         )
         self._generation_prompt_attention: torch.Tensor | None = None

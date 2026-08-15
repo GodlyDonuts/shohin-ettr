@@ -40,9 +40,13 @@
   },
   "implementation": {
     "module": "train/temporal_residual_gate.py",
-    "module_sha256": "dab0bbb93049216a5880546cc0a2282824a2ff22ece523f46905d07459f4416e",
+    "module_sha256": "e82140054ba3aa9dcc1973552911ed002ba50e47bdea7dd56ea8728fa19f3da2",
+    "executable_host_models": "train/upward_moe_temporal_gate.py",
+    "executable_host_models_sha256": "7023afe633b296b04c159edcb9cc89c2c6036472698614e1766c1c47bc1f5342",
     "test_module": "train/test_temporal_residual_gate.py",
-    "test_module_sha256": "87bf15fc796096c6e6dc968e7f682b9c803c9a270a4b005890ea15720d7e8310",
+    "test_module_sha256": "c026a79aa8e57ce20dae41098ca61efcf2307517f060d2eb39900d944f263346",
+    "executable_host_model_tests": "train/test_upward_moe_temporal_gate.py",
+    "executable_host_model_tests_sha256": "6a3a7df4bf1784550a4f992cefd773f442538afe7a659c0e41519d197d5f8a13",
     "supported_exact_surfaces": [
       "mlp",
       "mixer"
@@ -54,7 +58,7 @@
   },
   "verification": {
     "focused_surface_tests": "29_passed",
-    "full_temporal_path_tests": "63_passed",
+    "full_temporal_path_tests": "68_passed",
     "black": "PASS",
     "ruff": "PASS",
     "py_compile": "PASS",

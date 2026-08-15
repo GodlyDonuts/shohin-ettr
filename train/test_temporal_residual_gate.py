@@ -463,6 +463,46 @@ def test_temporal_surface_rejects_unknown_or_cross_surface_state() -> None:
         )
 
 
+def test_explicit_interleaved_moe_indices_are_supported_but_validated() -> None:
+    config = TemporalResidualGateConfig(2, 1, 1.0)
+    indices = (0, 2)
+    owner = {
+        name.replace("layers.1", "layers.0"): value
+        for name, value in _role_state(0.0).items()
+        if "layers.1" in name
+    }
+    owner.update(
+        {name: value for name, value in _role_state(0.0).items() if "layers.2" in name}
+    )
+    revision = {
+        name.replace("layers.1", "layers.0"): value
+        for name, value in _role_state(0.5).items()
+        if "layers.1" in name
+    }
+    revision.update(
+        {name: value for name, value in _role_state(0.5).items() if "layers.2" in name}
+    )
+    model = _TextModel()
+    blocks = install_temporal_residual_gates(
+        model,
+        owner,
+        revision,
+        config,
+        indices,
+        require_final_contiguous=False,
+    )
+    assert tuple(model.layers[index].mlp for index in indices) == blocks
+    with pytest.raises(TemporalResidualGateError):
+        install_temporal_residual_gates(
+            _TextModel(),
+            owner,
+            revision,
+            config,
+            (2, 0),
+            require_final_contiguous=False,
+        )
+
+
 def test_real_role_state_mapping_rejects_missing_or_nonfinite_tensor() -> None:
     config = TemporalResidualGateConfig(2, 1, 1.0)
     owner = _role_state(0.0)

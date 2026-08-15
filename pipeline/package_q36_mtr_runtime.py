@@ -114,6 +114,7 @@ REQUIRED = {
     "train/q36_upward_moe_ultra_host.py",
     "train/shared_post_mlp_revision.py",
     "train/temporal_residual_gate.py",
+    "train/upward_moe_temporal_gate.py",
 }
 
 
