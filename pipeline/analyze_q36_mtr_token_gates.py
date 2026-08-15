@@ -33,19 +33,22 @@ def _load_score(path: Path) -> dict[str, Any]:
     arm = payload.get("arm") if isinstance(payload, dict) else None
     result = payload.get(arm) if isinstance(arm, str) else None
     outcomes = payload.get("outcomes") if isinstance(payload, dict) else None
+    rows = payload.get("rows") if isinstance(payload, dict) else None
     if (
         not isinstance(payload, dict)
         or payload.get("schema") != SCORE_SCHEMA
         or payload.get("status") != "complete"
         or arm not in ARMS
-        or payload.get("rows") != 256
+        or not isinstance(rows, int)
+        or isinstance(rows, bool)
+        or rows <= 0
         or not isinstance(result, dict)
-        or result.get("total") != 256
+        or result.get("total") != rows
         or not isinstance(result.get("correct"), int)
         or isinstance(result.get("correct"), bool)
-        or not 0 <= result["correct"] <= 256
+        or not 0 <= result["correct"] <= rows
         or not isinstance(outcomes, list)
-        or len(outcomes) != 256
+        or len(outcomes) != rows
     ):
         raise Q36MTRTokenGateAnalysisError("token-gate score geometry differs")
     parsed: dict[str, dict[str, Any]] = {}
@@ -68,7 +71,13 @@ def _load_score(path: Path) -> dict[str, Any]:
         }
     if sum(row["correct"] for row in parsed.values()) != result["correct"]:
         raise Q36MTRTokenGateAnalysisError("token-gate correct count differs")
-    return {"payload": payload, "arm": arm, "result": result, "outcomes": parsed}
+    return {
+        "payload": payload,
+        "arm": arm,
+        "result": result,
+        "outcomes": parsed,
+        "rows": rows,
+    }
 
 
 def _variant_name(path: Path, arm: str, occupied: set[str]) -> str:
@@ -92,6 +101,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     variants: dict[str, dict[str, Any]] = {}
     identities: set[str] | None = None
     unchanged: dict[str, bool] | None = None
+    row_count: int | None = None
     for path in args.score:
         loaded = _load_score(path)
         name = _variant_name(path, loaded["arm"], set(variants))
@@ -103,10 +113,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         if identities is None:
             identities = current_identities
             unchanged = current_unchanged
-        elif current_identities != identities or current_unchanged != unchanged:
+            row_count = loaded["rows"]
+        elif (
+            current_identities != identities
+            or current_unchanged != unchanged
+            or loaded["rows"] != row_count
+        ):
             raise Q36MTRTokenGateAnalysisError("token-gate benchmark identity differs")
         variants[name] = {**loaded, "path": path}
-    assert identities is not None and unchanged is not None
+    assert identities is not None and unchanged is not None and row_count is not None
+    if (
+        args.incumbent_revision_correct is not None
+        and not 0 <= args.incumbent_revision_correct <= row_count
+    ):
+        raise Q36MTRTokenGateAnalysisError("incumbent revision count differs")
     unchanged_correct = sum(unchanged.values())
     summaries: dict[str, Any] = {}
     for name, loaded in variants.items():
@@ -124,8 +144,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "score": str(loaded["path"].resolve()),
             "score_sha256": sha256_file(loaded["path"]),
             "correct": correct,
-            "total": 256,
-            "accuracy": correct / 256,
+            "total": row_count,
+            "accuracy": correct / row_count,
             "gain_over_unchanged_count": correct - unchanged_correct,
             "retained_unchanged_correct": retained,
             "retention": retained / unchanged_correct,
@@ -167,7 +187,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     report = {
         "schema": SCHEMA,
         "status": "complete",
-        "rows": 256,
+        "rows": row_count,
         "unchanged_correct": unchanged_correct,
         "incumbent_revision_correct": args.incumbent_revision_correct,
         "variants": summaries,
@@ -177,6 +197,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "winner_correct": summaries[winner]["correct"],
         "winner_beats_incumbent_revision": (
             summaries[winner]["correct"] > args.incumbent_revision_correct
+            if args.incumbent_revision_correct is not None
+            else None
         ),
         "winner_retention_at_least_90_percent": math.isfinite(
             summaries[winner]["retention"]
@@ -198,7 +220,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--score", type=Path, action="append", required=True)
-    parser.add_argument("--incumbent-revision-correct", type=int, default=141)
+    parser.add_argument("--incumbent-revision-correct", type=int)
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 
