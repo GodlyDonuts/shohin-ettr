@@ -72,3 +72,7 @@ def test_supervision_in_source_fails(tmp_path):
     path.write_text("".join(json.dumps(row) + "\n" for row in rows))
     with pytest.raises(module.Q36MTRExternalEvaluationError, match="projection"):
         module.load_sources(path, 3)
+
+
+def test_external_screen_and_full_geometry_are_distinct():
+    assert module.SHARD_COUNTS == {256: 4, 1_279: 16}

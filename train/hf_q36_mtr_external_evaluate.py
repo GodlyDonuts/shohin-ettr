@@ -41,6 +41,7 @@ ROLE_ARM = {
     "interpolation": "revision",
 }
 SEED = 2026080816
+SHARD_COUNTS = {256: 4, 1_279: 16}
 
 
 class Q36MTRExternalEvaluationError(RuntimeError):
@@ -165,8 +166,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.arm not in ARMS
         or args.model_revision != MODEL_REVISION
         or args.seed != SEED
-        or args.expected_rows not in {256, 1_279}
-        or args.shard_count != 4
+        or args.expected_rows not in SHARD_COUNTS
+        or args.shard_count != SHARD_COUNTS[args.expected_rows]
         or args.batch_size != 2
         or not 0 <= args.shard_index < args.shard_count
     ):

@@ -18,7 +18,13 @@ required=(RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON MODEL_ROOT MODEL_
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
-[[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^[0-3]$ ]] || { printf 'array index differs\n' >&2; exit 2; }
+EXPECTED_ROWS=${EXPECTED_ROWS:-256}
+SHARD_COUNT=${SHARD_COUNT:-4}
+case "$EXPECTED_ROWS:$SHARD_COUNT" in
+  256:4) [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^[0-3]$ ]] ;;
+  1279:16) [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] ;;
+  *) false ;;
+esac || { printf 'external geometry differs\n' >&2; exit 2; }
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
@@ -32,7 +38,7 @@ draft_args=()
 if [[ "$ARM" != unchanged ]]; then
   [[ -n "${DRAFT_CANDIDATES:-}" ]] || q36_die "draft candidates are required"
   IFS=: read -r -a draft_paths <<< "$DRAFT_CANDIDATES"
-  [[ ${#draft_paths[@]} -eq 4 ]] || q36_die "draft candidate geometry differs"
+  [[ ${#draft_paths[@]} -eq $SHARD_COUNT ]] || q36_die "draft candidate geometry differs"
   for path in "${draft_paths[@]}"; do
     [[ -f "$path" && ! -L "$path" ]] || q36_die "draft candidate differs"
     draft_args+=(--draft-candidates "$path")
@@ -52,7 +58,7 @@ nvidia-smi
   --arm "$ARM" --model-root "$model" --model-revision "$MODEL_REVISION" \
   --adapter-checkpoint "$ADAPTER_CHECKPOINT" --source "$SOURCE" \
   --source-sha256 "$SOURCE_SHA256" "${draft_args[@]}" \
-  --candidates-output "$output" --report "$report" --expected-rows 256 \
-  --shard-index "$SLURM_ARRAY_TASK_ID" --shard-count 4 --batch-size 2
+  --candidates-output "$output" --report "$report" --expected-rows "$EXPECTED_ROWS" \
+  --shard-index "$SLURM_ARRAY_TASK_ID" --shard-count "$SHARD_COUNT" --batch-size 2
 test -f "$output" && test -f "$report"
 chmod a-w "$output" "$report"
