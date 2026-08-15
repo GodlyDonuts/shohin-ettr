@@ -167,11 +167,33 @@
   },
   "next_upward_point_after_measured_super_gain": {
     "host": "NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
+    "model_revision": "183968f87ae4cedce3039313cac1fd43d112c578",
     "total_parameters": 550000000000,
     "active_parameters": 55000000000,
+    "repository_bytes": 352381245521,
     "minimum_h100s": 8,
     "status": "not_submitted_pending_super_measurement"
   },
+  "cross_family_upward_points_after_super": [
+    {
+      "host": "Qwen3-235B-A22B",
+      "model_revision": "8efa61729e24bd65b1d152b5ab5409052aa80e65",
+      "total_parameters": 235000000000,
+      "active_parameters": 22000000000,
+      "repository_bytes": 470211119274,
+      "purpose": "within_qwen_family_upward_parameter_point",
+      "status": "not_staged_pending_super_measurement_and_durable_capacity"
+    },
+    {
+      "host": "DeepSeek-V3",
+      "model_revision": "e815299b0bcbac849fa540c768ef21845365c9eb",
+      "total_parameters": 671000000000,
+      "active_parameters": 37000000000,
+      "repository_bytes": 688603930991,
+      "purpose": "frontier_scale_cross_family_moe_transfer",
+      "status": "not_staged_pending_super_measurement_and_distributed_runtime"
+    }
+  ],
   "prohibited_active_work": [
     "dense_scaling",
     "small_moe_scaling",
