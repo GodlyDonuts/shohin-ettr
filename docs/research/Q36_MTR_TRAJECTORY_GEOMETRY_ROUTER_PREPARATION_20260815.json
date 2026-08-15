@@ -1,0 +1,120 @@
+{
+  "architecture": {
+    "branch_names": [
+      "owner",
+      "revision",
+      "draft_hidden"
+    ],
+    "controlled_layer_indices": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "geometry_feature_count_per_token_layer": 9,
+    "geometry_features": [
+      "per_branch_log1p_residual_rms",
+      "per_branch_residual_hidden_cosine_alignment",
+      "pairwise_residual_rms_disagreement"
+    ],
+    "geometry_parameters": 432,
+    "hidden_size": 2048,
+    "initial_branch_weights": [
+      0.1,
+      0.8,
+      0.1
+    ],
+    "initialization_invariant": "geometry projection is exactly zero, so the initial router is the matched 0.1/0.8/0.1 categorical mixture",
+    "name": "q36-tokenwise-tri-trajectory-geometry-gate-v1",
+    "total_trainable_parameters": 98784
+  },
+  "development_basis": {
+    "draft_hidden_correct": 505,
+    "identities": 1289,
+    "owner_correct": 493,
+    "outcome_patterns_owner_revision_draft_hidden": {
+      "000": 598,
+      "001": 29,
+      "010": 55,
+      "011": 114,
+      "100": 16,
+      "101": 17,
+      "110": 115,
+      "111": 345
+    },
+    "revision_correct": 629,
+    "shallow_static_router_best_correct": 631,
+    "tri_trajectory_oracle_correct": 691,
+    "two_trajectory_oracle_correct": 675
+  },
+  "evidence_inputs": {
+    "development_training_data": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_tri_trajectory_gate_data_6fac389a_r1/train.jsonl",
+    "development_training_data_sha256": "6fac389a588553fa2315fd57d92bf0374b673d7fb7029d06fb719c89dc52326b",
+    "development_training_report_sha256": "a1377e0877368f3378992d04eab0c10bf7243946a0b2b921eb7175adf0c52def",
+    "screen_assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "screen_source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "validation_assessors_sha256": "af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e",
+    "validation_source_sha256": "98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778"
+  },
+  "implementation": {
+    "analyzer_sha256": "926f9af21fcfe0247629fdfe01c870c1229186472707d8a5d2df4755436435b1",
+    "evaluation_sha256": "733f8df9b38405caa4db1767eb13b4bdb1ed52af051556c946abcbfec8fe211a",
+    "git_commit": "de8efe140b759cb1d2e5e56e8fe2a3dff3543f09",
+    "private_branches": [
+      "codex/q36-mechanics-generation-prepare",
+      "codex/q36-moe-temporal-revision"
+    ],
+    "router_sha256": "0ad18ae193a452fec8e1b63432d21eba33dbfc3636d4e634ad503b798dca0296",
+    "runtime_manifest_sha256": "aa35620b481b09f0f688fcecd8d879c59aac056e647eab63a7a5a6630f78b075",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_de8efe14_r1",
+    "training_sha256": "34df449784a08f757bc963d8269780ad73c20840a582d934fa1489d627da4238"
+  },
+  "jobs": {
+    "fit": 760204,
+    "screen_evaluation_array": 760205,
+    "screen_score": 760206,
+    "six_variant_screen_analysis": 760209,
+    "six_variant_validation_analysis": 760210,
+    "validation_evaluation_array": 760207,
+    "validation_score": 760208
+  },
+  "model": {
+    "config_sha256": "93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99",
+    "host": "Qwen3.6-35B-A3B",
+    "manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "prior_screen": {
+    "paired_mcnemar_exact_two_sided_p": 2.8288777684792876e-06,
+    "revision_correct": 141,
+    "revision_gain_percentage_points": 11.71875,
+    "revision_retention": 0.9459459459459459,
+    "rows": 256,
+    "unchanged_correct": 111
+  },
+  "rationale": "Static text features recover essentially none of the 62-example revision/draft/owner oracle gap. The new router therefore exposes token-local causal trajectory geometry while keeping all three learned residual trajectories and the native MoE frozen.",
+  "schema": "shohin-q36-mtr-trajectory-geometry-preparation-v1",
+  "status": "submitted",
+  "validation": {
+    "local_q36_tests": {
+      "passed": 421,
+      "skipped": 1
+    },
+    "no_existing_scientific_job_cancelled": true,
+    "requeue_disabled": true,
+    "screen_rows": 256,
+    "validation_rows": 1023
+  }
+}

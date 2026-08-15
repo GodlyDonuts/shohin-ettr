@@ -216,11 +216,9 @@ def test_geometry_router_preserves_initial_mix_and_exposes_disagreement() -> Non
     assert block.trainable_parameter_count() == 36
 
 
-def test_geometry_router_learns_from_trajectory_conflict_with_hidden_head_frozen() -> (
-    None
-):
+def test_geometry_router_learns_nonlinear_trajectory_conflict() -> None:
     block = _multi_block("trajectory_geometry")
-    hidden = torch.tensor([[[1.0, 0.0], [0.0, 1.0]]])
+    hidden = torch.tensor([[[0.5, 0.0], [-0.5, 0.0], [2.0, 0.0], [-2.0, 0.0]]])
     residuals = block._residuals(hidden).detach()
     with torch.no_grad():
         block.gate_weight.zero_()
@@ -228,7 +226,7 @@ def test_geometry_router_learns_from_trajectory_conflict_with_hidden_head_frozen
     optimizer = torch.optim.AdamW(
         [block.geometry_weight, block.gate_bias], lr=0.1, weight_decay=0.0
     )
-    target = torch.tensor([0, 2])
+    target = torch.tensor([0, 0, 2, 2])
     initial = block._gate(hidden, residuals).detach()
     for _ in range(150):
         optimizer.zero_grad(set_to_none=True)
@@ -239,9 +237,25 @@ def test_geometry_router_learns_from_trajectory_conflict_with_hidden_head_frozen
         loss.backward()
         optimizer.step()
     learned = block._gate(hidden, residuals).detach()
-    assert learned[0, 0, 0] > initial[0, 0, 0]
-    assert learned[0, 1, 2] > initial[0, 1, 2] + 0.8
-    assert float(learned[0, 0, 0]) > 0.98
+    assert learned[0, :2, 0].min() > 0.98
+    assert learned[0, 2:, 2].min() > initial[0, 2:, 2].max() + 0.8
+
+    hidden_only = _multi_block()
+    optimizer = torch.optim.AdamW(
+        [hidden_only.gate_weight, hidden_only.gate_bias],
+        lr=0.1,
+        weight_decay=0.0,
+    )
+    for _ in range(500):
+        optimizer.zero_grad(set_to_none=True)
+        probabilities = hidden_only._gate(hidden)
+        loss = torch.nn.functional.nll_loss(
+            probabilities.squeeze(0).clamp_min(1.0e-8).log(), target
+        )
+        loss.backward()
+        optimizer.step()
+    hidden_predictions = hidden_only._gate(hidden).argmax(dim=-1).squeeze(0)
+    assert int(hidden_predictions.eq(target).sum()) <= 3
 
 
 def test_geometry_router_requires_residuals_and_valid_mode() -> None:
