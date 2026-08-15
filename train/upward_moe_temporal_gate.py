@@ -32,6 +32,16 @@ from q36_upward_moe_mixtral_host import (
     RANK as MIXTRAL_RANK,
     validate_loaded_surface as validate_mixtral_surface,
 )
+from q36_upward_moe_ultra_host import (
+    ALPHA as ULTRA_ALPHA,
+    ATTACHMENT_SURFACE as ULTRA_ATTACHMENT_SURFACE,
+    CONTROLLED_LAYER_INDICES as ULTRA_CONTROLLED_LAYER_INDICES,
+    HIDDEN_SIZE as ULTRA_HIDDEN_SIZE,
+    MODEL_CONFIG_SHA256 as ULTRA_MODEL_CONFIG_SHA256,
+    MODEL_REVISION as ULTRA_MODEL_REVISION,
+    RANK as ULTRA_RANK,
+    validate_loaded_surface as validate_ultra_surface,
+)
 from temporal_residual_gate import (
     TemporalResidualGateConfig,
     TemporalResidualGateError,
@@ -40,6 +50,7 @@ from temporal_residual_gate import (
 
 NEMOTRON_ARCHITECTURE = "shohin-nemotron-super-temporal-causal-gate-v1"
 MIXTRAL_ARCHITECTURE = "shohin-mixtral-8x22b-temporal-causal-gate-v1"
+ULTRA_ARCHITECTURE = "shohin-nemotron-ultra-temporal-causal-gate-v1"
 
 
 class UpwardMoETemporalGateError(RuntimeError):
@@ -110,6 +121,20 @@ MIXTRAL_SPEC = UpwardMoETemporalGateSpec(
     require_final_contiguous=True,
 )
 
+ULTRA_SPEC = UpwardMoETemporalGateSpec(
+    host="Nemotron-Ultra-550B-A55B",
+    model_revision=ULTRA_MODEL_REVISION,
+    model_config_sha256=ULTRA_MODEL_CONFIG_SHA256,
+    architecture=ULTRA_ARCHITECTURE,
+    attachment_surface=ULTRA_ATTACHMENT_SURFACE,
+    module_attribute="mixer",
+    hidden_size=ULTRA_HIDDEN_SIZE,
+    rank=ULTRA_RANK,
+    alpha=ULTRA_ALPHA,
+    controlled_layer_indices=tuple(ULTRA_CONTROLLED_LAYER_INDICES),
+    require_final_contiguous=False,
+)
+
 
 def static_transfer_contract() -> dict[str, Any]:
     return {
@@ -117,7 +142,11 @@ def static_transfer_contract() -> dict[str, Any]:
         "causal_loss_weight": 1.0,
         "routing_supervision_weight": 0.0,
         "frozen_trajectories": ["owner", "aligned_revision"],
-        "hosts": [NEMOTRON_SPEC.receipt(), MIXTRAL_SPEC.receipt()],
+        "hosts": [
+            NEMOTRON_SPEC.receipt(),
+            MIXTRAL_SPEC.receipt(),
+            ULTRA_SPEC.receipt(),
+        ],
     }
 
 
@@ -273,13 +302,32 @@ class MixtralTemporalGateModel(_UpwardMoETemporalGateModel):
         )
 
 
+class NemotronUltraTemporalGateModel(_UpwardMoETemporalGateModel):
+    def __init__(
+        self,
+        backbone: nn.Module,
+        owner_state: Mapping[str, torch.Tensor],
+        revision_state: Mapping[str, torch.Tensor],
+    ) -> None:
+        super().__init__(
+            backbone,
+            owner_state,
+            revision_state,
+            spec=ULTRA_SPEC,
+            validate_surface=validate_ultra_surface,
+        )
+
+
 __all__ = [
     "MIXTRAL_ARCHITECTURE",
     "MIXTRAL_SPEC",
     "NEMOTRON_ARCHITECTURE",
     "NEMOTRON_SPEC",
+    "ULTRA_ARCHITECTURE",
+    "ULTRA_SPEC",
     "MixtralTemporalGateModel",
     "NemotronSuperTemporalGateModel",
+    "NemotronUltraTemporalGateModel",
     "UpwardMoETemporalGateError",
     "static_transfer_contract",
 ]

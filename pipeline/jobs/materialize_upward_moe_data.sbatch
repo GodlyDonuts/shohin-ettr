@@ -14,7 +14,8 @@ set -euo pipefail
 for variable in HOST PYTHON RUNTIME SOURCE_ROOT DRAFTS DRAFT_REPORT ASSESSOR_RECEIPT OUTPUT; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
-[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b ]]
+[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b || \
+  "$HOST" == nemotron-ultra ]]
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]]
 mkdir -p "$(dirname "$OUTPUT")" logs
 PYTHONPATH="$RUNTIME/pipeline:$RUNTIME/train" "$PYTHON" -P -s -B \

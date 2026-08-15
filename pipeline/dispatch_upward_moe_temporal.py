@@ -50,7 +50,7 @@ def _require_python(path: Path) -> None:
 
 
 def _host_exports(args: argparse.Namespace) -> dict[str, str]:
-    if args.host == "nemotron-super":
+    if args.host in {"nemotron-super", "nemotron-ultra"}:
         for path in (args.overlay_root, args.causal_conv_root):
             if not isinstance(path, Path):
                 raise UpwardMoETemporalDispatchError("Nemotron host input is absent")
@@ -58,11 +58,22 @@ def _host_exports(args: argparse.Namespace) -> dict[str, str]:
         if not isinstance(args.overlay_manifest, Path):
             raise UpwardMoETemporalDispatchError("Nemotron overlay manifest is absent")
         _require_input(args.overlay_manifest)
-        return {
+        result = {
             "OVERLAY_ROOT": str(args.overlay_root),
             "OVERLAY_MANIFEST": str(args.overlay_manifest),
             "CAUSAL_CONV_ROOT": str(args.causal_conv_root),
         }
+        if args.host == "nemotron-ultra":
+            if not re.fullmatch(
+                r"[0-9a-f]{64}", args.expected_model_manifest_sha256 or ""
+            ):
+                raise UpwardMoETemporalDispatchError(
+                    "Ultra model manifest hash is absent"
+                )
+            result["EXPECTED_MODEL_MANIFEST_SHA256"] = (
+                args.expected_model_manifest_sha256
+            )
+        return result
     if not re.fullmatch(r"[0-9a-f]{64}", args.expected_model_manifest_sha256 or ""):
         raise UpwardMoETemporalDispatchError("Mixtral model manifest hash is absent")
     return {"EXPECTED_MODEL_MANIFEST_SHA256": args.expected_model_manifest_sha256}
@@ -82,6 +93,18 @@ def _common(args: argparse.Namespace) -> dict[str, str]:
     }
 
 
+def _gpu_resources(host: str, *, long_running: bool) -> list[str]:
+    if host != "nemotron-ultra":
+        return []
+    return [
+        "--partition=highgpu",
+        "--gres=gpu:nvidia_h100_80gb_hbm3:8",
+        "--cpus-per-task=32",
+        "--mem=512G",
+        f"--time={'24:00:00' if long_running else '08:00:00'}",
+    ]
+
+
 def build_graph(args: argparse.Namespace) -> list[dict[str, Any]]:
     root = args.run_root
     owner = root / "owner"
@@ -95,6 +118,8 @@ def build_graph(args: argparse.Namespace) -> list[dict[str, Any]]:
     stages: list[dict[str, Any]] = [
         {
             "name": "owner",
+            "gpu": True,
+            "resources": _gpu_resources(args.host, long_running=True),
             "script": "train/jobs/upward_moe_train_owner.sbatch",
             "dependencies": [],
             "exports": {
@@ -105,6 +130,8 @@ def build_graph(args: argparse.Namespace) -> list[dict[str, Any]]:
         },
         {
             "name": "drafts",
+            "gpu": True,
+            "resources": _gpu_resources(args.host, long_running=False),
             "script": "train/jobs/upward_moe_generate_drafts.sbatch",
             "dependencies": ["owner"],
             "array": "0-15%16",
@@ -146,6 +173,8 @@ def build_graph(args: argparse.Namespace) -> list[dict[str, Any]]:
         },
         {
             "name": "aligned",
+            "gpu": True,
+            "resources": _gpu_resources(args.host, long_running=True),
             "script": "train/jobs/upward_moe_train_aligned.sbatch",
             "dependencies": ["materialize"],
             "exports": {
@@ -158,6 +187,8 @@ def build_graph(args: argparse.Namespace) -> list[dict[str, Any]]:
         },
         {
             "name": "temporal",
+            "gpu": True,
+            "resources": _gpu_resources(args.host, long_running=True),
             "script": "train/jobs/upward_moe_train_temporal_gate.sbatch",
             "dependencies": ["aligned"],
             "exports": {
@@ -174,6 +205,8 @@ def build_graph(args: argparse.Namespace) -> list[dict[str, Any]]:
         stages.append(
             {
                 "name": f"evaluate_{arm}",
+                "gpu": True,
+                "resources": _gpu_resources(args.host, long_running=False),
                 "script": "train/jobs/upward_moe_evaluate_temporal_gate.sbatch",
                 "dependencies": ["temporal" if arm == "temporal_gate" else "aligned"],
                 "array": "0-15%16",
@@ -248,6 +281,21 @@ def validate(args: argparse.Namespace, stages: list[dict[str, Any]]) -> None:
         seen.add(stage["name"])
     if sum(16 if "array" in stage else 1 for stage in stages) != 102:
         raise UpwardMoETemporalDispatchError("upward allocation geometry differs")
+    gpu_tasks = sum(
+        16 if "array" in stage else 1 for stage in stages if stage.get("gpu")
+    )
+    if gpu_tasks != 99:
+        raise UpwardMoETemporalDispatchError("upward GPU geometry differs")
+    expected_resources = _gpu_resources(args.host, long_running=False)
+    if any(
+        (args.host == "nemotron-ultra" and not stage.get("resources"))
+        or (args.host != "nemotron-ultra" and stage.get("resources"))
+        for stage in stages
+        if stage.get("gpu")
+    ):
+        raise UpwardMoETemporalDispatchError("upward GPU resource binding differs")
+    if args.host == "nemotron-ultra" and not expected_resources:
+        raise UpwardMoETemporalDispatchError("Ultra GPU resources are absent")
 
 
 def submit(args: argparse.Namespace, stages: list[dict[str, Any]]) -> dict[str, Any]:
@@ -260,6 +308,7 @@ def submit(args: argparse.Namespace, stages: list[dict[str, Any]]) -> dict[str, 
     }
     for index, stage in enumerate(stages, start=1):
         command = ["sbatch", "--parsable"]
+        command.extend(stage.get("resources", []))
         if stage.get("array"):
             command.append(f"--array={stage['array']}")
         if stage["dependencies"]:
@@ -302,7 +351,8 @@ def submit(args: argparse.Namespace, stages: list[dict[str, Any]]) -> dict[str, 
         "run_root": str(args.run_root),
         "submission_roots": len(stages),
         "allocation_tasks": 102,
-        "two_h100_tasks": 99,
+        "two_h100_tasks": 0 if args.host == "nemotron-ultra" else 99,
+        "eight_h100_tasks": 99 if args.host == "nemotron-ultra" else 0,
         "cpu_tasks": 3,
         "draft_shards": 16,
         "evaluation_arms": list(ARMS),
@@ -324,7 +374,9 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--host", choices=("nemotron-super", "mixtral-8x22b"), required=True
+        "--host",
+        choices=("nemotron-super", "mixtral-8x22b", "nemotron-ultra"),
+        required=True,
     )
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--runtime-manifest-sha256", required=True)

@@ -14,7 +14,8 @@ set -euo pipefail
 for variable in HOST PYTHON RUNTIME TRAIN_SOURCE DEVELOPMENT_SOURCE FREEZE_REPORT SHARD_ROOT OUTPUT REPORT; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
-[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b ]]
+[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b || \
+  "$HOST" == nemotron-ultra ]]
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" && ! -e "$REPORT" && ! -L "$REPORT" ]]
 args=()
 for index in $(seq 0 15); do

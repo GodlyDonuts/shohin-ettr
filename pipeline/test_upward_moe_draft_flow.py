@@ -142,6 +142,7 @@ def _merge_fixture(tmp_path: Path, monkeypatch, host: str = "nemotron-super"):
 def test_upward_host_specs_are_large_moe_only() -> None:
     assert host_spec("nemotron-super").host == "Nemotron-Super-120B-A12B"
     assert host_spec("mixtral-8x22b").host == "Mixtral-8x22B-141B-A39B"
+    assert host_spec("nemotron-ultra").host == "Nemotron-Ultra-550B-A55B"
     with pytest.raises(UpwardMoEDraftError):
         host_spec("small-moe")
 

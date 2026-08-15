@@ -45,7 +45,9 @@ def resolve_hash(host: str, report_path: Path, kind: str, data: Path) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--host", choices=("nemotron-super", "mixtral-8x22b"), required=True
+        "--host",
+        choices=("nemotron-super", "mixtral-8x22b", "nemotron-ultra"),
+        required=True,
     )
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--kind", choices=sorted(KINDS), required=True)

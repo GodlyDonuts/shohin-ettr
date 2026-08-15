@@ -354,7 +354,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--drafts", type=Path, required=True)
     parser.add_argument("--draft-report", type=Path, required=True)
     parser.add_argument("--assessor-receipt", type=Path, required=True)
-    parser.add_argument("--upward-host", choices=("nemotron-super", "mixtral-8x22b"))
+    parser.add_argument(
+        "--upward-host",
+        choices=("nemotron-super", "mixtral-8x22b", "nemotron-ultra"),
+    )
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 

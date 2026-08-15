@@ -64,6 +64,7 @@ def test_static_gate_contract_is_causal_only_and_upward() -> None:
     assert [host["host"] for host in contract["hosts"]] == [
         "Nemotron-Super-120B-A12B",
         "Mixtral-8x22B-141B-A39B",
+        "Nemotron-Ultra-550B-A55B",
     ]
 
 

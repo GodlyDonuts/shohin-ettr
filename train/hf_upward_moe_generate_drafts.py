@@ -32,7 +32,7 @@ from q36_mtr_roles import (
     DRAFT_SHARDS,
 )
 from upward_moe_role_lineage import load_role_checkpoint, sha256_file
-from upward_moe_temporal_gate import MIXTRAL_SPEC, NEMOTRON_SPEC
+from upward_moe_temporal_gate import MIXTRAL_SPEC, NEMOTRON_SPEC, ULTRA_SPEC
 
 SCHEMA = "shohin-upward-moe-model-draft-v1"
 REPORT_SCHEMA = "shohin-upward-moe-draft-shard-v1"
@@ -47,6 +47,8 @@ def host_spec(host: str) -> Any:
         return NEMOTRON_SPEC
     if host == "mixtral-8x22b":
         return MIXTRAL_SPEC
+    if host == "nemotron-ultra":
+        return ULTRA_SPEC
     raise UpwardMoEDraftError("upward-MoE draft host differs")
 
 
@@ -197,7 +199,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "elapsed_seconds": time.monotonic() - started,
         "peak_gpu_memory_bytes": {
             str(index): int(torch.cuda.max_memory_allocated(index))
-            for index in range(2)
+            for index in range(torch.cuda.device_count())
         },
         "routing_receipt": loaded.model.receipt(),
         "capability_scored": False,
@@ -212,13 +214,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--host", choices=("nemotron-super", "mixtral-8x22b"), required=True
+        "--host",
+        choices=("nemotron-super", "mixtral-8x22b", "nemotron-ultra"),
+        required=True,
     )
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-manifest", type=Path, required=True)
     parser.add_argument("--expected-model-manifest-sha256")
     parser.add_argument("--overlay-root", type=Path)
     parser.add_argument("--overlay-manifest", type=Path)
+    parser.add_argument("--causal-conv-root", type=Path)
     parser.add_argument("--mechanics-report", type=Path, required=True)
     parser.add_argument("--train-source", type=Path, required=True)
     parser.add_argument("--development-source", type=Path, required=True)

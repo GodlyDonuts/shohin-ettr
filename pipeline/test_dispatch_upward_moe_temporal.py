@@ -77,8 +77,41 @@ def test_graph_prestages_exact_upward_dependencies_and_geometry(tmp_path: Path) 
     assert receipt["status"] == "dry_run"
     assert receipt["allocation_tasks"] == 102
     assert receipt["two_h100_tasks"] == 99
+    assert receipt["eight_h100_tasks"] == 0
     assert all("--export=NONE" not in command for command in receipt["commands"])
     assert not args.run_root.exists()
+
+
+def test_ultra_graph_overrides_only_gpu_stages_to_eight_h100(tmp_path: Path) -> None:
+    args, _ = _args(tmp_path)
+    args.host = "nemotron-ultra"
+    args.overlay_root = tmp_path / "overlay"
+    args.overlay_root.mkdir()
+    args.causal_conv_root = tmp_path / "causal"
+    args.causal_conv_root.mkdir()
+    args.overlay_manifest = tmp_path / "overlay.sha256"
+    args.overlay_manifest.write_text("overlay\n", encoding="utf-8")
+    graph = module.build_graph(args)
+    module.validate(args, graph)
+    receipt = module.submit(args, graph)
+    assert receipt["two_h100_tasks"] == 0
+    assert receipt["eight_h100_tasks"] == 99
+    by_name = {stage["name"]: stage for stage in graph}
+    assert by_name["owner"]["resources"] == [
+        "--partition=highgpu",
+        "--gres=gpu:nvidia_h100_80gb_hbm3:8",
+        "--cpus-per-task=32",
+        "--mem=512G",
+        "--time=24:00:00",
+    ]
+    assert by_name["evaluate_temporal_gate"]["resources"][-1] == "--time=08:00:00"
+    assert "resources" not in by_name["score"]
+    gpu_commands = [
+        command
+        for command in receipt["commands"]
+        if "--gres=gpu:nvidia_h100_80gb_hbm3:8" in command
+    ]
+    assert len(gpu_commands) == 9
 
 
 def test_graph_refuses_existing_output_or_missing_runtime_member(

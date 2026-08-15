@@ -21,8 +21,11 @@ required=(
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
-[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b ]]
-[[ "${SLURM_GPUS_ON_NODE:-}" == 2 ]]
+[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b || \
+  "$HOST" == nemotron-ultra ]]
+required_gpus=2
+[[ "$HOST" == nemotron-ultra ]] && required_gpus=8
+[[ "${SLURM_GPUS_ON_NODE:-}" == "$required_gpus" ]]
 [[ -x "$PYTHON" && -d "$RUNTIME" && ! -L "$RUNTIME" ]]
 for path in "$MODEL_MANIFEST" "$MECHANICS_REPORT" "$DATA" "$DATA_REPORT" \
   "$OWNER_CHECKPOINT" "$REVISION_CHECKPOINT"; do
@@ -42,11 +45,19 @@ q36_verify_sha256 "$DATA" "$EXPECTED_DATA_SHA256"
 mkdir -p logs "$(dirname "$OUTPUT")"
 
 host_args=(--host "$HOST")
-if [[ "$HOST" == nemotron-super ]]; then
-  : "${OVERLAY_ROOT:?OVERLAY_ROOT is required for Nemotron Super}"
-  : "${OVERLAY_MANIFEST:?OVERLAY_MANIFEST is required for Nemotron Super}"
-  : "${CAUSAL_CONV_ROOT:?CAUSAL_CONV_ROOT is required for Nemotron Super}"
-  host_args+=(--overlay-root "$OVERLAY_ROOT" --overlay-manifest "$OVERLAY_MANIFEST")
+if [[ "$HOST" != mixtral-8x22b ]]; then
+  : "${OVERLAY_ROOT:?OVERLAY_ROOT is required for Nemotron}"
+  : "${OVERLAY_MANIFEST:?OVERLAY_MANIFEST is required for Nemotron}"
+  : "${CAUSAL_CONV_ROOT:?CAUSAL_CONV_ROOT is required for Nemotron}"
+  host_args+=(
+    --overlay-root "$OVERLAY_ROOT" --overlay-manifest "$OVERLAY_MANIFEST"
+    --causal-conv-root "$CAUSAL_CONV_ROOT"
+  )
+  if [[ "$HOST" == nemotron-ultra ]]; then
+    : "${EXPECTED_MODEL_MANIFEST_SHA256:?EXPECTED_MODEL_MANIFEST_SHA256 is required for Ultra}"
+    [[ "$EXPECTED_MODEL_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]]
+    host_args+=(--expected-model-manifest-sha256 "$EXPECTED_MODEL_MANIFEST_SHA256")
+  fi
   export PYTHONPATH="$RUNTIME/train:$OVERLAY_ROOT:$CAUSAL_CONV_ROOT"
 else
   : "${EXPECTED_MODEL_MANIFEST_SHA256:?EXPECTED_MODEL_MANIFEST_SHA256 is required for Mixtral}"

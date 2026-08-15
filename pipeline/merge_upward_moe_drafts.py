@@ -240,7 +240,9 @@ def merge(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--host", choices=("nemotron-super", "mixtral-8x22b"), required=True
+        "--host",
+        choices=("nemotron-super", "mixtral-8x22b", "nemotron-ultra"),
+        required=True,
     )
     parser.add_argument("--train-source", type=Path, required=True)
     parser.add_argument("--development-source", type=Path, required=True)

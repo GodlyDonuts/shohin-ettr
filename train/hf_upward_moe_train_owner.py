@@ -25,11 +25,12 @@ from hf_product_reasoning_train import (
 from hf_q36_mtr_train_role import training_consumption_receipt
 from mixtral_post_mlp_revision import MixtralRevisionModel
 from nemotron_super_post_mixer_revision import NemotronSuperRevisionModel
+from nemotron_ultra_post_mixer_revision import NemotronUltraRevisionModel
 from upward_moe_role_lineage import (
     save_role_checkpoint,
     sha256_file,
 )
-from upward_moe_temporal_gate import MIXTRAL_SPEC, NEMOTRON_SPEC
+from upward_moe_temporal_gate import MIXTRAL_SPEC, NEMOTRON_SPEC, ULTRA_SPEC
 
 SCHEMA = "shohin-upward-moe-owner-training-v1"
 OWNER_DATA_SHA256 = "2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549"
@@ -85,7 +86,11 @@ def static_owner_contract() -> dict[str, Any]:
         "external_proposer": False,
         "task_router": False,
         "native_router_expert_trainables": 0,
-        "hosts": [NEMOTRON_SPEC.receipt(), MIXTRAL_SPEC.receipt()],
+        "hosts": [
+            NEMOTRON_SPEC.receipt(),
+            MIXTRAL_SPEC.receipt(),
+            ULTRA_SPEC.receipt(),
+        ],
     }
 
 
@@ -176,6 +181,7 @@ def _validate_mechanics(
             and report.get("model_receipt", {}).get("manifest_sha256")
             != expected_manifest_sha256
         )
+        or (spec == ULTRA_SPEC and len(report.get("devices", [])) != 8)
     ):
         raise UpwardMoEOwnerTrainingError("owner mechanics authorization differs")
     return report
@@ -329,16 +335,128 @@ def _load_mixtral(
     )
 
 
-def _load_host(args: argparse.Namespace, *, attach_revision: bool = True) -> LoadedHost:
-    if torch.cuda.device_count() != 2 or any(
-        "H100" not in torch.cuda.get_device_name(index).upper() for index in range(2)
-    ):
-        raise UpwardMoEOwnerTrainingError("owner training requires exactly two H100s")
-    return (
-        _load_nemotron(args, attach_revision=attach_revision)
-        if args.host == "nemotron-super"
-        else _load_mixtral(args, attach_revision=attach_revision)
+def _load_ultra(
+    args: argparse.Namespace, *, attach_revision: bool = True
+) -> LoadedHost:
+    from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    from hf_nemotron_ultra_mechanics import (
+        CAUSAL_CONV_VERSION,
+        CUDA_VERSION,
+        MAMBA_VERSION,
+        MODELOPT_VERSION,
+        OVERLAY_MANIFEST_SHA256,
+        SCHEMA as MECHANICS_SCHEMA,
+        TORCH_VERSION,
+        _package_versions,
+        verify_manifest,
     )
+    from q36_upward_moe_ultra_host import load_pinned_config
+
+    expected_manifest = args.expected_model_manifest_sha256
+    if not isinstance(expected_manifest, str) or len(expected_manifest) != 64:
+        raise UpwardMoEOwnerTrainingError("Ultra owner manifest binding differs")
+    if any(
+        path is None
+        for path in (args.overlay_root, args.overlay_manifest, args.causal_conv_root)
+    ):
+        raise UpwardMoEOwnerTrainingError("Ultra owner runtime overlay is absent")
+    _validate_mechanics(
+        args.mechanics_report,
+        schema=MECHANICS_SCHEMA,
+        spec=ULTRA_SPEC,
+        expected_manifest_sha256=expected_manifest,
+    )
+    model_receipt = verify_manifest(
+        args.model_root,
+        args.model_manifest,
+        expected_manifest,
+        exact_membership=True,
+    )
+    overlay_receipt = verify_manifest(
+        args.overlay_root,
+        args.overlay_manifest,
+        OVERLAY_MANIFEST_SHA256,
+        exact_membership=False,
+    )
+    if (
+        sha256_file(args.model_root / "config.json") != ULTRA_SPEC.model_config_sha256
+        or (args.model_root / "SOURCE_REVISION").is_symlink()
+        or not (args.model_root / "SOURCE_REVISION").is_file()
+        or (args.model_root / "SOURCE_REVISION").read_text().strip()
+        != ULTRA_SPEC.model_revision
+    ):
+        raise UpwardMoEOwnerTrainingError("Ultra owner host identity differs")
+    load_pinned_config(args.model_root / "config.json")
+    if _package_versions() != {
+        "mamba-ssm": MAMBA_VERSION,
+        "nvidia-modelopt": MODELOPT_VERSION,
+        "causal-conv1d": CAUSAL_CONV_VERSION,
+        "torch": TORCH_VERSION,
+        "cuda": CUDA_VERSION,
+    }:
+        raise UpwardMoEOwnerTrainingError("Ultra owner packages differ")
+    import causal_conv1d
+    import mamba_ssm
+    import modelopt
+
+    origins = {
+        "causal_conv1d": Path(causal_conv1d.__file__).resolve(),
+        "mamba_ssm": Path(mamba_ssm.__file__).resolve(),
+        "modelopt": Path(modelopt.__file__).resolve(),
+    }
+    if (
+        not origins["causal_conv1d"].is_relative_to(args.causal_conv_root.resolve())
+        or not origins["mamba_ssm"].is_relative_to(args.overlay_root.resolve())
+        or not origins["modelopt"].is_relative_to(args.overlay_root.resolve())
+    ):
+        raise UpwardMoEOwnerTrainingError("Ultra owner module origin differs")
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.model_root, local_files_only=True, trust_remote_code=False
+    )
+    enable_huggingface_checkpointing()
+    backbone = AutoModelForCausalLM.from_pretrained(
+        args.model_root,
+        local_files_only=True,
+        trust_remote_code=False,
+        device_map="balanced",
+        max_memory={index: "77GiB" for index in range(8)},
+        torch_dtype=torch.bfloat16,
+        low_cpu_mem_usage=True,
+    )
+    device_map = getattr(backbone, "hf_device_map", None)
+    if not isinstance(device_map, dict) or set(device_map.values()) != set(range(8)):
+        raise UpwardMoEOwnerTrainingError("Ultra owner device map differs")
+    model = NemotronUltraRevisionModel(backbone) if attach_revision else backbone
+    return LoadedHost(
+        model=model,
+        tokenizer=tokenizer,
+        input_device=backbone.model.embeddings.weight.device,
+        spec=ULTRA_SPEC,
+        model_receipt={
+            **model_receipt,
+            "overlay_manifest_sha256": overlay_receipt["manifest_sha256"],
+        },
+    )
+
+
+def _load_host(args: argparse.Namespace, *, attach_revision: bool = True) -> LoadedHost:
+    required_gpus = 8 if args.host == "nemotron-ultra" else 2
+    if torch.cuda.device_count() != required_gpus or any(
+        "H100" not in torch.cuda.get_device_name(index).upper()
+        for index in range(required_gpus)
+    ):
+        raise UpwardMoEOwnerTrainingError(
+            f"owner training requires exactly {required_gpus} H100s"
+        )
+    if args.host == "nemotron-super":
+        return _load_nemotron(args, attach_revision=attach_revision)
+    if args.host == "mixtral-8x22b":
+        return _load_mixtral(args, attach_revision=attach_revision)
+    if args.host == "nemotron-ultra":
+        return _load_ultra(args, attach_revision=attach_revision)
+    raise UpwardMoEOwnerTrainingError("owner host differs")
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -480,7 +598,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "total_elapsed_seconds": time.monotonic() - started,
         "peak_gpu_memory_bytes": {
             str(index): int(torch.cuda.max_memory_allocated(index))
-            for index in range(2)
+            for index in range(torch.cuda.device_count())
         },
         "routing_receipt": model.receipt(),
     }
@@ -491,13 +609,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--host", choices=("nemotron-super", "mixtral-8x22b"), required=True
+        "--host",
+        choices=("nemotron-super", "mixtral-8x22b", "nemotron-ultra"),
+        required=True,
     )
     parser.add_argument("--model-root", type=Path, required=True)
     parser.add_argument("--model-manifest", type=Path, required=True)
     parser.add_argument("--expected-model-manifest-sha256")
     parser.add_argument("--overlay-root", type=Path)
     parser.add_argument("--overlay-manifest", type=Path)
+    parser.add_argument("--causal-conv-root", type=Path)
     parser.add_argument("--mechanics-report", type=Path, required=True)
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)

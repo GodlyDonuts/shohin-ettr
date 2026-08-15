@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 import hf_upward_moe_train_owner as module
-from upward_moe_temporal_gate import NEMOTRON_SPEC
+from upward_moe_temporal_gate import NEMOTRON_SPEC, ULTRA_SPEC
 
 
 def test_static_owner_contract_matches_surviving_recipe() -> None:
@@ -25,6 +25,7 @@ def test_static_owner_contract_matches_surviving_recipe() -> None:
     assert [row["host"] for row in contract["hosts"]] == [
         "Nemotron-Super-120B-A12B",
         "Mixtral-8x22B-141B-A39B",
+        "Nemotron-Ultra-550B-A55B",
     ]
 
 
@@ -96,6 +97,60 @@ def test_parse_args_requires_explicit_host_and_inputs(monkeypatch) -> None:
     assert isinstance(args, argparse.Namespace)
     assert args.host == "mixtral-8x22b"
     assert args.output == Path("/output")
+
+
+def test_ultra_host_requires_exact_eight_h100_and_dispatches_ultra_loader(
+    monkeypatch,
+) -> None:
+    args = argparse.Namespace(host="nemotron-ultra")
+    marker = object()
+    monkeypatch.setattr(module.torch.cuda, "device_count", lambda: 8)
+    monkeypatch.setattr(
+        module.torch.cuda, "get_device_name", lambda index: f"NVIDIA H100 {index}"
+    )
+    monkeypatch.setattr(module, "_load_ultra", lambda *_args, **_kwargs: marker)
+    assert module._load_host(args) is marker
+    monkeypatch.setattr(module.torch.cuda, "device_count", lambda: 7)
+    with pytest.raises(module.UpwardMoEOwnerTrainingError, match="8 H100s"):
+        module._load_host(args)
+
+
+def test_ultra_mechanics_requires_all_eight_device_receipts(tmp_path: Path) -> None:
+    path = tmp_path / "ultra-mechanics.json"
+    payload = {
+        "schema": "ultra-mechanics",
+        "status": "pass",
+        "score_rows_read": 0,
+        "benchmark_rows_read": 0,
+        "model_revision": ULTRA_SPEC.model_revision,
+        "trainable_parameters": 2
+        * len(ULTRA_SPEC.controlled_layer_indices)
+        * ULTRA_SPEC.hidden_size
+        * ULTRA_SPEC.rank,
+        "native_router_expert_trainables": 0,
+        "serialization_restore_exact": True,
+        "devices": [f"H100-{index}" for index in range(8)],
+        "model_receipt": {"manifest_sha256": "a" * 64},
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    assert (
+        module._validate_mechanics(
+            path,
+            schema="ultra-mechanics",
+            spec=ULTRA_SPEC,
+            expected_manifest_sha256="a" * 64,
+        )["status"]
+        == "pass"
+    )
+    payload["devices"].pop()
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(module.UpwardMoEOwnerTrainingError):
+        module._validate_mechanics(
+            path,
+            schema="ultra-mechanics",
+            spec=ULTRA_SPEC,
+            expected_manifest_sha256="a" * 64,
+        )
 
 
 def test_owner_tokenization_is_source_only_untruncated_and_draft_free(

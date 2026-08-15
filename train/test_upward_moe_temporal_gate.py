@@ -61,6 +61,11 @@ def _states(spec: module.UpwardMoETemporalGateSpec, offset: float):
             module.MixtralTemporalGateModel,
             "validate_mixtral_surface",
         ),
+        (
+            module.ULTRA_SPEC,
+            module.NemotronUltraTemporalGateModel,
+            "validate_ultra_surface",
+        ),
     ],
 )
 def test_exact_upward_host_installs_only_temporal_gate(
@@ -97,10 +102,12 @@ def test_transfer_contract_pins_causal_only_lineage() -> None:
     assert [host["host"] for host in contract["hosts"]] == [
         "Nemotron-Super-120B-A12B",
         "Mixtral-8x22B-141B-A39B",
+        "Nemotron-Ultra-550B-A55B",
     ]
     assert [host["gate_trainable_parameters"] for host in contract["hosts"]] == [
         65552,
         98320,
+        131088,
     ]
 
 

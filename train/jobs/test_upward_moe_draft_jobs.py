@@ -22,4 +22,4 @@ def test_upward_merge_and_materialize_are_cpu_only_and_host_bound() -> None:
         text = (ROOT / relative).read_text()
         assert "--gres" not in text
         assert "#SBATCH --no-requeue" in text
-        assert '[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b ]]' in text
+        assert '"$HOST" == nemotron-ultra' in text

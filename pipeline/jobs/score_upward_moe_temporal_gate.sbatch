@@ -14,7 +14,8 @@ set -euo pipefail
 for variable in HOST PYTHON RUNTIME RUNTIME_MANIFEST_SHA256 ASSESSORS EVALUATION_ROOT OUTPUT SANDBOX_RECEIPT; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
-[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b ]]
+[[ "$HOST" == nemotron-super || "$HOST" == mixtral-8x22b || \
+  "$HOST" == nemotron-ultra ]]
 [[ -f "$ASSESSORS" && ! -L "$ASSESSORS" ]]
 [[ -d "$EVALUATION_ROOT" && ! -L "$EVALUATION_ROOT" ]]
 [[ ! -e "$OUTPUT" && ! -L "$OUTPUT" ]]
