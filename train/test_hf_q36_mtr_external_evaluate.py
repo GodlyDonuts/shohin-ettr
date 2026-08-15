@@ -75,4 +75,4 @@ def test_supervision_in_source_fails(tmp_path):
 
 
 def test_external_screen_and_full_geometry_are_distinct():
-    assert module.SHARD_COUNTS == {256: 4, 1_279: 16}
+    assert module.SHARD_COUNTS == {256: 4, 1_023: 16, 1_279: 16}

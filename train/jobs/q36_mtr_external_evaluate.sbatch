@@ -22,7 +22,7 @@ EXPECTED_ROWS=${EXPECTED_ROWS:-256}
 SHARD_COUNT=${SHARD_COUNT:-4}
 case "$EXPECTED_ROWS:$SHARD_COUNT" in
   256:4) [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^[0-3]$ ]] ;;
-  1279:16) [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] ;;
+  1023:16|1279:16) [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] ;;
   *) false ;;
 esac || { printf 'external geometry differs\n' >&2; exit 2; }
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"

@@ -32,6 +32,7 @@ from build_pcf1_data import (
 
 ROWS = 1_279
 SCREEN_ROWS = 256
+VALIDATION_ROWS = ROWS - SCREEN_ROWS
 SCREEN_SEED = 2026081435
 SOURCE_SCHEMA = "shohin-q36-mtr-external-validation-source-v1"
 ASSESSOR_SCHEMA = "shohin-q36-mtr-external-validation-assessor-v1"
@@ -176,6 +177,17 @@ def build(
     ]
     if len(screen_sources) != SCREEN_ROWS or len(screen_assessors) != SCREEN_ROWS:
         raise Q36MTRExternalValidationError("external screen geometry differs")
+    validation_sources = [
+        row for row in source_rows if row["identity_sha256"] not in screen_identities
+    ]
+    validation_assessors = [
+        row for row in assessor_rows if row["identity_sha256"] not in screen_identities
+    ]
+    if (
+        len(validation_sources) != VALIDATION_ROWS
+        or len(validation_assessors) != VALIDATION_ROWS
+    ):
+        raise Q36MTRExternalValidationError("external validation geometry differs")
 
     output_root.mkdir(parents=True)
     outputs = {
@@ -183,6 +195,14 @@ def build(
         "full_assessors": (output_root / "external_assessors.jsonl", assessor_rows),
         "screen_sources": (output_root / "screen_sources.jsonl", screen_sources),
         "screen_assessors": (output_root / "screen_assessors.jsonl", screen_assessors),
+        "validation_sources": (
+            output_root / "validation_sources.jsonl",
+            validation_sources,
+        ),
+        "validation_assessors": (
+            output_root / "validation_assessors.jsonl",
+            validation_assessors,
+        ),
     }
     receipts: dict[str, dict[str, Any]] = {}
     for name, (path, rows) in outputs.items():
@@ -200,8 +220,12 @@ def build(
         "development_identity_overlap": 0,
         "full_rows": ROWS,
         "screen_rows": SCREEN_ROWS,
+        "validation_rows": VALIDATION_ROWS,
         "full_task_counts": dict(Counter(row["task"] for row in source_rows)),
         "screen_task_counts": dict(Counter(row["task"] for row in screen_sources)),
+        "validation_task_counts": dict(
+            Counter(row["task"] for row in validation_sources)
+        ),
         "inputs": {
             "pairs_sha256": sha256_file(pairs_path),
             "source_bank_sha256s": sorted(bank_hashes),

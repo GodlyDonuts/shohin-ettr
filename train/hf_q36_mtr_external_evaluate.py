@@ -41,7 +41,7 @@ ROLE_ARM = {
     "interpolation": "revision",
 }
 SEED = 2026080816
-SHARD_COUNTS = {256: 4, 1_279: 16}
+SHARD_COUNTS = {256: 4, 1_023: 16, 1_279: 16}
 
 
 class Q36MTRExternalEvaluationError(RuntimeError):

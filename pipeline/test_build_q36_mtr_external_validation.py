@@ -55,6 +55,7 @@ def test_build_materializes_only_external_partition(tmp_path, monkeypatch):
     pairs, banks, holdout = _fixture(tmp_path)
     monkeypatch.setattr(module, "ROWS", holdout)
     monkeypatch.setattr(module, "SCREEN_ROWS", min(3, holdout))
+    monkeypatch.setattr(module, "VALIDATION_ROWS", holdout - min(3, holdout))
     report = module.build(pairs, banks, tmp_path / "output", verify_hashes=False)
     sources = [
         json.loads(line)
@@ -74,6 +75,21 @@ def test_build_materializes_only_external_partition(tmp_path, monkeypatch):
     assert all("assessor" not in row and "answer" not in row for row in sources)
     assert report["development_identity_overlap"] == 0
     assert report["screen_rows"] == min(3, holdout)
+    assert report["validation_rows"] == holdout - min(3, holdout)
+    screen = {
+        json.loads(line)["identity_sha256"]
+        for line in (tmp_path / "output" / "screen_sources.jsonl")
+        .read_text()
+        .splitlines()
+    }
+    validation = {
+        json.loads(line)["identity_sha256"]
+        for line in (tmp_path / "output" / "validation_sources.jsonl")
+        .read_text()
+        .splitlines()
+    }
+    assert len(validation) == holdout - min(3, holdout)
+    assert not screen & validation
 
 
 def test_existing_output_fails_closed(tmp_path):
@@ -91,5 +107,6 @@ def test_source_pair_mismatch_fails(tmp_path, monkeypatch):
     _write_jsonl(banks[0], rows)
     monkeypatch.setattr(module, "ROWS", holdout)
     monkeypatch.setattr(module, "SCREEN_ROWS", min(3, holdout))
+    monkeypatch.setattr(module, "VALIDATION_ROWS", holdout - min(3, holdout))
     with pytest.raises(module.Q36MTRExternalValidationError, match="binding"):
         module.build(pairs, banks, tmp_path / "output", verify_hashes=False)
