@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 
 from temporal_residual_gate import (
+    MultiTrajectoryResidualGate,
+    MultiTrajectoryResidualGateConfig,
     TemporalResidualGate,
     TemporalResidualGateConfig,
     TemporalResidualGateError,
@@ -132,6 +134,81 @@ def test_gate_rejects_invalid_config_or_branch_geometry() -> None:
             revision_a=torch.zeros(1, 2),
             revision_b=torch.zeros(2, 1),
         )
+
+
+def _multi_block() -> MultiTrajectoryResidualGate:
+    return MultiTrajectoryResidualGate(
+        _Native(),
+        MultiTrajectoryResidualGateConfig(
+            hidden_size=2,
+            rank=1,
+            alpha=1.0,
+            branch_names=("owner", "revision", "draft_hidden"),
+            initial_weights=(0.8, 0.1, 0.1),
+        ),
+        branches={
+            "owner": (
+                torch.tensor([[1.0, 0.0]]),
+                torch.tensor([[1.0], [0.0]]),
+            ),
+            "revision": (
+                torch.tensor([[0.0, 1.0]]),
+                torch.tensor([[0.0], [1.0]]),
+            ),
+            "draft_hidden": (
+                torch.tensor([[1.0, 1.0]]),
+                torch.tensor([[0.5], [0.5]]),
+            ),
+        },
+    )
+
+
+def test_multi_trajectory_gate_starts_at_exact_categorical_mix() -> None:
+    block = _multi_block()
+    hidden = torch.tensor([[[4.0, 8.0]]])
+    native = hidden * 2.0
+    owner = torch.tensor([[[4.0, 0.0]]])
+    revision = torch.tensor([[[0.0, 8.0]]])
+    draft_hidden = torch.tensor([[[6.0, 6.0]]])
+    expected = native + owner * 0.8 + revision * 0.1 + draft_hidden * 0.1
+    torch.testing.assert_close(block(hidden), expected)
+    assert block.receipt()["mean_branch_weights"] == pytest.approx(
+        {"owner": 0.8, "revision": 0.1, "draft_hidden": 0.1}
+    )
+    assert block.trainable_parameter_count() == 9
+    assert not block.base.scale.requires_grad
+
+
+def test_multi_trajectory_supervision_moves_probability_to_selected_branch() -> None:
+    block = _multi_block()
+    hidden = torch.tensor([[[1.0, -1.0], [0.5, 0.5]]])
+    response_mask = torch.tensor([[1, 0]])
+    initial = block._gate(hidden).detach()[0, 0, 2]
+    optimizer = torch.optim.AdamW(
+        [block.gate_weight, block.gate_bias], lr=0.1, weight_decay=0.0
+    )
+    for _ in range(100):
+        optimizer.zero_grad(set_to_none=True)
+        block(hidden)
+        loss = block.routing_supervision_loss((0.0, 0.0, 1.0), response_mask)
+        loss.backward()
+        optimizer.step()
+    assert block._gate(hidden).detach()[0, 0, 2] > initial + 0.8
+
+
+def test_multi_trajectory_gate_rejects_branch_order_or_invalid_target() -> None:
+    config = MultiTrajectoryResidualGateConfig(
+        2, 1, 1.0, ("owner", "revision"), (0.9, 0.1)
+    )
+    branch = (torch.zeros(1, 2), torch.zeros(2, 1))
+    with pytest.raises(TemporalResidualGateError):
+        MultiTrajectoryResidualGate(
+            _Native(), config, branches={"revision": branch, "owner": branch}
+        )
+    block = _multi_block()
+    block(torch.ones(1, 1, 2))
+    with pytest.raises(TemporalResidualGateError):
+        block.routing_supervision_loss((1.0, 0.0), torch.ones(1, 1))
 
 
 class _DecoderLayer(nn.Module):
