@@ -19,6 +19,8 @@ def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() 
     assert "train/hf_q36_mtr_train_temporal_gate.py" in entries
     assert "pipeline/analyze_q36_mtr_token_gates.py" in entries
     assert "pipeline/analyze_upward_moe_scaling.py" in entries
+    assert "pipeline/render_upward_moe_scaling.py" in entries
+    assert "pipeline/jobs/render_upward_moe_scaling.sbatch" in entries
     assert "train/temporal_residual_gate.py" in entries
     assert "train/jobs/q36_mtr_train_temporal_gate.sbatch" in entries
     assert "train/hf_q36_mtr_evaluate_temporal_gate.py" in entries

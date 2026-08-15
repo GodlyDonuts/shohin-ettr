@@ -70,6 +70,7 @@ pipeline/jobs/q36_mtr_sparse_router_cv.sbatch
 pipeline/jobs/q36_mtr_stack_sparse_commit.sbatch
 pipeline/jobs/q36_mtr_synthesis_consensus.sbatch
 pipeline/jobs/q36_mtr_validate_commit_application.sbatch
+pipeline/jobs/render_upward_moe_scaling.sbatch
 pipeline/lift_nemotron_super_adapter_to_ultra.py
 pipeline/merge_q36_mtr_drafts.py
 pipeline/merge_q36_mtr_evaluations.py
@@ -80,6 +81,7 @@ pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_evidence.py
 pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
+pipeline/render_upward_moe_scaling.py
 pipeline/score_mixtral_8x22b_screen.py
 pipeline/score_nemotron_super_screen.py
 pipeline/score_nemotron_ultra_screen.py
