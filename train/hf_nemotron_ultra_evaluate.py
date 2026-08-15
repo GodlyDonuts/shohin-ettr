@@ -158,7 +158,9 @@ def load_transferred_checkpoint(
         if parameter.requires_grad
     }
     if (
-        payload.get("schema") != CHECKPOINT_SCHEMA
+        not isinstance(payload, dict)
+        or not isinstance(report, dict)
+        or payload.get("schema") != CHECKPOINT_SCHEMA
         or not isinstance(state, dict)
         or set(state) != set(current)
         or not isinstance(metadata, dict)

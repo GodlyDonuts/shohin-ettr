@@ -129,3 +129,6 @@ def test_ultra_transfer_restore_is_hash_bound(
     report.write_text(json.dumps(altered), encoding="utf-8")
     with pytest.raises(NemotronUltraEvaluationError, match="checkpoint differs"):
         load_transferred_checkpoint(checkpoint, report, _TinyRevision())
+    torch.save(["not", "a", "checkpoint"], checkpoint)
+    with pytest.raises(NemotronUltraEvaluationError, match="checkpoint differs"):
+        load_transferred_checkpoint(checkpoint, report, _TinyRevision())
