@@ -707,6 +707,19 @@
       "status": "not_staged_pending_super_measurement_and_distributed_runtime"
     }
   ],
+  "upward_execution_static_revalidation": {
+    "observed_at": "2026-08-15T13:03:16-04:00",
+    "source_head_before_receipt_update": "cc25f3a5f8bb0fb15729f42c58f715c6f7218fca",
+    "scope": "Nemotron_Super_120B_A12B_and_Nemotron_Ultra_550B_A55B_mechanics_training_evaluation_scoring_and_job_wrappers",
+    "focused_tests_passed": 48,
+    "focused_tests_failed": 0,
+    "black_checked_python_files": 11,
+    "ruff_checked_python_files": 11,
+    "py_compile_checked_python_files": 11,
+    "bash_syntax_checked_job_wrappers": 7,
+    "git_diff_check": "PASS",
+    "result": "PASS"
+  },
   "current_upward_resource_state": {
     "observed_at": "2026-08-15T12:52:36-04:00",
     "newton_quota_used_kib": 989920264,
