@@ -1,0 +1,44 @@
+{
+  "schema": "shohin-q36-mixtral-storage-reclamation-batch-v1",
+  "status": "authorized_preexecution_manifest",
+  "batch": 2,
+  "purpose": "Remove closed pre-Q36 ETTR runtime tar copies to increase post-Qwen/post-Super Mixtral staging margin.",
+  "host": "newton",
+  "owner": "sa305415",
+  "manifest_totals": {
+    "allocated_bytes": 17430728704,
+    "inodes": 21,
+    "targets": 21
+  },
+  "preconditions": {
+    "all_targets_regular_nonsymlink_nlink_one": true,
+    "all_targets_resolve_to_literal_absolute_paths": true,
+    "all_targets_owned_by_sa305415": true,
+    "queued_job_reference_count": 0,
+    "active_q36_or_upward_moe_artifacts": 0
+  },
+  "targets": [
+    {"mtime_epoch": 1785613535, "allocated_bytes": 834740224, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-bb65958-r1.tar"},
+    {"mtime_epoch": 1785593358, "allocated_bytes": 834674688, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-cf875bc-r1.tar"},
+    {"mtime_epoch": 1785719428, "allocated_bytes": 832876544, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-ettr-dd6efea-r1.tar"},
+    {"mtime_epoch": 1785717377, "allocated_bytes": 832843776, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-ettr-6fd7c94-r1.tar"},
+    {"mtime_epoch": 1785715594, "allocated_bytes": 832815104, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-ettr-9bc1769aa0bdf35aa850da2ef936bcaa13e354e5.tar"},
+    {"mtime_epoch": 1785713026, "allocated_bytes": 832774144, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-ettr-651d5102ec385cf995e6a4243deda93e109e0c1d.tar"},
+    {"mtime_epoch": 1785710926, "allocated_bytes": 832720896, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-ettr-ebc8483.tar"},
+    {"mtime_epoch": 1785616826, "allocated_bytes": 831156224, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-b45c046-r4.tar"},
+    {"mtime_epoch": 1785617186, "allocated_bytes": 831156224, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-78ed30d-r1.tar"},
+    {"mtime_epoch": 1785616503, "allocated_bytes": 831143936, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-b45c046-r3.tar"},
+    {"mtime_epoch": 1785646061, "allocated_bytes": 830316544, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/.shohin_ettr_occurrence_binding_9841b7d_r2_full.tar.rejected-truncated"},
+    {"mtime_epoch": 1785618885, "allocated_bytes": 827506688, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-62082b4-r1.tar"},
+    {"mtime_epoch": 1785614485, "allocated_bytes": 827445248, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-2d8c91d-r1.tar"},
+    {"mtime_epoch": 1785613868, "allocated_bytes": 827432960, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-bb65958-r2.tar"},
+    {"mtime_epoch": 1785609283, "allocated_bytes": 827412480, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-3e0aecc-r1.tar"},
+    {"mtime_epoch": 1785608000, "allocated_bytes": 827392000, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-89b41c6-r1.tar"},
+    {"mtime_epoch": 1785596004, "allocated_bytes": 827387904, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-a569c32-r1.tar"},
+    {"mtime_epoch": 1785594125, "allocated_bytes": 827383808, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-7e50a6d-r1.tar"},
+    {"mtime_epoch": 1785594529, "allocated_bytes": 827383808, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-20d6394-r1.tar"},
+    {"mtime_epoch": 1785593678, "allocated_bytes": 827371520, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin-runtime-cf875bc-r2.tar"},
+    {"mtime_epoch": 1785580003, "allocated_bytes": 826793984, "path": "/lustre/fs1/home/sa305415/shohin/scratchpad/shohin_ettr_runtime_f174a58_1785580001.tar"}
+  ],
+  "recovery": null
+}
