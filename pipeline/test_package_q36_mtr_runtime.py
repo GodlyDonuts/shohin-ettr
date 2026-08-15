@@ -25,7 +25,9 @@ def test_production_q36_allowlist_is_sorted_closed_and_exactly_one_dispatcher() 
     assert "pipeline/score_q36_mtr_temporal_gate.py" in entries
     assert "pipeline/jobs/q36_mtr_score_temporal_gate.sbatch" in entries
     assert "train/hf_nemotron_super_mechanics.py" in entries
+    assert "train/hf_nemotron_super_train_revision.py" in entries
     assert "train/jobs/nemotron_super_mechanics.sbatch" in entries
+    assert "train/jobs/nemotron_super_train_revision.sbatch" in entries
     assert "train/nemotron_super_post_mixer_revision.py" in entries
     assert "train/q36_upward_moe_host.py" in entries
 
