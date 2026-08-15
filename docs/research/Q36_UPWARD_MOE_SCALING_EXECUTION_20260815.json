@@ -563,6 +563,44 @@
     },
     "scientific_result_status": "not_scored_until_all_frozen_validation_arms_complete"
   },
+  "qwen_control_validation_backfill_acceleration": {
+    "applied_at": "2026-08-15T12:59:03-04:00",
+    "scientific_bytes_changed": false,
+    "completed_or_running_jobs_cancelled": 0,
+    "purpose": "scheduler_backfill_only",
+    "draft_hidden": {
+      "array": 759817,
+      "pending_shards": "0:15",
+      "original_time_limit_seconds": 3600,
+      "revised_time_limit_seconds": 600,
+      "comparable_screen_array": 759803,
+      "comparable_completed_shard_seconds": [
+        330,
+        330,
+        360,
+        342
+      ],
+      "measured_max_seconds": 360,
+      "required_25_percent_safety_seconds": 450,
+      "actual_safety_over_measured_max_percent": 66.67
+    },
+    "interpolation": {
+      "array": 759818,
+      "pending_shards": "0:15",
+      "original_time_limit_seconds": 3600,
+      "revised_time_limit_seconds": 600,
+      "comparable_screen_array": 759804,
+      "comparable_completed_shard_seconds": [
+        423,
+        338,
+        353,
+        361
+      ],
+      "measured_max_seconds": 423,
+      "required_25_percent_safety_seconds": 529,
+      "actual_safety_over_measured_max_percent": 41.84
+    }
+  },
   "ultra_snapshot_staging_preparation": {
     "git_commit": "5976ce33acc8b9d29440baf6f0866e7b9c07e7a2",
     "wrapper": "pipeline/jobs/q36_stage_nemotron_ultra.sbatch",
