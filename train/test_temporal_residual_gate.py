@@ -203,6 +203,31 @@ def test_multi_trajectory_supervision_moves_probability_to_selected_branch() -> 
     assert block._gate(hidden).detach()[0, 0, 2] > initial + 0.8
 
 
+def test_correct_set_mass_supervision_preserves_any_correct_branch() -> None:
+    block = _multi_block()
+    hidden = torch.tensor([[[1.0, -1.0]]])
+    response_mask = torch.tensor([[1]])
+    block(hidden)
+    all_correct = block.routing_supervision_loss(
+        (1.0 / 3.0,) * 3,
+        response_mask,
+        objective="correct_set_mass",
+    )
+    owner_or_revision = block.routing_supervision_loss(
+        (0.5, 0.5, 0.0),
+        response_mask,
+        objective="correct_set_mass",
+    )
+    soft_cross_entropy = block.routing_supervision_loss((0.5, 0.5, 0.0), response_mask)
+    torch.testing.assert_close(all_correct, torch.tensor(0.0))
+    torch.testing.assert_close(owner_or_revision, -torch.log(torch.tensor(0.9)))
+    assert soft_cross_entropy > owner_or_revision
+    with pytest.raises(TemporalResidualGateError):
+        block.routing_supervision_loss(
+            (1.0, 0.0, 0.0), response_mask, objective="unknown"
+        )
+
+
 def test_geometry_router_preserves_initial_mix_and_exposes_disagreement() -> None:
     block = _multi_block("trajectory_geometry")
     hidden = torch.tensor([[[4.0, 8.0], [2.0, -1.0]]])

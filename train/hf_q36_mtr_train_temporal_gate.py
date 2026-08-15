@@ -68,6 +68,12 @@ TRI_HIERARCHICAL_SCHEMA = "shohin-q36-mtr-tri-hierarchical-gate-training-v1"
 TRI_HIERARCHICAL_CHECKPOINT_SCHEMA = (
     "shohin-q36-mtr-tri-hierarchical-gate-checkpoint-v1"
 )
+TRI_HIERARCHICAL_SET_MASS_SCHEMA = (
+    "shohin-q36-mtr-tri-hierarchical-set-mass-gate-training-v1"
+)
+TRI_HIERARCHICAL_SET_MASS_CHECKPOINT_SCHEMA = (
+    "shohin-q36-mtr-tri-hierarchical-set-mass-gate-checkpoint-v1"
+)
 GATE_SEED = 2026081511
 GATE_LEARNING_RATE = 2e-4
 GATE_GRADIENT_ACCUMULATION = 8
@@ -265,10 +271,17 @@ def _routing_rows_with_sha256(
         "tri_trajectory",
         "tri_geometry",
         "tri_hierarchical",
+        "tri_hierarchical_set_mass",
     }
     branch_names = (
         TRI_BRANCHES
-        if architecture in {"tri_trajectory", "tri_geometry", "tri_hierarchical"}
+        if architecture
+        in {
+            "tri_trajectory",
+            "tri_geometry",
+            "tri_hierarchical",
+            "tri_hierarchical_set_mass",
+        }
         else MULTI_BRANCHES
     )
     expected_schema = {
@@ -277,6 +290,7 @@ def _routing_rows_with_sha256(
         "tri_trajectory": TRI_ROW_SCHEMA,
         "tri_geometry": TRI_ROW_SCHEMA,
         "tri_hierarchical": TRI_ROW_SCHEMA,
+        "tri_hierarchical_set_mass": TRI_ROW_SCHEMA,
     }.get(architecture)
     if expected_schema is None:
         raise Q36MTRTemporalGateTrainingError("temporal architecture differs")
@@ -441,6 +455,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         "tri_trajectory",
         "tri_geometry",
         "tri_hierarchical",
+        "tri_hierarchical_set_mass",
     }
     if architecture not in {
         "temporal",
@@ -448,6 +463,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         "tri_trajectory",
         "tri_geometry",
         "tri_hierarchical",
+        "tri_hierarchical_set_mass",
     }:
         raise Q36MTRTemporalGateTrainingError("temporal gate architecture differs")
     presentations = {
@@ -456,6 +472,7 @@ def _validate_args(args: argparse.Namespace) -> None:
         "tri_trajectory": TRI_PRESENTATIONS,
         "tri_geometry": TRI_PRESENTATIONS,
         "tri_hierarchical": TRI_PRESENTATIONS,
+        "tri_hierarchical_set_mass": TRI_PRESENTATIONS,
     }[architecture]
     data_seed = {
         "temporal": REVISION_DATA_SEED,
@@ -463,10 +480,17 @@ def _validate_args(args: argparse.Namespace) -> None:
         "tri_trajectory": TRI_DATA_SEED,
         "tri_geometry": TRI_DATA_SEED,
         "tri_hierarchical": TRI_DATA_SEED,
+        "tri_hierarchical_set_mass": TRI_DATA_SEED,
     }[architecture]
     initial_weights = (
         TRI_INITIAL_WEIGHTS
-        if architecture in {"tri_trajectory", "tri_geometry", "tri_hierarchical"}
+        if architecture
+        in {
+            "tri_trajectory",
+            "tri_geometry",
+            "tri_hierarchical",
+            "tri_hierarchical_set_mass",
+        }
         else MULTI_INITIAL_WEIGHTS
     )
     expected = {
@@ -518,10 +542,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "tri_trajectory",
         "tri_geometry",
         "tri_hierarchical",
+        "tri_hierarchical_set_mass",
     }
-    tri = architecture in {"tri_trajectory", "tri_geometry", "tri_hierarchical"}
-    geometry = architecture in {"tri_geometry", "tri_hierarchical"}
-    hierarchical = architecture == "tri_hierarchical"
+    tri = architecture in {
+        "tri_trajectory",
+        "tri_geometry",
+        "tri_hierarchical",
+        "tri_hierarchical_set_mass",
+    }
+    geometry = architecture in {
+        "tri_geometry",
+        "tri_hierarchical",
+        "tri_hierarchical_set_mass",
+    }
+    hierarchical = architecture in {
+        "tri_hierarchical",
+        "tri_hierarchical_set_mass",
+    }
+    set_mass = architecture == "tri_hierarchical_set_mass"
     branch_names = TRI_BRANCHES if tri else MULTI_BRANCHES
     initial_weights = TRI_INITIAL_WEIGHTS if tri else MULTI_INITIAL_WEIGHTS
     if not torch.cuda.is_available():
@@ -641,12 +679,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         )
         checkpoint_schema = (
-            TRI_HIERARCHICAL_CHECKPOINT_SCHEMA
-            if hierarchical
+            TRI_HIERARCHICAL_SET_MASS_CHECKPOINT_SCHEMA
+            if set_mass
             else (
-                TRI_GEOMETRY_CHECKPOINT_SCHEMA
-                if geometry
-                else TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+                TRI_HIERARCHICAL_CHECKPOINT_SCHEMA
+                if hierarchical
+                else (
+                    TRI_GEOMETRY_CHECKPOINT_SCHEMA
+                    if geometry
+                    else TRI_CHECKPOINT_SCHEMA if tri else MULTI_CHECKPOINT_SCHEMA
+                )
             )
         )
     else:
@@ -745,7 +787,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
             if args.routing_supervision_weight and routing_target is not None:
                 routing_loss = model.routing_supervision_loss(
-                    routing_target, routing_mask
+                    routing_target,
+                    routing_mask,
+                    objective=(
+                        "correct_set_mass" if set_mass else "soft_cross_entropy"
+                    ),
                 )
                 routing_term = args.routing_supervision_weight * routing_loss
                 loss = routing_term if loss is None else loss + routing_term
@@ -798,27 +844,35 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise Q36MTRTemporalGateTrainingError("temporal gate update is absent")
     metadata = {
         "schema": (
-            TRI_HIERARCHICAL_SCHEMA
-            if hierarchical
+            TRI_HIERARCHICAL_SET_MASS_SCHEMA
+            if set_mass
             else (
-                TRI_GEOMETRY_SCHEMA
-                if geometry
-                else TRI_SCHEMA if tri else MULTI_SCHEMA if categorical else SCHEMA
+                TRI_HIERARCHICAL_SCHEMA
+                if hierarchical
+                else (
+                    TRI_GEOMETRY_SCHEMA
+                    if geometry
+                    else TRI_SCHEMA if tri else MULTI_SCHEMA if categorical else SCHEMA
+                )
             )
         ),
         "architecture": (
-            "q36-tokenwise-tri-trajectory-hierarchical-gate-v1"
-            if hierarchical
+            "q36-tokenwise-tri-trajectory-hierarchical-set-mass-gate-v1"
+            if set_mass
             else (
-                "q36-tokenwise-tri-trajectory-geometry-gate-v1"
-                if geometry
+                "q36-tokenwise-tri-trajectory-hierarchical-gate-v1"
+                if hierarchical
                 else (
-                    "q36-tokenwise-tri-trajectory-residual-gate-v1"
-                    if tri
+                    "q36-tokenwise-tri-trajectory-geometry-gate-v1"
+                    if geometry
                     else (
-                        "q36-tokenwise-multi-trajectory-residual-gate-v1"
-                        if categorical
-                        else "q36-tokenwise-temporal-residual-gate-v1"
+                        "q36-tokenwise-tri-trajectory-residual-gate-v1"
+                        if tri
+                        else (
+                            "q36-tokenwise-multi-trajectory-residual-gate-v1"
+                            if categorical
+                            else "q36-tokenwise-temporal-residual-gate-v1"
+                        )
                     )
                 )
             )
@@ -842,6 +896,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "causal_loss_weight": args.causal_loss_weight,
         "routing_supervision_targets": (
             "per-row-soft-target" if categorical else ROUTING_TARGETS
+        ),
+        "routing_supervision_objective": (
+            "correct_set_mass" if set_mass else "soft_cross_entropy"
         ),
         "routing_supervision_mask": "response_tokens_only",
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
@@ -922,6 +979,7 @@ def parse_args() -> argparse.Namespace:
             "tri_trajectory",
             "tri_geometry",
             "tri_hierarchical",
+            "tri_hierarchical_set_mass",
         ),
         default="temporal",
     )

@@ -28,7 +28,8 @@ source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 ARCHITECTURE=${ARCHITECTURE:-temporal}
 [[ "$ARCHITECTURE" == temporal || "$ARCHITECTURE" == multi_trajectory || \
   "$ARCHITECTURE" == tri_trajectory || "$ARCHITECTURE" == tri_geometry || \
-  "$ARCHITECTURE" == tri_hierarchical ]] || \
+  "$ARCHITECTURE" == tri_hierarchical || \
+  "$ARCHITECTURE" == tri_hierarchical_set_mass ]] || \
   q36_die "temporal gate architecture differs"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
@@ -40,13 +41,15 @@ q36_verify_sha256 "$OWNER_CHECKPOINT" "$(q36_sha256 "$OWNER_CHECKPOINT")"
 q36_verify_sha256 "$REVISION_CHECKPOINT" "$(q36_sha256 "$REVISION_CHECKPOINT")"
 architecture_args=(--architecture "$ARCHITECTURE")
 if [[ "$ARCHITECTURE" == multi_trajectory || "$ARCHITECTURE" == tri_trajectory || \
-  "$ARCHITECTURE" == tri_geometry || "$ARCHITECTURE" == tri_hierarchical ]]; then
+  "$ARCHITECTURE" == tri_geometry || "$ARCHITECTURE" == tri_hierarchical || \
+  "$ARCHITECTURE" == tri_hierarchical_set_mass ]]; then
   [[ -n "${DRAFT_HIDDEN_CHECKPOINT:-}" ]] || \
     q36_die "multi-trajectory draft-hidden checkpoint is required"
   q36_verify_sha256 "$DRAFT_HIDDEN_CHECKPOINT" "$(q36_sha256 "$DRAFT_HIDDEN_CHECKPOINT")"
   architecture_args+=(--draft-hidden-checkpoint "$DRAFT_HIDDEN_CHECKPOINT")
   if [[ "$ARCHITECTURE" == tri_trajectory || "$ARCHITECTURE" == tri_geometry || \
-    "$ARCHITECTURE" == tri_hierarchical ]]; then
+    "$ARCHITECTURE" == tri_hierarchical || \
+    "$ARCHITECTURE" == tri_hierarchical_set_mass ]]; then
     architecture_args+=(
       --max-rows 1189
       --data-seed 2026081517
@@ -80,6 +83,7 @@ if [[ -n "${CAUSAL_LOSS_WEIGHT:-}" ]]; then
   [[ "$ARCHITECTURE" == multi_trajectory || "$ARCHITECTURE" == tri_trajectory || \
     "$ARCHITECTURE" == tri_geometry || \
     "$ARCHITECTURE" == tri_hierarchical || \
+    "$ARCHITECTURE" == tri_hierarchical_set_mass || \
     "$CAUSAL_LOSS_WEIGHT" == "1.0" ]] || \
     q36_die "temporal causal loss cannot be disabled"
   causal=(--causal-loss-weight "$CAUSAL_LOSS_WEIGHT")

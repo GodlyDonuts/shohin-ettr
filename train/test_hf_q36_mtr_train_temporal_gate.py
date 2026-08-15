@@ -275,6 +275,8 @@ def test_tri_settings_bind_retention_aware_geometry() -> None:
     module._validate_args(args)
     args.architecture = "tri_hierarchical"
     module._validate_args(args)
+    args.architecture = "tri_hierarchical_set_mass"
+    module._validate_args(args)
     args.initial_branch_weights = module.MULTI_INITIAL_WEIGHTS
     with pytest.raises(module.Q36MTRTemporalGateTrainingError):
         module._validate_args(args)

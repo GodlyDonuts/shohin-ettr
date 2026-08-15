@@ -429,7 +429,11 @@ class MultiTrajectoryResidualGate(nn.Module):
         return route(hidden_states.float())
 
     def routing_supervision_loss(
-        self, target: Sequence[float], response_mask: torch.Tensor
+        self,
+        target: Sequence[float],
+        response_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
     ) -> torch.Tensor:
         gate = self._last_gate
         if (
@@ -440,12 +444,18 @@ class MultiTrajectoryResidualGate(nn.Module):
             or response_mask.shape != gate.shape[:-1]
             or response_mask.device != gate.device
             or not response_mask.bool().any()
+            or objective not in {"soft_cross_entropy", "correct_set_mass"}
         ):
             raise TemporalResidualGateError(
                 "multi-trajectory routing supervision differs"
             )
         target_tensor = torch.tensor(target, device=gate.device, dtype=torch.float32)
-        losses = -(gate.float().clamp_min(1.0e-8).log() * target_tensor).sum(dim=-1)
+        probabilities = gate.float().clamp_min(1.0e-8)
+        if objective == "correct_set_mass":
+            support = target_tensor > 0.0
+            losses = -probabilities[..., support].sum(dim=-1).clamp_max(1.0).log()
+        else:
+            losses = -(probabilities.log() * target_tensor).sum(dim=-1)
         return losses.masked_select(response_mask.bool()).mean()
 
     def forward(
@@ -721,7 +731,11 @@ class MultiTrajectoryGatedProductModel(nn.Module):
         }
 
     def routing_supervision_loss(
-        self, target: Sequence[float], response_mask: torch.Tensor
+        self,
+        target: Sequence[float],
+        response_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
     ) -> torch.Tensor:
         if not self.blocks:
             raise TemporalResidualGateError(
@@ -729,7 +743,9 @@ class MultiTrajectoryGatedProductModel(nn.Module):
             )
         return torch.stack(
             [
-                block.routing_supervision_loss(target, response_mask)
+                block.routing_supervision_loss(
+                    target, response_mask, objective=objective
+                )
                 for block in self.blocks
             ]
         ).mean()

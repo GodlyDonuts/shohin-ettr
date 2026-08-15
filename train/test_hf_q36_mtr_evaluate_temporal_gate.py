@@ -164,6 +164,7 @@ def test_multi_loader_binds_two_sibling_trajectories(monkeypatch) -> None:
         "initial_branch_weights": list(module.MULTI_INITIAL_WEIGHTS),
         "router_features": "hidden_only",
         "routing_structure": "flat",
+        "routing_supervision_objective": "soft_cross_entropy",
         "trainable_master_dtype": module.TRAINABLE_MASTER_DTYPE,
         "role_receipt": role_receipt,
     }
@@ -216,6 +217,7 @@ def test_geometry_loader_binds_tri_branch_features(monkeypatch) -> None:
         "initial_branch_weights": list(module.TRI_INITIAL_WEIGHTS),
         "router_features": "trajectory_geometry",
         "routing_structure": "flat",
+        "routing_supervision_objective": "soft_cross_entropy",
         "trainable_master_dtype": module.TRAINABLE_MASTER_DTYPE,
         "role_receipt": role_receipt,
     }
@@ -267,6 +269,7 @@ def test_hierarchical_loader_binds_decoupled_routing(monkeypatch) -> None:
         "initial_branch_weights": list(module.TRI_INITIAL_WEIGHTS),
         "router_features": "trajectory_geometry",
         "routing_structure": "hierarchical",
+        "routing_supervision_objective": "soft_cross_entropy",
         "trainable_master_dtype": module.TRAINABLE_MASTER_DTYPE,
         "role_receipt": role_receipt,
     }
@@ -283,3 +286,17 @@ def test_hierarchical_loader_binds_decoupled_routing(monkeypatch) -> None:
     )
     assert observed == metadata
     assert model.config.routing_structure == "hierarchical"
+    metadata["architecture"] = (
+        "q36-tokenwise-tri-trajectory-hierarchical-set-mass-gate-v1"
+    )
+    metadata["routing_supervision_objective"] = "correct_set_mass"
+    set_model, set_metadata, _, _ = module.load_multi_trajectory_gate_model(
+        Path("model"),
+        Path("owner"),
+        Path("revision"),
+        Path("hidden"),
+        Path("set-gate"),
+        architecture="tri_hierarchical_set_mass",
+    )
+    assert set_metadata == metadata
+    assert set_model.config.routing_structure == "hierarchical"
