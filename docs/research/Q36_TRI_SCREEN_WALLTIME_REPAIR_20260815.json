@@ -1,0 +1,58 @@
+{
+  "schema": "shohin-q36-tri-screen-walltime-repair-v1",
+  "status": "single_shard_replacement_submitted",
+  "scientific_result": false,
+  "variant": "tri_trajectory_gate",
+  "failed_shard": {
+    "job_id": 760239,
+    "shard_index": 0,
+    "state": "TIMEOUT",
+    "elapsed_seconds": 1338,
+    "time_limit_seconds": 1320,
+    "node": "evc40",
+    "restarts": 0,
+    "exit_code": "0:0",
+    "stderr_sha256": "2f9c7a79244a927e8bb06c6ce75b694c49a575f45aefcc15d1699433f76ee305",
+    "stdout_sha256": "d16f9e564719bde8a944d6690b747a6d3d02ab102cbc4c42893dccac49efec8c",
+    "report_published": false,
+    "candidates_published": false
+  },
+  "completed_peer": {
+    "job_id": 760240,
+    "shard_index": 1,
+    "state": "COMPLETED",
+    "elapsed_seconds": 1208,
+    "rows": 64,
+    "unique_identities": 64,
+    "assessor_access_count": 0,
+    "report_sha256": "01a0f88c87fde1dd687e30904326ee4d7d10872764b5d5907f560e49d4ab9260",
+    "candidates_sha256": "8e9567e5d8c96fd122a6a35972510e081705f3275be31f2ac5e9305387f2f1d8"
+  },
+  "replacement": {
+    "job_id": 760263,
+    "shard_index": 0,
+    "time_limit_seconds": 1800,
+    "requeue": false,
+    "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "gate_checkpoint_sha256": "04988e31c1cc854d76a07cee39770922c759b0f33c7b1ecf05b010447afe267b",
+    "runtime_manifest_sha256": "c514fc0397758ff2b1f2e374aeae4a0ceab3592c2cd07c2ea3c76b5d024ef456",
+    "seed": 2026080816,
+    "generation_mode": "greedy",
+    "max_new_tokens": 768
+  },
+  "downstream": {
+    "score_job": 760199,
+    "dependency": "afterok:760263:760240:760241:760242",
+    "tri_geometry_pending_time_limit_seconds": 1800,
+    "tri_hierarchical_pending_time_limit_seconds": 1800
+  },
+  "scientific_contract": {
+    "identity_partition_changed": false,
+    "model_changed": false,
+    "checkpoint_changed": false,
+    "seed_changed": false,
+    "generation_changed": false,
+    "healthy_work_canceled": false,
+    "duplicate_output_authorized": false
+  }
+}
