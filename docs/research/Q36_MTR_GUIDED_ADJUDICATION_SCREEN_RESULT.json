@@ -1,0 +1,97 @@
+{
+  "schema": "shohin-q36-mtr-guided-adjudication-screen-result-v1",
+  "status": "complete_negative_screen",
+  "date": "2026-08-14",
+  "host": "Qwen3.6-35B-A3B",
+  "split": "development_shards_00_03",
+  "rows": 322,
+  "architecture": {
+    "name": "guided_multi_trajectory_adjudication",
+    "candidate_arms": [
+      "hierarchy",
+      "interpolation",
+      "direct",
+      "offset_one",
+      "level_two",
+      "challenger"
+    ],
+    "guidance": "nested_pattern_consensus",
+    "generation": "greedy",
+    "max_new_tokens": 768,
+    "seed": 2026081428
+  },
+  "result": {
+    "guided_correct": 160,
+    "guided_accuracy": 0.4968944099378882,
+    "hierarchy_correct": 167,
+    "hierarchy_accuracy": 0.5186335403726708,
+    "delta_count": -7,
+    "delta_points": -2.1739130434782608,
+    "paired": {
+      "both_correct": 151,
+      "guided_only_correct": 9,
+      "hierarchy_only_correct": 16,
+      "both_wrong": 146,
+      "mcnemar_exact_two_sided_p": 0.2295229434967041
+    },
+    "oracle_correct": 176,
+    "oracle_gain_over_hierarchy_count": 9,
+    "domains": {
+      "bbh_logic": {
+        "rows": 167,
+        "guided_correct": 89,
+        "hierarchy_correct": 89
+      },
+      "math500": {
+        "rows": 143,
+        "guided_correct": 62,
+        "hierarchy_correct": 69
+      },
+      "mbpp": {
+        "rows": 12,
+        "guided_correct": 9,
+        "hierarchy_correct": 9
+      }
+    }
+  },
+  "decision": {
+    "promotion": false,
+    "reason": "guided adjudication did not exceed the hierarchy on the fixed first-four-shard screen",
+    "unused_expansion_jobs_cancelled": [
+      759696,
+      759697,
+      759698,
+      759699,
+      759700,
+      759701,
+      759702,
+      759703,
+      759704,
+      759705,
+      759706,
+      759707,
+      759708,
+      759709
+    ]
+  },
+  "artifacts": {
+    "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/guided_adjudication_cf33eae2_r1",
+    "comparison_sha256": "eb3560b4cabd948d9e58be986bccfa4447f2a3e6e81b2fc228c6941e2b753c7d",
+    "candidate_sha256s": [
+      "9b6bcd8eb562382cfcf8e2c92464c61b4002ff2e7d61359dfcc6e64a4bf1c15a",
+      "038d82abf7dddbf4d58a93338bb1be3bba7692dd2f84fe07758c079f1cc8e36d",
+      "685a1e69ab8d5605e21c5ed77b6658df5b08f7cd2a7abf33fd8645c49a02c8fe",
+      "c217f2b75d2ac1e81cbe208a16bafe9905fbbff83064f107d12c525b20140065"
+    ],
+    "generation_script_sha256": "faefd903fd99f56394911e58e0119ae5f900150330250eed829f5404eb22f571",
+    "wrapper_sha256": "7b0f757a452af9bf0e3985d4fe8b94f3f74586bf20d91f16476264fc0915a8e0"
+  },
+  "jobs": {
+    "generation_array": 759664,
+    "score_jobs": [759665, 759666, 759667, 759668],
+    "comparison": 759669,
+    "promotion_gate": 759695,
+    "promotion_gate_exit_code": "3:0"
+  },
+  "conclusion": "Supplying the learned consensus answer as natural-language guidance did not improve the MoE adjudicator. It preserved logic and code but lost seven math answers. The prompt-only guided path is rejected; the fresh source-disjoint matched-arm benchmark remains the active experiment."
+}
