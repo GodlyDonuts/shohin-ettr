@@ -81,12 +81,14 @@ def _load_score(path: Path) -> dict[str, Any]:
 
 
 def _variant_name(path: Path, arm: str, occupied: set[str]) -> str:
-    parent = path.parent.name.casefold()
+    lineage = "/".join(
+        parent.name.casefold() for parent in (path.parent.parent, path.parent)
+    )
     if arm == "multi_trajectory_gate":
         candidate = "multi_trajectory"
-    elif "supervised" in parent:
+    elif "supervised" in lineage:
         candidate = "response_supervised"
-    elif "temporal" in parent:
+    elif "temporal" in lineage:
         candidate = "causal_only"
     else:
         candidate = path.stem

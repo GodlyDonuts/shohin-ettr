@@ -72,8 +72,8 @@ def test_analysis_rejects_mismatched_baseline(tmp_path) -> None:
 
 
 def test_analysis_supports_full_validation_geometry(tmp_path) -> None:
-    first = tmp_path / "supervised" / "score.json"
-    second = tmp_path / "multi" / "score.json"
+    first = tmp_path / "q36_supervised" / "validation" / "score.json"
+    second = tmp_path / "q36_multi" / "validation" / "score.json"
     unchanged = set(range(420))
     _score(first, "temporal_gate", set(range(530)), unchanged, rows=1023)
     _score(second, "multi_trajectory_gate", set(range(550)), unchanged, rows=1023)
