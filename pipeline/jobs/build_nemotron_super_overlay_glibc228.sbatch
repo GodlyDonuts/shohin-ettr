@@ -102,8 +102,8 @@ import torch
 root = Path(sys.argv[1]).resolve(strict=True)
 causal_root = Path(sys.argv[2]).resolve(strict=True)
 source_commit, wheel_sha256, parent_manifest_sha256 = sys.argv[3:]
-import mamba_ssm
 import selective_scan_cuda
+mamba_spec = importlib.util.find_spec("mamba_ssm")
 
 if (
     importlib.metadata.version("mamba-ssm") != "2.3.2.post1"
@@ -111,7 +111,9 @@ if (
     or importlib.metadata.version("causal-conv1d") != "1.6.2.post1"
     or torch.__version__ != "2.6.0+cu124"
     or torch.version.cuda != "12.4"
-    or not Path(mamba_ssm.__file__).resolve().is_relative_to(root)
+    or mamba_spec is None
+    or mamba_spec.origin is None
+    or not Path(mamba_spec.origin).resolve().is_relative_to(root)
     or not Path(modelopt.__file__).resolve().is_relative_to(root)
 ):
     raise SystemExit("Nemotron Super rebuilt overlay package binding differs")
@@ -160,7 +162,8 @@ receipt = {
     "cuda": torch.version.cuda,
     "scientific_rows_read": 0,
     "gpu_requested": False,
-    "kernel_import_passed": True,
+    "selective_scan_extension_import_passed": True,
+    "full_mamba_triton_import_deferred_to_h100_mechanics": True,
 }
 (root / "overlay_receipt.json").write_text(
     json.dumps(receipt, indent=2, sort_keys=True) + "\n"

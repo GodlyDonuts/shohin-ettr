@@ -16,6 +16,9 @@ def test_rebuilds_mamba_on_newton_glibc_without_science() -> None:
     assert '"libstdc++.so" in dynamic_libraries' in source
     assert '"scientific_rows_read": 0' in source
     assert '"gpu_requested": False' in source
+    assert "import selective_scan_cuda" in source
+    assert "import mamba_ssm\n" not in source
+    assert '"full_mamba_triton_import_deferred_to_h100_mechanics": True' in source
     assert "sha256sum -c SHA256SUMS" in source
 
 
