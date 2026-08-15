@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-mixtral-8x22b-upward-moe-preparation-v1",
-  "status": "host_attachment_and_two_h100_mechanics_code_prepared_not_downloaded_not_scheduled",
+  "status": "host_attachment_mechanics_fixed_draft_fit_matched_eval_and_score_code_prepared_not_downloaded_not_scheduled",
   "date": "2026-08-15",
   "purpose": "Prepare a Transformers-native cross-family MoE point above Nemotron Super in active parameters while preserving the exact Shohin post-MoE residual treatment.",
   "host": {
@@ -36,10 +36,21 @@
     "attachment_code": "train/mixtral_post_mlp_revision.py",
     "mechanics_worker": "train/hf_mixtral_8x22b_mechanics.py",
     "mechanics_wrapper": "train/jobs/mixtral_8x22b_mechanics.sbatch",
+    "fixed_draft_fit_worker": "train/hf_mixtral_8x22b_train_revision.py",
+    "fixed_draft_fit_wrapper": "train/jobs/mixtral_8x22b_train_revision.sbatch",
+    "matched_evaluation_worker": "train/hf_mixtral_8x22b_evaluate.py",
+    "matched_evaluation_wrapper": "train/jobs/mixtral_8x22b_evaluate.sbatch",
+    "score_worker": "pipeline/score_mixtral_8x22b_screen.py",
+    "score_wrapper": "pipeline/jobs/mixtral_8x22b_score.sbatch",
     "mechanics_devices": "one_node_two_H100_PCIe",
     "mechanics_quantization": "bitsandbytes_NF4_double_quant",
     "mechanics_score_rows": 0,
-    "mechanics_benchmark_rows": 0
+    "mechanics_benchmark_rows": 0,
+    "transfer_scope": "fixed_qwen35_model_owned_draft_cross_family_screen",
+    "draft_origin_model": "Qwen3.6-35B-A3B",
+    "draft_origin_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "standalone_mixtral_owned_draft": false,
+    "interpretation_boundary": "A positive result proves cross-family MoE host scaling under a fixed source-disjoint Qwen35-owned draft. It authorizes, but does not itself replace, a subsequent Mixtral-owned draft confirmation."
   },
   "verification": {
     "focused_tests": 8,
@@ -48,8 +59,10 @@
     "cross_host_residual_regression_tests_passed": 17,
     "mechanics_and_runtime_closure_tests": 20,
     "mechanics_and_runtime_closure_tests_passed": 20,
-    "authoritative_q36_regression_tests": 430,
-    "authoritative_q36_regression_tests_passed": 429,
+    "fixed_draft_fit_eval_score_focused_tests": 32,
+    "fixed_draft_fit_eval_score_focused_tests_passed": 32,
+    "authoritative_q36_regression_tests": 501,
+    "authoritative_q36_regression_tests_passed": 500,
     "authoritative_q36_regression_tests_skipped": 1,
     "black": "pass",
     "ruff": "pass",
@@ -70,6 +83,14 @@
     "mechanics_job": null,
     "scientific_result": false,
     "current_durable_storage_fit": false,
+    "current_headroom_bytes": 126230065152,
+    "checkpoint_bytes": 281260955124,
+    "post_qwen_and_super_result_model_reclaim_projected_headroom_bytes": 326537523200,
+    "projected_headroom_after_mixtral_stage_bytes": 45276568076,
+    "storage_reclamation_receipts": [
+      "docs/research/Q36_MIXTRAL_STORAGE_RECLAMATION_20260815.json",
+      "docs/research/Q36_MIXTRAL_STORAGE_RECLAMATION_BATCH2_20260815.json"
+    ],
     "next_gate": "Do not download or schedule until the active 35B evidence is sealed, storage or an exact node-local staging path is qualified, and the 120B result justifies another upward host.",
     "no_new_router_variant": true
   }

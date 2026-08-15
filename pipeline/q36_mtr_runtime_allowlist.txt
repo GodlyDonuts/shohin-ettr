@@ -29,6 +29,7 @@ pipeline/cross_validate_q36_mtr_sparse_router.py
 pipeline/dispatch_q36_mtr.py
 pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
+pipeline/jobs/mixtral_8x22b_score.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
 pipeline/jobs/nemotron_ultra_score.sbatch
 pipeline/jobs/q36_mtr_authorize_score.sbatch
@@ -75,6 +76,7 @@ pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_evidence.py
 pipeline/q36_mtr_runtime_allowlist.txt
 pipeline/render_q36_mtr_publication_figure.py
+pipeline/score_mixtral_8x22b_screen.py
 pipeline/score_nemotron_super_screen.py
 pipeline/score_nemotron_ultra_screen.py
 pipeline/score_q36_mtr.py
@@ -96,7 +98,9 @@ pipeline/validate_q36_mtr_commit_application.py
 pipeline/validate_q36_mtr_live_preflight.py
 train/hf_aqc1_train_commit.py
 train/hf_cvg1_completion_verifier.py
+train/hf_mixtral_8x22b_evaluate.py
 train/hf_mixtral_8x22b_mechanics.py
+train/hf_mixtral_8x22b_train_revision.py
 train/hf_nemotron_super_evaluate.py
 train/hf_nemotron_super_mechanics.py
 train/hf_nemotron_super_train_revision.py
@@ -119,7 +123,9 @@ train/hf_q36_mtr_train_role.py
 train/hf_q36_mtr_train_setwise_commit.py
 train/hf_q36_mtr_train_temporal_gate.py
 train/integrated_reasoning_workspace.py
+train/jobs/mixtral_8x22b_evaluate.sbatch
 train/jobs/mixtral_8x22b_mechanics.sbatch
+train/jobs/mixtral_8x22b_train_revision.sbatch
 train/jobs/nemotron_super_evaluate.sbatch
 train/jobs/nemotron_super_mechanics.sbatch
 train/jobs/nemotron_super_train_revision.sbatch
