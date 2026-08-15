@@ -32,3 +32,20 @@ must be revalidated byte/inode-identical, resolved inside the literal external
 artifact root, nonsymbolic, same-user owned, and disjoint from the exclusions;
 then it may be renamed to a unique same-parent quarantine and only that exact
 quarantine removed one filesystem at a time.
+
+## Execution receipt
+
+The eight amended targets revalidated exactly and were renamed one at a time to
+literal same-parent `.q36-upward-delete-20260815-*` quarantines.  Only those
+quarantines were deleted, and every original/quarantine is absent.  The
+deletion is permanent and not locally recoverable.
+
+- Pre-delete quota: 976,289,460 KiB and 700,938 inodes.
+- Stable post-delete quota at 10:10:14Z, 10:10:34Z, and 10:10:54Z:
+  916,477,064 KiB and 700,683 inodes.
+- Exact recovered quota: 59,812,396 KiB (61,247,893,504 bytes) and 255
+  inodes, matching the amended manifest.
+- Current hard-limit headroom: 142,584,696 KiB and 309,317 inodes.
+- The excluded symbolic `hf_cache` remains present and untouched.
+- Every explicit Q36/Nemotron/Qwen9B/Ministral protected anchor remained
+  present after the transaction.
