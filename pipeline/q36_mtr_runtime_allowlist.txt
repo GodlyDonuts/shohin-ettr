@@ -88,6 +88,7 @@ pipeline/validate_q36_mtr_commit_application.py
 pipeline/validate_q36_mtr_live_preflight.py
 train/hf_aqc1_train_commit.py
 train/hf_cvg1_completion_verifier.py
+train/hf_nemotron_super_mechanics.py
 train/hf_pcf1_evaluate.py
 train/hf_pcf1_train_commit.py
 train/hf_product_reasoning_eval.py
@@ -105,6 +106,7 @@ train/hf_q36_mtr_train_role.py
 train/hf_q36_mtr_train_setwise_commit.py
 train/hf_q36_mtr_train_temporal_gate.py
 train/integrated_reasoning_workspace.py
+train/jobs/nemotron_super_mechanics.sbatch
 train/jobs/q36_mtr_apply_multi_owner_commit.sbatch
 train/jobs/q36_mtr_common.sh
 train/jobs/q36_mtr_evaluate.sbatch
@@ -120,10 +122,12 @@ train/jobs/q36_mtr_train_commit_256.sbatch
 train/jobs/q36_mtr_train_role.sbatch
 train/jobs/q36_mtr_train_setwise_commit.sbatch
 train/jobs/q36_mtr_train_temporal_gate.sbatch
+train/nemotron_super_post_mixer_revision.py
 train/pcf1_code_sandbox.py
 train/pcf1_environment.py
 train/q36_mtr_roles.py
 train/q36_mtr_setwise_head.py
+train/q36_upward_moe_host.py
 train/shared_post_mlp_revision.py
 train/temporal_residual_gate.py
 train/ttr1_revision.py
