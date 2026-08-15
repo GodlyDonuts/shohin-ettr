@@ -879,13 +879,19 @@ class TemporalGatedProductModel(nn.Module):
         }
 
     def routing_supervision_loss(
-        self, target: float, attention_mask: torch.Tensor
+        self,
+        target: float,
+        attention_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
     ) -> torch.Tensor:
         if not self.blocks:
             raise TemporalResidualGateError("temporal routing blocks are absent")
         return torch.stack(
             [
-                block.routing_supervision_loss(target, attention_mask)
+                block.routing_supervision_loss(
+                    target, attention_mask, objective=objective
+                )
                 for block in self.blocks
             ]
         ).mean()

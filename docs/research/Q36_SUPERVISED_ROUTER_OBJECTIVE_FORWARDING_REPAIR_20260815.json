@@ -1,0 +1,38 @@
+{
+  "schema": "shohin-q36-supervised-router-objective-forwarding-repair-v1",
+  "status": "infrastructure_repair_authorized",
+  "date": "2026-08-15",
+  "failed_job": {
+    "job_id": 760261,
+    "state": "FAILED",
+    "elapsed_seconds": 295,
+    "node": "evc40",
+    "restarts": 0,
+    "max_rss": "73294204K",
+    "failure": "TemporalGatedProductModel.routing_supervision_loss() got an unexpected keyword argument 'objective'",
+    "model_load_completed": true,
+    "optimizer_updates": 0,
+    "checkpoint_written": false
+  },
+  "cause": {
+    "diagnosis": "The trainer explicitly selected the frozen soft_cross_entropy objective, and the leaf temporal gate accepted that keyword, but the product-model forwarding surface omitted it.",
+    "scientific_definition_changed": false
+  },
+  "repair": {
+    "implementation": "Forward the explicit objective keyword through TemporalGatedProductModel to every installed binary temporal gate.",
+    "default_objective": "soft_cross_entropy",
+    "data_changed": false,
+    "model_changed": false,
+    "seeds_changed": false,
+    "loss_weights_changed": false,
+    "updates_changed": false,
+    "gate_changed": false,
+    "negative_control": "correct_set_mass remains rejected for the binary temporal gate"
+  },
+  "continuation": {
+    "replacement_fit": "pending immutable runtime packaging",
+    "screen_rows": 256,
+    "validation_rows": 1023,
+    "instruction": "Run the exact existing supervised-response fit once under the repaired runtime and retain the existing matched screen/validation arms."
+  }
+}

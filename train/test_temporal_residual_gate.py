@@ -472,6 +472,17 @@ def test_product_surface_exposes_exact_trainables_and_generation_state() -> None
         "controlled_layer_indices": [1, 2],
         "layers": [{"tokens": 0}, {"tokens": 0}],
     }
+    hidden = torch.ones(1, 2, 2)
+    for block in model.blocks:
+        block(hidden)
+    explicit_routing_loss = model.routing_supervision_loss(
+        1.0, torch.ones(1, 2), objective="soft_cross_entropy"
+    )
+    assert torch.isfinite(explicit_routing_loss)
+    with pytest.raises(TemporalResidualGateError):
+        model.routing_supervision_loss(
+            1.0, torch.ones(1, 2), objective="correct_set_mass"
+        )
     ids = torch.tensor([[0, 1, 2], [3, 4, 0]])
     attention = torch.tensor([[1, 1, 1], [1, 1, 0]])
     model.prepare_generation_draft_attention(
@@ -502,9 +513,7 @@ def test_routing_supervision_drives_owner_and_revision_extremes() -> None:
     with pytest.raises(TemporalResidualGateError):
         block.routing_supervision_loss(0.0, torch.ones(1, 3))
     with pytest.raises(TemporalResidualGateError):
-        block.routing_supervision_loss(
-            1.0, attention, objective="correct_set_mass"
-        )
+        block.routing_supervision_loss(1.0, attention, objective="correct_set_mass")
 
 
 def test_binary_routing_supervision_disables_outer_autocast(monkeypatch) -> None:
