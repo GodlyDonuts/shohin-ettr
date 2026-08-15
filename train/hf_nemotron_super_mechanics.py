@@ -83,8 +83,12 @@ def _manifest_rows(path: Path) -> list[tuple[str, str]]:
             raise NemotronSuperMechanicsError("manifest row differs")
         seen.add(relative)
         rows.append((digest, relative))
-    if not rows or rows != sorted(rows, key=lambda row: row[1]):
-        raise NemotronSuperMechanicsError("manifest order differs")
+    # Ordering is already bound by the caller-pinned SHA-256 of the manifest
+    # bytes.  External overlays may use installation/traversal order rather
+    # than lexical path order, so integrity requires safe unique rows and
+    # exact member hashes, not a second, incompatible ordering convention.
+    if not rows:
+        raise NemotronSuperMechanicsError("manifest is empty")
     return rows
 
 

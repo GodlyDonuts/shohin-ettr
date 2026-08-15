@@ -38,7 +38,9 @@ def test_manifest_verification_binds_order_bytes_and_root(tmp_path: Path) -> Non
         verify_manifest(root, manifest, _sha256(manifest))
 
 
-def test_manifest_rejects_escape_and_noncannonical_order(tmp_path: Path) -> None:
+def test_manifest_rejects_escape_but_accepts_hash_bound_install_order(
+    tmp_path: Path,
+) -> None:
     root = tmp_path / "root"
     root.mkdir()
     member = root / "a"
@@ -47,9 +49,14 @@ def test_manifest_rejects_escape_and_noncannonical_order(tmp_path: Path) -> None
     manifest.write_text(f"{_sha256(member)}  ../a\n")
     with pytest.raises(NemotronSuperMechanicsError):
         verify_manifest(root, manifest, _sha256(manifest))
-    manifest.write_text(f"{_sha256(member)}  b\n{_sha256(member)}  a\n")
-    with pytest.raises(NemotronSuperMechanicsError):
-        verify_manifest(root, manifest, _sha256(manifest))
+    second = root / "b"
+    second.write_text("b")
+    manifest.write_text(f"{_sha256(second)}  b\n{_sha256(member)}  a\n")
+    assert verify_manifest(root, manifest, _sha256(manifest)) == {
+        "manifest_sha256": _sha256(manifest),
+        "manifest_entries": 2,
+        "covered_bytes": 2,
+    }
 
 
 def test_state_digest_is_order_independent_and_value_sensitive() -> None:
