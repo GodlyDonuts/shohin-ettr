@@ -7,11 +7,13 @@ import torch.nn as nn
 from temporal_residual_gate import (
     MultiTrajectoryResidualGate,
     MultiTrajectoryResidualGateConfig,
+    MultiTrajectoryGatedProductModel,
     TemporalResidualGate,
     TemporalResidualGateConfig,
     TemporalResidualGateError,
     TemporalGatedProductModel,
     install_temporal_residual_gates,
+    multi_trajectory_branch_layers,
     temporal_branch_layers,
 )
 
@@ -266,6 +268,47 @@ def test_real_role_state_mapping_rejects_missing_or_nonfinite_tensor() -> None:
     revision["backbone.model.layers.2.mlp.adapter_b.weight"][0, 0] = float("nan")
     with pytest.raises(TemporalResidualGateError):
         temporal_branch_layers(owner, revision, config, (1, 2))
+
+
+def test_multi_trajectory_product_installs_three_real_role_states() -> None:
+    config = MultiTrajectoryResidualGateConfig(
+        2,
+        1,
+        1.0,
+        ("owner", "revision", "draft_hidden"),
+        (0.8, 0.1, 0.1),
+    )
+    states = {
+        "owner": _role_state(0.0),
+        "revision": _role_state(0.5),
+        "draft_hidden": _role_state(1.0),
+    }
+    layers = multi_trajectory_branch_layers(states, config, (1, 2))
+    assert tuple(layers[1]) == config.branch_names
+    text_model = _TextModel()
+    backbone = nn.Module()
+    backbone.model = text_model
+    model = MultiTrajectoryGatedProductModel(
+        backbone,
+        text_model,
+        nn.Linear(2, 8, bias=False),
+        config,
+        role_states=states,
+        controlled_layer_indices=(1, 2),
+    )
+    assert model.trainable_parameter_count() == 18
+    assert len(model.trainable_parameter_name_sha256()) == 64
+    assert model.routing_receipt() == {
+        "branch_names": ["owner", "revision", "draft_hidden"],
+        "controlled_layer_indices": [1, 2],
+        "layers": [{"tokens": 0}, {"tokens": 0}],
+    }
+    ids = torch.tensor([[0, 1, 2]])
+    attention = torch.ones_like(ids)
+    model.prepare_generation_draft_attention(object(), ["prompt"], ids, attention)
+    embeddings, observed_attention = model.generation_embeddings(ids, attention)
+    assert embeddings.shape == (1, 3, 2)
+    assert torch.equal(observed_attention, attention)
 
 
 def test_product_surface_exposes_exact_trainables_and_generation_state() -> None:

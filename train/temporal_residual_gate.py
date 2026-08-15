@@ -448,6 +448,216 @@ def install_temporal_residual_gates(
     return tuple(installed)
 
 
+def multi_trajectory_branch_layers(
+    role_states: Mapping[str, Mapping[str, torch.Tensor]],
+    config: MultiTrajectoryResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+) -> dict[int, dict[str, tuple[torch.Tensor, torch.Tensor]]]:
+    """Validate and align an ordered bank of real Q36 role states."""
+
+    config.validate()
+    indices = tuple(controlled_layer_indices)
+    if (
+        tuple(role_states) != config.branch_names
+        or not indices
+        or len(indices) != len(set(indices))
+        or tuple(sorted(indices)) != indices
+    ):
+        raise TemporalResidualGateError("multi-trajectory role state identity differs")
+    expected_names = {
+        f"backbone.model.layers.{index}.mlp.adapter_{factor}.weight"
+        for index in indices
+        for factor in ("a", "b")
+    }
+    if any(set(state) != expected_names for state in role_states.values()):
+        raise TemporalResidualGateError("multi-trajectory role state names differ")
+    layers: dict[int, dict[str, tuple[torch.Tensor, torch.Tensor]]] = {
+        index: {} for index in indices
+    }
+    for index in indices:
+        name_a = f"backbone.model.layers.{index}.mlp.adapter_a.weight"
+        name_b = f"backbone.model.layers.{index}.mlp.adapter_b.weight"
+        for role, state in role_states.items():
+            factor_a = state[name_a]
+            factor_b = state[name_b]
+            if (
+                not isinstance(factor_a, torch.Tensor)
+                or not isinstance(factor_b, torch.Tensor)
+                or tuple(factor_a.shape) != (config.rank, config.hidden_size)
+                or tuple(factor_b.shape) != (config.hidden_size, config.rank)
+                or factor_a.dtype != torch.float32
+                or factor_b.dtype != torch.float32
+                or not torch.isfinite(factor_a).all()
+                or not torch.isfinite(factor_b).all()
+            ):
+                raise TemporalResidualGateError(
+                    f"multi-trajectory {role} role tensor differs"
+                )
+            layers[index][role] = (factor_a, factor_b)
+    return layers
+
+
+def install_multi_trajectory_residual_gates(
+    text_model: nn.Module,
+    role_states: Mapping[str, Mapping[str, torch.Tensor]],
+    config: MultiTrajectoryResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+) -> tuple[MultiTrajectoryResidualGate, ...]:
+    """Replace the final decoder MLPs with categorical residual banks."""
+
+    model_layers = getattr(text_model, "layers", None)
+    if not isinstance(model_layers, nn.ModuleList):
+        raise TemporalResidualGateError("multi-trajectory decoder layers differ")
+    text_model.requires_grad_(False)
+    indices = tuple(controlled_layer_indices)
+    if indices != tuple(range(len(model_layers) - len(indices), len(model_layers))):
+        raise TemporalResidualGateError("multi-trajectory controlled layers differ")
+    branches = multi_trajectory_branch_layers(role_states, config, indices)
+    installed = []
+    for index in indices:
+        layer = model_layers[index]
+        mlp = getattr(layer, "mlp", None)
+        if not isinstance(mlp, nn.Module) or isinstance(
+            mlp, (TemporalResidualGate, MultiTrajectoryResidualGate)
+        ):
+            raise TemporalResidualGateError("multi-trajectory native MLP differs")
+        block = MultiTrajectoryResidualGate(mlp, config, branches=branches[index])
+        layer.mlp = block
+        installed.append(block)
+    expected = len(indices) * len(config.branch_names) * (config.hidden_size + 1)
+    if sum(block.trainable_parameter_count() for block in installed) != expected:
+        raise TemporalResidualGateError("multi-trajectory gate parameter count differs")
+    return tuple(installed)
+
+
+class MultiTrajectoryGatedProductModel(nn.Module):
+    """Q36 training/generation surface with categorical trajectory routing."""
+
+    def __init__(
+        self,
+        backbone: nn.Module,
+        text_model: nn.Module,
+        lm_head: nn.Module,
+        config: MultiTrajectoryResidualGateConfig,
+        *,
+        role_states: Mapping[str, Mapping[str, torch.Tensor]],
+        controlled_layer_indices: Sequence[int],
+    ) -> None:
+        super().__init__()
+        if not all(
+            isinstance(module, nn.Module) for module in (backbone, text_model, lm_head)
+        ):
+            raise TemporalResidualGateError("multi-trajectory product modules differ")
+        backbone.requires_grad_(False)
+        lm_head.requires_grad_(False)
+        self.backbone = backbone
+        self.text_model = text_model
+        self.lm_head = lm_head
+        self.config = config
+        self.controlled_layer_indices = tuple(controlled_layer_indices)
+        self.blocks = nn.ModuleList(
+            install_multi_trajectory_residual_gates(
+                text_model,
+                role_states,
+                config,
+                self.controlled_layer_indices,
+            )
+        )
+        self._generation_position_ids: torch.Tensor | None = None
+        self._generation_prompt_ids: torch.Tensor | None = None
+        self._generation_prompt_attention: torch.Tensor | None = None
+
+    def trainable_parameter_count(self) -> int:
+        return sum(
+            parameter.numel()
+            for parameter in self.parameters()
+            if parameter.requires_grad
+        )
+
+    def trainable_parameter_name_sha256(self) -> str:
+        names = sorted(
+            name
+            for name, parameter in self.named_parameters()
+            if parameter.requires_grad
+        )
+        if not names:
+            raise TemporalResidualGateError(
+                "multi-trajectory gate trainable names are absent"
+            )
+        return hashlib.sha256("\n".join(names).encode()).hexdigest()
+
+    def reset_routing_receipt(self) -> None:
+        for block in self.blocks:
+            block.reset_receipt()
+
+    def routing_receipt(self) -> dict[str, Any]:
+        return {
+            "branch_names": list(self.config.branch_names),
+            "controlled_layer_indices": list(self.controlled_layer_indices),
+            "layers": [block.receipt() for block in self.blocks],
+        }
+
+    def routing_supervision_loss(
+        self, target: Sequence[float], response_mask: torch.Tensor
+    ) -> torch.Tensor:
+        if not self.blocks:
+            raise TemporalResidualGateError(
+                "multi-trajectory routing blocks are absent"
+            )
+        return torch.stack(
+            [
+                block.routing_supervision_loss(target, response_mask)
+                for block in self.blocks
+            ]
+        ).mean()
+
+    def prepare_generation_draft_attention(
+        self,
+        tokenizer: Any,
+        rendered: list[str],
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+    ) -> None:
+        if (
+            input_ids.ndim != 2
+            or attention_mask.shape != input_ids.shape
+            or input_ids.device != attention_mask.device
+            or len(rendered) != input_ids.shape[0]
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory generation prompt differs"
+            )
+        position_ids = attention_mask.long().cumsum(dim=-1) - 1
+        position_ids.masked_fill_(~attention_mask.bool(), 0)
+        self._generation_position_ids = position_ids
+        self._generation_prompt_ids = input_ids.detach().clone()
+        self._generation_prompt_attention = attention_mask.detach().clone()
+
+    def generation_position_ids(self) -> torch.Tensor:
+        if self._generation_position_ids is None:
+            raise TemporalResidualGateError(
+                "multi-trajectory generation positions are absent"
+            )
+        return self._generation_position_ids
+
+    def generation_embeddings(
+        self, prompt_ids: torch.Tensor, prompt_attention: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        embed_tokens = getattr(self.text_model, "embed_tokens", None)
+        if (
+            self._generation_prompt_attention is None
+            or self._generation_prompt_attention.shape != prompt_attention.shape
+            or self._generation_prompt_ids is None
+            or self._generation_prompt_ids.shape != prompt_ids.shape
+            or not torch.equal(self._generation_prompt_ids, prompt_ids)
+            or not isinstance(embed_tokens, nn.Module)
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory generation state is absent"
+            )
+        return embed_tokens(prompt_ids), self._generation_prompt_attention
+
+
 class TemporalGatedProductModel(nn.Module):
     """Drop-in Q36 training/generation surface with installed temporal gates."""
 
@@ -572,10 +782,13 @@ class TemporalGatedProductModel(nn.Module):
 __all__ = [
     "MultiTrajectoryResidualGate",
     "MultiTrajectoryResidualGateConfig",
+    "MultiTrajectoryGatedProductModel",
     "TemporalResidualGate",
     "TemporalResidualGateConfig",
     "TemporalResidualGateError",
     "TemporalGatedProductModel",
     "install_temporal_residual_gates",
+    "install_multi_trajectory_residual_gates",
+    "multi_trajectory_branch_layers",
     "temporal_branch_layers",
 ]
