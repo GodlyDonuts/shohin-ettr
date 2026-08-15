@@ -197,7 +197,7 @@
     "status": "exact_snapshot_sealed_mechanics_code_complete_not_submitted_pending_super_measurement_and_highgpu_access"
   },
   "qwen_full_validation_progress": {
-    "observed_at": "2026-08-15T12:33:24-04:00",
+    "observed_at": "2026-08-15T12:39:28-04:00",
     "array": 759815,
     "arm": "self_refinement",
     "total_rows": 1023,
@@ -217,10 +217,11 @@
       11,
       12,
       13,
+      14,
       15
     ],
-    "completed_rows": 959,
-    "completed_unique_identities": 959,
+    "completed_rows": 1023,
+    "completed_unique_identities": 1023,
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "assessor_access_count": 0,
@@ -241,6 +242,7 @@
       "11": "0bc104c2e365ff899378943c7a5341d7b97d0cff9fb376aaf9e47aa66b5253d3",
       "12": "e4401b68087007123b2df7c0bfeeea03076268bfaeb55d53f56ce0812987a7d1",
       "13": "c51b517d36c3e1d132d73574da515888b884ab463dd43dd2706806c03fca7e82",
+      "14": "5cc87838e30a864f90c5e932736903ca83d090cf0c3cc9156c22f4a762345d88",
       "15": "0ec463adde2af5da6e6ccedcf97a48fbc94a3a93ee24aaf576f7d05d44e88244"
     },
     "report_sha256s": {
@@ -258,6 +260,7 @@
       "11": "37f934cad06419ecfac8bc6febd8fa1174e56a1edbd2e10b5cb9f1650f5a3117",
       "12": "9a025674ecf5cbd99cf337f019698431ac044ce0a86760a7d78ebd4e46c76aee",
       "13": "b86e12c2cce9097ba455fb21892f608e1e124a983890f1f6d2238621ce91e8fe",
+      "14": "6aee3abf55fd035073204792d5581a5ed0f6fccee02404deda91512b93d1cbdd",
       "15": "f36d8bd255b834e8d496cacfe798d34b0231358ec3b1278ce22a63d0fcdf34cf"
     },
     "slurm": {
@@ -396,6 +399,21 @@
         "peak_gpu_memory_bytes": 67584543744,
         "report_elapsed_seconds": 1783.9226341098547
       },
+      "14": {
+        "job": 760390,
+        "state": "COMPLETED",
+        "elapsed_seconds": 2458,
+        "node": "evc30",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1,
+        "ordered_source_slice": "896:960",
+        "empty_completions": 0,
+        "max_token_completions": 18,
+        "generated_tokens": 29066,
+        "peak_gpu_memory_bytes": 67647729664,
+        "report_elapsed_seconds": 2181.483786555007
+      },
       "15": {
         "job": 759815,
         "state": "COMPLETED",
@@ -412,7 +430,7 @@
         "report_elapsed_seconds": 1722.5592386350036
       }
     },
-    "scientific_result_status": "not_scored_until_all_frozen_shards_complete"
+    "scientific_result_status": "self_refinement_arm_complete_other_validation_arms_pending_before_score"
   },
   "ultra_snapshot_staging_preparation": {
     "git_commit": "5976ce33acc8b9d29440baf6f0866e7b9c07e7a2",
