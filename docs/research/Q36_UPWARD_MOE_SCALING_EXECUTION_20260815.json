@@ -244,7 +244,7 @@
     "status": "code_complete_tested_and_pushed_not_submitted_current_quota_fails_closed"
   },
   "ultra_matched_measurement_preparation": {
-    "git_commit": "c9572f2f09af4969592012c20758b21b4de82c7f",
+    "git_commit": "6a12d9d2feaad3cff3c695f43f58e5c664ab6974",
     "status": "code_complete_tested_and_pushed_not_submitted",
     "source_disjoint_rows": 256,
     "arms": [
@@ -267,7 +267,7 @@
     "revision_source": "zero_label_zero_update_super_to_ultra_transferred_residual",
     "unchanged_and_self_refinement_source": "pinned_unchanged_ultra_host",
     "fixed_draft_control": "identical_qwen_model_owned_drafts_for_revision_and_self_refinement",
-    "evaluation_sha256": "7a4f645b579d10b9336eb694b4953a52021fbe41377db5bcbf268ed9286eb0cd",
+    "evaluation_sha256": "4c7786f197c78e8479c2ceed4c944ef42d4287bf9513c0ca0abf3cec747c4f09",
     "evaluation_job_sha256": "21fdd55ad15bf46a9df232e1167c88824be51958b6bac95be74f3d4d406cf682",
     "score_sha256": "5a0ab522154eb35292fb73b11cfc2a6afd89d772a78adcdc914c886aa5c4089a",
     "score_job_sha256": "6c6730fc88eda3a9fd48284567717b325a372e7b0675e0e491ebbc42e318cbb3",
