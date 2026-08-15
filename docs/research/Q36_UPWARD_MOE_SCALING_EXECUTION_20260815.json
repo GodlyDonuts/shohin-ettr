@@ -269,6 +269,10 @@
   "ultra_snapshot_staging_preparation": {
     "git_commit": "5976ce33acc8b9d29440baf6f0866e7b9c07e7a2",
     "wrapper": "pipeline/jobs/q36_stage_nemotron_ultra.sbatch",
+    "wrapper_sha256": "b62c39071e6ed0c0214bfa35df2758c54a8740197bb76c3bf21979e844892900",
+    "staging_job": 760351,
+    "staging_job_submitted_from_commit": "b48ac04c9a29e6904a16f2d083b14668e1af43fd",
+    "staging_job_resources": "cpu_only_16_cpus_64GiB_zero_gpus",
     "repository": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
     "revision": "183968f87ae4cedce3039313cac1fd43d112c578",
     "upstream_files": 243,
@@ -277,7 +281,7 @@
     "manifest_members_after_source_revision_and_snapshot_receipt": 245,
     "required_post_download_safety_bytes": 68719476736,
     "required_pre_download_headroom_bytes": 421100722257,
-    "status": "code_complete_tested_and_pushed_not_submitted_current_quota_fails_closed"
+    "status": "exact_snapshot_staging_running_no_science_no_gpu"
   },
   "ultra_matched_measurement_preparation": {
     "git_commit": "6a12d9d2feaad3cff3c695f43f58e5c664ab6974",
