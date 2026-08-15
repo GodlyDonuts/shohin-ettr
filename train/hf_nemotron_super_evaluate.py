@@ -277,7 +277,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     for source in rows:
         draft = drafts[source["identity_sha256"]] if drafts is not None else None
         question = prompt_for(args.arm, source, draft)
-        rendered = [_render_prompt(tokenizer, question, False, False)]
+        # All three matched arms use the same product-reasoning envelope that
+        # trained the revision residual.  The arm changes only the question
+        # projection and presence of the learned residual.
+        rendered = [_render_prompt(tokenizer, question, True, False)]
         counters["prompt_tokens"] += q36_nonpadding_prompt_tokens(tokenizer, rendered)
         completions, usage = _generate_completions(
             backbone,

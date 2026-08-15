@@ -101,3 +101,9 @@ def test_revision_checkpoint_restore_binds_schedule_and_state(
     )
     with pytest.raises(evaluation.NemotronSuperEvaluationError):
         evaluation.load_revision_checkpoint(path, model)
+
+
+def test_all_arms_share_the_training_prompt_envelope() -> None:
+    source = Path(evaluation.__file__).read_text()
+    assert "_render_prompt(tokenizer, question, True, False)" in source
+    assert "_render_prompt(tokenizer, question, False, False)" not in source
