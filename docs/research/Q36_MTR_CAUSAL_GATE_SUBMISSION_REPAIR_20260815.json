@@ -1,0 +1,52 @@
+{
+  "schema": "shohin-q36-mtr-infrastructure-repair-v1",
+  "status": "replacement_submitted",
+  "scientific_result": false,
+  "variant": "causal_only_temporal_gate",
+  "failed_job": {
+    "job_id": 760175,
+    "state": "FAILED",
+    "exit_code": "2:0",
+    "elapsed_seconds": 88,
+    "started": "2026-08-15T04:30:35-04:00",
+    "ended": "2026-08-15T04:32:03-04:00",
+    "node": "evc47",
+    "restarts": 0,
+    "h100s": 1,
+    "stderr_sha256": "3eb13e1a8a93a1d7a8d149f0f58fb44127a0d08cd280511029d34a7251d2a21c",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "model_load_started": false,
+    "last_completed_update": 0,
+    "checkpoint_published": false,
+    "evaluation_published": false,
+    "cause": "submission exported ROUTING_SUPERVISION_WEIGHT=0, while the wrapper requires the variable to be absent for the causal-only arm"
+  },
+  "repair": {
+    "scope": "omit ROUTING_SUPERVISION_WEIGHT from the causal-only fit environment",
+    "training_objective_changed": false,
+    "causal_loss_weight": 1.0,
+    "routing_supervision_weight": 0.0,
+    "data_changed": false,
+    "seed_changed": false,
+    "model_changed": false,
+    "arms_changed": false,
+    "source_commit": "4cf9559d602483a71e25bc7b356e5d634e42c874",
+    "runtime_manifest_sha256": "b6e74fd2d63dced65e6fb15b89cc95fa35517826647b7af4e2ade00909c30582",
+    "environment_receipt_sha256": "09ee7dc2001d5441d1fc6a19f5476ba88c6a532a09d538be46eaf978287480a8"
+  },
+  "replacement": {
+    "job_id": 760220,
+    "state_at_receipt": "PENDING",
+    "time_limit": "01:37:00",
+    "time_limit_basis": "ceil above 1.25 * completed comparable fit 760169 elapsed 4614 seconds",
+    "requeue": false,
+    "h100s": 1,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_causal_response_1dad6dd6_r1/fit",
+    "downstream_screen_job": 760176,
+    "downstream_dependency": "afterok:760220",
+    "downstream_score_job": 760177
+  },
+  "healthy_jobs_cancelled": [],
+  "healthy_jobs_duplicated": [],
+  "new_scientific_variant": false
+}
