@@ -81,6 +81,16 @@ def test_external_score_computes_matched_results(tmp_path, monkeypatch):
     assert report["arms"]["unchanged"]["correct"] == 1
     assert report["all_arm_oracle_correct"] == 3
     assert report["mbpp_setup_qualification_count"] == 1
+    assert [row["identity_sha256"] for row in report["outcomes"]] == sorted(
+        row["identity_sha256"] for row in assessors
+    )
+    assert report["outcomes"][0]["task"] in module.TASKS
+    assert set(report["outcomes"][0]["correct"]) == set(module.ARMS)
+    assert all(
+        isinstance(value, bool)
+        for row in report["outcomes"]
+        for value in row["correct"].values()
+    )
 
 
 def test_mcnemar_exact_is_symmetric():

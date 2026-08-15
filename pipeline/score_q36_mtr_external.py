@@ -202,6 +202,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     oracle = sum(
         any(outcomes[arm][identity] for arm in ARMS) for identity in identities
     )
+    outcome_rows = [
+        {
+            "identity_sha256": identity,
+            "task": assessors[identity]["task"],
+            "correct": {arm: outcomes[arm][identity] for arm in ARMS},
+        }
+        for identity in sorted(identities)
+    ]
     report = {
         "schema": REPORT_SCHEMA,
         "status": "complete",
@@ -213,6 +221,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "sandbox_probe_sha256": sandbox.get("probe_sha256"),
         "mbpp_setup_qualification_count": len(setup_receipts),
         "arms": arm_reports,
+        "outcomes": outcome_rows,
         "all_arm_oracle_correct": oracle,
         "all_arm_oracle_accuracy": oracle / args.expected_rows,
     }
