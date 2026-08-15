@@ -23,6 +23,7 @@ readonly SOURCE_TAG=v2.3.2.post1
 readonly SOURCE_COMMIT=a14b1dff0454a3bc27d9eb31355dc01e4b2490ec
 readonly PARENT_MANIFEST_SHA256=e52a0095628e0c4eb58f69c4ebb6f4d1c7a929792eb9a55046bda670013a6ea2
 readonly CUDA_HOME=/apps/cuda/cuda-12.4.0
+readonly GCC_ROOT=/apps/gcc/gcc-12.2.0
 
 [[ -x "$BASE_PYTHON" ]]
 [[ -d "$CAUSAL_CONV_ROOT" && ! -L "$CAUSAL_CONV_ROOT" ]]
@@ -50,8 +51,10 @@ git clone --quiet --depth 1 --branch "$SOURCE_TAG" "$SOURCE_REPOSITORY" "$scratc
 [[ "$(git -C "$scratch/mamba" rev-parse HEAD)" == "$SOURCE_COMMIT" ]]
 
 export CUDA_HOME
-export PATH="$CUDA_HOME/bin:/usr/bin:/bin"
-export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH:-}"
+export CC="$GCC_ROOT/bin/gcc" CXX="$GCC_ROOT/bin/g++"
+export PATH="$CUDA_HOME/bin:$GCC_ROOT/bin:/usr/bin:/bin"
+export LD_LIBRARY_PATH="$GCC_ROOT/lib64:$CUDA_HOME/lib64:${LD_LIBRARY_PATH:-}"
+export LDFLAGS="-static-libstdc++ -static-libgcc"
 export MAMBA_FORCE_BUILD=TRUE MAMBA_SKIP_CUDA_BUILD=FALSE
 export MAMBA_FORCE_CXX11_ABI=FALSE MAX_JOBS=16
 export PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1
@@ -132,6 +135,9 @@ versions = {
 }
 if versions and max(versions) > (2, 28):
     raise SystemExit("rebuilt extension exceeds Newton GLIBC 2.28")
+dynamic_libraries = subprocess.check_output(["/usr/bin/ldd", str(extension)], text=True)
+if "libstdc++.so" in dynamic_libraries or "libgcc_s.so" in dynamic_libraries:
+    raise SystemExit("rebuilt extension retained a compiler-runtime dependency")
 libc_name, libc_version = platform.libc_ver()
 if libc_name != "glibc" or tuple(map(int, libc_version.split("."))) != (2, 28):
     raise SystemExit("overlay build host GLIBC differs")
@@ -146,6 +152,8 @@ receipt = {
     "selective_scan_cuda_sha256": hashlib.sha256(extension.read_bytes()).hexdigest(),
     "maximum_required_glibc": ".".join(map(str, max(versions))) if versions else None,
     "build_host_glibc": libc_version,
+    "build_compiler": "gcc-12.2.0",
+    "compiler_runtime_linkage": "static_libstdcxx_and_libgcc",
     "nvidia_modelopt": "0.43.0",
     "causal_conv1d": "1.6.2.post1",
     "torch": torch.__version__,

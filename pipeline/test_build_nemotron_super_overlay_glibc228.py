@@ -10,7 +10,10 @@ def test_rebuilds_mamba_on_newton_glibc_without_science() -> None:
     assert "a14b1dff0454a3bc27d9eb31355dc01e4b2490ec" in source
     assert "MAMBA_FORCE_BUILD=TRUE" in source
     assert "CUDA_HOME=/apps/cuda/cuda-12.4.0" in source
+    assert "GCC_ROOT=/apps/gcc/gcc-12.2.0" in source
+    assert 'LDFLAGS="-static-libstdc++ -static-libgcc"' in source
     assert "max(versions) > (2, 28)" in source
+    assert '"libstdc++.so" in dynamic_libraries' in source
     assert '"scientific_rows_read": 0' in source
     assert '"gpu_requested": False' in source
     assert "sha256sum -c SHA256SUMS" in source
