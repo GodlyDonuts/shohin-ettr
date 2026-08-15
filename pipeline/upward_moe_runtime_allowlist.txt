@@ -76,6 +76,7 @@ pipeline/jobs/q36_mtr_validate_commit_application.sbatch
 pipeline/jobs/render_upward_moe_scaling.sbatch
 pipeline/jobs/score_upward_moe_temporal_gate.sbatch
 pipeline/jobs/select_upward_moe_temporal_promotion.sbatch
+pipeline/kimi_k3_upward_moe_plan.py
 pipeline/launch_upward_moe_temporal_promotion.py
 pipeline/lift_nemotron_super_adapter_to_ultra.py
 pipeline/merge_q36_mtr_drafts.py
@@ -174,6 +175,7 @@ train/jobs/upward_moe_generate_drafts.sbatch
 train/jobs/upward_moe_train_aligned.sbatch
 train/jobs/upward_moe_train_owner.sbatch
 train/jobs/upward_moe_train_temporal_gate.sbatch
+train/kimi_k3_post_moe_revision.py
 train/mixtral_post_mlp_revision.py
 train/nemotron_super_post_mixer_revision.py
 train/nemotron_ultra_post_mixer_revision.py
@@ -182,6 +184,7 @@ train/pcf1_environment.py
 train/q36_mtr_roles.py
 train/q36_mtr_setwise_head.py
 train/q36_upward_moe_host.py
+train/q36_upward_moe_kimi_k3_host.py
 train/q36_upward_moe_mixtral_host.py
 train/q36_upward_moe_ultra_host.py
 train/shared_post_mlp_revision.py

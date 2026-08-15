@@ -136,11 +136,14 @@ REQUIRED = {
 UPWARD_ALLOWLIST_NAME = "upward_moe_runtime_allowlist.txt"
 UPWARD_REQUIRED = (REQUIRED - {"pipeline/dispatch_q36_mtr.py"}) | {
     "pipeline/dispatch_upward_moe_temporal.py",
+    "pipeline/kimi_k3_upward_moe_plan.py",
     "pipeline/launch_upward_moe_temporal_promotion.py",
     "pipeline/jobs/launch_upward_moe_temporal_promotion.sbatch",
     "pipeline/select_upward_moe_temporal_promotion.py",
     "pipeline/jobs/select_upward_moe_temporal_promotion.sbatch",
     "pipeline/upward_moe_runtime_allowlist.txt",
+    "train/kimi_k3_post_moe_revision.py",
+    "train/q36_upward_moe_kimi_k3_host.py",
 }
 
 

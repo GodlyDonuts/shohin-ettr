@@ -1,0 +1,88 @@
+{
+  "schema": "shohin-q36-kimi-k3-upward-moe-host-preparation-v1",
+  "created_at": "2026-08-15T18:10:00-04:00",
+  "status": "code_complete_not_scheduled_not_a_result",
+  "purpose": "continue_the_measured_MoE_scaling_curve_upward_beyond_Nemotron_Ultra",
+  "dense_scaling_status": "closed_not_reopened",
+  "host": {
+    "model_id": "moonshotai/Kimi-K3",
+    "model_revision_observed_2026_08_15": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+    "total_parameters": 2800000000000,
+    "active_parameters": 104000000000,
+    "official_config_sha256": "9710e121a58d03ac92c8d6da287a19541994319afbbe6d6202af001ffd379213",
+    "official_modeling_kimi_k3_sha256": "b9171c96726eda55234c92ac8dfae7e24c512fda68968ae8f2c3782b42665ea2",
+    "official_modeling_kimi_linear_sha256": "9e3564c70ac21854ce5a090cc946c5dc76b70d1050ef50840449181a20fff44a",
+    "hidden_size": 7168,
+    "layers": 93,
+    "dense_prefix_layers": 1,
+    "sparse_layers": 92,
+    "experts": 896,
+    "experts_per_token": 16,
+    "shared_experts": 2,
+    "official_model_card": "https://huggingface.co/moonshotai/Kimi-K3/blob/main/README.md",
+    "official_config": "https://huggingface.co/moonshotai/Kimi-K3/blob/main/config.json",
+    "official_text_implementation": "https://huggingface.co/moonshotai/Kimi-K3/blob/main/modeling_kimi_linear.py"
+  },
+  "shohin_surface": {
+    "architecture": "shohin-kimi-k3-frozen-post-moe-v1",
+    "attachment": "post-block-sparse-moe-residual",
+    "controlled_layer_indices": [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92],
+    "rank": 18,
+    "alpha": 18.0,
+    "trainable_parameters_per_owner_or_revision_role": 4128768,
+    "temporal_gate_parameters": 114704,
+    "native_router_expert_trainables": 0,
+    "native_backbone_mode": "eval",
+    "reason_for_eval_mode": "official_KimiSparseMoeBlock_rejects_training_mode",
+    "roles": ["owner", "aligned_revision", "temporal_causal_gate"],
+    "matched_controls": ["unchanged", "self_refinement"]
+  },
+  "distributed_graph": {
+    "mechanics_precondition_tasks": 1,
+    "scientific_gpu_tasks": 99,
+    "cpu_tasks": 3,
+    "total_graph_tasks": 102,
+    "h100s_per_scientific_task": 24,
+    "nodes_per_scientific_task": 3,
+    "maximum_concurrent_allocations_on_32_H100_highgpu_partition": 1,
+    "source_graph_h100_hours": 58.9,
+    "resource_scale_factor_over_two_H100_graph": 12,
+    "conservative_h100_hour_budget": 706.8,
+    "launch_authorized": false,
+    "current_feasibility": "requires_highgpu_account_access_and_approximately_1_8_TB_additional_durable_capacity"
+  },
+  "implementation": {
+    "host_contract": {
+      "path": "train/q36_upward_moe_kimi_k3_host.py",
+      "sha256": "f48aa927b9f9381009a1e5b13a70d12848b66abdf9dab3a8cc1cc35266cf4de1"
+    },
+    "trajectory_attachment": {
+      "path": "train/kimi_k3_post_moe_revision.py",
+      "sha256": "8885113fcf81e6fd251e1ffedd63dd9993cbb8031028df4e6cd1d04cc45188c8"
+    },
+    "distributed_plan": {
+      "path": "pipeline/kimi_k3_upward_moe_plan.py",
+      "sha256": "d82a89e8f70c26561377dbb8f81d640733bdd25c77c63a166eebfd2450112f2c"
+    },
+    "runtime_allowlist_sha256": "1328ab535eb3743bfe3e8ccc99dcd278f698fd135c1d50036cffdf400dea896f",
+    "package_builder_sha256": "29b25e1432363f736cb23d2a38cd28c290ef8efb9869ec08ef1902b823398d0a"
+  },
+  "validation": {
+    "focused_tests": "9_passed",
+    "upward_MoE_regression": "115_passed",
+    "black": "pass",
+    "ruff": "pass",
+    "pycompile": "pass",
+    "allowlist_sort": "pass",
+    "git_diff_check": "pass"
+  },
+  "active_measurement_boundary": {
+    "nemotron_super_mechanics_job": 760382,
+    "mixtral_mechanics_job": 760565,
+    "promotion_selector_job": 760596,
+    "automatic_launch_job": 760598,
+    "state_at_preparation": "dependency_graph_healthy_no_larger_host_result_yet",
+    "modified_or_duplicated": false
+  },
+  "scientific_claim": "none_until_a_source_disjoint_score_completes"
+}
