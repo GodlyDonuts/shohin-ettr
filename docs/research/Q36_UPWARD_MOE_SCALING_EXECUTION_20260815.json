@@ -433,17 +433,18 @@
     "scientific_result_status": "self_refinement_arm_complete_other_validation_arms_pending_before_score"
   },
   "qwen_revision_validation_progress": {
-    "observed_at": "2026-08-15T12:40:37-04:00",
+    "observed_at": "2026-08-15T12:45:35-04:00",
     "array": 759816,
     "arm": "revision",
     "total_rows": 1023,
     "shards": 16,
     "completed_shards": [
       0,
-      1
+      1,
+      2
     ],
-    "completed_rows": 128,
-    "completed_unique_identities": 128,
+    "completed_rows": 192,
+    "completed_unique_identities": 192,
     "ordered_source_slice_coverage": true,
     "empty_completions": 0,
     "max_token_completions": 0,
@@ -452,11 +453,13 @@
     "adapter_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
     "candidate_sha256s": {
       "0": "5abe5352a0f52f5c2bca9c209560e866d2b99b37929bb48705c4389dcedc5979",
-      "1": "08c5840206973d9eba224604ff68e508413d2e27352bfe62bad8ea471e18f708"
+      "1": "08c5840206973d9eba224604ff68e508413d2e27352bfe62bad8ea471e18f708",
+      "2": "9063a526719d4075be8da5d01096977aa80820460751ad6e5fd55b09f733e149"
     },
     "report_sha256s": {
       "0": "f02a62a327d75f36df9d5108e9e6257aeabc39444e9eb1c4b3e8e9da3361dece",
-      "1": "f7ad91c509b7efdde276965e97b1a055b9e101165675439cf2e08829c39333ba"
+      "1": "f7ad91c509b7efdde276965e97b1a055b9e101165675439cf2e08829c39333ba",
+      "2": "1a3f204da89e3a8a065da0ac6671816e5b65bea903efcf9c05c2bd4842283991"
     },
     "slurm": {
       "0": {
@@ -484,6 +487,19 @@
         "generated_tokens": 665,
         "peak_gpu_memory_bytes": 67688673792,
         "report_elapsed_seconds": 84.24972761329263
+      },
+      "2": {
+        "job": 760425,
+        "state": "COMPLETED",
+        "elapsed_seconds": 347,
+        "node": "evc30",
+        "exit_code": "0:0",
+        "restarts": 0,
+        "allocated_gpus": 1,
+        "ordered_source_slice": "128:192",
+        "generated_tokens": 519,
+        "peak_gpu_memory_bytes": 67665912832,
+        "report_elapsed_seconds": 77.77769798785448
       }
     },
     "scientific_result_status": "not_scored_until_all_frozen_validation_arms_complete"
