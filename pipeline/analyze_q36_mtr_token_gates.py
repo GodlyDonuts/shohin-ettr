@@ -18,10 +18,25 @@ SCORE_SCHEMA = "shohin-q36-mtr-temporal-gate-score-v1"
 EXTERNAL_SCORE_SCHEMA = "shohin-q36-mtr-external-score-v1"
 ARMS = ("temporal_gate", "multi_trajectory_gate")
 TASKS = ("math500", "bbh_logic", "mbpp")
+HASH_LENGTH = 64
 
 
 class Q36MTRTokenGateAnalysisError(RuntimeError):
     """Token-gate screens are incomplete, mismatched, or duplicated."""
+
+
+def _bounded_count(value: Any, upper: int) -> bool:
+    return (
+        isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= upper
+    )
+
+
+def _sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == HASH_LENGTH
+        and all(character in "0123456789abcdef" for character in value)
+    )
 
 
 def _load_score(path: Path) -> dict[str, Any]:
@@ -35,6 +50,12 @@ def _load_score(path: Path) -> dict[str, Any]:
     result = payload.get(arm) if isinstance(arm, str) else None
     outcomes = payload.get("outcomes") if isinstance(payload, dict) else None
     rows = payload.get("rows") if isinstance(payload, dict) else None
+    unchanged_result = payload.get("unchanged") if isinstance(payload, dict) else None
+    paired = payload.get("paired_vs_unchanged") if isinstance(payload, dict) else None
+    shard_count = payload.get("shard_count") if isinstance(payload, dict) else None
+    candidate_sha256s = (
+        payload.get("temporal_candidate_sha256s") if isinstance(payload, dict) else None
+    )
     if (
         not isinstance(payload, dict)
         or payload.get("schema") != SCORE_SCHEMA
@@ -50,8 +71,49 @@ def _load_score(path: Path) -> dict[str, Any]:
         or not 0 <= result["correct"] <= rows
         or not isinstance(outcomes, list)
         or len(outcomes) != rows
+        or not isinstance(shard_count, int)
+        or isinstance(shard_count, bool)
+        or shard_count <= 0
+        or not isinstance(candidate_sha256s, list)
+        or len(candidate_sha256s) != shard_count
+        or len(set(candidate_sha256s)) != shard_count
+        or not all(_sha256(value) for value in candidate_sha256s)
+        or not _sha256(payload.get("assessors_sha256"))
+        or not _sha256(payload.get("baseline_score_sha256"))
+        or not _sha256(payload.get("sandbox_receipt_sha256"))
+        or not _sha256(payload.get("sandbox_probe_sha256"))
+        or not isinstance(payload.get("mbpp_setup_qualification_count"), int)
+        or isinstance(payload.get("mbpp_setup_qualification_count"), bool)
+        or payload["mbpp_setup_qualification_count"] <= 0
+        or not isinstance(unchanged_result, dict)
+        or unchanged_result.get("total") != rows
+        or not _bounded_count(unchanged_result.get("correct"), rows)
+        or not isinstance(paired, dict)
     ):
         raise Q36MTRTokenGateAnalysisError("token-gate score geometry differs")
+    domains = result.get("domains")
+    empty = result.get("empty_completions")
+    exhausted = result.get("max_token_exhausted")
+    if (
+        not isinstance(domains, dict)
+        or set(domains) != set(TASKS)
+        or not _bounded_count(empty, rows)
+        or not _bounded_count(exhausted, rows)
+    ):
+        raise Q36MTRTokenGateAnalysisError("token-gate diagnostics differ")
+    domain_correct = domain_total = 0
+    for task in TASKS:
+        bucket = domains[task]
+        if (
+            not isinstance(bucket, dict)
+            or not _bounded_count(bucket.get("total"), rows)
+            or not _bounded_count(bucket.get("correct"), bucket["total"])
+        ):
+            raise Q36MTRTokenGateAnalysisError("token-gate domain differs")
+        domain_correct += bucket["correct"]
+        domain_total += bucket["total"]
+    if domain_correct != result["correct"] or domain_total != rows:
+        raise Q36MTRTokenGateAnalysisError("token-gate domain totals differ")
     parsed: dict[str, dict[str, Any]] = {}
     correct_key = f"{arm}_correct"
     for row in outcomes:
@@ -72,12 +134,53 @@ def _load_score(path: Path) -> dict[str, Any]:
         }
     if sum(row["correct"] for row in parsed.values()) != result["correct"]:
         raise Q36MTRTokenGateAnalysisError("token-gate correct count differs")
+    for task in TASKS:
+        task_rows = [row for row in parsed.values() if row["task"] == task]
+        if domains[task] != {
+            "correct": sum(row["correct"] for row in task_rows),
+            "total": len(task_rows),
+        }:
+            raise Q36MTRTokenGateAnalysisError("token-gate domain outcomes differ")
+    unchanged_correct = sum(row["unchanged_correct"] for row in parsed.values())
+    arm_only = sum(
+        row["correct"] and not row["unchanged_correct"] for row in parsed.values()
+    )
+    unchanged_only = sum(
+        row["unchanged_correct"] and not row["correct"] for row in parsed.values()
+    )
+    expected_p = _mcnemar_exact(arm_only, unchanged_only)
+    observed_p = paired.get("mcnemar_exact_two_sided_p")
+    if (
+        unchanged_result["correct"] != unchanged_correct
+        or payload.get("gain_over_unchanged_count")
+        != result["correct"] - unchanged_correct
+        or paired.get("temporal_only_correct") != arm_only
+        or paired.get("unchanged_only_correct") != unchanged_only
+        or not isinstance(observed_p, (int, float))
+        or isinstance(observed_p, bool)
+        or not math.isfinite(observed_p)
+        or not math.isclose(observed_p, expected_p, rel_tol=0.0, abs_tol=1e-15)
+    ):
+        raise Q36MTRTokenGateAnalysisError("token-gate paired evidence differs")
     return {
         "payload": payload,
         "arm": arm,
         "result": result,
         "outcomes": parsed,
         "rows": rows,
+        "diagnostics": {
+            "assessors_sha256": payload["assessors_sha256"],
+            "baseline_score_sha256": payload["baseline_score_sha256"],
+            "candidate_sha256s": candidate_sha256s,
+            "domains": domains,
+            "empty_completions": empty,
+            "max_token_exhausted": exhausted,
+            "mbpp_setup_qualification_count": payload["mbpp_setup_qualification_count"],
+            "paired_vs_unchanged": paired,
+            "sandbox_probe_sha256": payload["sandbox_probe_sha256"],
+            "sandbox_receipt_sha256": payload["sandbox_receipt_sha256"],
+            "shard_count": shard_count,
+        },
     }
 
 
@@ -115,6 +218,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     identities: set[str] | None = None
     unchanged: dict[str, bool] | None = None
     row_count: int | None = None
+    shared_binding: tuple[str, str, str] | None = None
     for path in args.score:
         loaded = _load_score(path)
         name = _variant_name(path, loaded["arm"], set(variants))
@@ -123,14 +227,21 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             identity: row["unchanged_correct"]
             for identity, row in loaded["outcomes"].items()
         }
+        current_binding = (
+            loaded["diagnostics"]["assessors_sha256"],
+            loaded["diagnostics"]["baseline_score_sha256"],
+            loaded["diagnostics"]["sandbox_probe_sha256"],
+        )
         if identities is None:
             identities = current_identities
             unchanged = current_unchanged
             row_count = loaded["rows"]
+            shared_binding = current_binding
         elif (
             current_identities != identities
             or current_unchanged != unchanged
             or loaded["rows"] != row_count
+            or current_binding != shared_binding
         ):
             raise Q36MTRTokenGateAnalysisError("token-gate benchmark identity differs")
         variants[name] = {**loaded, "path": path}
@@ -205,6 +316,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 task: {"correct": task_correct[task], "total": task_total[task]}
                 for task in TASKS
             },
+            **loaded["diagnostics"],
         }
     pairwise: dict[str, Any] = {}
     names = sorted(variants)
@@ -236,6 +348,34 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
     )
     winner = ranked[0]
+    eligibility: dict[str, dict[str, bool | None]] = {}
+    for name in ranked:
+        summary = summaries[name]
+        beats_incumbent = (
+            summary["correct"] > incumbent_revision_correct
+            if incumbent_revision_correct is not None
+            else None
+        )
+        eligibility[name] = {
+            "beats_incumbent_revision": beats_incumbent,
+            "retention_at_least_90_percent": summary["retention"] >= 0.9,
+            "every_domain_nonzero": all(
+                summary["domains"][task]["correct"] > 0 for task in TASKS
+            ),
+            "zero_empty_completions": summary["empty_completions"] == 0,
+            "zero_max_token_exhausted": summary["max_token_exhausted"] == 0,
+        }
+    promotion_candidates = [
+        name
+        for name in ranked
+        if eligibility[name]["beats_incumbent_revision"] is True
+        and all(
+            value
+            for key, value in eligibility[name].items()
+            if key != "beats_incumbent_revision"
+        )
+    ]
+    promotion_candidate = promotion_candidates[0] if promotion_candidates else None
     report = {
         "schema": SCHEMA,
         "status": "complete",
@@ -246,6 +386,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "variants": summaries,
         "pairwise": pairwise,
         "ranking": ranked,
+        "promotion_eligibility": eligibility,
+        "promotion_candidate": promotion_candidate,
         "winner": winner,
         "winner_correct": summaries[winner]["correct"],
         "winner_beats_incumbent_revision": (
@@ -257,7 +399,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             summaries[winner]["retention"]
         )
         and summaries[winner]["retention"] >= 0.9,
-        "recommended_next_action": "evaluate_winner_on_1023_validation",
+        "recommended_next_action": (
+            "interpret_already_staged_1023_validation_for_promotion_candidate"
+            if promotion_candidate is not None
+            else "do_not_promote_new_router_from_this_screen"
+        ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temporary = args.output.with_name(f".{args.output.name}.tmp.{os.getpid()}")
