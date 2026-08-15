@@ -5,14 +5,16 @@ model caches from closed dense, small-MoE, control-family, and prohibited Q35
 lanes.  Dense scaling is complete; these weights are reproducible from their
 upstream revisions, while their compact conclusions and hashes remain in Git.
 
-The batch contains exactly 9 resolved, nonsymbolic directories owned by
-`sa305415`: 61,248,122,880 allocated bytes (57.04 GiB) and 284 path inodes.
+The executable batch contains exactly 8 resolved, nonsymbolic, regular-file-only
+directories owned by `sa305415`: 61,247,893,504 allocated bytes (57.04 GiB)
+and 255 path inodes.  An initial precheck failed closed before mutation because
+the proposed 229,376-byte `hf_cache` contained one interior Hugging Face
+symlink; that cache was removed from the batch and remains untouched.
 
 | Mtime (EDT) | Allocated bytes | Inodes | Exact target |
 |---|---:|---:|---|
 | 2026-07-31 17:45:20 | 272,490,496 | 13 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2-135m-instruct-83212e1` |
 | 2026-08-02 21:46:00 | 1,769,992,192 | 35 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-0.8b-2fc0636` |
-| 2026-08-02 22:40:15 | 229,376 | 29 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/hf_cache` |
 | 2026-08-03 04:10:28 | 6,167,617,536 | 32 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm3-3b-a07cc9a` |
 | 2026-08-05 01:22:53 | 15,242,944,512 | 50 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen2.5-coder-7b-instruct-c03e6d3` |
 | 2026-08-05 07:11:09 | 2,109,440 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2_135m_instruct_83212e1e` |
