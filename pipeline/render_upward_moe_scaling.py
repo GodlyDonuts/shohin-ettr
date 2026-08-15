@@ -101,12 +101,12 @@ def _load(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         not isinstance(analysis, dict)
         or analysis.get("schema") != ANALYSIS_SCHEMA
         or analysis.get("status") != "complete_curve"
-        or analysis.get("point_count") != 3
         or analysis.get("minimum_points_for_curve") != 3
         or analysis.get("architecture_series") != "trained_revision"
         or not isinstance(analysis.get("curve"), dict)
         or not isinstance(analysis.get("points"), list)
-        or len(analysis["points"]) != 3
+        or len(analysis["points"]) < 3
+        or analysis.get("point_count") != len(analysis["points"])
     ):
         raise UpwardMoEFigureError("analysis contract differs")
     points: list[dict[str, Any]] = []
@@ -150,9 +150,9 @@ def _load(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         )
     points.sort(key=lambda value: value["active_parameters"])
     if (
-        len({point["host"] for point in points}) != 3
-        or len({point["total_parameters"] for point in points}) != 3
-        or len({point["active_parameters"] for point in points}) != 3
+        len({point["host"] for point in points}) != len(points)
+        or len({point["total_parameters"] for point in points}) != len(points)
+        or len({point["active_parameters"] for point in points}) != len(points)
     ):
         raise UpwardMoEFigureError("scaling geometry differs")
     return analysis, points
@@ -279,7 +279,8 @@ def _svg(analysis: dict[str, Any], points: list[dict[str, Any]]) -> bytes:
             * retention_height
         )
 
-    colors = ("#2563eb", "#d97706", "#059669")
+    palette = ("#2563eb", "#d97706", "#059669", "#7c3aed", "#dc2626", "#0891b2")
+    colors = tuple(palette[index % len(palette)] for index in range(len(points)))
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc">',
         '<title id="title">Shohin upward mixture-of-experts scaling</title>',

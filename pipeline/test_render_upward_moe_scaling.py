@@ -135,6 +135,47 @@ def test_renderer_escapes_host_and_refuses_score_tamper(tmp_path: Path) -> None:
         )
 
 
+def test_renderer_extends_to_fourth_ultra_point(tmp_path: Path) -> None:
+    payload = _analysis()
+    payload["points"].append(
+        {
+            "host": "NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
+            "architecture_series": "trained_revision",
+            "total_parameters": 550_000_000_000,
+            "active_parameters": 55_000_000_000,
+            "rows": 256,
+            "treatment_arm": "revision",
+            "treatment_correct": 154,
+            "unchanged_correct": 112,
+            "self_refinement_correct": 122,
+            "gain_over_unchanged_count": 42,
+            "gain_over_unchanged_percentage_points": 100 * 42 / 256,
+            "gain_over_self_refinement_count": 32,
+            "paired_wins": 45,
+            "paired_losses": 3,
+            "mcnemar_exact_two_sided_p": 0.0001,
+            "unchanged_correct_retained": 109,
+            "unchanged_correct_retention": 109 / 112,
+            "source_sha256": "b" * 64,
+        }
+    )
+    payload["point_count"] = 4
+    output = tmp_path / "figure"
+    manifest = render(
+        _write(tmp_path / "analysis.json", payload).resolve(), output.resolve()
+    )
+    assert len(manifest["point_source_sha256s"]) == 4
+    svg = (output / "shohin-upward-moe-scaling.svg").read_text()
+    assert "Nemotron Ultra-550B-A55B-NVFP4" in svg
+    assert "550B" in svg
+    rows = list(
+        csv.DictReader(
+            io.StringIO((output / "shohin-upward-moe-scaling-points.csv").read_text())
+        )
+    )
+    assert len(rows) == 4
+
+
 @pytest.mark.parametrize("status", ["complete_insufficient_points", "pending", None])
 def test_renderer_refuses_incomplete_curve(tmp_path: Path, status: str | None) -> None:
     payload = _analysis()
