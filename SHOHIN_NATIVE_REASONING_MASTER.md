@@ -1,5 +1,30 @@
 # Shohin Native Reasoning Master Ledger
 
+## Q36 temporal causal gate and upward MoE scaling — 2026-08-15
+
+The strongest completed Qwen3.6-35B-A3B screen is now the 32,784-parameter
+hidden-state temporal residual gate at `143/256`, versus unchanged `111/256`:
+`+32` correct / `+12.5` points, paired wins `38` to losses `6`, exact
+McNemar `p=9.4304e-7`. It improves every domain (`86/128` logic, `46/117`
+math, `11/11` code), with zero empty outputs and one token-limit exhaustion.
+The gate blends frozen owner and trained-revision residuals in the final 16
+MoE layers. It was trained with causal response loss only—auxiliary routing
+supervision weight is exactly zero—and evaluation routing rises from mean
+revision weight `0.6431` in the first controlled layer to `0.9028` in the
+last. It is numerically above both trained revision and multi-trajectory
+gating (`141/256` each), though those direct pairwise differences are not yet
+significant. Preserve
+`docs/research/Q36_TEMPORAL_CAUSAL_GATE_SCREEN_RESULT_20260815.json`.
+
+The upward cross-family measurement remains the priority. Pending large-host
+mechanics jobs are Nemotron Super-120B-A12B `760382` and Mixtral-141B-A39B
+`760565`; exact fit/evaluation/score descendants and automatic curve/figure
+jobs are already staged. Lower-scale follow-ups, including the temporal
+gate's existing 1,023-row validation, are reversibly held so they do not
+delay those larger hosts. After the plain trained-revision host baselines are
+measured, the causal two-branch gate is the leading architecture to transfer
+upward without selector labels.
+
 ## Q36-MTR trained synthesis and interpolation — 2026-08-14
 
 The strongest demonstrated MoE result remains hierarchical synthesis at

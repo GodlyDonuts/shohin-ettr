@@ -1,5 +1,29 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **Q36 TEMPORAL CAUSAL GATE IS THE NUMERICAL 35B SCREEN LEADER —
+> 2026-08-15:** hidden-state causal gating between frozen owner and revision
+> residuals scores `143/256` versus unchanged `111/256`, a gain of `32` /
+> `12.5` points with paired wins `38`, losses `6`, exact `p=9.4304e-7`.
+> Domains are logic `86/128`, math `46/117`, code `11/11`; empty outputs are
+> zero and only one output reaches the token limit. The 32,784-parameter gate
+> trains for 256 updates using causal response loss and **zero auxiliary
+> routing supervision**. Its mean revision weight climbs from `0.6431` to
+> `0.9028` across the controlled depth, establishing a nondegenerate causal
+> blend rather than a selector-only result. It is two answers above revision
+> and multi-trajectory (`141/256` each), but the direct pairwise differences
+> are not significant. Preserve exact fit/eval/score hashes in
+> `docs/research/Q36_TEMPORAL_CAUSAL_GATE_SCREEN_RESULT_20260815.json`.
+
+> **UPWARD MoE PRIORITY — 2026-08-15:** keep Nemotron Super mechanics
+> `760382` and Mixtral mechanics `760565` ahead of held lower-scale follow-up
+> roots. Their independent fit, unchanged/self-refinement/revision screens,
+> scores, three-point curve job `760575`, and publication figure job `760588`
+> are dependency-staged. Do not duplicate or modify them. After these plain
+> trained-revision host baselines complete, transfer the temporal two-branch
+> causal gate to the strongest larger host; do not substitute a benchmark
+> selector. Nemotron Ultra-550B-A55B remains the next scale target after
+> eight-H100 access and exact weight restoration.
+
 > **Q36-MTR INTERPOLATION SWEEP LIVE — 2026-08-14:** The current champion is
 > hierarchical synthesis at `664/1289`, versus matched production baseline
 > `539/1289`. Direct use of the new 256-update trained aligned reviser lost

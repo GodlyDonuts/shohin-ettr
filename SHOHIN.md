@@ -4,6 +4,29 @@
 
 ## Read this first
 
+**The strongest completed Qwen3.6-35B-A3B architecture screen is now the
+temporal causal gate.** Its 32,784 trainables blend frozen owner and revision
+residuals tokenwise across the final 16 MoE layers. On the fixed 256-row
+source-disjoint screen it scores `143/256` versus unchanged `111/256`: `+32`
+correct / `+12.5` points, paired wins `38` to losses `6`, exact
+`p=9.4304e-7`. Domain scores are `86/128` logic, `46/117` math, and `11/11`
+code. The gate used causal response training with zero auxiliary routing
+supervision, and its evaluation routing becomes increasingly
+revision-dominant with depth (`0.6431` first controlled layer, `0.9028`
+last). It is numerically two answers above trained revision and the prior
+multi-trajectory gate, but that direct difference is not significant on this
+screen. Full evidence and exact hashes are in
+`docs/research/Q36_TEMPORAL_CAUSAL_GATE_SCREEN_RESULT_20260815.json`.
+
+**Upward MoE scaling remains the active execution priority.** The existing
+Qwen 35B result anchors independent Nemotron Super-120B-A12B and
+Mixtral-141B-A39B trained-revision measurements; mechanics jobs `760382` and
+`760565` are first in the Shohin eligible GPU queue, with all downstream
+matched controls, scoring, curve analysis, and publication rendering staged.
+Once those host baselines close, the temporal causal gate is the leading
+architecture for cross-family upward transfer. Nemotron Ultra-550B-A55B is
+prepared after eight-H100 access and exact weight restoration.
+
 **Q36-MTR has demonstrated a material MoE improvement and is actively scaling
 it.** Hierarchical synthesis scores `664/1289` (`51.5128%`) versus the matched
 production baseline's `539/1289` (`41.8154%`), a gain of `125` answers /
