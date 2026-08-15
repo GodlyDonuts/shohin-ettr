@@ -129,6 +129,7 @@ train/hf_q36_mtr_train_commit_256.py
 train/hf_q36_mtr_train_role.py
 train/hf_q36_mtr_train_setwise_commit.py
 train/hf_q36_mtr_train_temporal_gate.py
+train/hf_upward_moe_train_owner.py
 train/integrated_reasoning_workspace.py
 train/jobs/mixtral_8x22b_evaluate.sbatch
 train/jobs/mixtral_8x22b_mechanics.sbatch
@@ -154,6 +155,7 @@ train/jobs/q36_mtr_train_commit_256.sbatch
 train/jobs/q36_mtr_train_role.sbatch
 train/jobs/q36_mtr_train_setwise_commit.sbatch
 train/jobs/q36_mtr_train_temporal_gate.sbatch
+train/jobs/upward_moe_train_owner.sbatch
 train/mixtral_post_mlp_revision.py
 train/nemotron_super_post_mixer_revision.py
 train/nemotron_ultra_post_mixer_revision.py
