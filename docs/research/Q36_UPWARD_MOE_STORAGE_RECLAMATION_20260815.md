@@ -157,3 +157,47 @@ locally recoverable.
 - Current hard-limit headroom: 309,035,428 KiB and 312,754 inodes.
 - The active Qwen3.6 and Nemotron Super model roots, Super overlay, current Q36
   runtime/evidence roots, and repository remained present after deletion.
+
+## Batch 4 manifest — closed SmolLM3 training checkpoints
+
+This manifest was recorded before mutation. The small-model lane is closed and
+explicitly excluded from the upward-MoE scaling graph. Its compact conclusions
+and named checkpoint lineage remain in the pushed research record, while the
+literal checkpoint tree below is not referenced by any queued or running Slurm
+job.
+
+| Mtime (EDT) | Allocated bytes | Inodes | Exact target |
+|---|---:|---:|---|
+| 2026-08-07 17:56:42 | 109,853,667,328 | 1,113 | `/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/smollm3-3b-a07cc9a` |
+
+The target resolved exactly to the recorded absolute path, was a nonsymbolic
+directory owned by `sa305415`, and had zero live scheduler references. The
+active Qwen3.6 35B-A3B model, Nemotron Super 120B-A12B model and overlay,
+Ultra transfer basis, current Q36 sources/checkpoints/candidates/scores,
+runtimes, evidence, repositories, credentials, and cluster configuration are
+explicit exclusions. Before deletion, the target must be revalidated against
+the exact bytes and inode count, entirely same-user owned and same-filesystem,
+then renamed to one literal same-parent quarantine. Only that quarantine may be
+permanently removed with one-filesystem protection.
+
+### Batch 4 execution receipt
+
+The one exact target revalidated byte/inode-identical, remained entirely owned
+by `sa305415`, contained no symlinks or special files, and had zero references
+from all queued or running Slurm jobs. It was renamed to the literal
+same-parent `.q36-upward-delete-b4-smollm3-3b-a07cc9a-20260815` quarantine;
+only that quarantine was made owner-writable and permanently removed with
+one-filesystem protection. The original and quarantine are absent. The
+deletion is not locally recoverable.
+
+- Pre-delete quota: 752,615,988 KiB and 697,826 inodes.
+- Stable post-delete quota at 10:57:43, 10:57:53, 10:58:15, and 10:58:26
+  EDT: 645,337,016 KiB and 696,713 inodes.
+- Exact recovered quota: 107,278,972 KiB (109,853,667,328 bytes) and 1,113
+  inodes, exactly matching the manifest.
+- Current hard-limit headroom: 413,724,744 KiB and 313,287 inodes.
+- The Ultra snapshot admission requirement is 421,100,722,257 bytes including
+  its 64-GiB post-download safety reserve; observed headroom exceeds it by
+  2,493,569 KiB (2.378 GiB).
+- Every explicit active Qwen3.6, Nemotron Super/overlay, Ultra transfer-basis,
+  Q36 runtime, and evidence anchor remained present after deletion.
