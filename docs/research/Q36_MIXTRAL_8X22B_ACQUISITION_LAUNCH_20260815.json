@@ -1,0 +1,52 @@
+{
+  "schema": "shohin-q36-mixtral-8x22b-acquisition-launch-v1",
+  "status": "cpu_acquisition_submitted_scientific_compute_not_submitted",
+  "date": "2026-08-15",
+  "job": {
+    "job_id": 760560,
+    "job_name": "mixtral-8x22b-fetch",
+    "partition": "normal",
+    "resources": "cpu_only_8_cpus_32GiB_12h",
+    "requeue": false,
+    "dependency": null,
+    "initial_state": "PENDING",
+    "initial_reason": "Priority",
+    "workdir": "/lustre/fs1/home/sa305415/shohin"
+  },
+  "model": {
+    "repository": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "config_sha256": "9c4a6138d84029ab666943613e3d5844d2ea8fd6149f44f77188c62e2915e0f5",
+    "expected_siblings": 69,
+    "expected_weight_shards": 59,
+    "expected_weight_bytes": 281260367720,
+    "expected_lfs_bytes": 281261542528,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/external/mixtral-8x22b-instruct-cc88a6c",
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/external/mixtral-8x22b-instruct-cc88a6c.acquisition.json"
+  },
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_11c7a176_r1",
+    "source_commit": "11c7a176cffafbf840e80f0ab1ae488fc6f70566",
+    "sha256sums_sha256": "b07843e77980525a0cd8f404f741515a826c5a577fc42667d4d8120f93a842b0",
+    "runtime_json_sha256": "7d1f5fd54eb947b41e1c9c52c0be7b8915a7caad041ff898dcf1f074c88663d4",
+    "wrapper": "pipeline/jobs/fetch_mixtral_8x22b.sbatch",
+    "worker": "pipeline/fetch_mixtral_8x22b.py"
+  },
+  "admission": {
+    "used_kib": 591748968,
+    "hard_kib": 1059061760,
+    "headroom_kib": 467312792,
+    "required_headroom_kib": 300000000,
+    "storage_gate": "pass",
+    "duplicate_output_or_stage": false,
+    "live_job_for_same_output": false,
+    "ambient_slurm_overlap_and_whole_removed": true
+  },
+  "boundary": {
+    "scientific_result": false,
+    "gpu_requested": false,
+    "qwen_graph_changed": false,
+    "nemotron_super_graph_changed": false,
+    "next_action": "verify exact sealed snapshot and acquisition report, then submit the already-prepared mechanics and trained-revision screen without duplicating any active work"
+  }
+}

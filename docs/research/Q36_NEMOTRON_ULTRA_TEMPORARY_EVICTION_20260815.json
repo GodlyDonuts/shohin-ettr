@@ -1,0 +1,64 @@
+{
+  "schema": "shohin-q36-nemotron-ultra-temporary-eviction-v1",
+  "status": "complete_model_weights_permanently_removed_locally_exact_restore_custody_preserved",
+  "date": "2026-08-15",
+  "purpose": "Temporarily exchange the unschedulable public Nemotron Ultra 550B snapshot for enough durable Lustre headroom to acquire and execute the next upward MoE scaling point, Mixtral 8x22B.",
+  "removed_target": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/external/nemotron-3-ultra-550b-a55b-nvfp4-183968f",
+    "repository": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4",
+    "revision": "183968f87ae4cedce3039313cac1fd43d112c578",
+    "allocated_kib": 344123236,
+    "path_inodes": 247,
+    "regular_files": 246,
+    "symlinks_or_specials": 0,
+    "owner": "sa305415",
+    "root_mode_before_removal": "0500",
+    "live_scheduler_references": 0,
+    "local_recoverability": "none_after_permanent_deletion",
+    "external_recoverability": "exact official revision can be reacquired and verified against the preserved complete manifest"
+  },
+  "preserved_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_ultra_snapshot_evidence_183968f_r1",
+    "regular_files": 134,
+    "allocated_kib": 71172,
+    "writable_members": 0,
+    "capsule_manifest_sha256": "4f2b30d3c5090f81765b32d8afc51c9d6379999379a5247c8d9497fe9cb68641",
+    "original_full_model_manifest_sha256": "e20d8aad607dd1146ee83d49c31f65e7fc24033348137a57a93615436484751a",
+    "snapshot_receipt_sha256": "6b9b50ed6bdb644c0bf059c3c9f8cff2a2775d936fb8c6d1b65f0c953aba731a",
+    "source_revision_sha256": "72b9c31cfe862b4bb903d0ba7da4452df43875fdf32cd2c388ca836164338c8c",
+    "config_sha256": "0c939f324c8910f5ebdafbe2a56d7e4e074c50042a3b4f26326bf71a3fe33929",
+    "contents": "every original non-safetensors file, including all 113 shard metadata JSONs, the full SHA256SUMS, snapshot receipt, source revision, model index, configuration, tokenizer, and model-card materials"
+  },
+  "transaction": {
+    "first_capsule_attempt": "failed_closed_on_expected_file_count_before_any_target mutation; target remained intact",
+    "quarantine": "/lustre/fs1/home/sa305415/shohin/artifacts/external/.q36-mixtral-swap-delete-ultra-183968f-20260815",
+    "method": "exact same-parent rename followed by chmod only inside the quarantine and rm --one-file-system of that literal quarantine",
+    "original_absent_after": true,
+    "quarantine_absent_after": true,
+    "capsule_present_after": true,
+    "permanently_removed": true
+  },
+  "quota": {
+    "filesystem": "/lustre/fs1",
+    "hard_kib": 1059061760,
+    "hard_inodes": 1010000,
+    "before_used_kib": 935872204,
+    "before_used_inodes": 534449,
+    "settled_after_used_kib": 591748968,
+    "settled_after_used_inodes": 534202,
+    "recovered_kib": 344123236,
+    "recovered_inodes": 247,
+    "settled_headroom_kib": 467312792,
+    "settled_headroom_inodes": 475798,
+    "mixtral_acquisition_minimum_headroom_kib": 300000000,
+    "mixtral_acquisition_storage_gate": "pass"
+  },
+  "scientific_boundary": {
+    "qwen_jobs_changed": false,
+    "nemotron_super_jobs_changed": false,
+    "ultra_scientific_job_submitted": false,
+    "mixtral_scientific_job_submitted_by_this_transaction": false,
+    "architecture_or_gate_changed": false,
+    "restore_before_ultra_execution": true
+  }
+}
