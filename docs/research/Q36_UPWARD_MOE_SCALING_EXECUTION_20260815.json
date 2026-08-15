@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-upward-moe-scaling-execution-v1",
-  "status": "qwen_screens_fitting_complete_nemotron_super_graph_staged",
+  "status": "qwen_screens_running_nemotron_super_graph_staged_ultra_transfer_basis_qualified",
   "dense_scaling_status": "closed_not_in_active_graph",
   "measured_anchor": {
     "host": "Qwen3.6-35B-A3B",
@@ -195,8 +195,11 @@
     }
   ],
   "zero_label_super_to_ultra_transfer_preparation": {
-    "status": "embedding_alignment_cpu_job_pending",
+    "status": "embedding_alignment_complete_holdout_correlation_pass",
     "job": 760260,
+    "job_state": "COMPLETED",
+    "elapsed_seconds": 29,
+    "restarts": 0,
     "git_commit": "45562693a5662d6e47df3b6cfb57fa443ef60585",
     "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_45562693_r1",
     "runtime_manifest_sha256": "7f339b695fededd5c4853640194a7cfefef82e8ba79767261c41bcb5b0355749",
@@ -210,6 +213,13 @@
     "ultra_hidden_size": 8192,
     "anchor_token_identities": 1024,
     "disjoint_holdout_token_identities": 4096,
+    "validation_directions": 128,
+    "holdout_correlation_mean": 0.6268115639686584,
+    "holdout_correlation_min": 0.5388835072517395,
+    "holdout_correlation_max": 0.7278411388397217,
+    "holdout_correlation_std": 0.04202742129564285,
+    "factor_sha256": "74c65a5ee08d058f565c2598bc3005f7b441977d16ed7bc99ea978468a5c617b",
+    "report_sha256": "ae0f99df17fb29086ebc28d11a58b183a230f13a4ae2e9fd7eee0c8532e17a7d",
     "benchmark_rows_read": 0,
     "label_rows_read": 0,
     "purpose": "lift_the_trained_rank64_super_residual_into_ultra_through_the_shared_token_semantic_basis_without_ultra_training"
