@@ -46,7 +46,7 @@ for index in 0 1 2 3 4 5; do
     args+=(--$option "$candidate" --$option-score "$score")
   done
 done
-for shard in $(seq -w 0 7); do
+for shard in $(seq -w 00 07); do
   candidate=$RUN/evaluations/development_unchanged/shard_$shard/candidates.jsonl
   score=$ep/matched_controls_4cb6e9d/scores/unchanged/shard_$shard.json
   [[ -f "$candidate" && -f "$score" ]] || exit 2
