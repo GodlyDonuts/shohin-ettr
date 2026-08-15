@@ -273,8 +273,8 @@
       "nemotron_and_package_tests_passed": 41
     },
     "ultra_live_attachment_preparation": {
-      "status": "code_complete_exact_config_verified_not_executed",
-      "git_commit": "8641bdac16f9e2e249e894622c0b75c0d1a8c0d4",
+      "status": "attachment_and_eight_h100_mechanics_code_complete_not_executed",
+      "git_commit": "60a227a371f1f1b5c925f181f9bd65387a430b5c",
       "host_contract": "train/q36_upward_moe_ultra_host.py",
       "host_contract_sha256": "e2ab656da8231f943ec470a19850ca52e0e93d5ccebafb2499e7fc56a835ee51",
       "attachment": "train/nemotron_ultra_post_mixer_revision.py",
@@ -305,11 +305,17 @@
       "rank": 18,
       "trainable_parameters": 4718592,
       "checkpoint_parameter_names_match_adapter_lift": true,
+      "mechanics_worker": "train/hf_nemotron_ultra_mechanics.py",
+      "mechanics_worker_sha256": "7e8c271fcbe0c6a2cbab5f91300129ee31e61b50095612681815453ad74cea66",
+      "mechanics_wrapper": "train/jobs/nemotron_ultra_mechanics.sbatch",
+      "mechanics_wrapper_sha256": "c22c09090402373a852f566cb5eed20cb475aa3be8c76290939d15e653e700b8",
+      "mechanics_allocation": "one_node_eight_nvidia_h100_80gb_hbm3",
+      "mechanics_boundary": "exact_tree_offline_load_all_eight_devices_synthetic_update_gradient_receipt_write_once_restore",
       "native_router_expert_trainables": 0,
       "benchmark_rows_read": 0,
       "label_rows_read": 0,
-      "focused_tests_passed": 21,
-      "remaining_execution_gap": "full_model_snapshot_plus_eight_h100_single_node_load_mechanics"
+      "focused_tests_passed": 27,
+      "remaining_execution_gap": "full_model_snapshot_plus_highgpu_account_authorization_then_live_no_score_mechanics"
     }
   },
   "prohibited_active_work": [
