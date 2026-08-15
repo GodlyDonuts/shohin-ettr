@@ -37,6 +37,12 @@ q36_verify_sha256 "$REVISION_CHECKPOINT" "$(q36_sha256 "$REVISION_CHECKPOINT")"
 
 trainer=$RUNTIME/train/hf_q36_mtr_train_temporal_gate.py
 q36_require_file "$trainer"
+routing=()
+if [[ -n "${ROUTING_SUPERVISION_WEIGHT:-}" ]]; then
+  [[ "$ROUTING_SUPERVISION_WEIGHT" == "0.1" ]] || \
+    q36_die "temporal routing supervision differs"
+  routing=(--routing-supervision-weight "$ROUTING_SUPERVISION_WEIGHT")
+fi
 model=$(q36_stage_model)
 mkdir -p "$(dirname "$OUTPUT")" logs
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
@@ -55,6 +61,7 @@ nvidia-smi
   --environment-receipt "$ENVIRONMENT_RECEIPT" \
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
+  "${routing[@]}" \
   --output "$OUTPUT"
 
 test -f "$OUTPUT/checkpoint_0000256.pt" && test -f "$OUTPUT/report.json"

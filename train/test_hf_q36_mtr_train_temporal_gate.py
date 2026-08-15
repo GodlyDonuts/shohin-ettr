@@ -38,6 +38,7 @@ def _args() -> argparse.Namespace:
         seed=module.GATE_SEED,
         data_seed=module.REVISION_DATA_SEED,
         initial_revision_weight=module.GATE_INITIAL_REVISION_WEIGHT,
+        routing_supervision_weight=0.0,
         loss_chunk_size=module.LOSS_CHUNK_SIZE,
     )
 
@@ -48,6 +49,12 @@ def test_temporal_gate_settings_are_exact() -> None:
     changed.learning_rate *= 2
     with pytest.raises(module.Q36MTRTemporalGateTrainingError):
         module._validate_args(changed)
+    supervised = _args()
+    supervised.routing_supervision_weight = module.GATE_ROUTING_SUPERVISION_WEIGHT
+    module._validate_args(supervised)
+    supervised.routing_supervision_weight = 0.2
+    with pytest.raises(module.Q36MTRTemporalGateTrainingError):
+        module._validate_args(supervised)
 
 
 def test_gate_checkpoint_is_trainable_only_and_restores(tmp_path) -> None:

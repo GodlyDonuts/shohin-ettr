@@ -223,3 +223,17 @@ def test_product_surface_exposes_exact_trainables_and_generation_state() -> None
     assert torch.equal(observed_attention, attention)
     with pytest.raises(TemporalResidualGateError):
         model.generation_embeddings(ids.flip(1), attention)
+
+
+def test_routing_supervision_drives_owner_and_revision_extremes() -> None:
+    block = _block(weight=0.1)
+    hidden = torch.tensor([[[1.0, -1.0], [0.5, 0.5]]])
+    attention = torch.tensor([[1, 0]])
+    block(hidden)
+    owner_loss = block.routing_supervision_loss(0.0, attention)
+    revision_loss = block.routing_supervision_loss(1.0, attention)
+    assert owner_loss < revision_loss
+    (owner_loss + revision_loss).backward()
+    assert block.gate_weight.grad is not None
+    with pytest.raises(TemporalResidualGateError):
+        block.routing_supervision_loss(0.0, torch.ones(1, 3))

@@ -61,8 +61,15 @@ GATE_LEARNING_RATE = 2e-4
 GATE_GRADIENT_ACCUMULATION = 8
 GATE_BATCH_SIZE = 1
 GATE_INITIAL_REVISION_WEIGHT = 0.1
+GATE_ROUTING_SUPERVISION_WEIGHT = 0.1
 GATE_PARAMETERS = len(CONTROLLED_LAYER_INDICES) * (HIDDEN_SIZE + 1)
 LOSS_CHUNK_SIZE = 512
+ROUTING_TARGETS = {
+    "base_only": 0.0,
+    "both_correct": 0.0,
+    "both_wrong": None,
+    "expert_only": 1.0,
+}
 
 
 class Q36MTRTemporalGateTrainingError(RuntimeError):
@@ -224,7 +231,10 @@ def _validate_args(args: argparse.Namespace) -> None:
         "loss_chunk_size": LOSS_CHUNK_SIZE,
     }
     observed = {key: getattr(args, key) for key in expected}
-    if observed != expected:
+    if observed != expected or args.routing_supervision_weight not in {
+        0.0,
+        GATE_ROUTING_SUPERVISION_WEIGHT,
+    }:
         raise Q36MTRTemporalGateTrainingError(
             f"temporal gate settings differ: expected={expected} observed={observed}"
         )
@@ -271,10 +281,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         role="aligned",
         max_sequence_length=args.max_sequence_length,
     )
-    examples = list(zip(prompts, responses, draft_masks, strict=True))
+    outcomes = [str(row["outcome_class"]) for row in rows]
+    if any(outcome not in ROUTING_TARGETS for outcome in outcomes):
+        raise Q36MTRTemporalGateTrainingError("temporal routing outcome differs")
+    sequence_examples = list(zip(prompts, responses, draft_masks, strict=True))
+    examples = list(zip(prompts, responses, draft_masks, outcomes, strict=True))
     batches = list(_batches(examples, args.batch_size))
     consumption = training_consumption_receipt(
-        examples,
+        sequence_examples,
         updates=args.updates,
         gradient_accumulation=args.gradient_accumulation,
         batch_size=args.batch_size,
@@ -351,6 +365,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raw_batch = batches[microstep % len(batches)]
         batch_prompts = [item[0] for item in raw_batch]
         batch_responses = [item[1] for item in raw_batch]
+        batch_outcomes = [item[3] for item in raw_batch]
+        if len(batch_outcomes) != 1:
+            raise Q36MTRTemporalGateTrainingError(
+                "temporal routing batch geometry differs"
+            )
+        routing_target = ROUTING_TARGETS[batch_outcomes[0]]
         with torch.autocast("cuda", dtype=torch.bfloat16):
             inputs, attention, labels, charged = pack_training_embeddings(
                 model.text_model.embed_tokens,
@@ -365,12 +385,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 position_ids=full_sequence_position_ids(attention),
                 use_cache=False,
             )
-            loss = chunked_causal_cross_entropy(
+            causal_loss = chunked_causal_cross_entropy(
                 outputs.last_hidden_state,
                 labels,
                 model.lm_head,
                 args.loss_chunk_size,
             )
+            routing_loss = None
+            loss = causal_loss
+            if args.routing_supervision_weight and routing_target is not None:
+                routing_loss = model.routing_supervision_loss(routing_target, attention)
+                loss = loss + args.routing_supervision_weight * routing_loss
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
         charged_tokens += int(charged)
@@ -389,6 +414,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             event = {
                 "update": update,
                 "loss": float(loss.detach()),
+                "causal_loss": float(causal_loss.detach()),
+                "routing_supervision_loss": (
+                    float(routing_loss.detach()) if routing_loss is not None else None
+                ),
+                "routing_target": routing_target,
+                "outcome_class": batch_outcomes[0],
                 "gradient_norm": float(gradient_norm),
                 "learning_rate": learning_rate,
                 "charged_tokens": charged_tokens,
@@ -411,6 +442,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
         "gate_parameters": GATE_PARAMETERS,
         "initial_revision_weight": args.initial_revision_weight,
+        "routing_supervision_weight": args.routing_supervision_weight,
+        "routing_supervision_targets": ROUTING_TARGETS,
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
         "trainable_master_dtype": TRAINABLE_MASTER_DTYPE,
         "data": str(args.data.resolve()),
@@ -447,6 +480,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "status": "complete",
         "updates": update,
         "learning_rate": args.learning_rate,
+        "routing_supervision_weight": args.routing_supervision_weight,
         "gradient_accumulation": args.gradient_accumulation,
         "batch_size": args.batch_size,
         "seed": args.seed,
@@ -494,6 +528,7 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=GATE_INITIAL_REVISION_WEIGHT,
     )
+    parser.add_argument("--routing-supervision-weight", type=float, default=0.0)
     parser.add_argument("--loss-chunk-size", type=int, default=LOSS_CHUNK_SIZE)
     parser.add_argument("--log-interval", type=int, default=8)
     return parser.parse_args()

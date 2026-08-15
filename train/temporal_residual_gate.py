@@ -110,6 +110,7 @@ class TemporalResidualGate(nn.Module):
         self._gate_sum = 0.0
         self._owner_norm = 0.0
         self._revision_norm = 0.0
+        self._last_gate: torch.Tensor | None = None
 
     def receipt(self) -> dict[str, float | int]:
         if self._tokens == 0:
@@ -142,6 +143,24 @@ class TemporalResidualGate(nn.Module):
             F.linear(hidden_states.float(), self.gate_weight, self.gate_bias)
         )
 
+    def routing_supervision_loss(
+        self, target: float, attention_mask: torch.Tensor
+    ) -> torch.Tensor:
+        gate = self._last_gate
+        if (
+            gate is None
+            or not math.isfinite(target)
+            or not 0.0 <= target <= 1.0
+            or attention_mask.shape != gate.shape[:-1]
+            or attention_mask.device != gate.device
+            or not attention_mask.bool().any()
+        ):
+            raise TemporalResidualGateError("temporal routing supervision differs")
+        losses = F.binary_cross_entropy(
+            gate.float(), torch.full_like(gate.float(), target), reduction="none"
+        ).squeeze(-1)
+        return losses.masked_select(attention_mask.bool()).mean()
+
     def forward(
         self, hidden_states: torch.Tensor, *args: Any, **kwargs: Any
     ) -> torch.Tensor:
@@ -151,6 +170,7 @@ class TemporalResidualGate(nn.Module):
         owner = self._residual(hidden_states, self.owner_a, self.owner_b)
         revision = self._residual(hidden_states, self.revision_a, self.revision_b)
         gate = self._gate(hidden_states)
+        self._last_gate = gate
         mixed = owner + gate * (revision - owner)
         with torch.no_grad():
             tokens = int(native.numel() // native.shape[-1])
@@ -320,6 +340,18 @@ class TemporalGatedProductModel(nn.Module):
             "controlled_layer_indices": list(self.controlled_layer_indices),
             "layers": [block.receipt() for block in self.blocks],
         }
+
+    def routing_supervision_loss(
+        self, target: float, attention_mask: torch.Tensor
+    ) -> torch.Tensor:
+        if not self.blocks:
+            raise TemporalResidualGateError("temporal routing blocks are absent")
+        return torch.stack(
+            [
+                block.routing_supervision_loss(target, attention_mask)
+                for block in self.blocks
+            ]
+        ).mean()
 
     def prepare_generation_draft_attention(
         self,
