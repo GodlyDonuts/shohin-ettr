@@ -194,7 +194,7 @@
     "active_parameters": 55000000000,
     "repository_bytes": 352381245521,
     "minimum_h100s": 8,
-    "status": "mechanics_and_exact_snapshot_staging_code_complete_not_submitted_pending_super_measurement_highgpu_access_and_storage_margin"
+    "status": "exact_snapshot_sealed_mechanics_code_complete_not_submitted_pending_super_measurement_and_highgpu_access"
   },
   "qwen_full_validation_progress": {
     "observed_at": "2026-08-15T12:13:42-04:00",
@@ -411,7 +411,27 @@
     "manifest_members_after_source_revision_and_snapshot_receipt": 245,
     "required_post_download_safety_bytes": 68719476736,
     "required_pre_download_headroom_bytes": 421100722257,
-    "status": "exact_snapshot_staging_running_no_science_no_gpu"
+    "status": "exact_snapshot_sealed_no_science_no_gpu",
+    "staging_job_state": "COMPLETED",
+    "staging_job_elapsed_seconds": 5457,
+    "staging_job_exit_code": "0:0",
+    "staging_job_restarts": 0,
+    "staging_job_node": "evc2",
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/nemotron-3-ultra-550b-a55b-nvfp4-183968f",
+    "model_manifest_sha256": "e20d8aad607dd1146ee83d49c31f65e7fc24033348137a57a93615436484751a",
+    "snapshot_receipt_sha256": "6b9b50ed6bdb644c0bf059c3c9f8cff2a2775d936fb8c6d1b65f0c953aba731a",
+    "source_revision_sha256": "72b9c31cfe862b4bb903d0ba7da4452df43875fdf32cd2c388ca836164338c8c",
+    "manifest_rows": 245,
+    "full_checksum_passes": 2,
+    "checksum_ok_lines": 490,
+    "actual_regular_files_including_manifest": 246,
+    "writable_members": 0,
+    "symlinks": 0,
+    "special_members": 0,
+    "post_seal_quota_used_kib": 989919944,
+    "post_seal_quota_limit_kib": 1059061760,
+    "post_seal_inode_used": 701470,
+    "post_seal_inode_limit": 1010000
   },
   "ultra_matched_measurement_preparation": {
     "git_commit": "6a12d9d2feaad3cff3c695f43f58e5c664ab6974",
