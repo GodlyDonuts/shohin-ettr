@@ -29,6 +29,7 @@ def test_worker_is_one_gpu_per_independent_slurm_request() -> None:
     assert "#SBATCH --nodes=1" in WORKER
     assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in WORKER
     assert "#SBATCH --no-requeue" in WORKER
+    assert '"$PYTHON" -P -s -B -m torch.distributed.run' in WORKER
     assert "--nnodes=2" in WORKER
     assert "--nproc_per_node=1" in WORKER
     assert '--node_rank="$WORLD_RANK"' in WORKER
