@@ -31,6 +31,18 @@ Before release, the following exact inputs were present and read-only:
 | Matched revision training data | `802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff` |
 | Shared 256-row screen source | `f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9` |
 
+Fresh pre-execution replay also verified the complete Nemotron Super input
+closure: model revision `7d7e5797b8a3c7abbab54033b6004e93e8b6bc91`, config SHA-256
+`ff5d6d643b288d4149b0bf820ecb5fe87dd9bbc08b6b811241c57840e11e30e3`,
+151/151 runtime members, and 3,802/3,802 GLIBC/FP8 overlay members. The
+training input has exactly 9,655 rows; the matched source and assessor inputs
+have exactly 256 rows each, with assessor SHA-256
+`ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351`.
+The custom `NemotronH` config exposes no native tensor-parallel plan, so its
+preserved two-local-H100 graph remains the executable semantics; the
+independent-node TP fallback is used only for Mixtral, whose native TP plan is
+qualified by mechanics.
+
 All mechanics reports, 256-update checkpoints, and score outputs were absent
 before release, proving that this is activation of the preserved graph rather
 than duplicate execution.
