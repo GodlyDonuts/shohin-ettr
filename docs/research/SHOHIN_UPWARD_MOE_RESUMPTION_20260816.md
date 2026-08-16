@@ -320,3 +320,14 @@ byte counts. It also requires every accounting host to be one of the analysis
 points and preserves the no-successor/no-score-mutation claims. Runtime
 `upward_moe_publication_runtime_019490b2_r1` has manifest SHA-256
 `50ce4c4cfeeb299953e1c4cf71208e0f1ad4f367aca85a3622fc435a6b296650`.
+
+Durable-evidence job `760789` waits for publication receipt `760788` and
+atomically mirrors the exact ten-artifact result set into the authorized
+`q36_mtr_evidence` root: three source score points, normalized analysis,
+SVG, CSV, figure manifest, two host accounting receipts, and final publication
+receipt. It then replays exact root membership and every mirrored hash through
+the independent evidence verifier before sealing the tree read-only. Runtime
+`upward_moe_mirror_runtime_556adcb0_r1` has manifest SHA-256
+`5b942213b95dfb26eb9e46751943e3406c91ad9ba5d74be792b69c488cb550d0`.
+Temporary evaluation shards remain referenced and are not scheduled for
+removal.
