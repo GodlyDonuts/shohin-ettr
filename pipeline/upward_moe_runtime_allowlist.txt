@@ -42,6 +42,7 @@ pipeline/jobs/mixtral_8x22b_score.sbatch
 pipeline/jobs/mixtral_8x22b_validation_score.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
 pipeline/jobs/nemotron_ultra_score.sbatch
+pipeline/jobs/package_upward_moe_publication.sbatch
 pipeline/jobs/q36_mtr_authorize_score.sbatch
 pipeline/jobs/q36_mtr_build_final_custody.sbatch
 pipeline/jobs/q36_mtr_build_multi_owner_commit_pairs.sbatch
@@ -88,6 +89,7 @@ pipeline/merge_upward_moe_drafts.py
 pipeline/mirror_q36_mtr_evidence.py
 pipeline/normalize_q36_mtr_score.py
 pipeline/package_q36_mtr_runtime.py
+pipeline/package_upward_moe_publication.py
 pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_evidence.py
 pipeline/read_upward_moe_data_receipt.py
