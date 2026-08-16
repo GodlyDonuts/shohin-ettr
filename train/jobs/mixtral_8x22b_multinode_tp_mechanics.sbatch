@@ -67,7 +67,7 @@ master_port=$((30000 + master_job % 20000))
 rdzv_id="shohin-mixtral-tp-${master_job}"
 
 output="$RUN_ROOT/mechanics.json"
-"$(dirname "$PYTHON")/torchrun" \
+"$PYTHON" -P -s -B -m torch.distributed.run \
   --nnodes=2 \
   --nproc_per_node=1 \
   --node_rank="$WORLD_RANK" \
