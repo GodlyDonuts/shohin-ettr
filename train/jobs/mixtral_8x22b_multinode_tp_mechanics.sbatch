@@ -21,7 +21,7 @@ required=(
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
-[[ "$WORLD_RANK" == 0 || "$WORLD_RANK" == 1 ]]
+[[ "$WORLD_RANK" =~ ^[0-3]$ ]]
 [[ -x "$PYTHON" ]]
 [[ -d "$RUNTIME" && ! -L "$RUNTIME" ]]
 [[ -d "$MODEL_ROOT" && ! -L "$MODEL_ROOT" ]]
@@ -56,10 +56,12 @@ chmod 400 "$temporary"
 mv "$temporary" "$admitted"
 
 for _ in $(seq 1 900); do
-  [[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" ]] && break
+  [[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" \
+    && -s "$coord/rank-2.admitted" && -s "$coord/rank-3.admitted" ]] && break
   sleep 1
 done
-[[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" ]]
+[[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" \
+  && -s "$coord/rank-2.admitted" && -s "$coord/rank-3.admitted" ]]
 master_node=$(awk -F= '$1 == "node" {print $2}' "$coord/rank-0.admitted")
 master_job=$(awk -F= '$1 == "job" {print $2}' "$coord/rank-0.admitted")
 [[ "$master_node" == evc[0-9]* && "$master_job" =~ ^[0-9]+$ ]]
@@ -68,7 +70,7 @@ rdzv_id="shohin-mixtral-tp-${master_job}"
 
 output="$RUN_ROOT/mechanics.json"
 "$PYTHON" -P -s -B -m torch.distributed.run \
-  --nnodes=2 \
+  --nnodes=4 \
   --nproc_per_node=1 \
   --node_rank="$WORLD_RANK" \
   --rdzv_backend=c10d \
@@ -87,10 +89,12 @@ printf 'rank=%s\njob=%s\nnode=%s\ncompleted=1\n' \
 chmod 400 "$completed"
 if [[ "$WORLD_RANK" == 0 ]]; then
   for _ in $(seq 1 300); do
-    [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" ]] && break
+    [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" \
+      && -s "$coord/rank-2.completed" && -s "$coord/rank-3.completed" ]] && break
     sleep 1
   done
-  [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" ]]
+  [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" \
+    && -s "$coord/rank-2.completed" && -s "$coord/rank-3.completed" ]]
   checkpoint=${output%.json}.checkpoint.pt
   [[ -f "$output" && ! -L "$output" ]]
   [[ -f "$checkpoint" && ! -L "$checkpoint" ]]

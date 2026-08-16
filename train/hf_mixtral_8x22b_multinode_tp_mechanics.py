@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Qualify Mixtral Shohin mechanics over two independent one-H100 nodes."""
+"""Qualify Mixtral Shohin mechanics over four independent one-H100 nodes."""
 
 from __future__ import annotations
 
@@ -35,9 +35,9 @@ from q36_upward_moe_mixtral_host import (
     sha256_file,
 )
 
-SCHEMA = "shohin-mixtral-8x22b-two-node-tp-mechanics-v1"
-CHECKPOINT_SCHEMA = "shohin-mixtral-8x22b-two-node-tp-checkpoint-v1"
-EXPECTED_WORLD_SIZE = 2
+SCHEMA = "shohin-mixtral-8x22b-four-rank-bf16-tp-mechanics-v1"
+CHECKPOINT_SCHEMA = "shohin-mixtral-8x22b-four-rank-bf16-tp-checkpoint-v1"
+EXPECTED_WORLD_SIZE = 4
 
 
 def _rank() -> int:
@@ -147,15 +147,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if versions != EXPECTED_PACKAGES:
         raise MixtralMechanicsError("distributed mechanics package versions differ")
 
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    from transformers import AutoModelForCausalLM, AutoTokenizer
     from transformers.distributed.configuration_utils import DistributedConfig
 
-    quantization = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.bfloat16,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-    )
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
     tokenizer = AutoTokenizer.from_pretrained(
@@ -166,7 +160,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         local_files_only=True,
         trust_remote_code=False,
         distributed_config=DistributedConfig(tp_size=world),
-        quantization_config=quantization,
         dtype=torch.bfloat16,
         low_cpu_mem_usage=True,
     )
@@ -295,7 +288,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "world_size": world,
         "backend": dist.get_backend(),
         "parallelism": "native-transformers-tensor-parallel",
-        "quantization": "nf4",
+        "weight_dtype": "bfloat16",
+        "quantization": "none",
         "rank_receipts": rank_receipts,
         "trainable_parameters": model.trainable_parameter_count(),
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
