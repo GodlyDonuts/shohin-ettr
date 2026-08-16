@@ -310,3 +310,13 @@ Runtime `upward_moe_accounting_runtime_4a2a345e_r1` corrects the matcher to
 bind both stable `JobID` and numeric `JobIDRaw`; its manifest SHA-256 is
 `1837d89aac59444e461af6eded3b52f12e7c1291a264c84ce336d1b30dbfdba4`.
 No scientific or GPU job changed.
+
+Final CPU publication job `760788` waits for renderer `760780` and emits
+one immutable evidence manifest beside the figure. It independently reopens
+the normalized three-host analysis, verifies the SVG/CSV against the figure
+manifest, requires the two exact completed accounting receipts, and binds
+their source commits, allocation identities, charged H100-hours, hashes, and
+byte counts. It also requires every accounting host to be one of the analysis
+points and preserves the no-successor/no-score-mutation claims. Runtime
+`upward_moe_publication_runtime_019490b2_r1` has manifest SHA-256
+`50ce4c4cfeeb299953e1c4cf71208e0f1ad4f367aca85a3622fc435a6b296650`.
