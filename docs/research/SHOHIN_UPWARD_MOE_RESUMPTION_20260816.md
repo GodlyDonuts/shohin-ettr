@@ -195,6 +195,12 @@ the matching assessor SHA-256 is
 `af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e`.
 Sixteen already-generated Qwen3.6 unchanged candidate shards provide exactly
 1,023 fixed model-owned drafts (fifteen 64-row shards and one 63-row shard).
+Independent parsing verified unique, task-aligned, exact identity coverage:
+497 BBH-logic, 504 Math500, and 22 MBPP rows. Both the ordered source identity
+digest and sorted candidate identity-set digest are
+`1f3dcee9c65ad4c5692e5cf34688b10e086acea225f19af61829e250526e190a`;
+the ordered sixteen-shard draft manifest digest is
+`369ff24cc56084da3b1f71cba0a947499f453e9a7d273a3d22960d38f1bd94ed`.
 The evaluator accepts only `256:4` or `1023:16`, the validation scorer requires
 all sixteen shards for each matched arm, and all other geometries fail closed.
 
