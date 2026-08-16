@@ -6,6 +6,13 @@ WORKER = (ROOT / "train/jobs/mixtral_8x22b_multinode_tp_mechanics.sbatch").read_
 SUBMIT = (
     ROOT / "train/jobs/submit_mixtral_8x22b_multinode_tp_mechanics.sh"
 ).read_text()
+TRAINING = (ROOT / "train/hf_mixtral_8x22b_multinode_tp_train_revision.py").read_text()
+TRAIN_WORKER = (
+    ROOT / "train/jobs/mixtral_8x22b_multinode_tp_train_revision.sbatch"
+).read_text()
+TRAIN_SUBMIT = (
+    ROOT / "train/jobs/submit_mixtral_8x22b_multinode_tp_train_revision.sh"
+).read_text()
 
 
 def test_multinode_mechanics_uses_native_tensor_parallelism() -> None:
@@ -52,7 +59,35 @@ def test_runtime_allowlist_contains_multinode_path() -> None:
     allowlist = (ROOT / "pipeline/upward_moe_runtime_allowlist.txt").read_text()
     for member in (
         "train/hf_mixtral_8x22b_multinode_tp_mechanics.py",
+        "train/hf_mixtral_8x22b_multinode_tp_train_revision.py",
         "train/jobs/mixtral_8x22b_multinode_tp_mechanics.sbatch",
+        "train/jobs/mixtral_8x22b_multinode_tp_train_revision.sbatch",
         "train/jobs/submit_mixtral_8x22b_multinode_tp_mechanics.sh",
+        "train/jobs/submit_mixtral_8x22b_multinode_tp_train_revision.sh",
     ):
         assert f"{member}\n" in allowlist
+
+
+def test_distributed_training_preserves_global_update_geometry() -> None:
+    assert "DistributedConfig(tp_size=world)" in TRAINING
+    assert "_synchronize_gradients(model, world)" in TRAINING
+    assert (
+        "for microstep, (prompt, response) in enumerate(examples, start=1)" in TRAINING
+    )
+    assert "loss / GRADIENT_ACCUMULATION" in TRAINING
+    assert '"updates": UPDATES' in TRAINING
+    assert '"gradient_accumulation": GRADIENT_ACCUMULATION' in TRAINING
+    assert '"data_sha256": DATA_SHA256' in TRAINING
+    assert '"weight_dtype": "bfloat16"' in TRAINING
+    assert '"quantization": "none"' in TRAINING
+
+
+def test_distributed_training_is_four_independent_dependency_staged_jobs() -> None:
+    assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in TRAIN_WORKER
+    assert "#SBATCH --no-requeue" in TRAIN_WORKER
+    assert "--nnodes=4" in TRAIN_WORKER
+    assert "seq 1 21600" in TRAIN_WORKER
+    assert "for rank in 0 1 2 3" in TRAIN_SUBMIT
+    assert 'dependency="afterok"' in TRAIN_SUBMIT
+    assert 'dependency+=":$job"' in TRAIN_SUBMIT
+    assert 'sbatch --parsable --dependency="$dependency"' in TRAIN_SUBMIT

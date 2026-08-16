@@ -118,6 +118,7 @@ train/hf_cvg1_completion_verifier.py
 train/hf_mixtral_8x22b_evaluate.py
 train/hf_mixtral_8x22b_mechanics.py
 train/hf_mixtral_8x22b_multinode_tp_mechanics.py
+train/hf_mixtral_8x22b_multinode_tp_train_revision.py
 train/hf_mixtral_8x22b_train_revision.py
 train/hf_nemotron_super_evaluate.py
 train/hf_nemotron_super_mechanics.py
@@ -150,6 +151,7 @@ train/integrated_reasoning_workspace.py
 train/jobs/mixtral_8x22b_evaluate.sbatch
 train/jobs/mixtral_8x22b_mechanics.sbatch
 train/jobs/mixtral_8x22b_multinode_tp_mechanics.sbatch
+train/jobs/mixtral_8x22b_multinode_tp_train_revision.sbatch
 train/jobs/mixtral_8x22b_train_revision.sbatch
 train/jobs/nemotron_super_evaluate.sbatch
 train/jobs/nemotron_super_mechanics.sbatch
@@ -173,6 +175,7 @@ train/jobs/q36_mtr_train_role.sbatch
 train/jobs/q36_mtr_train_setwise_commit.sbatch
 train/jobs/q36_mtr_train_temporal_gate.sbatch
 train/jobs/submit_mixtral_8x22b_multinode_tp_mechanics.sh
+train/jobs/submit_mixtral_8x22b_multinode_tp_train_revision.sh
 train/jobs/upward_moe_evaluate_temporal_gate.sbatch
 train/jobs/upward_moe_generate_drafts.sbatch
 train/jobs/upward_moe_train_aligned.sbatch
