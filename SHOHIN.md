@@ -4,14 +4,15 @@
 
 ## Read this first
 
-**EXECUTION IS PAUSED BY USER REQUEST — 2026-08-15.** Newton now has zero
-running or completing Shohin jobs and 210 pending tasks held as
-`JobHeldUser`. The one active Q36 revision replacement (`760606`, array
-identity `759816_5`) could not be requeue-held because requeue was disabled;
-it was canceled after 457 seconds and produced no completed result. Resume by
-submitting exactly one replacement for shard 5, then selectively releasing
-only the desired held roots. Exact receipt:
-`docs/research/SHOHIN_EXECUTION_HOLD_20260815.md`.
+**UPWARD-MoE EXECUTION RESUMED — 2026-08-16.** After the user ended the
+temporary hold and restored the UCF VPN path, the preserved Nemotron
+Super-120B-A12B and Mixtral-141B-A39B graphs were selectively released without
+duplication or scientific-byte changes. Mechanics roots `760382` and `760565`
+are eligible for the first healthy two-H100 capacity; all matched controls,
+scores, joint curve analysis, and publication rendering remain dependency
+staged. A fresh dual- and two-single-GPU qualification proved that scheduler-
+idle `evc33` still hangs before CUDA results, so it remains excluded. Exact
+receipt: `docs/research/SHOHIN_UPWARD_MOE_RESUMPTION_20260816.md`.
 
 **A matched dense public-benchmark campaign is prepared but unscheduled.**
 Exact executable pairs survive for Qwen3.5-9B, SmolLM3-3B, and the historical

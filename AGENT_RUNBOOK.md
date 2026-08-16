@@ -1,12 +1,15 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
-> **USER HOLD ACTIVE — 2026-08-15:** do not release or submit Shohin jobs.
-> Newton is settled at zero running/completing allocations and 210 pending
-> tasks held with `JobHeldUser`. Allocation `760606` / identity `759816_5`
-> was canceled after 457 seconds only because Slurm rejected requeue-hold on
-> the frozen no-requeue job; it produced no completed result. On explicit
-> resume, submit one and only one replacement for shard 5 and release roots
-> selectively. See `docs/research/SHOHIN_EXECUTION_HOLD_20260815.md`.
+> **UPWARD-MoE EXECUTION RESUMED — 2026-08-16:** the user explicitly ended
+> the temporary hold after restoring the UCF VPN. Existing Nemotron
+> Super-120B-A12B jobs `760382`, `760384`–`760388`, Mixtral-141B-A39B jobs
+> `760565`–`760571`, curve analyzer `760575`, and renderer `760588` were
+> released in place. Do not resubmit or reshape them. Mechanics roots are
+> waiting for healthy two-H100 capacity and all downstream work retains the
+> original `afterok` graph and `Requeue=0`. Fresh jobs `760725` and
+> `760726`/`760727` proved `evc33` still hangs under dual and independent
+> single-GPU CUDA qualification; keep it excluded. See
+> `docs/research/SHOHIN_UPWARD_MOE_RESUMPTION_20260816.md`.
 
 > **DENSE PUBLIC CAMPAIGN PREPARED, NOT SUBMITTED:** Qwen3.5-9B,
 > SmolLM3-3B, and OLMo2-7B retain exact executable treatment paths after
