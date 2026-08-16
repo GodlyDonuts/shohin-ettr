@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -72,3 +73,63 @@ def test_score_job_initializes_cluster_local_tmp() -> None:
     )
     assert "q36_init_local_tmp" in source
     assert "trap q36_cleanup_local_tmp EXIT" in source
+
+
+def test_run_reduces_full_1023_row_sixteen_shard_geometry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    rows = 1023
+    shards = 16
+    identities = [f"{index:064x}" for index in range(rows)]
+    assessors = {
+        identity: {"task": "math500", "assessor": {"answer": "unused"}}
+        for identity in identities
+    }
+    candidate_paths: dict[str, list[Path]] = {}
+    for arm in score.ARMS:
+        paths = []
+        for shard in range(shards):
+            start = (rows * shard) // shards
+            end = (rows * (shard + 1)) // shards
+            path = tmp_path / arm / f"shard_{shard:02d}.jsonl"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(
+                "".join(
+                    json.dumps(_candidate(arm, identity)) + "\n"
+                    for identity in identities[start:end]
+                )
+            )
+            paths.append(path)
+        candidate_paths[arm] = paths
+
+    monkeypatch.setattr(score, "load_assessors", lambda _path, expected: assessors)
+    monkeypatch.setattr(
+        score,
+        "qualify_allocation",
+        lambda: {"probe_sha256": "a" * 64},
+    )
+    monkeypatch.setattr(score, "sandbox_atomic_json", lambda _path, _value: "b" * 64)
+    monkeypatch.setattr(score, "qualify_mbpp_assessor_setups", lambda _rows: [])
+    monkeypatch.setattr(
+        score,
+        "score_completion",
+        lambda _assessor, completion: {"correct": completion == "answer"},
+    )
+    assessor_path = tmp_path / "assessors.jsonl"
+    assessor_path.write_text("{}\n")
+    arguments = argparse.Namespace(
+        assessors=assessor_path,
+        unchanged_candidates=candidate_paths["unchanged"],
+        self_refinement_candidates=candidate_paths["self_refinement"],
+        revision_candidates=candidate_paths["revision"],
+        sandbox_receipt=tmp_path / "sandbox.json",
+        output=tmp_path / "score.json",
+    )
+    report = score.run(arguments, rows=rows, shards=shards)
+    assert report["rows"] == rows
+    assert report["shards_per_arm"] == shards
+    assert all(
+        len(report["arms"][arm]["candidate_sha256s"]) == shards for arm in score.ARMS
+    )
+    assert report["revision_vs_unchanged"]["net_correct"] == 0
+    assert json.loads(arguments.output.read_text())["rows"] == rows
