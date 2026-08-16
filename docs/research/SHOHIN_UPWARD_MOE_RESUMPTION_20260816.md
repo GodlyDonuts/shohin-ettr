@@ -283,3 +283,15 @@ All eight stdout/stderr files are empty, the canary read zero scientific
 rows, and it requested no GPU. Static global-rank and hostname routing are
 therefore qualified independently; NCCL and native-TP model mechanics remain
 the live H100 qualification performed by `760766`--`760769`.
+
+Exact Slurm accounting is dependency-staged as CPU job `760785` behind the
+completed score. It binds all thirteen allocations: four mechanics ranks,
+four training ranks, four matched-evaluation ranks, and the CPU scorer. The
+receipt requires every H100 rank to be `COMPLETED|0:0` on typed
+`nvidia_h100_pcie`, with zero restarts and exact allocation coverage, before
+publishing per-stage elapsed time and charged H100-hours. Runtime
+`upward_moe_accounting_runtime_3ee78e90_r1` has manifest SHA-256
+`2d2d1a99953acfbb30fd15500a30de99c9b5fb0a7d68fae1c757de1225dee352`.
+Renderer `760780` now waits for both the scientific analysis and this
+accounting receipt, so the publication graph cannot close without measured
+compute evidence.
