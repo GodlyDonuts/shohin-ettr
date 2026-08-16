@@ -13,6 +13,15 @@ TRAIN_WORKER = (
 TRAIN_SUBMIT = (
     ROOT / "train/jobs/submit_mixtral_8x22b_multinode_tp_train_revision.sh"
 ).read_text()
+EVALUATION = (
+    ROOT / "train/hf_mixtral_8x22b_multinode_tp_evaluate_matched.py"
+).read_text()
+EVAL_WORKER = (
+    ROOT / "train/jobs/mixtral_8x22b_multinode_tp_evaluate_matched.sbatch"
+).read_text()
+EVAL_SUBMIT = (
+    ROOT / "train/jobs/submit_mixtral_8x22b_multinode_tp_evaluate_matched.sh"
+).read_text()
 
 
 def test_multinode_mechanics_uses_native_tensor_parallelism() -> None:
@@ -59,10 +68,13 @@ def test_runtime_allowlist_contains_multinode_path() -> None:
     allowlist = (ROOT / "pipeline/upward_moe_runtime_allowlist.txt").read_text()
     for member in (
         "train/hf_mixtral_8x22b_multinode_tp_mechanics.py",
+        "train/hf_mixtral_8x22b_multinode_tp_evaluate_matched.py",
         "train/hf_mixtral_8x22b_multinode_tp_train_revision.py",
+        "train/jobs/mixtral_8x22b_multinode_tp_evaluate_matched.sbatch",
         "train/jobs/mixtral_8x22b_multinode_tp_mechanics.sbatch",
         "train/jobs/mixtral_8x22b_multinode_tp_train_revision.sbatch",
         "train/jobs/submit_mixtral_8x22b_multinode_tp_mechanics.sh",
+        "train/jobs/submit_mixtral_8x22b_multinode_tp_evaluate_matched.sh",
         "train/jobs/submit_mixtral_8x22b_multinode_tp_train_revision.sh",
     ):
         assert f"{member}\n" in allowlist
@@ -91,3 +103,24 @@ def test_distributed_training_is_four_independent_dependency_staged_jobs() -> No
     assert 'dependency="afterok"' in TRAIN_SUBMIT
     assert 'dependency+=":$job"' in TRAIN_SUBMIT
     assert 'sbatch --parsable --dependency="$dependency"' in TRAIN_SUBMIT
+
+
+def test_matched_evaluation_loads_once_and_emits_existing_score_layout() -> None:
+    assert "DistributedConfig(tp_size=world)" in EVALUATION
+    assert 'for arm in ("unchanged", "self_refinement")' in EVALUATION
+    assert 'arm="revision"' in EVALUATION
+    assert "MixtralRevisionModel(backbone)" in EVALUATION
+    assert "for shard_index in range(SHARDS)" in EVALUATION
+    assert 'f"shard_{shard_index:02d}"' in EVALUATION
+    assert '"schema": CANDIDATE_SCHEMA' in EVALUATION
+    assert '"generation_mode": "greedy"' in EVALUATION
+    assert '"assessor_access_count": 0' in EVALUATION
+
+
+def test_matched_evaluation_is_four_independent_dependency_staged_jobs() -> None:
+    assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in EVAL_WORKER
+    assert "#SBATCH --no-requeue" in EVAL_WORKER
+    assert "--nnodes=4" in EVAL_WORKER
+    assert "for rank in 0 1 2 3" in EVAL_SUBMIT
+    assert 'dependency="afterok"' in EVAL_SUBMIT
+    assert 'sbatch --parsable --dependency="$dependency"' in EVAL_SUBMIT
