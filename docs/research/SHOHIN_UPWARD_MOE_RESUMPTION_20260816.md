@@ -263,12 +263,16 @@ failed attempt were cancelled after their terminal dependency state was
 recorded; no healthy job was cancelled.
 
 To prevent partial-world timeout while retaining separate allocations, the
-four pending mechanics jobs have a common scheduler eligibility time of
-2026-08-17 20:00 EDT and exact distinct nodes: `760766=evc35`,
-`760767=evc45`, `760768=evc24`, and `760769=evc42`. Each node has an
-H100 becoming available before that boundary. This is admission coordination
-only: each rank remains an independent one-H100 job and no GPU is reserved
-before it has bound TP4 mechanics work.
+four pending mechanics jobs share one scheduler eligibility boundary and four
+exact distinct nodes. A fresh running-allocation replay on 2026-08-16 moved
+that boundary forward from 20:00 to 13:50 EDT on 2026-08-17 and selected
+`760766=evc39`, `760767=evc28`, `760768=evc47`, and `760769=evc42`.
+The final required GPU is scheduled to clear at 15:08:51 EDT; the first three
+ranks therefore remain inside their bounded two-hour rendezvous while the
+fourth admits, leaving more than 100 minutes of the three-hour mechanics
+allocation for native-TP load and checks. This is admission coordination only:
+each rank remains an independent one-H100 job and no GPU is reserved before it
+has bound TP4 mechanics work.
 
 A CPU-only independent-allocation canary then exercised the exact static
 four-node topology before the H100 window. Jobs `760781`--`760784` ran on
@@ -331,3 +335,26 @@ the independent evidence verifier before sealing the tree read-only. Runtime
 `5b942213b95dfb26eb9e46751943e3406c91ad9ba5d74be792b69c488cb550d0`.
 Temporary evaluation shards remain referenced and are not scheduled for
 removal.
+
+## Live `evc33` requalification and accelerated boundary
+
+At 2026-08-16 10:39 EDT, the H100 inventory had exactly one nominally free
+device, on `evc33`; all other H100s were allocated. Because `evc33` had
+previously failed both dual- and single-device diagnostics, bounded no-model
+job `760810` requalified that exact free allocation before it could be admitted
+to the scientific graph. Slurm assigned one typed H100, but `nvidia-smi -L`
+returned `No devices found` and PyTorch reported `torch.cuda.device_count() ==
+0`. The job failed closed as `FAILED|124:0` after 137 seconds with zero
+restarts. Its stdout and stderr SHA-256 values are respectively
+`9a62266bcb92bcc0cf47f4cd1121133082d095f4af7a7438f377b80f863d7f5c`
+and
+`5d62c82f4f4d2a4ad5159f38210f8e834023dc41c70afe15857badd58f997e28`.
+It loaded no model and read no training or benchmark row. `evc33` therefore
+remains excluded.
+
+The same audit found that the four disjoint rank pools can safely accumulate
+on proven nodes beginning at 13:50 EDT, with the last rank available before
+the two-hour rendezvous bound. Jobs `760766`--`760769` were updated in place;
+no job was resubmitted, no scientific byte changed, and every downstream
+dependency remains intact. This advances the live TP4 mechanics boundary by
+six hours and ten minutes relative to the former 20:00 eligibility time.
