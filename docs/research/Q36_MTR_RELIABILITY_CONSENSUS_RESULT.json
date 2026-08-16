@@ -1,0 +1,80 @@
+{
+  "schema": "shohin-q36-mtr-reliability-consensus-result-v1",
+  "status": "complete_crossfit_engineering_result",
+  "date": "2026-08-14",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "base_revision": "995ad96e",
+    "evaluation_split": "development",
+    "identities": 1289
+  },
+  "method": {
+    "arms": [
+      "hierarchical_synthesis",
+      "checkpoint_interpolation_w010",
+      "direct_synthesis",
+      "offset_one_synthesis",
+      "level_two_synthesis",
+      "incumbent_challenger"
+    ],
+    "model": "l2_regularized_logistic_cluster_reliability",
+    "features": [
+      "answer_cluster_vote_fraction",
+      "arm_membership",
+      "generated_token_statistics",
+      "max_token_exhaustion",
+      "normalized_answer_length",
+      "task"
+    ],
+    "folds": 16,
+    "training_folds_per_identity": 15,
+    "heldout_identity_labels_read": 0,
+    "development_labels_used_for_training": true,
+    "hyperparameters_selected_on_development": true,
+    "l2": 0.1,
+    "steps": 1200,
+    "learning_rate": 0.15
+  },
+  "selection_counts": {
+    "bbh_logic": {"hierarchy": 582, "interpolation": 54, "offset_one": 1},
+    "math500": {"hierarchy": 562, "interpolation": 56, "direct": 3, "offset_one": 2},
+    "mbpp": {"interpolation": 29}
+  },
+  "evaluation": {
+    "reliability_consensus_correct": 667,
+    "reliability_consensus_accuracy": 0.517455391776571,
+    "unchanged_correct": 539,
+    "gain_over_unchanged_count": 128,
+    "gain_over_unchanged_points": 9.930178432893715,
+    "hierarchical_correct": 664,
+    "hierarchical_accuracy": 0.5151280062063616,
+    "paired_vs_hierarchy": {
+      "both_correct": 637,
+      "hierarchy_only_correct": 27,
+      "reliability_only_correct": 30,
+      "both_wrong": 595,
+      "mcnemar_exact_two_sided_p": 0.7913664277791806,
+      "oracle_correct": 694
+    },
+    "domains": {
+      "bbh_logic": {"rows": 637, "reliability": 351, "hierarchy": 348},
+      "math500": {"rows": 623, "reliability": 296, "hierarchy": 297},
+      "mbpp": {"rows": 29, "reliability": 20, "hierarchy": 19}
+    }
+  },
+  "artifacts": {
+    "selector_sha256": "bdea198a440b68e4f9651b3cb3740fca4e43ca18caea0b074493c62f9a86bcb8",
+    "candidates_sha256": "a676e54792329beb5b60c70507b76af16e71aa806a716cf7c82b4260288176c5",
+    "report_sha256": "4e734759214d1e60e05e1a7baa52de62d8d6dd8c2f96c0fe90367776de97646d",
+    "development_score_sha256": "bd59f80eeb621c7989b830283924d0a74a68d715df0ea220bdd2a5256b6305f2",
+    "comparison_sha256": "ea02d06360cfc62f65b7dd301eea607de8d2a00712a0a044314b35a6e2135ca1"
+  },
+  "durable_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-reliability-consensus-011c7d61-r1",
+    "files": 6,
+    "bytes": 2086131,
+    "sha256sums_sha256": "390c805df7474ade1527023c372f8c2b42f40b3f02d2dee43d8cf0ea3f3e7385"
+  },
+  "jobs": {"score": 759590, "comparison": 759591},
+  "interpretation": "crossfit_engineering_gain_over_hierarchy; small_nonsignificant_delta; stronger_generalization_design_than_full_board_consensus; requires_source_disjoint_confirmation"
+}

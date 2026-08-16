@@ -1,0 +1,62 @@
+{
+  "schema": "shohin-q36-mtr-oracle-gap-analysis-v1",
+  "status": "complete",
+  "interpretation": "engineering_development_error_analysis_not_fresh_confirmation",
+  "rows": 1289,
+  "logistic_correct": 554,
+  "three_owner_oracle_correct": 618,
+  "remaining_selector_misses": 64,
+  "all_three_owners_wrong": 671,
+  "inputs": {
+    "owner_score_files": 48,
+    "owner_score_manifest_sha256": "06109be595cabef98eb23bef9e91bd530f5bb8ae9357befb5c915420000e4798",
+    "logistic_score_sha256": "997c932d462f4d8733f50b48e427d8d0fced14c70f3f93159265b7a85b391817",
+    "logistic_decisions_sha256": "92b793e6f0d3c022884b2b3af780371671e491ce5018bc090c17854b7635bca2"
+  },
+  "tasks": {
+    "bbh_logic": {
+      "rows": 637,
+      "logistic_correct": 315,
+      "oracle_correct": 347,
+      "selector_misses": 32,
+      "all_wrong": 290
+    },
+    "math500": {
+      "rows": 623,
+      "logistic_correct": 222,
+      "oracle_correct": 252,
+      "selector_misses": 30,
+      "all_wrong": 371
+    },
+    "mbpp": {
+      "rows": 29,
+      "logistic_correct": 17,
+      "oracle_correct": 19,
+      "selector_misses": 2,
+      "all_wrong": 10
+    }
+  },
+  "correctness_patterns": {
+    "000": {"rows": 671, "logistic_correct": 0, "selector_misses": 0},
+    "001": {"rows": 47, "logistic_correct": 29, "selector_misses": 18},
+    "010": {"rows": 37, "logistic_correct": 31, "selector_misses": 6},
+    "011": {"rows": 42, "logistic_correct": 38, "selector_misses": 4},
+    "100": {"rows": 45, "logistic_correct": 22, "selector_misses": 23},
+    "101": {"rows": 33, "logistic_correct": 22, "selector_misses": 11},
+    "110": {"rows": 42, "logistic_correct": 40, "selector_misses": 2},
+    "111": {"rows": 372, "logistic_correct": 372, "selector_misses": 0}
+  },
+  "selector_miss_diagnostics": {
+    "singleton_edge_owner_misses": 41,
+    "singleton_edge_owner_patterns": ["001", "100"],
+    "exhausted_owner_count_histogram": {"0": 43, "1": 11, "2": 6, "3": 4},
+    "explicit_final_owner_count_histogram": {"1": 5, "2": 12, "3": 47}
+  },
+  "architecture_implications": {
+    "direct_three_owner_commit": "Targets the 41 singleton edge-owner misses that a binary production-versus-sparse stack frequently discards.",
+    "trajectory_synthesis": "Targets the 671 all-owner-wrong rows where selection cannot improve capability and a newly generated answer is required.",
+    "retention": "All 372 all-owner-correct rows are already retained, so new mechanisms should preserve unanimous trajectories."
+  },
+  "development_labels_read_for_analysis": 1289,
+  "scientific_claim": false
+}

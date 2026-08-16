@@ -1,0 +1,68 @@
+{
+  "schema": "shohin-q36-mtr-engineering-result-v1",
+  "status": "complete",
+  "result": "does_not_beat_candidate_only_commit",
+  "interpretation": "calibration-only sparse text routing preserves substantial complementarity but its learned decision boundary does not improve the current semantic commit",
+  "board": {
+    "rows": 1289,
+    "development_labels_read_during_selection": 0
+  },
+  "variants": {
+    "candidate_only": {
+      "correct": 539,
+      "accuracy": 0.4181536074476338,
+      "domains": {
+        "bbh_logic": {"correct": 311, "rows": 637},
+        "math500": {"correct": 211, "rows": 623},
+        "mbpp": {"correct": 17, "rows": 29}
+      }
+    },
+    "sparse_router": {
+      "correct": 538,
+      "accuracy": 0.417377812257564,
+      "domains": {
+        "bbh_logic": {"correct": 302, "rows": 637},
+        "math500": {"correct": 220, "rows": 623},
+        "mbpp": {"correct": 16, "rows": 29}
+      }
+    }
+  },
+  "paired": {
+    "both_correct": 496,
+    "candidate_only_only_correct": 43,
+    "sparse_router_only_correct": 42,
+    "both_wrong": 708,
+    "candidate_only_minus_sparse_router_correct": 1,
+    "mcnemar_exact_two_sided_p": 1.0,
+    "oracle_correct": 581,
+    "oracle_accuracy": 0.45073700543056633,
+    "oracle_gain_over_best_count": 42,
+    "oracle_gain_over_best_points": 3.2583397982932505
+  },
+  "training": {
+    "rows": 5824,
+    "feature_dimension": 65536,
+    "seed": 2026080820,
+    "selected_epochs": 5,
+    "selected_learning_rate": 0.07,
+    "selected_balanced_patterns": false,
+    "calibration_development_correct": 561,
+    "calibration_development_rows": 1175
+  },
+  "selection_counts": {
+    "current": 358,
+    "owner_71": 310,
+    "owner_8": 621
+  },
+  "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/sparse_text_router_1ca4553",
+  "artifacts": {
+    "model_sha256": "ba5534e4df651f748cadbf27777cc503895d24333c1b0c3db1aa5f15c4e4712c",
+    "candidates_sha256": "10f2675a7fd3431a6c1c8b4992686baef60a3e3fca8240e81b6075e6fafbebe5",
+    "selections_sha256": "bd24ad9bb5218cc1aa8da14153704b24314ac52da64d04b09da75ebff614a0f8",
+    "report_sha256": "33f639dd27e5060d913a52d2a1bb6d6ad96ec334ef490d97918b60492baea92a",
+    "development_score_sha256": "da77e6c8d1037be0084ce7d534cb163dbdb8fd31cab1f12d0b7b9a752a150cf8",
+    "comparison_sha256": "8b3690c02598514c5ce54f279c49e2dfbb659cd8686b2926b487b9ea9c953727",
+    "training_rows_sha256": "0975307aecaba5fcd2b0b10b173b8e2563ea7f3084c7adf4878056785f3f9b6d",
+    "development_rows_sha256": "636fbeeadb566b354ec63e33286fb81f4d3663c9575269a92303262782a1b998"
+  }
+}

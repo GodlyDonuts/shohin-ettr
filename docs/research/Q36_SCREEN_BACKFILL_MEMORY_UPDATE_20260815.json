@@ -1,0 +1,61 @@
+{
+  "comparison_jobs": [
+    {
+      "elapsed_seconds": 423,
+      "job_id": 760221,
+      "max_rss_gib": 70.13
+    },
+    {
+      "elapsed_seconds": 327,
+      "job_id": 760223,
+      "max_rss_gib": 70.18
+    },
+    {
+      "elapsed_seconds": 326,
+      "job_id": 760224,
+      "max_rss_gib": 70.05
+    }
+  ],
+  "frozen_science": {
+    "candidate_bytes_changed": false,
+    "identity_partition_changed": false,
+    "model_or_checkpoint_changed": false,
+    "prompt_changed": false,
+    "scoring_changed": false,
+    "seed_changed": false
+  },
+  "memory_request": {
+    "measured_peak_gib": 70.18,
+    "new_gib": 90,
+    "old_gib": 128,
+    "safety_margin_over_peak_fraction": 0.282416642917,
+    "minimum_25_percent_margin_gib": 87.725
+  },
+  "schema": "shohin-q36-screen-backfill-memory-update-v1",
+  "status": "applied_to_pending_jobs_only",
+  "temporary_priority_hold": {
+    "held_jobs": [
+      "759814_[9-15]"
+    ],
+    "reason": "close the existing 256-row screen before consuming further H100s on unchanged 1,023-row validation shards",
+    "release_condition": "release immediately after job 760171 publishes the complete screen score",
+    "running_jobs_changed": false,
+    "running_jobs_left_untouched": [
+      "759814_4",
+      "759814_5",
+      "759814_6",
+      "759814_7",
+      "759814_8"
+    ],
+    "scheduler_state": "JobHeldUser"
+  },
+  "updated_jobs": [
+    "760170_3",
+    "760173_[0-3]",
+    "760176_[0-3]",
+    "760191_[0-3]",
+    "760198_[0-3]",
+    "760205_[0-3]",
+    "760212_[0-3]"
+  ]
+}

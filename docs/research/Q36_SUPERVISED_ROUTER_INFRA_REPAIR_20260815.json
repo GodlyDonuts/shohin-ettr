@@ -1,0 +1,46 @@
+{
+  "schema": "shohin-q36-supervised-router-infrastructure-repair-v1",
+  "status": "replacement_submitted",
+  "scientific_variant": "supervised_response_temporal_gate",
+  "failed_job": {
+    "job_id": 760219,
+    "state": "FAILED",
+    "elapsed_seconds": 289,
+    "node": "evc40",
+    "restarts": 0,
+    "exit_code": "1:0",
+    "max_rss_kib": 73890440,
+    "failure": "TemporalGatedProductModel.routing_supervision_loss rejected the trainer's explicit soft_cross_entropy objective keyword",
+    "optimizer_updates_completed": 0,
+    "published_artifacts": 0,
+    "output_directory_was_empty": true
+  },
+  "repair": {
+    "source_commit": "d082bec48f29f7f4b254c9cb4f2e569bab131ad8",
+    "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_d082bec4_r1",
+    "runtime_manifest_sha256": "de0deb5ac5ed3822bf626f9544f098aeffa240212da3dce12a9f1d4f51e0fc54",
+    "runtime_manifest_entries": 133,
+    "runtime_writable_members": 0,
+    "change": "The binary temporal routing loss now accepts only the explicit soft_cross_entropy spelling already used by the trainer and continues to reject every other objective.",
+    "focused_tests_passed": 31
+  },
+  "replacement": {
+    "fit_job": 760231,
+    "time_limit_seconds": 5820,
+    "requeue": false,
+    "screen_evaluation_job": 760173,
+    "screen_score_job": 760174,
+    "validation_evaluation_job": 760184,
+    "validation_score_job": 760185,
+    "screen_dependency_updated_to": "afterok:760231",
+    "validation_dependency_updated_to": "afterok:760231:759814"
+  },
+  "scientific_contract": {
+    "identities_changed": false,
+    "objective_changed": false,
+    "seed_changed": false,
+    "update_budget_changed": false,
+    "architecture_variant_added": false,
+    "healthy_job_canceled": false
+  }
+}

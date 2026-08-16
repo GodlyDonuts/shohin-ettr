@@ -1,0 +1,98 @@
+{
+  "architecture": {
+    "branch_names": [
+      "owner",
+      "revision",
+      "draft_hidden"
+    ],
+    "name": "q36-tokenwise-tri-trajectory-hierarchical-set-mass-gate-v1",
+    "routing_factorization": [
+      "owner_vs_adapted",
+      "revision_vs_draft_hidden_given_adapted"
+    ],
+    "routing_supervision_objective": "correct_set_mass"
+  },
+  "evidence_basis": {
+    "all_correct_presentations": 345,
+    "development_presentations": 1189,
+    "development_source_identities": 691,
+    "draft_hidden_only_presentations": 232,
+    "owner_and_draft_hidden_presentations": 17,
+    "owner_and_revision_presentations": 115,
+    "owner_only_presentations": 256,
+    "revision_and_draft_hidden_presentations": 114,
+    "revision_only_presentations": 110
+  },
+  "evidence_reverification": {
+    "development_data_sha256": "6fac389a588553fa2315fd57d92bf0374b673d7fb7029d06fb719c89dc52326b",
+    "recomputed_presentations": 1189,
+    "recomputed_source_identities": 691,
+    "routing_pattern_counts_recomputed_from_positive_target_support": true
+  },
+  "initial_gradient_analysis": {
+    "branch_probability_initialization": {
+      "draft_hidden": 0.1,
+      "owner": 0.1,
+      "revision": 0.8
+    },
+    "interpretation": "Under gradient descent, the negative owner-logit derivative increases owner mass and the positive conditional-revision derivative decreases revision mass toward draft-hidden. Correct-set-mass reduces both aggregate displacements while leaving every sole-correct presentation fully supervised.",
+    "mean_loss": {
+      "correct_set_mass": 1.008995,
+      "soft_cross_entropy": 1.708834
+    },
+    "mean_owner_vs_adapted_logit_derivative": {
+      "correct_set_mass": -0.16221848425380808,
+      "magnitude_reduction_percent": 39.3656781585106,
+      "soft_cross_entropy": -0.2675357443229605
+    },
+    "mean_revision_vs_draft_hidden_logit_derivative": {
+      "correct_set_mass": 0.15996428163515353,
+      "magnitude_reduction_percent": 42.179436656720895,
+      "soft_cross_entropy": 0.2766563872535277
+    },
+    "method": "Exact routing-pattern aggregation at the frozen 0.1/0.8/0.1 initialization, independently checked by centered finite differences over the hierarchical two-logit parameterization.",
+    "scientific_prediction": "If a current screen shows that routing gains are accompanied by excessive unchanged-case loss or drift away from revision, correct-set-mass is the evidence-matched next promotion because it analytically removes equalization pressure from 345 all-correct and 246 two-correct presentations. It is not promoted merely from this analytical result."
+  },
+  "implementation": {
+    "git_commit": "169cce4d42a7415e0cd34a8d648637de457d3472",
+    "private_branches": [
+      "codex/q36-mechanics-generation-prepare",
+      "codex/q36-moe-temporal-revision"
+    ],
+    "training_schema": "shohin-q36-mtr-tri-hierarchical-set-mass-gate-training-v1",
+    "checkpoint_schema": "shohin-q36-mtr-tri-hierarchical-set-mass-gate-checkpoint-v1"
+  },
+  "jobs": [],
+  "measurement_boundary": {
+    "active_variant_count": 7,
+    "active_job_range": [
+      760169,
+      760217
+    ],
+    "obsolete_jobs": [
+      760209,
+      760210
+    ],
+    "replacement_jobs": [
+      760216,
+      760217
+    ],
+    "promotion_condition": "At least one currently scheduled 256-row source-disjoint screen must close with complete paired capability, retention, domain, routing, accounting, and custody evidence before this implementation may be scheduled.",
+    "scheduled": false
+  },
+  "result": null,
+  "rationale": "Soft cross-entropy forces equal probability across every correct branch, including 345 all-correct and 246 two-correct presentations. The set-mass objective instead maximizes the total probability assigned to any correct branch: sole-correct rows retain full supervision, two-correct rows penalize only the wrong branch, and all-correct rows contribute zero routing loss. This is intended to conserve the revision-heavy prior and unchanged-case retention without changing the frozen identities, trajectories, controls, seeds, or training budget.",
+  "schema": "shohin-q36-mtr-set-mass-code-only-preparation-v1",
+  "scientific_status": "code_only_not_scheduled_non_result",
+  "submission_prohibition": "Do not submit this architecture or any eighth router before current seven-variant screen evidence authorizes promotion.",
+  "validation": {
+    "focused_tests_passed": 42,
+    "pipeline_q36_suite_exit_code": 0,
+    "train_q36_tests_passed": 111,
+    "changed_files_black_check": "PASS",
+    "changed_files_py_compile": "PASS",
+    "changed_files_ruff": "PASS",
+    "changed_shell_bash_n": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

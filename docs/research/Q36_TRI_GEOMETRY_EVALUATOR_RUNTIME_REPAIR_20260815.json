@@ -1,0 +1,72 @@
+{
+  "schema": "shohin-q36-tri-geometry-evaluator-runtime-repair-v1",
+  "status": "replacement_array_submitted",
+  "scientific_result": false,
+  "variant": "tri_trajectory_geometry_gate",
+  "failed_array": {
+    "array_root": 760205,
+    "allocation_job_ids": [
+      760267,
+      760268,
+      760269,
+      760205
+    ],
+    "states": [
+      "FAILED",
+      "FAILED",
+      "FAILED",
+      "FAILED"
+    ],
+    "elapsed_seconds": [
+      256,
+      260,
+      269,
+      267
+    ],
+    "restarts_each": 0,
+    "failure": "the de8efe14 evaluator runtime omitted trajectory-geometry parameters from its installed-gate count and rejected the exact trained geometry model after weight load",
+    "optimizer_or_generation_steps": 0,
+    "reports_published": 0,
+    "candidates_published": 0,
+    "stderr_sha256s": [
+      "c95fce538fc311f805cf8e49b9556ebc182b030a948fd99e50b016b3f285e252",
+      "4eb114dc1a6257c27d17851efcca188bd008da21f4fd3540d7032f1241ac5348",
+      "d64837c34eb9341e6e37b8055f5a878a4afbcd57ff55d065bceaee040384d8ca",
+      "f29fa135f577721029ce905b7a64726def3023f2e251a2c61fdc572d1ebfdc3e"
+    ]
+  },
+  "repair": {
+    "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_e53d5ff3_r1",
+    "runtime_manifest_sha256": "517ec112a1d35d62ae40d5f04823885645484730666822fb2f221c77c329bd4d",
+    "correct_gate_count_contract": "layers_times_router_logits_times_hidden_plus_bias_plus_geometry_projection",
+    "environment_receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_environment_e53d5ff3_r1/environment.json",
+    "environment_receipt_sha256": "d96b81f23aef00e6fe121bb0fcfefdf39e6a95e9e27532f93157b6dca7604e0a",
+    "environment_derivation": "runtime_rebind_no_scientific_reads_v1",
+    "empty_failed_shard_directories_removed": 4,
+    "removed_allocated_bytes": 16384,
+    "removed_inodes": 4,
+    "removed_content_recoverable": false
+  },
+  "replacement": {
+    "array_job": 760273,
+    "shards": 4,
+    "time_limit_seconds": 1800,
+    "requeue": false,
+    "gate_checkpoint_sha256": "d4ee0191e4a05adcf229d3e3182f350079058b7751395de97de02b5288383410",
+    "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "seed": 2026080816,
+    "generation_mode": "greedy",
+    "max_new_tokens": 768,
+    "score_job": 760206,
+    "score_dependency": "afterok:760273"
+  },
+  "scientific_contract": {
+    "identity_partition_changed": false,
+    "model_changed": false,
+    "checkpoint_changed": false,
+    "architecture_changed": false,
+    "seed_changed": false,
+    "generation_changed": false,
+    "duplicate_output_authorized": false
+  }
+}

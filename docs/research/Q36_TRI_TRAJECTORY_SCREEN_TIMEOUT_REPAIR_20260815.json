@@ -1,0 +1,58 @@
+{
+  "schema": "shohin-q36-tri-trajectory-screen-timeout-repair-v1",
+  "status": "replacement_shards_submitted",
+  "scientific_variant": "tri_trajectory",
+  "original_array_job": 760198,
+  "original_tasks": {
+    "0": {
+      "state": "TIMEOUT",
+      "elapsed_seconds": 802,
+      "time_limit_seconds": 780
+    },
+    "1": {
+      "state": "TIMEOUT",
+      "elapsed_seconds": 780,
+      "time_limit_seconds": 780
+    },
+    "2": {
+      "state": "TIMEOUT",
+      "elapsed_seconds": 802,
+      "time_limit_seconds": 780
+    },
+    "3": {
+      "state": "TIMEOUT",
+      "elapsed_seconds": 1103,
+      "time_limit_seconds": 1080
+    }
+  },
+  "failure_boundary": {
+    "candidate_files_published": 0,
+    "report_files_published": 0,
+    "assessor_rows_read": 0,
+    "cause": "walltime shorter than the measured three-trajectory generation runtime"
+  },
+  "replacement_tasks": {
+    "0": 760239,
+    "1": 760240,
+    "2": 760241,
+    "3": 760242
+  },
+  "replacement_contract": {
+    "time_limit_seconds": 1320,
+    "h100s_per_task": 1,
+    "requeue": false,
+    "identity_partition_changed": false,
+    "checkpoint_changed": false,
+    "runtime_changed": false,
+    "seed_changed": false,
+    "prompt_changed": false,
+    "generation_settings_changed": false
+  },
+  "discarded_preflight": {
+    "job_id": 760238,
+    "state": "CANCELLED",
+    "elapsed_seconds": 0,
+    "reason": "A misspelled checkpoint path was detected while the request was still pending; it was cancelled before allocation and replaced by the exact path."
+  },
+  "next": "After all four immutable replacement artifacts exist, submit exactly one scorer and rebind the seven-variant analyzer to that score."
+}

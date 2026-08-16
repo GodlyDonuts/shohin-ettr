@@ -1,0 +1,64 @@
+{
+  "schema": "shohin-q36-mtr-aligned-interpolation-full-result-v1",
+  "status": "complete_complementary_not_new_incumbent",
+  "date": "2026-08-14",
+  "host": "Qwen/Qwen3.6-35B-A3B@995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "interpolation": {
+    "trained_weight": 0.1,
+    "checkpoint_sha256": "806f1ccbf9fc4a814eea7ff1fdbb3af45740d1dea456c0278b849f163cc7f262",
+    "trainable_state_sha256": "73100f31a47850fcf870ef2c941c4509115c914264dd860896c7c410e18664d7",
+    "base_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "trained_checkpoint_sha256": "bc4db4c53d84f3b15ef4ba35797811eb7ffbe6934cefe3bf33bf8e328d2ba72b"
+  },
+  "evaluation": {
+    "identities": 1289,
+    "interpolation_correct": 663,
+    "interpolation_accuracy": 0.5143522110162917,
+    "hierarchical_correct": 664,
+    "hierarchical_accuracy": 0.5151280062063616,
+    "direct_correct": 656,
+    "direct_accuracy": 0.5089216446858029,
+    "domains": {
+      "bbh_logic": {"rows": 637, "interpolation": 348, "hierarchical": 348, "direct": 345},
+      "math500": {"rows": 623, "interpolation": 295, "hierarchical": 297, "direct": 292},
+      "mbpp": {"rows": 29, "interpolation": 20, "hierarchical": 19, "direct": 19}
+    },
+    "versus_hierarchical": {
+      "both_correct": 611,
+      "both_wrong": 573,
+      "hierarchical_only_correct": 53,
+      "interpolation_only_correct": 52,
+      "net_correct_delta": -1,
+      "mcnemar_exact_two_sided_p": 1.0,
+      "oracle_correct": 716,
+      "comparison_sha256": "d03d7b46f67d3db299a3b9b3a2d655a45bda39245103c770e7cbd9d48ff1ad80"
+    },
+    "versus_direct": {
+      "both_correct": 628,
+      "both_wrong": 598,
+      "direct_only_correct": 28,
+      "interpolation_only_correct": 35,
+      "net_correct_delta": 7,
+      "mcnemar_exact_two_sided_p": 0.4499625362902225,
+      "oracle_correct": 691,
+      "comparison_sha256": "2055ecdd85f01b39a2fd69601f6a26fb71d9dd7fba4a671b1c278ec83a59848b"
+    }
+  },
+  "decision": {
+    "replace_hierarchical_incumbent": false,
+    "retain_as_complementary_trajectory": true,
+    "next_test": "model_owned_composition_of_hierarchical_interpolated_and_direct_trajectories"
+  },
+  "durable_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-interpolation-96c4bb27-r1",
+    "files": 75,
+    "bytes": 16081393,
+    "sha256sums_sha256": "dc98a7afc2859ae6e61b6ca56df9d18a2beed7a8a9e70536f1580d00ff3445cb"
+  },
+  "jobs": {
+    "screen_generation": 759508,
+    "expansion_generation": 759537,
+    "expansion_scores": [759538, 759539, 759540, 759541, 759542, 759543, 759544, 759545, 759546, 759547, 759548, 759549],
+    "full_comparisons": [759550, 759551]
+  }
+}

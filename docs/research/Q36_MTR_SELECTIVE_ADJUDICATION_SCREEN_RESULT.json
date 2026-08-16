@@ -1,0 +1,51 @@
+{
+  "schema": "shohin-q36-mtr-selective-adjudication-screen-result-v1",
+  "status": "complete_negative_first_four_screen",
+  "date": "2026-08-14",
+  "scope": {
+    "development_shards": [0, 1, 2, 3],
+    "rows": 322,
+    "host": "Qwen/Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "mechanism": "regenerate_only_noncode_multi_trajectory_disagreements"
+  },
+  "result": {
+    "hierarchical_synthesis_correct": 167,
+    "selective_adjudication_correct": 159,
+    "selective_adjudication_accuracy": 0.4937888198757764,
+    "delta_vs_hierarchy": -8,
+    "domains": {
+      "bbh_logic": {"rows": 167, "hierarchy": 89, "selective_adjudication": 87},
+      "math500": {"rows": 143, "hierarchy": 69, "selective_adjudication": 63},
+      "mbpp": {"rows": 12, "hierarchy": 9, "selective_adjudication": 9}
+    }
+  },
+  "paired_vs_hierarchy": {
+    "both_correct": 150,
+    "selective_only_correct": 9,
+    "hierarchy_only_correct": 17,
+    "both_wrong": 146,
+    "exact_two_sided_p": 0.16863754391670227,
+    "oracle_correct": 176
+  },
+  "causal_readout": "Unguided model adjudication can recover hierarchy misses, but it overturns almost twice as many correct answers as it rescues. The next test therefore supplies a cross-fitted consensus prior and explicitly requires concrete counterevidence before an override.",
+  "execution": {
+    "generation_array": 759593,
+    "allocation_job_ids": [759675, 759676, 759677, 759593],
+    "score_jobs": [759594, 759595, 759596, 759597],
+    "comparison_job": 759598,
+    "promotion_gate_job": 759680,
+    "promotion_gate_exit_code": "3:0",
+    "promotion": false,
+    "cancelled_dead_jobs": [759681, 759682, 759683, 759684, 759685, 759686, 759687, 759688, 759689, 759690, 759691, 759692, 759693, 759694],
+    "requeues": 0
+  },
+  "artifacts": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/selective_adjudication_065ab06b_r1",
+    "comparison_sha256": "3806a47b4101c87878df1e6b2bc66f176e0481c131693e3d502dc19cfa26ee48",
+    "promotion_gate_sha256": "df9bc622416154dba3afdafe50f94dc56c12ebb1141822ef5a4ad45d11755a26",
+    "generator_sha256": "156d8be8cfa13dcaccddfca618750da59629ea56178511e05d7348c69ff09b79",
+    "wrapper_sha256": "243c435ca72b3cec315d3df8711796048b476ef7db5fa76be3a65492bb25bcca"
+  },
+  "decision": "Do not expand unguided adjudication. Continue the already-queued guided adjudicator that is anchored to the cross-fitted consensus proposal."
+}

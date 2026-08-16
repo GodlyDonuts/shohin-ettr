@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-
 DRAFT_MARKER = "Internal draft:\n"
 FINAL_PROBLEM_MARKER = "\n\nOriginal problem:"
-FORMAT_MARKER = "\n\nReturn "
+FORMAT_MARKERS = (
+    "\n\nFollow the original problem's requested output format.",
+    "\n\nReturn ",
+)
 
 
 class TTR1RevisionError(ValueError):
@@ -41,7 +43,10 @@ def internal_draft_char_span(rendered_prompt: str) -> tuple[int, int]:
     final_problem = rendered_prompt.rfind(FINAL_PROBLEM_MARKER)
     if final_problem <= draft_start:
         raise TTR1RevisionError("rendered prompt lacks the repeated final problem")
-    draft_end = rendered_prompt.rfind(FORMAT_MARKER, draft_start, final_problem)
+    draft_end = max(
+        rendered_prompt.rfind(marker, draft_start, final_problem)
+        for marker in FORMAT_MARKERS
+    )
     if draft_end <= draft_start:
         raise TTR1RevisionError("rendered prompt lacks the final format instruction")
     return draft_start, draft_end

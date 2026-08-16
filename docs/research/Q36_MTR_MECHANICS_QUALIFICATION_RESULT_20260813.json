@@ -1,0 +1,70 @@
+{
+  "artifacts": {
+    "checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_mechanics_qualification_cb152bb_r1/checkpoint_0000001.pt",
+    "checkpoint_sha256": "7bb6bad28c92a0d27fd4719da8c4bbf1044ebb38b542f06286b9760a15284b32",
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_mechanics_qualification_cb152bb_r1/report.json",
+    "report_sha256": "d2f83d53fa8f2323d3c2906ccbcc60a4d60f2362a660c0b1482f91fcda092d9d",
+    "stderr_sha256": "159727ab5f67908dbe60b9369a98a08ce28af29064f3c1fd19c9cb8859973035",
+    "stdout_sha256": "9a55cf8dfc0c9922046c7746371935da047736b5a230222a6e1623cd97cd4cdb"
+  },
+  "causal_intervention": {
+    "aligned_response_max_abs_delta": 13.078125,
+    "aligned_router_sensitive_layers": 40,
+    "aligned_router_top1_changes": 1656,
+    "aligned_router_topk_assignment_changes": 24163,
+    "draft_hidden_response_max_abs_delta": 0.0,
+    "draft_hidden_router_sensitive_layers": 0,
+    "draft_hidden_router_top1_changes": 0,
+    "draft_hidden_router_topk_assignment_changes": 0
+  },
+  "contract": {
+    "capability_scored": false,
+    "formal_scientific_gate_entered": false,
+    "generated_only_sequence_contract": true,
+    "mechanics_qualification_only": true,
+    "scientific_graph_launched": false,
+    "sealed_access": {
+      "holdout": 0,
+      "product": 0,
+      "public": 0
+    }
+  },
+  "execution": {
+    "elapsed_seconds": 497,
+    "exit_code": "0:0",
+    "h100_allocations": 1,
+    "job_id": 754602,
+    "node": "evc35",
+    "restarts": 0
+  },
+  "mechanics": {
+    "charged_tokens": 100,
+    "gradient_norm": 7.124323844909668,
+    "loss": 0.6916608214378357,
+    "one_finite_update": true,
+    "peak_gpu_memory_bytes": 69064442880,
+    "protected_parameter_receipt_sha256": "53df6eb8a328bcd7ff22fb0bb861ac5031254e8de45b425a2e8af29424cf26f1",
+    "protected_parameters_unchanged": true,
+    "protected_router_expert_trainables": 0,
+    "router_expert_receipt_sha256": "63e73c74a913a71b56a9f4d1f01691256f292869eb306174e2f44c530ed7b37b",
+    "serialization_restore_exact": true,
+    "trainable_parameters": 1179648,
+    "trained_state_sha256": "47b16ffd229aefb824f4ceb172216f4d5e039a6d2b6fe30b7a3cff4aee80f694"
+  },
+  "model": {
+    "config_sha256": "93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99",
+    "loader": "causal",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "postqualification_custody_fix": {
+    "compute_path_changed": false,
+    "field": "causal_model_class",
+    "reason": "The qualified report omitted one custody-required identity field even though the checkpoint metadata already bound it.",
+    "scope": "report_metadata_only"
+  },
+  "run_id": "q36-mtr-mechanics-cb152bb-r1",
+  "schema": "shohin-q36-mtr-mechanics-qualification-result-v1",
+  "source_commit": "cb152bb6445c7711182359cafa6563ec4a536282",
+  "source_data_sha256": "2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549",
+  "status": "PASS"
+}

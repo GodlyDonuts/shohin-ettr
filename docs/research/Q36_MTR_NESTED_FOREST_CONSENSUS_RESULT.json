@@ -1,0 +1,81 @@
+{
+  "schema": "shohin-q36-mtr-nested-forest-consensus-result-v1",
+  "status": "complete_nested_crossfit_engineering_result",
+  "date": "2026-08-14",
+  "source_commit": "d0255762",
+  "host_model": {
+    "model": "Qwen/Qwen3.6-35B-A3B",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "method": {
+    "base_composer": "nested_beta_smoothed_agreement_pattern_reliability",
+    "override_model": "sklearn.ensemble.RandomForestClassifier",
+    "features": 50,
+    "trees": 200,
+    "minimum_samples_per_leaf": 5,
+    "maximum_features": "sqrt",
+    "random_state": 2026081429,
+    "outer_shards": 16,
+    "outer_training_shards": 15,
+    "inner_training_shards_per_validation": 14,
+    "override_thresholds_selected_inside_outer_training_folds": true,
+    "heldout_identity_labels_read": 0,
+    "development_labels_used_for_training": true
+  },
+  "result": {
+    "rows": 1289,
+    "unchanged_correct": 539,
+    "unchanged_accuracy": 0.41815360744763384,
+    "hierarchical_synthesis_correct": 664,
+    "nested_pattern_consensus_correct": 674,
+    "nested_forest_consensus_correct": 676,
+    "nested_forest_consensus_accuracy": 0.5244375484871994,
+    "absolute_gain_vs_unchanged": 137,
+    "percentage_point_gain_vs_unchanged": 10.628394103956556,
+    "forest_overrides": 24,
+    "domains": {
+      "bbh_logic": {"rows": 637, "correct": 355},
+      "math500": {"rows": 623, "correct": 301},
+      "mbpp": {"rows": 29, "correct": 20}
+    }
+  },
+  "paired_vs_nested_pattern": {
+    "both_correct": 670,
+    "nested_forest_only_correct": 6,
+    "nested_pattern_only_correct": 4,
+    "both_wrong": 609,
+    "exact_two_sided_p": 0.75390625
+  },
+  "paired_vs_hierarchical_synthesis": {
+    "both_correct": 641,
+    "nested_forest_only_correct": 35,
+    "hierarchy_only_correct": 23,
+    "both_wrong": 590,
+    "exact_two_sided_p": 0.14800580076020597
+  },
+  "execution": {
+    "completed_job": 759672,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:01:58",
+    "node": "evc21",
+    "h100_hours": 0.0,
+    "failed_import_preflight_job": 759671
+  },
+  "artifacts": {
+    "candidate_sha256": "f8112072f863c81df83398df9afe8daa47b18eb9d0b63f8a6e1f7fcbd3e7ed2a",
+    "report_sha256": "9683cb9b0182df52b3a7e8eb2d27b9a1f97a5f8fec273c05039aa31a7991c0a2",
+    "selector_sha256": "344785eef35efd7e90c48322f4bd30c3d258502f53d05b98c456d9ab143266e9",
+    "environment_tree_sha256": "2adef7d179834f4988ade3ebbb0223c8699d08fa28c79244014b05ba0fea508c",
+    "evidence_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-nested-forest-consensus-d0255762-r1",
+    "evidence_manifest_sha256": "733867b8fec2b6584be95e4b3c883e7316d3540bece6590894c69b950f4d63c6",
+    "evidence_files": 16,
+    "evidence_bytes": 1915331
+  },
+  "validation": {
+    "selector_tests": "32 passed",
+    "remote_manifest": "all 15 manifested payload files OK",
+    "worktree_source_pushed": true
+  },
+  "interpretation": "Strongest demonstrated cross-fitted Qwen3.6 MoE trajectory composer in this engineering phase. The forest contributes a conservative, complementary two-answer gain over the nested pattern composer while retaining all three domains. The paired delta is not statistically significant and this development result still requires a source-disjoint confirmation before a publication claim."
+}

@@ -1,0 +1,203 @@
+# Q36 upward-MoE storage reclamation — 2026-08-15
+
+This manifest was recorded before mutation.  It contains only obsolete external
+model caches from closed dense, small-MoE, control-family, and prohibited Q35
+lanes.  Dense scaling is complete; these weights are reproducible from their
+upstream revisions, while their compact conclusions and hashes remain in Git.
+
+The executable batch contains exactly 8 resolved, nonsymbolic, regular-file-only
+directories owned by `sa305415`: 61,247,893,504 allocated bytes (57.04 GiB)
+and 255 path inodes.  An initial precheck failed closed before mutation because
+the proposed 229,376-byte `hf_cache` contained one interior Hugging Face
+symlink; that cache was removed from the batch and remains untouched.
+
+| Mtime (EDT) | Allocated bytes | Inodes | Exact target |
+|---|---:|---:|---|
+| 2026-07-31 17:45:20 | 272,490,496 | 13 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2-135m-instruct-83212e1` |
+| 2026-08-02 21:46:00 | 1,769,992,192 | 35 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-0.8b-2fc0636` |
+| 2026-08-03 04:10:28 | 6,167,617,536 | 32 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm3-3b-a07cc9a` |
+| 2026-08-05 01:22:53 | 15,242,944,512 | 50 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen2.5-coder-7b-instruct-c03e6d3` |
+| 2026-08-05 07:11:09 | 2,109,440 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/smollm2_135m_instruct_83212e1e` |
+| 2026-08-07 17:58:50 | 9,342,881,792 | 31 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-4b-851bf6e` |
+| 2026-08-08 20:54:55 | 14,607,130,624 | 49 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/olmo2-7b-instruct-470b1fba` |
+| 2026-08-09 00:06:29 | 13,842,726,912 | 43 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/olmoe-1b-7b-0125-instruct-b89a7c4` |
+
+Explicit exclusions are the active Qwen3.6 35B-A3B host; the staged Nemotron
+Super 120B-A12B host and overlay; the qualified Qwen3.5 9B release; the pinned
+Ministral PCF host; all current Q36 checkpoints, sources, candidates, scores,
+and runtimes; repository/configuration/credentials; and unrelated workspaces.
+
+Deletion is authorized as permanent and locally nonrecoverable.  Each target
+must be revalidated byte/inode-identical, resolved inside the literal external
+artifact root, nonsymbolic, same-user owned, and disjoint from the exclusions;
+then it may be renamed to a unique same-parent quarantine and only that exact
+quarantine removed one filesystem at a time.
+
+## Execution receipt
+
+The eight amended targets revalidated exactly and were renamed one at a time to
+literal same-parent `.q36-upward-delete-20260815-*` quarantines.  Only those
+quarantines were deleted, and every original/quarantine is absent.  The
+deletion is permanent and not locally recoverable.
+
+- Pre-delete quota: 976,289,460 KiB and 700,938 inodes.
+- Stable post-delete quota at 10:10:14Z, 10:10:34Z, and 10:10:54Z:
+  916,477,064 KiB and 700,683 inodes.
+- Exact recovered quota: 59,812,396 KiB (61,247,893,504 bytes) and 255
+  inodes, matching the amended manifest.
+- Current hard-limit headroom: 142,584,696 KiB and 309,317 inodes.
+- The excluded symbolic `hf_cache` remains present and untouched.
+- Every explicit Q36/Nemotron/Qwen9B/Ministral protected anchor remained
+  present after the transaction.
+
+## Batch 2 manifest — closed dense pretraining shards
+
+This manifest was recorded before mutation. Dense scaling and the phase-2
+small-model lane are closed, and none of the active Q36 or Nemotron Super batch
+scripts references `/lustre/fs1/home/sa305415/shohin/artifacts/shards`. The 25
+literal child directories below are resolved, nonsymbolic, owned by
+`sa305415`, and contain 78,086,721,536 allocated bytes (72.72 GiB) across 668
+path inodes. The parent shard root itself is not a deletion target.
+
+| Mtime (EDT) | Allocated bytes | Inodes | Exact target |
+|---|---:|---:|---|
+| 2026-07-31 07:05:15 | 404,815,872 | 7 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_phase2_exact_r1` |
+| 2026-08-08 17:39:57 | 395,104,256 | 6 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_phase2_exact_smollm2_49k_r4` |
+| 2026-07-30 05:03:01 | 404,819,968 | 7 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/essential_web_reasoning_core_1b` |
+| 2026-08-08 17:44:19 | 126,889,984 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdf_core_smollm2_49k_r2` |
+| 2026-07-29 21:37:33 | 8,044,449,792 | 64 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_core_10b` |
+| 2026-07-30 00:26:37 | 129,871,872 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_core_100m_bed4596` |
+| 2026-07-29 23:23:45 | 4,096 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_core_100m_e587807.partial` |
+| 2026-07-30 00:05:17 | 131,366,912 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_residual_100m_bed4596` |
+| 2026-07-29 23:35:21 | 131,366,912 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/finepdfs_edu_eng_policy_residual_100m_e587807.partial` |
+| 2026-07-31 07:24:59 | 13,418,856,448 | 91 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_phase2_exact_r1` |
+| 2026-08-08 20:27:47 | 13,079,957,504 | 88 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_phase2_exact_smollm2_49k_r2` |
+| 2026-07-28 21:27:03 | 4,096 | 1 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_score4_core_10b.partial` |
+| 2026-07-29 02:52:37 | 8,327,168 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_score4_core_10b_r1.partial` |
+| 2026-07-30 07:29:13 | 13,418,790,912 | 91 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_score4_core_10b_r2` |
+| 2026-07-29 02:59:56 | 6,062,080 | 10 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/fineweb_edu_tokenizer_batch_canary_754466` |
+| 2026-07-31 07:01:43 | 78,684,160 | 4 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/formal_logic_phase2_exact_r1` |
+| 2026-07-29 07:44:40 | 78,696,448 | 5 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/nemotron_formal_logic_13fa979_challenger_128m` |
+| 2026-07-29 10:28:54 | 5,331,808,256 | 47 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_domain_balanced_50m_r1` |
+| 2026-07-29 14:01:18 | 5,331,804,160 | 47 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_domain_balanced_50m_r1_sensitive_residual_v1` |
+| 2026-08-11 03:55:34 | 20,869,120 | 2 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_selected_core_10b.partial` |
+| 2026-07-29 09:30:01 | 11,900,739,584 | 103 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_selected_core_10b_r2` |
+| 2026-08-08 18:53:46 | 5,233,700,864 | 46 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_sensitive_smollm2_49k_r2` |
+| 2026-07-29 04:07:00 | 4,743,168 | 10 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/pes2o_tokenizer_batch_canary_754483` |
+| 2026-08-08 16:35:14 | 4,096 | 1 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/phase2_holdouts_3ab418c_r1` |
+| 2026-08-08 16:52:26 | 404,983,808 | 18 | `/lustre/fs1/home/sa305415/shohin/artifacts/shards/phase2_holdouts_3ab418c_r2` |
+
+Every target must be revalidated against the exact bytes/inodes above and
+checked disjoint from the live Qwen3.6, Nemotron Super, Q36 sources,
+checkpoints, candidates, scores, runtimes, and repository/configuration roots.
+Each target may then be renamed to a unique same-parent quarantine and only
+that literal quarantine permanently removed with one-filesystem protection.
+
+### Batch 2 execution receipt
+
+All 25 targets revalidated against the exact manifest, resolved under the
+literal shard root, remained owned by `sa305415`, and were absent from every
+active Q36/Nemotron Super batch script. Each target was renamed to its unique
+same-parent `.q36-upward-delete-b2-*-20260815` quarantine; only those literal
+quarantines were made owner-writable and removed with one-filesystem
+protection. Every original and quarantine is absent. The removal is permanent
+and not locally recoverable.
+
+- Pre-delete quota: 916,490,824 KiB and 701,644 inodes.
+- Stable post-delete quota at 12:18:00Z, 12:18:10Z, and 12:18:20Z:
+  840,234,260 KiB and 700,976 inodes.
+- Exact recovered quota: 76,256,564 KiB (78,086,721,536 bytes) and 668
+  inodes, exactly matching the manifest.
+- Current hard-limit headroom: 218,827,500 KiB and 309,024 inodes.
+- The live Qwen3.6 model, Nemotron Super model and overlay, current Q36
+  runtime, and current Q36 evidence root all revalidated present after the
+  transaction.
+
+## Batch 3 manifest — retired dense hosts and closed legacy corpora
+
+This manifest was recorded before mutation. Dense scaling, PCF17, OCR2, R12,
+ETTR-IL, and the legacy reasoning-data lane are closed; their compact results,
+model revisions, manifests, and conclusions are pushed to Git. None of the
+active Q36 or Nemotron Super batch scripts references any target below. The
+eight literal roots are resolved, nonsymbolic, owned by `sa305415`, and contain
+92,373,024,768 allocated bytes (86.03 GiB) across 3,732 path inodes.
+
+| Mtime (EDT) | Allocated bytes | Inodes | Exact target |
+|---|---:|---:|---|
+| 2026-08-09 02:19:04 | 35,706,695,680 | 64 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/ministral-3-8b-reasoning-2512-81eaece` |
+| 2026-08-09 08:22:30 | 19,329,429,504 | 45 | `/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.5-9b-c202236` |
+| 2026-08-08 17:17:28 | 5,862,699,008 | 409 | `/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-0.8b-2fc0636` |
+| 2026-08-07 23:08:39 | 1,907,191,808 | 67 | `/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/qwen3.5-4b-851bf6e` |
+| 2026-08-02 17:00:08 | 11,306,930,176 | 1,839 | `/lustre/fs1/home/sa305415/shohin/artifacts/r12` |
+| 2026-08-07 15:24:12 | 5,567,107,072 | 887 | `/lustre/fs1/home/sa305415/shohin/artifacts/reasoning` |
+| 2026-07-30 07:18:53 | 1,136,029,696 | 79 | `/lustre/fs1/home/sa305415/shohin/artifacts/ettr_il_v3` |
+| 2026-08-04 20:05:54 | 11,556,941,824 | 342 | `/lustre/fs1/home/sa305415/shohin_data` |
+
+The active Qwen3.6 35B-A3B host, Nemotron Super 120B-A12B host and overlay,
+current Q36 data/checkpoints/candidates/scores/runtimes, repositories,
+credentials, and cluster configuration are explicit exclusions. Every target
+must be revalidated byte/inode-identical immediately before same-parent
+quarantine and literal one-filesystem removal.
+
+### Batch 3 execution receipt
+
+All eight targets revalidated exactly, remained absent from active Q36/Super
+batch scripts, and were renamed to unique same-parent
+`.q36-upward-delete-b3-*-20260815` quarantines. Only those literal quarantines
+were made owner-writable and permanently removed with one-filesystem
+protection. Every original and quarantine is absent. The removal is not
+locally recoverable.
+
+- Pre-delete quota: 840,234,260 KiB and 700,976 inodes.
+- Stable post-delete quota at 12:20:43Z, 12:20:53Z, and 12:21:03Z:
+  750,026,332 KiB and 697,246 inodes.
+- Actual recovered quota: 90,207,928 KiB (92,372,918,272 bytes) and 3,730
+  inodes. The 106,496-byte/two-inode difference from path totals reflects
+  hard-linked storage retained outside the target set.
+- Current hard-limit headroom: 309,035,428 KiB and 312,754 inodes.
+- The active Qwen3.6 and Nemotron Super model roots, Super overlay, current Q36
+  runtime/evidence roots, and repository remained present after deletion.
+
+## Batch 4 manifest — closed SmolLM3 training checkpoints
+
+This manifest was recorded before mutation. The small-model lane is closed and
+explicitly excluded from the upward-MoE scaling graph. Its compact conclusions
+and named checkpoint lineage remain in the pushed research record, while the
+literal checkpoint tree below is not referenced by any queued or running Slurm
+job.
+
+| Mtime (EDT) | Allocated bytes | Inodes | Exact target |
+|---|---:|---:|---|
+| 2026-08-07 17:56:42 | 109,853,667,328 | 1,113 | `/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/smollm3-3b-a07cc9a` |
+
+The target resolved exactly to the recorded absolute path, was a nonsymbolic
+directory owned by `sa305415`, and had zero live scheduler references. The
+active Qwen3.6 35B-A3B model, Nemotron Super 120B-A12B model and overlay,
+Ultra transfer basis, current Q36 sources/checkpoints/candidates/scores,
+runtimes, evidence, repositories, credentials, and cluster configuration are
+explicit exclusions. Before deletion, the target must be revalidated against
+the exact bytes and inode count, entirely same-user owned and same-filesystem,
+then renamed to one literal same-parent quarantine. Only that quarantine may be
+permanently removed with one-filesystem protection.
+
+### Batch 4 execution receipt
+
+The one exact target revalidated byte/inode-identical, remained entirely owned
+by `sa305415`, contained no symlinks or special files, and had zero references
+from all queued or running Slurm jobs. It was renamed to the literal
+same-parent `.q36-upward-delete-b4-smollm3-3b-a07cc9a-20260815` quarantine;
+only that quarantine was made owner-writable and permanently removed with
+one-filesystem protection. The original and quarantine are absent. The
+deletion is not locally recoverable.
+
+- Pre-delete quota: 752,615,988 KiB and 697,826 inodes.
+- Stable post-delete quota at 10:57:43, 10:57:53, 10:58:15, and 10:58:26
+  EDT: 645,337,016 KiB and 696,713 inodes.
+- Exact recovered quota: 107,278,972 KiB (109,853,667,328 bytes) and 1,113
+  inodes, exactly matching the manifest.
+- Current hard-limit headroom: 413,724,744 KiB and 313,287 inodes.
+- The Ultra snapshot admission requirement is 421,100,722,257 bytes including
+  its 64-GiB post-download safety reserve; observed headroom exceeds it by
+  2,493,569 KiB (2.378 GiB).
+- Every explicit active Qwen3.6, Nemotron Super/overlay, Ultra transfer-basis,
+  Q36 runtime, and evidence anchor remained present after deletion.

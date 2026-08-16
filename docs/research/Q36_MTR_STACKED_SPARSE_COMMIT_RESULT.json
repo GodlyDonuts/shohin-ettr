@@ -1,0 +1,98 @@
+{
+  "schema": "shohin-q36-mtr-stacked-sparse-commit-result-v1",
+  "status": "complete",
+  "interpretation": "engineering_nested_out_of_fold_moe_trajectory_benchmark",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "split": "source_disjoint_development",
+  "rows": 1289,
+  "best_owner": {
+    "label": "owner_8",
+    "correct": 494,
+    "accuracy": 0.3832428238944919
+  },
+  "production_candidate_only_commit": {
+    "correct": 539,
+    "accuracy": 0.4181536074476338
+  },
+  "out_of_shard_sparse_router": {
+    "correct": 542,
+    "accuracy": 0.4204809930178433,
+    "folds": 16,
+    "training_excludes_selected_identity_shard": true,
+    "feature_contract": "hashed_question_trajectory_owner_interactions_v1",
+    "domains": {
+      "bbh_logic": {"rows": 637, "correct": 308},
+      "math500": {"rows": 623, "correct": 219},
+      "mbpp": {"rows": 29, "correct": 15}
+    }
+  },
+  "nested_stacked_commit": {
+    "correct": 546,
+    "accuracy": 0.4235841737781226,
+    "gain_over_best_owner_count": 52,
+    "gain_over_best_owner_points": 4.034134988363073,
+    "gain_over_production_commit_count": 7,
+    "gain_over_production_commit_points": 0.5430566330488751,
+    "training_excludes_selected_identity_shard": true,
+    "conservative_executable_code_retention": true,
+    "selection_counts": {
+      "production_commit": 694,
+      "sparse_router": 595
+    },
+    "domains": {
+      "bbh_logic": {"rows": 637, "correct": 315, "accuracy": 0.4945054945054945},
+      "math500": {"rows": 623, "correct": 214, "accuracy": 0.3434991974317817},
+      "mbpp": {"rows": 29, "correct": 17, "accuracy": 0.5862068965517241}
+    },
+    "paired_vs_production_commit": {
+      "both_correct": 523,
+      "stacked_only_correct": 23,
+      "production_only_correct": 16,
+      "both_wrong": 727,
+      "mcnemar_exact_two_sided_p": 0.3367836351899314
+    }
+  },
+  "verified_score": {
+    "correct": 546,
+    "accuracy": 0.4235841737781226,
+    "score_job": 758555,
+    "comparison_job": 758556,
+    "score_matches_stacked_decision_report": true
+  },
+  "artifacts": {
+    "cross_validation_report": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/sparse_router_cv_d9cd90b/result.json",
+      "sha256": "5b5aaeae746d4f4f031652091407d93ed050437a9c6513b64e06a3775276b0fc"
+    },
+    "stacked_report": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_sparse_commit_e66ce8f/report.json",
+      "sha256": "ad37bca4acaa3fdd02f6f46c516065ccbfa234e2f7827526cbc355d6f878fc5d"
+    },
+    "selected_candidates": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_sparse_commit_e66ce8f/candidates.jsonl",
+      "sha256": "9e5e48cb2dead31edceedc6ec2b8734707603745351a100ab1abaabd15e4e8f3"
+    },
+    "decisions": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_sparse_commit_e66ce8f/decisions.jsonl",
+      "sha256": "9cc5227eb25df3b29617a1186c89a8d01ff9c5c8e32570540e1124cb750f6382"
+    },
+    "verified_score": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_sparse_commit_e66ce8f/development_score.json",
+      "sha256": "8286f152cb130b4aac9da024d8b63d0fceb1d4332a7be3f7c13e6bf065524b2f"
+    },
+    "paired_comparison": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_sparse_commit_e66ce8f/comparison.json",
+      "sha256": "74b948fece4dbd35dd643d98e3ae399067fc078da702c10ad52faba2f435da88"
+    },
+    "runtime_manifest": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_e66ce8f_r1/SHA256SUMS",
+      "sha256": "fa370093a1d9807fead1d08db61db684cecaf39e634a4b69ca6c387399fe3014"
+    }
+  },
+  "source_commits": {
+    "sparse_cross_validation": "fd1dd7ec5e5f42f296f34b8b95bce36a698d2a16",
+    "stacked_commit": "e66ce8f569e911e84b735124e1660c0bf42d1057"
+  },
+  "conclusion": "Nested out-of-fold stacking captures seven additional correct answers beyond the previously demonstrated candidate-only commit while retaining all 17 executable-code successes. The verified Qwen3.6 MoE result is now 546/1289, 4.03 percentage points above the strongest individual owner. The paired gain over 539 is directional but not independently significant, so the queued contextual setwise and full calibration-trained routers remain the next decisive measurements."
+}

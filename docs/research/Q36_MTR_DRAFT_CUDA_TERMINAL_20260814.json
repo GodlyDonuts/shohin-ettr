@@ -1,0 +1,97 @@
+{
+  "automatic_retry_authorized": false,
+  "automatic_successor_authorized": false,
+  "capability_rows_scored": 0,
+  "cleanup": {
+    "cancelled_dependency_roots": 29,
+    "cancelled_inflight_draft_tasks": 10,
+    "cancelled_never_admitted_draft_tasks": 2,
+    "cancelled_root_array_job": 755904,
+    "dependency_roots_elapsed_seconds": 0,
+    "queue_members_after_cleanup": 0,
+    "temporary_model_roots_remaining": 0
+  },
+  "completed_predecessors": {
+    "draft_candidate_file_count": 3,
+    "draft_candidate_rows": 1333,
+    "draft_report_file_count": 3,
+    "draft_shard_jobs": [
+      756123,
+      756124,
+      756245
+    ],
+    "draft_shard_report_sha256": [
+      "59d890384bf2bd818226f7ace915bc93bacbe2a999ae1b8b89ce28de55b84dc0",
+      "f314f164f1982916ccc375a1604594d50f750715eec9c65251519647b57d0ef6",
+      "3a831e15003ff79fe90995eda2a98c5a94c3a63526db994d7ff44b14bca30ec5"
+    ],
+    "draft_shard_output_sha256": [
+      "880b69215751d049ffd17243142e972cc66e07ce18a584632dc2e87767bf6314",
+      "69f4c6c51d301b84a120e834096e32c6f79e3c6fd5d515078e19ff5e7a839229",
+      "442fc3ff97594daa6ff467edebea3dbf303e5457975c4a105892bd85706ff469"
+    ],
+    "live_preflight_job": 755901,
+    "live_preflight_sha256": "8bcff64e15c0a6c8df15c57969f9b839f4ae23c7ae7e50f48a83e32622edf4c7",
+    "mechanics_job": 755902,
+    "mechanics_report_sha256": "d2d44249b158f63501fe11edfd28918ebc167466dc97a6a4b5a6c6880c7844b3",
+    "owner_checkpoint_sha256": "4a98d020a18117545e4652dceec6695d96fbfa0f48968236ad7270c02aab007d",
+    "owner_job": 755903,
+    "owner_report_sha256": "967169724589fbcd6a58b6a22547e9f5d75901dc6becee3ed52a2dd02086d427",
+    "owner_selected_rows": 26387,
+    "owner_tokens": 619734,
+    "owner_updates": 256
+  },
+  "development_assessor_reads": 0,
+  "dispatch": {
+    "dispatch_sha256": "5ceb513d909752439e1feb73314b016bdba0ea7bb64061ff0875fac31449da51",
+    "expected_h100_hours": 58.9,
+    "graph_contract_sha256": "b4bc1e8bab1c923a985918471fca4f8e491cefd2c9bd2b20dc4d45571468d66a",
+    "plan_sha256": "fb07bbec5cfaf8a5cf63339e5338e0743a1a3b029262b9775d1327d215e84b35",
+    "root_job_id": 755901,
+    "submission_count": 1,
+    "terminal_job_id": 755933
+  },
+  "failed_stage": {
+    "array_job": 755904,
+    "candidate_file_published": false,
+    "elapsed_seconds": 5600,
+    "exit_code": "1:0",
+    "failed_task": 3,
+    "job_id": 756445,
+    "node": "evc50",
+    "report_file_published": false,
+    "restarts": 0,
+    "sacct_end_cluster_local": "2026-08-14T01:22:27",
+    "sacct_start_cluster_local": "2026-08-13T23:49:07",
+    "stage": "owner_draft_generation",
+    "state": "FAILED",
+    "stderr_sha256": "d17d5886dafe6e353ae276109da9211f1b5d897bd68d9ecb34cfd4b7cae2cff2",
+    "stdout_sha256": "f3a902ba7bd193a20eb6d390464b77cfb50914e34501ca9be8b348241b80d226"
+  },
+  "formal_scientific_result": null,
+  "infrastructure_diagnosis": {
+    "class": "late_cuda_unknown_error_during_moe_grouped_mm_fallback",
+    "message": "After approximately 93 minutes of source-owner draft generation, task 3 stopped inside Transformers' Qwen3.5-MoE grouped-matrix fallback while materializing routing offsets with RuntimeError: CUDA error: unknown error. CUDA reports errors asynchronously, so the failing operation cannot be attributed to a scientific row or model answer. No task-3 candidate or report artifact was published.",
+    "scientific_gate_entered": false
+  },
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "phase_authorization_sha256": "55fd370649a47362cd4a002beec9951c23e9e11766e43dca375d0db83134c806",
+  "protected_product_accesses": 0,
+  "public_accesses": 0,
+  "recorded_utc": "2026-08-14T05:25:24Z",
+  "run_id": "q36-mtr-03955353-r2",
+  "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_03955353_r2",
+  "runtime_manifest_sha256": "37c215d8b8a40f7baf717746bf095316c7407e0e1c9fe0747e5a8360ac41ecad",
+  "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_03955353_r1",
+  "schema": "shohin-q36-mtr-execution-terminal-infrastructure-v1",
+  "sealed_holdout_accesses": 0,
+  "source_commit": "039553532497bfad261f65fb39fc439bd20c7380",
+  "source_custody": {
+    "development_source_sha256": "2385a653cf7f1b7208d3c924efca2a8305250d2361f90f9fa1e49af6fd9bbe68",
+    "freeze_report_sha256": "a58a77d2849f9571416680dcbdae3d59340259fa5b3df111c35caa53fc1538a9",
+    "owner_b1_sha256": "2461d6f70b44a142854d56c24e1fb42d600065e5788a2c4e055ba47b12696549",
+    "train_source_sha256": "9696f064a8e2bb8c7e46e6a6a4a5ad8ade5edd0cb58a4f5ebf6171beb25d6fc0"
+  },
+  "status": "terminal_infrastructure_failure",
+  "stop_after_terminal": true
+}

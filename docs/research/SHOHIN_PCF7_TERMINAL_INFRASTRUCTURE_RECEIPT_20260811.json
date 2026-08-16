@@ -1,0 +1,74 @@
+{
+  "schema": "shohin-pcf7-terminal-infrastructure-receipt-v1",
+  "status": "terminal_post_mechanics_cleanup_failure",
+  "date": "2026-08-11",
+  "source_commit": "2c66fcb0379a9eb9ecf7b4bb00f220d68fa88e30",
+  "runtime_manifest_sha256": "a520343088962b00b7eb8fb82fa09f29f0c13161b973f8a57ffaf74d50a0f2a0",
+  "run_id": "pcf7_ministral_2c66fcb_r1",
+  "jobs": {
+    "prepare": {
+      "job_id": 751784,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 146,
+      "node": "evc21",
+      "restarts": 0
+    },
+    "mechanics": {
+      "job_id": 751785,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "elapsed_seconds": 210,
+      "node": "evc27",
+      "restarts": 0,
+      "mechanics_report_status": "pass",
+      "cause": "post-mechanics scratch cleanup could not unlink the read-only staged model tree",
+      "message": "PermissionError: [Errno 13] Permission denied: '/tmp/pcf1-751785-scalar/pcf1-model'"
+    },
+    "downstream_root_jobs_cancelled": 27,
+    "downstream_started": 0,
+    "terminal_job_id": 751812
+  },
+  "mechanics": {
+    "report_sha256": "fc9e2db21a3a1addc78f9f82ee3f8c89efdb3ada5c62e25649bb420a409a4416",
+    "ephemeral_adapter_report_sha256": "6b1fdfde4bf76759ae4e07dabcd57f9831210b94aa067637047af24769c093f0",
+    "ephemeral_adapter_checkpoint_sha256": "3cb0fa2954565db064b2afce970399bab5f75607956f90697b2dd0c93d728a23",
+    "rows": 24,
+    "optimizer_updates": 1,
+    "capability_scored": false,
+    "model_loaded": true,
+    "mechanics_passed": true
+  },
+  "files": {
+    "dispatch_sha256": "68edb59c52a1c818002058d20123bf9c97141eba80bff087f2d267fadf55675e",
+    "prescore_dispatch_sha256": "67ca4dcf433e34d26ed9596439f5707f620914aba15f5669ebbd8c280f365090",
+    "mechanics_stdout_sha256": "c2c2c30a1dc6534bd1db7fc447827f0c6bb5e762dd7e60b0b11ddc1dd65e31ff",
+    "mechanics_stderr_sha256": "4ad855bdb86e5152b82cab92cc72bcf7e148dba94d2e7d48eb05147ca9881414",
+    "accounting_transcript_sha256": "85f44d681d7e1f657578d94935b31317f5be92e818257befbfe49e963cfae338"
+  },
+  "confirmation_assessor_sha256": "a824ae4c071c0e1309268da40c4f644d778d50c01ced9fb9b8591a923efa82e8",
+  "confirmation_assessor_receipt_sha256": "9752ac3c25981764d4b8ae325cb1969d666c46496032f32313092be5a8fb1b77",
+  "confirmation_assessor_semantic_reads": 0,
+  "scientific_training_started": false,
+  "scientific_candidates_generated": false,
+  "scientific_score_emitted": false,
+  "formal_scientific_result": null,
+  "scratch_reclamation": {
+    "job_id": 751816,
+    "node": "evc27",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "path": "/tmp/pcf1-751785-scalar",
+    "permanently_deleted": true,
+    "locally_recoverable": false
+  },
+  "remote_evidence": {
+    "files": 27,
+    "directories": 8,
+    "logical_bytes": 50079926,
+    "all_members_nonwritable": true
+  },
+  "tokenizer_warning_preserved": "Transformers reported the pinned checkpoint regex as incorrect; PCF8 does not alter the frozen tokenizer semantics",
+  "queue_empty": true,
+  "retry_count": 0
+}

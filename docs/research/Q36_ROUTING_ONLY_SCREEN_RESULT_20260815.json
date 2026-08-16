@@ -1,0 +1,49 @@
+{
+  "schema": "shohin-q36-routing-only-screen-result-v1",
+  "status": "complete",
+  "host": "Qwen3.6-35B-A3B",
+  "architecture": "q36-tokenwise-multi-trajectory-residual-gate-v1",
+  "ablation": "routing_supervision_only_zero_causal_loss",
+  "fit": {
+    "job_id": 760190,
+    "updates": 256,
+    "checkpoint_sha256": "d1d947ef2959ebf4177fdeabc5469eefb06469e0098eda8821b5f1de966426b3",
+    "report_sha256": "6496780c0634521b3adfcb9fc7ee66b768435a7b3cb4bb5e18b8206b284c60fe"
+  },
+  "screen": {
+    "evaluation_job": 760191,
+    "score_job": 760192,
+    "rows": 256,
+    "unique_identities": 256,
+    "shards": 4,
+    "empty_completions": 0,
+    "max_token_exhausted": 1,
+    "score_sha256": "81bbe935d8094f3247235cdb9518c3fc1cf458bae4fc981a5b2e255e9b47dd3a",
+    "all_jobs_completed_without_restart": true
+  },
+  "result": {
+    "routing_only_correct": 138,
+    "unchanged_correct": 111,
+    "total": 256,
+    "absolute_gain_correct": 27,
+    "absolute_gain_percentage_points": 10.546875,
+    "routing_only_only_correct": 33,
+    "unchanged_only_correct": 6,
+    "mcnemar_exact_two_sided_p": 1.429926123819314e-05,
+    "unchanged_correct_retained": 105,
+    "unchanged_correct_retention": 0.9459459459459459,
+    "domains": {
+      "bbh_logic": 86,
+      "math500": 42,
+      "mbpp": 10
+    }
+  },
+  "comparison_to_full_multi_trajectory": {
+    "full_correct": 141,
+    "routing_only_correct": 138,
+    "full_gain_correct": 3,
+    "full_unchanged_correct_retained": 106,
+    "routing_only_unchanged_correct_retained": 105,
+    "interpretation": "Routing supervision alone produces a large gain, but the causal trajectory-training term contributes additional capability and conservative retention. Upward transfer should preserve the full trained revision recipe rather than transfer a selector-only ablation."
+  }
+}

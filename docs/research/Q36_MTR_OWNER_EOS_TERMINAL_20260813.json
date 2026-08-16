@@ -1,0 +1,53 @@
+{
+  "automatic_retry_authorized": false,
+  "automatic_successor_authorized": false,
+  "capability_rows_scored": 0,
+  "development_assessor_reads": 0,
+  "dispatch": {
+    "cancelled_dependency_roots": 30,
+    "cancelled_roots_elapsed_seconds": 0,
+    "dispatch_sha256": "8accd44d562040cfab33a02306f26fc73843f1e4fad399cb023c5df4dbd20682",
+    "expected_h100_hours": 58.9,
+    "root_job_id": 754636,
+    "submission_count": 1,
+    "terminal_job_id": 754668
+  },
+  "failed_stage": {
+    "backbone_load_started": false,
+    "capability_scored": false,
+    "elapsed_seconds": 221,
+    "exit_code": "1:0",
+    "h100_allocations": 1,
+    "job_id": 754638,
+    "node": "evc35",
+    "optimizer_update_completed": false,
+    "restarts": 0,
+    "stage": "owner_fit",
+    "state": "FAILED",
+    "stderr_sha256": "2db1d132280e2a7d00718c0b432dcb44313c287d368fa4ef71f06efa42c7eda7",
+    "stdout_sha256": "96ec8b79dd16f38bab91aa9e80c6c6b74b4232e9605159f5d5a43059e94e68fb"
+  },
+  "formal_scientific_result": null,
+  "infrastructure_diagnosis": {
+    "class": "owner_pre_eos_budget_off_by_one",
+    "message": "The surviving dense trainer applies the 1,024-token ceiling before appending EOS, admitting an untruncated packed length of 1,025. The prospective Q36 validator counted EOS against that ceiling and stopped on selected row 480 before backbone load or optimizer construction. The corrected receipt explicitly binds a one-token EOS allowance while preserving every model-visible token and all training settings.",
+    "scientific_gate_entered": false
+  },
+  "live_preflight_sha256": "92fcc50ddece969b16578d0437a86cd878533eb532a6ce35df04ee81d3c9db03",
+  "mechanics": {
+    "checkpoint_sha256": "aee79d61f7de3e81c00a07e08c25113831d5f712a2b759713b92ed07738defda",
+    "job_id": 754637,
+    "report_sha256": "77d008f496f5790eeceb300aec9a653679bfcb6f221f27cfa01f690b1111fc30",
+    "status": "pass"
+  },
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "protected_product_accesses": 0,
+  "public_accesses": 0,
+  "run_id": "q36-mtr-82dd49b0-r1",
+  "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_82dd49b0_r1",
+  "schema": "shohin-q36-mtr-execution-terminal-infrastructure-v1",
+  "sealed_holdout_accesses": 0,
+  "source_commit": "82dd49b0aa6b041c7e377afe30d90713ca5bf54f",
+  "status": "terminal_infrastructure_failure",
+  "stop_after_terminal": true
+}

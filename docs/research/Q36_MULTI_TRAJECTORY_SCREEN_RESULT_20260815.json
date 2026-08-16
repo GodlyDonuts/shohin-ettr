@@ -1,0 +1,168 @@
+{
+  "schema": "shohin-q36-mtr-multi-trajectory-screen-result-v1",
+  "status": "complete_promoted",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "total_parameters": "35B",
+    "active_parameters": "3B"
+  },
+  "architecture": {
+    "name": "q36-tokenwise-multi-trajectory-residual-gate-v1",
+    "branches": [
+      "revision",
+      "draft_hidden"
+    ],
+    "controlled_layers": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "trainable_parameters": 65568,
+    "native_router_or_expert_checkpoint_tensors": 0,
+    "optimizer_updates": 256,
+    "checkpoint_sha256": "1e5078cc482bcfbd443d73a176f242f1946dcaa9d63cdeca8980148fbf0ee9e6",
+    "training_report_sha256": "3500f79d4e737496d0b2b5e9579c9582804cb61b016309210eb2aa48115e4d2b"
+  },
+  "source_disjoint_screen": {
+    "rows": 256,
+    "domain_rows": {
+      "bbh_logic": 128,
+      "math500": 117,
+      "mbpp": 11
+    },
+    "shards": 4,
+    "unique_identity_count": 256,
+    "empty_completions": 0,
+    "max_token_exhausted": 1,
+    "candidate_sha256s": [
+      "63479c6bb01a10fb5770e6a7723cc30ae4803ce7cbb60d2273966f0c96acf3ca",
+      "1b648aabc314e87d708f6f18c66932c69dbad20a52cd7f0bf6a9593c8bd9eb1d",
+      "7aa7e697854a539f1a596973bcb1334a2fab021a78b86e78dd5056a2f25de72e",
+      "1b06c71309a1c1d62c1eae74f85a554c6684c63902374d5451f07ebbf0d292f4"
+    ],
+    "report_sha256s": [
+      "6295d7dfa34b097d5a120a4e0ad398e2fbd5ca09bcbde45def4767e32a69d800",
+      "a6509deb55866aabeed6eb9a663ff6766492eb49b25d1d0f29c3c2756dc7ddf1",
+      "8a74dc8d5c0e2f90aaaa269523350b41a53efe789fc41ccc9701fd4316dfe1b2",
+      "9713bf04f4b5eee7e10a4616e29456c50bf83868a11cc099e781637ca7c7c3d9"
+    ],
+    "score_sha256": "acf04f4fc42df8edffe9518a513715d145590f0a0e3f8d777601bd16d375cbdc"
+  },
+  "result": {
+    "multi_trajectory": {
+      "correct": 141,
+      "total": 256,
+      "accuracy": 0.55078125,
+      "domains": {
+        "bbh_logic": 87,
+        "math500": 44,
+        "mbpp": 10
+      }
+    },
+    "unchanged": {
+      "correct": 111,
+      "total": 256,
+      "accuracy": 0.43359375,
+      "domains": {
+        "bbh_logic": 71,
+        "math500": 31,
+        "mbpp": 9
+      }
+    },
+    "absolute_gain_correct": 30,
+    "absolute_gain_percentage_points": 11.71875,
+    "paired_multi_only_correct": 35,
+    "paired_unchanged_only_correct": 5,
+    "mcnemar_exact_two_sided_p": 1.382612026645802e-06,
+    "unchanged_correct_retained": 106,
+    "unchanged_correct_total": 111,
+    "unchanged_correct_retention": 0.954954954954955
+  },
+  "matched_controls": {
+    "revision": {
+      "correct": 141,
+      "multi_only_correct": 5,
+      "revision_only_correct": 5,
+      "interpretation": "capability tie; multi-trajectory retained one additional unchanged-correct identity"
+    },
+    "interpolation": {
+      "correct": 137,
+      "multi_only_correct": 6,
+      "interpolation_only_correct": 2
+    },
+    "draft_hidden": {
+      "correct": 122,
+      "multi_only_correct": 29,
+      "draft_hidden_only_correct": 10
+    },
+    "self_refinement": {
+      "correct": 121,
+      "multi_only_correct": 30,
+      "self_refinement_only_correct": 10
+    }
+  },
+  "jobs": {
+    "fit": {
+      "job_id": 760169,
+      "state": "COMPLETED",
+      "elapsed_seconds": 4614,
+      "node": "evc39",
+      "restarts": 0,
+      "exit_code": "0:0"
+    },
+    "evaluation": {
+      "array_job_id": 760170,
+      "states": [
+        "COMPLETED",
+        "COMPLETED",
+        "COMPLETED",
+        "COMPLETED"
+      ],
+      "elapsed_seconds": [
+        423,
+        327,
+        326,
+        416
+      ],
+      "exit_codes": [
+        "0:0",
+        "0:0",
+        "0:0",
+        "0:0"
+      ]
+    },
+    "score": {
+      "job_id": 760171,
+      "state": "COMPLETED",
+      "elapsed_seconds": 77,
+      "node": "evc21",
+      "restarts": 0,
+      "exit_code": "0:0"
+    }
+  },
+  "promotion": {
+    "decision": "promote_to_existing_1023_row_source_disjoint_validation_and_nemotron_super_score_free_mechanics",
+    "validation_evaluation_job": 760179,
+    "validation_score_job": 760180,
+    "held_unchanged_validation_shards_released": "759814_[9-15]",
+    "nemotron_super_mechanics_job": 760229,
+    "nemotron_super_host": "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "nemotron_super_scientific_rows": 0,
+    "next_upward_point_after_super_evidence": "NVIDIA-Nemotron-3-Ultra-550B-A55B-NVFP4"
+  },
+  "interpretation": "On a source-disjoint broad screen, the learned MoE trajectory gate preserved the strongest revision capability while improving conservative unchanged-case retention and materially outperforming unchanged, interpolation, draft-hidden, and self-refinement controls. This is sufficient to advance the already-staged full validation and test the same post-mixer intervention mechanics on the 120B-A12B Nemotron Super host."
+}

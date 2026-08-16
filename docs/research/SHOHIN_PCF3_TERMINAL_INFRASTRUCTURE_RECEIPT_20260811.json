@@ -1,0 +1,44 @@
+{
+  "schema": "shohin-pcf3-terminal-infrastructure-receipt-v1",
+  "status": "terminal_pre_admission_failure",
+  "date": "2026-08-11",
+  "source_commit": "97ae80af652f9bf900bbbf82a2d763b83ec4971b",
+  "runtime_manifest_sha256": "0c00dae0cc8dd0780d628ae25fbaee79e82904c598c7c6446043ba7c83674c5b",
+  "failed_job": {
+    "job_id": 751693,
+    "name": "pcf3-reference-canary",
+    "state": "FAILED",
+    "exit_code": "2:0",
+    "elapsed_seconds": 2,
+    "node": "evc21",
+    "alloc_tres": "billing=2,cpu=2,mem=16G,node=1",
+    "restarts": 0,
+    "cause": "historical hash-pinned source-bank path rejected by the post-freeze lexical firewall before file open",
+    "message": "pcf1: protected path supplied: /lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/router_outcomes/cvg1_code_disjoint_1b49ca7/mbpp_disjoint200_2026080715_r1.jsonl"
+  },
+  "files": [
+    {
+      "path": "751693.err",
+      "sha256": "4744160e8131e2d294050a6722607b80c0eb66a2bfefbf1a723949af55316fd1"
+    },
+    {
+      "path": "751693.out",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "job_id.txt",
+      "sha256": "cc61300f56d55477c299013b872c238b6eea839c33eb20d60fdd0c427a618587"
+    }
+  ],
+  "source_bank_opened": false,
+  "sandbox_started": false,
+  "model_opened": false,
+  "data_published": false,
+  "assessor_published": false,
+  "scientific_graph_submitted": false,
+  "scientific_score_emitted": false,
+  "formal_scientific_result": null,
+  "output_root_absent": true,
+  "queue_empty": true,
+  "retry_count": 0
+}

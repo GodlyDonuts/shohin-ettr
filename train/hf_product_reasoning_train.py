@@ -668,6 +668,9 @@ class ProductReasoningModel(nn.Module):
             )
         self.unfreeze_layers = unfreeze_layers
         self.lora_scope = lora_scope
+        self.lora_layer_indices = list(
+            range(len(layers) - lora_layers, len(layers))
+        )
         self.lora_projection_count = 0
         for layer in layers[-lora_layers:]:
             self.lora_projection_count += install_scoped_lora(
@@ -1398,6 +1401,21 @@ def _batches(
 def run(args: argparse.Namespace) -> dict[str, Any]:
     from transformers import AutoTokenizer
 
+    environment_path = getattr(args, "environment_receipt", None)
+    environment_sha256 = getattr(args, "environment_receipt_sha256", None)
+    if (environment_path is None) != (environment_sha256 is None):
+        raise ProductReasoningTrainError(
+            "environment receipt path/hash must be supplied together"
+        )
+    environment = None
+    if environment_path is not None:
+        from pcf1_environment import validate_environment_receipt
+
+        environment = validate_environment_receipt(
+            environment_path,
+            environment_sha256,
+            "train/hf_product_reasoning_train.py",
+        )
     if args.output.exists():
         raise ProductReasoningTrainError(f"output already exists: {args.output}")
     args.output.mkdir(parents=True)
@@ -1484,6 +1502,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "lora_rank": args.lora_rank,
         "lora_alpha": args.lora_alpha,
         "lora_projection_count": model.lora_projection_count,
+        "lora_layer_indices": model.lora_layer_indices,
         "lora_scope": model.lora_scope,
         "quantization": args.quantization,
         "unfreeze_layers": model.unfreeze_layers,
@@ -1498,6 +1517,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "trainable_parameters": model.trainable_parameter_count(),
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),
+        "environment_receipt": (
+            str(environment_path.resolve()) if environment_path is not None else None
+        ),
+        "environment_receipt_sha256": environment_sha256,
+        "environment_tree_sha256": (
+            environment["environment_tree"]["sha256"]
+            if environment is not None
+            else None
+        ),
         "workspace_config": (
             asdict(model.workspace_config) if model.workspace_config else None
         ),
@@ -1694,6 +1722,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--warm-start-checkpoint", type=Path)
+    parser.add_argument("--environment-receipt", type=Path)
+    parser.add_argument("--environment-receipt-sha256")
     parser.add_argument(
         "--arm",
         choices=(

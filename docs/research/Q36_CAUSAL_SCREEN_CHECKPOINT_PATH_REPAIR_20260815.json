@@ -1,0 +1,57 @@
+{
+  "schema": "shohin-q36-causal-screen-checkpoint-path-repair-v1",
+  "status": "replacement_array_submitted",
+  "scientific_result": false,
+  "variant": "causal_only_temporal_gate",
+  "failed_shard": {
+    "job_id": 760262,
+    "array_root": 760176,
+    "shard_index": 0,
+    "state": "FAILED",
+    "elapsed_seconds": 87,
+    "node": "evc40",
+    "restarts": 0,
+    "exit_code": "2:0",
+    "failure": "evaluation referenced the superseded generic temporal checkpoint path, which does not exist",
+    "stderr_sha256": "496f5ea2f6e68fcd51c6a1ca85d1b1601682d737e057a491ada8f07fc8aabaaf",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "model_load_started": false,
+    "report_published": false,
+    "candidates_published": false
+  },
+  "superseded_pending_tasks": {
+    "array_root": 760176,
+    "shards": [
+      1,
+      2,
+      3
+    ],
+    "elapsed_seconds_each": 0,
+    "nodes": "None assigned",
+    "permanently_canceled": true
+  },
+  "replacement": {
+    "array_job": 760266,
+    "shards": 4,
+    "time_limit_seconds": 1080,
+    "requeue": false,
+    "gate_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_causal_response_1dad6dd6_r1/fit/checkpoint_0000256.pt",
+    "gate_checkpoint_sha256": "803219a9ac797d6bb8f1dfd5dd028b075ef3cd1fba19762ce507c347d2208cbe",
+    "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "runtime_manifest_sha256": "51f7fe55b4625fb95dab6b00bbe334f145aed2607e90151ad9fc4c6860909e19",
+    "seed": 2026080816,
+    "generation_mode": "greedy",
+    "max_new_tokens": 768,
+    "score_job": 760177,
+    "score_dependency": "afterok:760266"
+  },
+  "scientific_contract": {
+    "identity_partition_changed": false,
+    "model_changed": false,
+    "checkpoint_bytes_changed": false,
+    "seed_changed": false,
+    "generation_changed": false,
+    "healthy_allocation_canceled": false,
+    "duplicate_output_authorized": false
+  }
+}

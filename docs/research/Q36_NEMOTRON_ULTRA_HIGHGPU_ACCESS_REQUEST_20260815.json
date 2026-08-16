@@ -1,0 +1,123 @@
+{
+  "schema": "shohin-q36-nemotron-ultra-highgpu-access-request-v1",
+  "status": "official_research_computing_ticket_open_response_pending",
+  "request": {
+    "cluster": "Newton",
+    "slurm_user": "sa305415",
+    "slurm_account": "skattel",
+    "partition": "highgpu",
+    "access_type": "temporary_eight_gpu_testing_then_permanent_if_mechanics_passes",
+    "initial_allocation": {
+      "nodes": 1,
+      "gpu_type": "nvidia_h100_80gb_hbm3",
+      "gpus": 8,
+      "cpus": 32,
+      "memory_gib": 512,
+      "wall_minutes": 60,
+      "requeue": false
+    }
+  },
+  "scientific_need": {
+    "objective": "Test whether the measured Shohin MoE revision gain transfers upward from Qwen3.6-35B-A3B through Nemotron Super-120B-A12B to Nemotron Ultra-550B-A55B.",
+    "why_eight_gpus": "NVIDIA's official NVFP4 model card specifies eight H100 GPUs as the minimum H100 configuration for Nemotron Ultra-550B-A55B.",
+    "why_single_node": "The qualified loader uses one-process balanced placement across eight locally visible devices; Newton normal nodes expose only two H100 GPUs and cannot satisfy the model's minimum memory geometry.",
+    "first_job_is_no_score": true,
+    "first_job_reads_benchmark_rows": 0,
+    "first_job_reads_label_rows": 0,
+    "first_job_actions": [
+      "verify_exact_model_and_runtime_manifests",
+      "load_the_frozen_550B_A55B_NVFP4_host_offline_across_all_eight_H100s",
+      "attach_16_low_rank_post_mixer_residuals_without_modifying_native_routers_or_experts",
+      "run_one_synthetic_forward_backward_optimizer_update",
+      "serialize_and_restore_only_the_4718592_Shohin_trainables",
+      "write_hardware_memory_gradient_and_hash_receipts"
+    ]
+  },
+  "prior_results": {
+    "qwen3_6_35b_a3b_rows": 256,
+    "qwen3_6_35b_a3b_unchanged_correct": 111,
+    "qwen3_6_35b_a3b_shohin_correct": 141,
+    "gain_percentage_points": 11.71875,
+    "paired_wins": 35,
+    "paired_losses": 5,
+    "exact_mcnemar_p": 1.382612026645802e-06,
+    "unchanged_correct_retention": 0.954954954954955,
+    "result_sha256": "acf04f4fc42df8edffe9518a513715d145590f0a0e3f8d777601bd16d375cbdc",
+    "nemotron_super_status": "two_H100_mechanics_fit_and_matched_screen_dependency_staged"
+  },
+  "implementation_evidence": {
+    "current_private_branch_head_before_request_refresh": "5518e1d63435990795869f96d79eeb690f3d13fc",
+    "mechanics_worker": "train/hf_nemotron_ultra_mechanics.py",
+    "mechanics_worker_sha256": "e2d566001402af59216d1fdd42055b909ba148766b2cd5f84a5d266f89945380",
+    "mechanics_wrapper": "train/jobs/nemotron_ultra_mechanics.sbatch",
+    "mechanics_wrapper_sha256": "c22c09090402373a852f566cb5eed20cb475aa3be8c76290939d15e653e700b8",
+    "ultra_config_sha256": "0c939f324c8910f5ebdafbe2a56d7e4e074c50042a3b4f26326bf71a3fe33929",
+    "ultra_revision": "183968f87ae4cedce3039313cac1fd43d112c578",
+    "ultra_total_parameters": 550000000000,
+    "ultra_active_parameters": 55000000000,
+    "ultra_weight_bytes": 352284061280,
+    "sealed_model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/nemotron-3-ultra-550b-a55b-nvfp4-183968f",
+    "sealed_model_manifest_sha256": "e20d8aad607dd1146ee83d49c31f65e7fc24033348137a57a93615436484751a",
+    "sealed_snapshot_receipt_sha256": "6b9b50ed6bdb644c0bf059c3c9f8cff2a2775d936fb8c6d1b65f0c953aba731a",
+    "sealed_source_revision_sha256": "72b9c31cfe862b4bb903d0ba7da4452df43875fdf32cd2c388ca836164338c8c",
+    "sealed_snapshot_checksum_passes": 2,
+    "sealed_snapshot_checksum_ok_lines": 490,
+    "sealed_snapshot_writable_symlink_or_special_members": 0,
+    "current_runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_4907dccc_r1",
+    "current_runtime_manifest_sha256": "1184ea2b254a807cb8517e6c9ae239023b79b45c84498db2b4e71186d54194cb",
+    "current_runtime_json_sha256": "2eb263efcd3878e384ae984481fabcb7d06e96aed09b782593a8d693127ca575",
+    "focused_tests": "27_passed",
+    "format_lint_compile_shell_and_diff": "PASS",
+    "slurm_test_only_result_without_access": "Invalid account or account/partition combination specified"
+  },
+  "available_hardware_observation": {
+    "observed_at": "2026-08-15T12:55:00-04:00",
+    "matching_nodes": [
+      "evc101",
+      "evc102",
+      "evc103",
+      "evc104"
+    ],
+    "gpus_per_matching_node": 8,
+    "gres": "gpu:nvidia_h100_80gb_hbm3:8",
+    "observed_idle_matching_nodes": 0,
+    "availability_is_scheduler_dynamic": true,
+    "current_user_association_qos": [
+      "normal",
+      "ood",
+      "preemptable"
+    ],
+    "highgpu_association_present": false
+  },
+  "resource_budget": {
+    "observed_at": "2026-08-15T12:52:36-04:00",
+    "quota_headroom_kib_after_sealing_snapshot": 69141496,
+    "inode_headroom_after_sealing_snapshot": 308519,
+    "august_gpu_hours_charged_from_sacct": 1134.136,
+    "nominal_august_gpu_hour_cap": 2000,
+    "nominal_august_gpu_hours_remaining": 865.864
+  },
+  "form": {
+    "official_url": "https://service.northeastern.edu/tech?id=sc_cat_item&sys_id=0c34d402db0b0010a37cd206ca9619b7",
+    "authentication_required": true,
+    "opened_in_codex_browser_at": "2026-08-15T12:50:00-04:00",
+    "current_page": "Northeastern_Microsoft_sign_in",
+    "captcha_or_final_human_verification": "must_be_completed_by_user",
+    "submitted": false
+  },
+  "official_support_request": {
+    "channel": "email_that_automatically_creates_a_servicenow_ticket",
+    "recipient": "rchelp@northeastern.edu",
+    "official_source": "https://rc.northeastern.edu/getting-help/",
+    "sent_at": "2026-08-15T16:24:00-04:00",
+    "subject": "Request: temporary 8x H100/H200 access for bounded MoE scaling experiment",
+    "ticket": "INC23586404",
+    "ticket_opened_at": "2026-08-15T16:26:46-04:00",
+    "service_response_target": "within_24_hours",
+    "requested_access": "one_eight_gpu_H100_or_H200_node_for_approximately_60_H100_hours",
+    "requested_scheduling_policy": "opportunistic_or_preemptable_if_supported",
+    "captcha_bypassed": false,
+    "scientific_jobs_submitted_by_this_request": 0,
+    "response_pending": true
+  }
+}

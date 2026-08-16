@@ -1,0 +1,989 @@
+"""Tokenwise gating between frozen owner and revision residual trajectories."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+import hashlib
+import math
+import re
+from typing import Any, Mapping, Sequence
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class TemporalResidualGateError(RuntimeError):
+    """The temporal residual gate geometry or execution differs."""
+
+
+@dataclass(frozen=True)
+class TemporalResidualGateConfig:
+    hidden_size: int
+    rank: int
+    alpha: float
+    initial_revision_weight: float = 0.1
+
+    def validate(self) -> None:
+        if (
+            self.hidden_size <= 0
+            or self.rank <= 0
+            or not math.isfinite(self.alpha)
+            or self.alpha <= 0
+            or not math.isfinite(self.initial_revision_weight)
+            or not 0.0 < self.initial_revision_weight < 1.0
+        ):
+            raise TemporalResidualGateError("temporal residual gate config differs")
+
+
+class TemporalResidualGate(nn.Module):
+    """Frozen MLP plus frozen owner/reviser residuals and one learned token gate.
+
+    The gate is initialized to a constant output-interpolation weight. Only
+    the hidden-to-scalar gate is trainable; the native block and both
+    trajectory residual branches remain frozen. This is deliberately not
+    claimed to be numerically identical to factor-weight checkpoint
+    interpolation: mixing both low-rank factors introduces cross terms. The
+    new surface instead gives a clean owner/reviser output continuum while
+    permitting token- and layer-specific revision strength after training.
+    """
+
+    def __init__(
+        self,
+        base: nn.Module,
+        config: TemporalResidualGateConfig,
+        *,
+        owner_a: torch.Tensor,
+        owner_b: torch.Tensor,
+        revision_a: torch.Tensor,
+        revision_b: torch.Tensor,
+    ) -> None:
+        super().__init__()
+        config.validate()
+        expected = {
+            "owner_a": (config.rank, config.hidden_size),
+            "owner_b": (config.hidden_size, config.rank),
+            "revision_a": (config.rank, config.hidden_size),
+            "revision_b": (config.hidden_size, config.rank),
+        }
+        values = {
+            "owner_a": owner_a,
+            "owner_b": owner_b,
+            "revision_a": revision_a,
+            "revision_b": revision_b,
+        }
+        if any(
+            not isinstance(values[name], torch.Tensor)
+            or tuple(values[name].shape) != shape
+            or not values[name].dtype.is_floating_point
+            for name, shape in expected.items()
+        ):
+            raise TemporalResidualGateError("temporal residual branch geometry differs")
+
+        self.base = base
+        self.base.requires_grad_(False)
+        self.config = config
+        try:
+            device = next(base.parameters()).device
+        except StopIteration:
+            device = owner_a.device
+        for name, value in values.items():
+            self.register_buffer(
+                name,
+                value.detach().to(device=device, dtype=torch.float32).clone(),
+                persistent=True,
+            )
+        self.gate_weight = nn.Parameter(
+            torch.zeros((1, config.hidden_size), device=device, dtype=torch.float32)
+        )
+        initial_logit = math.log(
+            config.initial_revision_weight / (1.0 - config.initial_revision_weight)
+        )
+        self.gate_bias = nn.Parameter(
+            torch.tensor([initial_logit], device=device, dtype=torch.float32)
+        )
+        self.scale = config.alpha / config.rank
+        self.reset_receipt()
+
+    def reset_receipt(self) -> None:
+        self._tokens = 0
+        self._gate_sum = 0.0
+        self._owner_norm = 0.0
+        self._revision_norm = 0.0
+        self._last_gate: torch.Tensor | None = None
+
+    def receipt(self) -> dict[str, float | int]:
+        if self._tokens == 0:
+            return {"tokens": 0}
+        return {
+            "tokens": self._tokens,
+            "mean_revision_weight": self._gate_sum / self._tokens,
+            "mean_owner_residual_norm": self._owner_norm / self._tokens,
+            "mean_revision_residual_norm": self._revision_norm / self._tokens,
+        }
+
+    def trainable_parameter_count(self) -> int:
+        return self.gate_weight.numel() + self.gate_bias.numel()
+
+    def _residual(
+        self, hidden_states: torch.Tensor, a: torch.Tensor, b: torch.Tensor
+    ) -> torch.Tensor:
+        if hidden_states.device.type == "cuda":
+            with torch.autocast("cuda", dtype=torch.bfloat16):
+                return F.linear(F.linear(hidden_states, a), b) * self.scale
+        return F.linear(F.linear(hidden_states.float(), a), b) * self.scale
+
+    def _gate(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        if hidden_states.device.type == "cuda":
+            with torch.autocast("cuda", dtype=torch.bfloat16):
+                return torch.sigmoid(
+                    F.linear(hidden_states, self.gate_weight, self.gate_bias)
+                )
+        return torch.sigmoid(
+            F.linear(hidden_states.float(), self.gate_weight, self.gate_bias)
+        )
+
+    def routing_supervision_loss(
+        self,
+        target: float,
+        attention_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
+    ) -> torch.Tensor:
+        gate = self._last_gate
+        if (
+            gate is None
+            or not math.isfinite(target)
+            or not 0.0 <= target <= 1.0
+            or attention_mask.shape != gate.shape[:-1]
+            or attention_mask.device != gate.device
+            or not attention_mask.bool().any()
+            or objective != "soft_cross_entropy"
+        ):
+            raise TemporalResidualGateError("temporal routing supervision differs")
+        # Probability-space BCE is deliberately retained because ``gate`` is
+        # also the exact routed mixture weight.  PyTorch forbids BCE while a
+        # CUDA autocast region is active, even when both operands are promoted
+        # to float32.  Disable autocast only for this scalar supervision loss;
+        # the native model and residual branches remain under their existing
+        # mixed-precision policy.
+        with torch.autocast(device_type=gate.device.type, enabled=False):
+            gate_float = gate.float()
+            losses = F.binary_cross_entropy(
+                gate_float,
+                torch.full_like(gate_float, target),
+                reduction="none",
+            ).squeeze(-1)
+        return losses.masked_select(attention_mask.bool()).mean()
+
+    def forward(
+        self, hidden_states: torch.Tensor, *args: Any, **kwargs: Any
+    ) -> torch.Tensor:
+        native = self.base(hidden_states, *args, **kwargs)
+        if not isinstance(native, torch.Tensor) or native.shape != hidden_states.shape:
+            raise TemporalResidualGateError("native temporal block geometry differs")
+        owner = self._residual(hidden_states, self.owner_a, self.owner_b)
+        revision = self._residual(hidden_states, self.revision_a, self.revision_b)
+        gate = self._gate(hidden_states)
+        self._last_gate = gate
+        mixed = owner + gate * (revision - owner)
+        with torch.no_grad():
+            tokens = int(native.numel() // native.shape[-1])
+            self._tokens += tokens
+            self._gate_sum += float(gate.float().sum().cpu())
+            self._owner_norm += float(owner.float().norm(dim=-1).sum().cpu())
+            self._revision_norm += float(revision.float().norm(dim=-1).sum().cpu())
+        return native + mixed.to(native.dtype)
+
+
+@dataclass(frozen=True)
+class MultiTrajectoryResidualGateConfig:
+    """Geometry for a tokenwise softmax over two or more residual paths."""
+
+    hidden_size: int
+    rank: int
+    alpha: float
+    branch_names: tuple[str, ...]
+    initial_weights: tuple[float, ...]
+    router_features: str = "hidden_only"
+    routing_structure: str = "flat"
+
+    @property
+    def geometry_feature_count(self) -> int:
+        branches = len(self.branch_names)
+        return 2 * branches + branches * (branches - 1) // 2
+
+    def validate(self) -> None:
+        if (
+            self.hidden_size <= 0
+            or self.rank <= 0
+            or not math.isfinite(self.alpha)
+            or self.alpha <= 0
+            or len(self.branch_names) < 2
+            or len(self.branch_names) != len(self.initial_weights)
+            or len(set(self.branch_names)) != len(self.branch_names)
+            or any(not name.isidentifier() for name in self.branch_names)
+            or self.router_features not in {"hidden_only", "trajectory_geometry"}
+            or self.routing_structure not in {"flat", "hierarchical"}
+            or (
+                self.routing_structure == "hierarchical"
+                and self.branch_names != ("owner", "revision", "draft_hidden")
+            )
+            or any(
+                not math.isfinite(weight) or weight <= 0.0
+                for weight in self.initial_weights
+            )
+            or not math.isclose(sum(self.initial_weights), 1.0, abs_tol=1.0e-6)
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory residual gate config differs"
+            )
+
+
+class MultiTrajectoryResidualGate(nn.Module):
+    """Frozen residual bank with a learned per-token categorical gate.
+
+    The optional trajectory-geometry router exposes signals that a linear
+    hidden-state router cannot represent directly: per-branch residual energy,
+    residual/hidden alignment, and pairwise branch disagreement.  Its geometry
+    projection starts at exactly zero, preserving the same initial categorical
+    mixture while allowing routing to react to causal trajectory conflict.
+    """
+
+    def __init__(
+        self,
+        base: nn.Module,
+        config: MultiTrajectoryResidualGateConfig,
+        *,
+        branches: Mapping[str, tuple[torch.Tensor, torch.Tensor]],
+    ) -> None:
+        super().__init__()
+        config.validate()
+        if tuple(branches) != config.branch_names:
+            raise TemporalResidualGateError(
+                "multi-trajectory residual branch order differs"
+            )
+        try:
+            device = next(base.parameters()).device
+        except StopIteration:
+            device = next(iter(branches.values()))[0].device
+        factors_a = []
+        factors_b = []
+        for name in config.branch_names:
+            factor_a, factor_b = branches[name]
+            if (
+                not isinstance(factor_a, torch.Tensor)
+                or not isinstance(factor_b, torch.Tensor)
+                or tuple(factor_a.shape) != (config.rank, config.hidden_size)
+                or tuple(factor_b.shape) != (config.hidden_size, config.rank)
+                or not factor_a.dtype.is_floating_point
+                or not factor_b.dtype.is_floating_point
+            ):
+                raise TemporalResidualGateError(
+                    "multi-trajectory residual branch geometry differs"
+                )
+            factors_a.append(factor_a.detach().to(device=device, dtype=torch.float32))
+            factors_b.append(factor_b.detach().to(device=device, dtype=torch.float32))
+        self.base = base
+        self.base.requires_grad_(False)
+        self.config = config
+        self.register_buffer("branch_a", torch.stack(factors_a), persistent=True)
+        self.register_buffer("branch_b", torch.stack(factors_b), persistent=True)
+        router_logits = (
+            2 if config.routing_structure == "hierarchical" else len(branches)
+        )
+        self.gate_weight = nn.Parameter(
+            torch.zeros(
+                (router_logits, config.hidden_size),
+                device=device,
+                dtype=torch.float32,
+            )
+        )
+        if config.routing_structure == "hierarchical":
+            owner_weight = config.initial_weights[0]
+            adapted_weight = config.initial_weights[1] + config.initial_weights[2]
+            conditional_revision = config.initial_weights[1] / adapted_weight
+            initial_logits = (
+                math.log(owner_weight / adapted_weight),
+                math.log(conditional_revision / (1.0 - conditional_revision)),
+            )
+        else:
+            initial_logits = tuple(
+                math.log(weight) for weight in config.initial_weights
+            )
+        self.gate_bias = nn.Parameter(
+            torch.tensor(initial_logits, device=device, dtype=torch.float32)
+        )
+        if config.router_features == "trajectory_geometry":
+            self.geometry_weight = nn.Parameter(
+                torch.zeros(
+                    (router_logits, config.geometry_feature_count),
+                    device=device,
+                    dtype=torch.float32,
+                )
+            )
+        else:
+            self.register_parameter("geometry_weight", None)
+        self.scale = config.alpha / config.rank
+        self.reset_receipt()
+
+    def reset_receipt(self) -> None:
+        self._tokens = 0
+        self._gate_sums = [0.0] * len(self.config.branch_names)
+        self._last_gate: torch.Tensor | None = None
+
+    def receipt(self) -> dict[str, Any]:
+        if not self._tokens:
+            return {"tokens": 0}
+        return {
+            "tokens": self._tokens,
+            "mean_branch_weights": {
+                name: total / self._tokens
+                for name, total in zip(
+                    self.config.branch_names, self._gate_sums, strict=True
+                )
+            },
+        }
+
+    def trainable_parameter_count(self) -> int:
+        geometry = (
+            self.geometry_weight.numel() if self.geometry_weight is not None else 0
+        )
+        return self.gate_weight.numel() + self.gate_bias.numel() + geometry
+
+    def _residuals(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        def project(values: torch.Tensor) -> torch.Tensor:
+            low_rank = torch.einsum("...h,krh->...kr", values, self.branch_a)
+            return (
+                torch.einsum("...kr,khr->...kh", low_rank, self.branch_b) * self.scale
+            )
+
+        if hidden_states.device.type == "cuda":
+            with torch.autocast("cuda", dtype=torch.bfloat16):
+                return project(hidden_states)
+        return project(hidden_states.float())
+
+    def _geometry_features(
+        self, hidden_states: torch.Tensor, residuals: torch.Tensor
+    ) -> torch.Tensor:
+        branches = len(self.config.branch_names)
+        if residuals.shape[:-2] != hidden_states.shape[:-1] or residuals.shape[-2:] != (
+            branches,
+            self.config.hidden_size,
+        ):
+            raise TemporalResidualGateError("multi-trajectory geometry features differ")
+        values = residuals.float()
+        hidden = hidden_states.float()
+        epsilon = torch.finfo(torch.float32).eps
+        residual_rms = values.square().mean(dim=-1).clamp_min(epsilon).sqrt()
+        hidden_norm = (
+            hidden.square().sum(dim=-1, keepdim=True).clamp_min(epsilon).sqrt()
+        )
+        residual_norm = values.square().sum(dim=-1).clamp_min(epsilon).sqrt()
+        alignment = (values * hidden.unsqueeze(-2)).sum(dim=-1) / (
+            residual_norm * hidden_norm
+        )
+        disagreement = []
+        for left in range(branches):
+            for right in range(left + 1, branches):
+                disagreement.append(
+                    (values[..., left, :] - values[..., right, :])
+                    .square()
+                    .mean(dim=-1)
+                    .clamp_min(epsilon)
+                    .sqrt()
+                )
+        features = torch.cat(
+            (
+                torch.log1p(residual_rms),
+                alignment,
+                torch.stack(disagreement, dim=-1),
+            ),
+            dim=-1,
+        )
+        if (
+            features.shape[-1] != self.config.geometry_feature_count
+            or not torch.isfinite(features).all()
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory geometry feature receipt differs"
+            )
+        return features
+
+    def _gate(
+        self,
+        hidden_states: torch.Tensor,
+        residuals: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        def route(values: torch.Tensor) -> torch.Tensor:
+            logits = F.linear(values, self.gate_weight, self.gate_bias)
+            if self.geometry_weight is not None:
+                if residuals is None:
+                    raise TemporalResidualGateError(
+                        "multi-trajectory geometry residuals are absent"
+                    )
+                features = self._geometry_features(values, residuals)
+                logits = logits + F.linear(features, self.geometry_weight)
+            if self.config.routing_structure == "hierarchical":
+                owner = torch.sigmoid(logits[..., :1])
+                revision_given_adapted = torch.sigmoid(logits[..., 1:2])
+                adapted = 1.0 - owner
+                return torch.cat(
+                    (
+                        owner,
+                        adapted * revision_given_adapted,
+                        adapted * (1.0 - revision_given_adapted),
+                    ),
+                    dim=-1,
+                )
+            return F.softmax(logits, dim=-1)
+
+        if hidden_states.device.type == "cuda":
+            with torch.autocast("cuda", dtype=torch.bfloat16):
+                return route(hidden_states)
+        return route(hidden_states.float())
+
+    def routing_supervision_loss(
+        self,
+        target: Sequence[float],
+        response_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
+    ) -> torch.Tensor:
+        gate = self._last_gate
+        if (
+            gate is None
+            or len(target) != len(self.config.branch_names)
+            or any(not math.isfinite(value) or value < 0.0 for value in target)
+            or not math.isclose(sum(target), 1.0, abs_tol=1.0e-6)
+            or response_mask.shape != gate.shape[:-1]
+            or response_mask.device != gate.device
+            or not response_mask.bool().any()
+            or objective not in {"soft_cross_entropy", "correct_set_mass"}
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory routing supervision differs"
+            )
+        target_tensor = torch.tensor(target, device=gate.device, dtype=torch.float32)
+        probabilities = gate.float().clamp_min(1.0e-8)
+        if objective == "correct_set_mass":
+            support = target_tensor > 0.0
+            losses = -probabilities[..., support].sum(dim=-1).clamp_max(1.0).log()
+        else:
+            losses = -(probabilities.log() * target_tensor).sum(dim=-1)
+        return losses.masked_select(response_mask.bool()).mean()
+
+    def forward(
+        self, hidden_states: torch.Tensor, *args: Any, **kwargs: Any
+    ) -> torch.Tensor:
+        native = self.base(hidden_states, *args, **kwargs)
+        if not isinstance(native, torch.Tensor) or native.shape != hidden_states.shape:
+            raise TemporalResidualGateError(
+                "multi-trajectory native block geometry differs"
+            )
+        residuals = self._residuals(hidden_states)
+        gate = self._gate(hidden_states, residuals)
+        self._last_gate = gate
+        mixed = (gate.unsqueeze(-1) * residuals).sum(dim=-2)
+        with torch.no_grad():
+            tokens = int(gate.numel() // gate.shape[-1])
+            sums = gate.float().sum(dim=tuple(range(gate.ndim - 1))).cpu()
+            self._tokens += tokens
+            for index, value in enumerate(sums):
+                self._gate_sums[index] += float(value)
+        return native + mixed.to(native.dtype)
+
+
+_SUPPORTED_RESIDUAL_SURFACES = frozenset({"block_sparse_moe", "mlp", "mixer"})
+
+
+def _state_name_pattern(module_attribute: str) -> re.Pattern[str]:
+    if module_attribute not in _SUPPORTED_RESIDUAL_SURFACES:
+        raise TemporalResidualGateError("temporal residual surface differs")
+    return re.compile(
+        rf"^backbone\.model\.layers\.(?P<layer>[0-9]+)\."
+        rf"{re.escape(module_attribute)}\.adapter_(?P<factor>[ab])\.weight$"
+    )
+
+
+def temporal_branch_layers(
+    owner_state: Mapping[str, torch.Tensor],
+    revision_state: Mapping[str, torch.Tensor],
+    config: TemporalResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+    *,
+    module_attribute: str = "mlp",
+) -> dict[int, dict[str, torch.Tensor]]:
+    """Validate and align two role states on a pinned MoE residual surface."""
+
+    config.validate()
+    state_name = _state_name_pattern(module_attribute)
+    indices = tuple(controlled_layer_indices)
+    if (
+        not indices
+        or len(indices) != len(set(indices))
+        or tuple(sorted(indices)) != indices
+        or any(
+            not isinstance(index, int) or isinstance(index, bool) for index in indices
+        )
+        or set(owner_state) != set(revision_state)
+    ):
+        raise TemporalResidualGateError("temporal role state identity differs")
+    expected_names = {
+        f"backbone.model.layers.{index}.{module_attribute}.adapter_{factor}.weight"
+        for index in indices
+        for factor in ("a", "b")
+    }
+    if set(owner_state) != expected_names:
+        raise TemporalResidualGateError("temporal role state names differ")
+    layers: dict[int, dict[str, torch.Tensor]] = {index: {} for index in indices}
+    for name in sorted(expected_names):
+        match = state_name.fullmatch(name)
+        if match is None:
+            raise TemporalResidualGateError("temporal role state name differs")
+        index = int(match.group("layer"))
+        factor = match.group("factor")
+        expected_shape = (
+            (config.rank, config.hidden_size)
+            if factor == "a"
+            else (config.hidden_size, config.rank)
+        )
+        for role, state in (("owner", owner_state), ("revision", revision_state)):
+            tensor = state[name]
+            if (
+                not isinstance(tensor, torch.Tensor)
+                or tuple(tensor.shape) != expected_shape
+                or tensor.dtype != torch.float32
+                or not torch.isfinite(tensor).all()
+            ):
+                raise TemporalResidualGateError(f"temporal {role} role tensor differs")
+            layers[index][f"{role}_{factor}"] = tensor
+    return layers
+
+
+def install_temporal_residual_gates(
+    text_model: nn.Module,
+    owner_state: Mapping[str, torch.Tensor],
+    revision_state: Mapping[str, torch.Tensor],
+    config: TemporalResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+    *,
+    module_attribute: str = "mlp",
+    require_final_contiguous: bool = True,
+) -> tuple[TemporalResidualGate, ...]:
+    """Replace exact decoder residual surfaces with tokenwise temporal gates."""
+
+    model_layers = getattr(text_model, "layers", None)
+    if not isinstance(model_layers, nn.ModuleList):
+        raise TemporalResidualGateError("temporal decoder layers differ")
+    text_model.requires_grad_(False)
+    indices = tuple(controlled_layer_indices)
+    if not isinstance(require_final_contiguous, bool) or (
+        require_final_contiguous
+        and indices != tuple(range(len(model_layers) - len(indices), len(model_layers)))
+    ):
+        raise TemporalResidualGateError("temporal controlled layers differ")
+    if not require_final_contiguous and (
+        not indices
+        or indices != tuple(sorted(set(indices)))
+        or indices[0] < 0
+        or indices[-1] >= len(model_layers)
+    ):
+        raise TemporalResidualGateError("temporal explicit controlled layers differ")
+    branches = temporal_branch_layers(
+        owner_state,
+        revision_state,
+        config,
+        controlled_layer_indices,
+        module_attribute=module_attribute,
+    )
+    installed = []
+    for index in indices:
+        layer = model_layers[index]
+        native = getattr(layer, module_attribute, None)
+        if not isinstance(native, nn.Module) or isinstance(
+            native, TemporalResidualGate
+        ):
+            raise TemporalResidualGateError("temporal native residual differs")
+        block = TemporalResidualGate(native, config, **branches[index])
+        setattr(layer, module_attribute, block)
+        installed.append(block)
+    expected_trainables = len(indices) * (config.hidden_size + 1)
+    if (
+        sum(block.trainable_parameter_count() for block in installed)
+        != expected_trainables
+    ):
+        raise TemporalResidualGateError("temporal gate parameter count differs")
+    return tuple(installed)
+
+
+def multi_trajectory_branch_layers(
+    role_states: Mapping[str, Mapping[str, torch.Tensor]],
+    config: MultiTrajectoryResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+) -> dict[int, dict[str, tuple[torch.Tensor, torch.Tensor]]]:
+    """Validate and align an ordered bank of real Q36 role states."""
+
+    config.validate()
+    indices = tuple(controlled_layer_indices)
+    if (
+        tuple(role_states) != config.branch_names
+        or not indices
+        or len(indices) != len(set(indices))
+        or tuple(sorted(indices)) != indices
+    ):
+        raise TemporalResidualGateError("multi-trajectory role state identity differs")
+    expected_names = {
+        f"backbone.model.layers.{index}.mlp.adapter_{factor}.weight"
+        for index in indices
+        for factor in ("a", "b")
+    }
+    if any(set(state) != expected_names for state in role_states.values()):
+        raise TemporalResidualGateError("multi-trajectory role state names differ")
+    layers: dict[int, dict[str, tuple[torch.Tensor, torch.Tensor]]] = {
+        index: {} for index in indices
+    }
+    for index in indices:
+        name_a = f"backbone.model.layers.{index}.mlp.adapter_a.weight"
+        name_b = f"backbone.model.layers.{index}.mlp.adapter_b.weight"
+        for role, state in role_states.items():
+            factor_a = state[name_a]
+            factor_b = state[name_b]
+            if (
+                not isinstance(factor_a, torch.Tensor)
+                or not isinstance(factor_b, torch.Tensor)
+                or tuple(factor_a.shape) != (config.rank, config.hidden_size)
+                or tuple(factor_b.shape) != (config.hidden_size, config.rank)
+                or factor_a.dtype != torch.float32
+                or factor_b.dtype != torch.float32
+                or not torch.isfinite(factor_a).all()
+                or not torch.isfinite(factor_b).all()
+            ):
+                raise TemporalResidualGateError(
+                    f"multi-trajectory {role} role tensor differs"
+                )
+            layers[index][role] = (factor_a, factor_b)
+    return layers
+
+
+def install_multi_trajectory_residual_gates(
+    text_model: nn.Module,
+    role_states: Mapping[str, Mapping[str, torch.Tensor]],
+    config: MultiTrajectoryResidualGateConfig,
+    controlled_layer_indices: Sequence[int],
+) -> tuple[MultiTrajectoryResidualGate, ...]:
+    """Replace the final decoder MLPs with categorical residual banks."""
+
+    model_layers = getattr(text_model, "layers", None)
+    if not isinstance(model_layers, nn.ModuleList):
+        raise TemporalResidualGateError("multi-trajectory decoder layers differ")
+    text_model.requires_grad_(False)
+    indices = tuple(controlled_layer_indices)
+    if indices != tuple(range(len(model_layers) - len(indices), len(model_layers))):
+        raise TemporalResidualGateError("multi-trajectory controlled layers differ")
+    branches = multi_trajectory_branch_layers(role_states, config, indices)
+    installed = []
+    for index in indices:
+        layer = model_layers[index]
+        mlp = getattr(layer, "mlp", None)
+        if not isinstance(mlp, nn.Module) or isinstance(
+            mlp, (TemporalResidualGate, MultiTrajectoryResidualGate)
+        ):
+            raise TemporalResidualGateError("multi-trajectory native MLP differs")
+        block = MultiTrajectoryResidualGate(mlp, config, branches=branches[index])
+        layer.mlp = block
+        installed.append(block)
+    router_logits = (
+        2 if config.routing_structure == "hierarchical" else len(config.branch_names)
+    )
+    geometry = (
+        router_logits * config.geometry_feature_count
+        if config.router_features == "trajectory_geometry"
+        else 0
+    )
+    expected = len(indices) * (router_logits * (config.hidden_size + 1) + geometry)
+    if sum(block.trainable_parameter_count() for block in installed) != expected:
+        raise TemporalResidualGateError("multi-trajectory gate parameter count differs")
+    return tuple(installed)
+
+
+class MultiTrajectoryGatedProductModel(nn.Module):
+    """Q36 training/generation surface with categorical trajectory routing."""
+
+    def __init__(
+        self,
+        backbone: nn.Module,
+        text_model: nn.Module,
+        lm_head: nn.Module,
+        config: MultiTrajectoryResidualGateConfig,
+        *,
+        role_states: Mapping[str, Mapping[str, torch.Tensor]],
+        controlled_layer_indices: Sequence[int],
+    ) -> None:
+        super().__init__()
+        if not all(
+            isinstance(module, nn.Module) for module in (backbone, text_model, lm_head)
+        ):
+            raise TemporalResidualGateError("multi-trajectory product modules differ")
+        backbone.requires_grad_(False)
+        lm_head.requires_grad_(False)
+        self.backbone = backbone
+        self.text_model = text_model
+        self.lm_head = lm_head
+        self.config = config
+        self.controlled_layer_indices = tuple(controlled_layer_indices)
+        self.blocks = nn.ModuleList(
+            install_multi_trajectory_residual_gates(
+                text_model,
+                role_states,
+                config,
+                self.controlled_layer_indices,
+            )
+        )
+        self._generation_position_ids: torch.Tensor | None = None
+        self._generation_prompt_ids: torch.Tensor | None = None
+        self._generation_prompt_attention: torch.Tensor | None = None
+
+    def trainable_parameter_count(self) -> int:
+        return sum(
+            parameter.numel()
+            for parameter in self.parameters()
+            if parameter.requires_grad
+        )
+
+    def trainable_parameter_name_sha256(self) -> str:
+        names = sorted(
+            name
+            for name, parameter in self.named_parameters()
+            if parameter.requires_grad
+        )
+        if not names:
+            raise TemporalResidualGateError(
+                "multi-trajectory gate trainable names are absent"
+            )
+        return hashlib.sha256("\n".join(names).encode()).hexdigest()
+
+    def reset_routing_receipt(self) -> None:
+        for block in self.blocks:
+            block.reset_receipt()
+
+    def routing_receipt(self) -> dict[str, Any]:
+        return {
+            "branch_names": list(self.config.branch_names),
+            "controlled_layer_indices": list(self.controlled_layer_indices),
+            "layers": [block.receipt() for block in self.blocks],
+        }
+
+    def routing_supervision_loss(
+        self,
+        target: Sequence[float],
+        response_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
+    ) -> torch.Tensor:
+        if not self.blocks:
+            raise TemporalResidualGateError(
+                "multi-trajectory routing blocks are absent"
+            )
+        return torch.stack(
+            [
+                block.routing_supervision_loss(
+                    target, response_mask, objective=objective
+                )
+                for block in self.blocks
+            ]
+        ).mean()
+
+    def prepare_generation_draft_attention(
+        self,
+        tokenizer: Any,
+        rendered: list[str],
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+    ) -> None:
+        if (
+            input_ids.ndim != 2
+            or attention_mask.shape != input_ids.shape
+            or input_ids.device != attention_mask.device
+            or len(rendered) != input_ids.shape[0]
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory generation prompt differs"
+            )
+        position_ids = attention_mask.long().cumsum(dim=-1) - 1
+        position_ids.masked_fill_(~attention_mask.bool(), 0)
+        self._generation_position_ids = position_ids
+        self._generation_prompt_ids = input_ids.detach().clone()
+        self._generation_prompt_attention = attention_mask.detach().clone()
+
+    def generation_position_ids(self) -> torch.Tensor:
+        if self._generation_position_ids is None:
+            raise TemporalResidualGateError(
+                "multi-trajectory generation positions are absent"
+            )
+        return self._generation_position_ids
+
+    def generation_embeddings(
+        self, prompt_ids: torch.Tensor, prompt_attention: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        embed_tokens = getattr(self.text_model, "embed_tokens", None)
+        if (
+            self._generation_prompt_attention is None
+            or self._generation_prompt_attention.shape != prompt_attention.shape
+            or self._generation_prompt_ids is None
+            or self._generation_prompt_ids.shape != prompt_ids.shape
+            or not torch.equal(self._generation_prompt_ids, prompt_ids)
+            or not isinstance(embed_tokens, nn.Module)
+        ):
+            raise TemporalResidualGateError(
+                "multi-trajectory generation state is absent"
+            )
+        return embed_tokens(prompt_ids), self._generation_prompt_attention
+
+
+class TemporalGatedProductModel(nn.Module):
+    """Drop-in Q36 training/generation surface with installed temporal gates."""
+
+    def __init__(
+        self,
+        backbone: nn.Module,
+        text_model: nn.Module,
+        lm_head: nn.Module,
+        config: TemporalResidualGateConfig,
+        *,
+        owner_state: Mapping[str, torch.Tensor],
+        revision_state: Mapping[str, torch.Tensor],
+        controlled_layer_indices: Sequence[int],
+        module_attribute: str = "mlp",
+        require_final_contiguous: bool = True,
+    ) -> None:
+        super().__init__()
+        if not all(
+            isinstance(module, nn.Module) for module in (backbone, text_model, lm_head)
+        ):
+            raise TemporalResidualGateError("temporal product modules differ")
+        backbone.requires_grad_(False)
+        lm_head.requires_grad_(False)
+        self.backbone = backbone
+        self.text_model = text_model
+        self.lm_head = lm_head
+        self.config = config
+        self.controlled_layer_indices = tuple(controlled_layer_indices)
+        self.module_attribute = module_attribute
+        self.require_final_contiguous = require_final_contiguous
+        self.blocks = nn.ModuleList(
+            install_temporal_residual_gates(
+                text_model,
+                owner_state,
+                revision_state,
+                config,
+                self.controlled_layer_indices,
+                module_attribute=self.module_attribute,
+                require_final_contiguous=self.require_final_contiguous,
+            )
+        )
+        self._generation_prompt_attention: torch.Tensor | None = None
+        self._generation_position_ids: torch.Tensor | None = None
+        self._generation_prompt_ids: torch.Tensor | None = None
+
+    def trainable_parameter_count(self) -> int:
+        return sum(
+            parameter.numel()
+            for parameter in self.parameters()
+            if parameter.requires_grad
+        )
+
+    def trainable_parameter_name_sha256(self) -> str:
+        names = sorted(
+            name
+            for name, parameter in self.named_parameters()
+            if parameter.requires_grad
+        )
+        if not names:
+            raise TemporalResidualGateError("temporal gate trainable names are absent")
+        return hashlib.sha256("\n".join(names).encode()).hexdigest()
+
+    def reset_routing_receipt(self) -> None:
+        for block in self.blocks:
+            block.reset_receipt()
+
+    def routing_receipt(self) -> dict[str, Any]:
+        return {
+            "controlled_layer_indices": list(self.controlled_layer_indices),
+            "layers": [block.receipt() for block in self.blocks],
+        }
+
+    def routing_supervision_loss(
+        self,
+        target: float,
+        attention_mask: torch.Tensor,
+        *,
+        objective: str = "soft_cross_entropy",
+    ) -> torch.Tensor:
+        if not self.blocks:
+            raise TemporalResidualGateError("temporal routing blocks are absent")
+        return torch.stack(
+            [
+                block.routing_supervision_loss(
+                    target, attention_mask, objective=objective
+                )
+                for block in self.blocks
+            ]
+        ).mean()
+
+    def prepare_generation_draft_attention(
+        self,
+        tokenizer: Any,
+        rendered: list[str],
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+    ) -> None:
+        if (
+            input_ids.ndim != 2
+            or attention_mask.shape != input_ids.shape
+            or input_ids.device != attention_mask.device
+            or len(rendered) != input_ids.shape[0]
+        ):
+            raise TemporalResidualGateError("temporal generation prompt differs")
+        position_ids = attention_mask.long().cumsum(dim=-1) - 1
+        position_ids.masked_fill_(~attention_mask.bool(), 0)
+        self._generation_position_ids = position_ids
+        self._generation_prompt_ids = input_ids.detach().clone()
+        self._generation_prompt_attention = attention_mask.detach().clone()
+
+    def generation_position_ids(self) -> torch.Tensor:
+        if self._generation_position_ids is None:
+            raise TemporalResidualGateError("temporal generation positions are absent")
+        return self._generation_position_ids
+
+    def generation_embeddings(
+        self, prompt_ids: torch.Tensor, prompt_attention: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        attention = self._generation_prompt_attention
+        prompt_ids_receipt = self._generation_prompt_ids
+        embed_tokens = getattr(self.text_model, "embed_tokens", None)
+        if (
+            attention is None
+            or attention.shape != prompt_attention.shape
+            or prompt_ids_receipt is None
+            or prompt_ids_receipt.shape != prompt_ids.shape
+            or not torch.equal(prompt_ids_receipt, prompt_ids)
+            or not isinstance(embed_tokens, nn.Module)
+        ):
+            raise TemporalResidualGateError("temporal generation state is absent")
+        return embed_tokens(prompt_ids), attention
+
+
+__all__ = [
+    "MultiTrajectoryResidualGate",
+    "MultiTrajectoryResidualGateConfig",
+    "MultiTrajectoryGatedProductModel",
+    "TemporalResidualGate",
+    "TemporalResidualGateConfig",
+    "TemporalResidualGateError",
+    "TemporalGatedProductModel",
+    "install_temporal_residual_gates",
+    "install_multi_trajectory_residual_gates",
+    "multi_trajectory_branch_layers",
+    "temporal_branch_layers",
+]

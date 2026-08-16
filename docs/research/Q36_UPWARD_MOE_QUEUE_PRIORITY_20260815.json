@@ -1,0 +1,93 @@
+{
+  "schema": "shohin-q36-upward-moe-queue-priority-v1",
+  "status": "applied_reversible_scheduler_only",
+  "date": "2026-08-15",
+  "observed_at": "2026-08-15T16:01:58-04:00",
+  "objective": "prioritize first source-disjoint upward MoE measurements on distinct larger model families",
+  "active_upward_graph": [
+    {
+      "host": "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+      "mechanics_job": 760382,
+      "fit_job": 760384,
+      "evaluation_jobs": [760385, 760386, 760387],
+      "score_job": 760388,
+      "mechanics_state": "PENDING_Priority",
+      "forecast_at_observation": "2026-08-17T19:41:52-04:00"
+    },
+    {
+      "host": "Mixtral-8x22B-Instruct-v0.1",
+      "mechanics_job": 760565,
+      "fit_job": 760566,
+      "evaluation_jobs": [760567, 760568, 760569],
+      "score_job": 760571,
+      "mechanics_state": "PENDING_Priority",
+      "forecast_at_observation": "2026-08-17T19:41:52-04:00"
+    }
+  ],
+  "automatic_curve_job": {
+    "job_id": 760575,
+    "dependency": "afterok:760388:760571",
+    "points": [
+      "Qwen3.6-35B-A3B",
+      "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+      "Mixtral-8x22B-Instruct-v0.1"
+    ]
+  },
+  "scheduler_action": {
+    "type": "user_hold_pending_lower_scale_followups",
+    "held_job_roots": [
+      759816,
+      759817,
+      759818,
+      760179,
+      760193,
+      760200,
+      760214,
+      760273,
+      760283,
+      760286,
+      760287
+    ],
+    "reason": "remove older 35B follow-up workers from eligible priority competition while preserving their exact staged graph for later release",
+    "destructive": false,
+    "scientific_bytes_changed": false,
+    "jobs_cancelled": 0,
+    "jobs_duplicated": 0,
+    "running_jobs_interrupted": 0,
+    "reversible": true
+  },
+  "post_action_observation": {
+    "observed_at": "2026-08-15T16:03:05-04:00",
+    "nemotron_super_forecast": "2026-08-16T09:56:00-04:00",
+    "mixtral_forecast": "2026-08-16T10:41:00-04:00",
+    "nemotron_super_forecast_advanced_seconds": 121552,
+    "mixtral_forecast_advanced_seconds": 118852,
+    "running_user_jobs": 0,
+    "scientific_outputs_created": 0
+  },
+  "cluster_state": {
+    "normal_h100_nodes": 29,
+    "normal_h100_idle_nodes": 0,
+    "eligible_mechanics_jobs_request": "one node and two H100s each",
+    "blocking_reason": "Priority",
+    "user_job_limit": 50,
+    "account_qos": ["normal", "ood", "preemptable"]
+  },
+  "storage": {
+    "used_kib": 866425384,
+    "hard_limit_kib": 1059061760,
+    "headroom_kib": 192636376,
+    "used_inodes": 534626,
+    "hard_limit_inodes": 1010000,
+    "headroom_inodes": 475374
+  },
+  "next_upward_host": {
+    "host": "NVIDIA-Nemotron-3-Ultra-550B-A47B-NVFP4",
+    "status": "prepared_not_launched",
+    "requirements": [
+      "eight-H100 allocation authorization",
+      "exact public-revision weight restoration",
+      "durable storage headroom after current large-host measurements"
+    ]
+  }
+}

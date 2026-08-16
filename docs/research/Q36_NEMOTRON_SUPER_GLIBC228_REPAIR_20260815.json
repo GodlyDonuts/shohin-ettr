@@ -1,0 +1,99 @@
+{
+  "schema": "shohin-q36-nemotron-super-glibc228-repair-v1",
+  "status": "newton_native_overlay_complete_replacement_graph_staged",
+  "scientific_contract_changed": false,
+  "failed_mechanics": {
+    "job": 760275,
+    "state": "FAILED",
+    "elapsed_seconds": 162,
+    "exit_code": "1:0",
+    "restarts": 0,
+    "node": "evc40",
+    "cause": "upstream_prebuilt_mamba_extension_requires_GLIBC_2_32_but_Newton_provides_GLIBC_2_28",
+    "benchmark_rows_read": 0,
+    "scientific_updates": 0,
+    "output_published": false
+  },
+  "source_build_attempts": [
+    {
+      "job": 760368,
+      "elapsed_seconds": 36,
+      "state": "FAILED",
+      "cause": "Newton_default_GCC_8_is_too_old_for_Torch_2_6",
+      "output_published": false
+    },
+    {
+      "job": 760369,
+      "elapsed_seconds": 779,
+      "state": "FAILED",
+      "cause": "CPU_postbuild_check_imported_Triton_which_requires_an_active_GPU_driver",
+      "wheel_build_completed": true,
+      "output_published": false
+    },
+    {
+      "job": 760374,
+      "elapsed_seconds": 786,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "restarts": 0,
+      "node": "evc1"
+    }
+  ],
+  "native_overlay": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_overlay_glibc228_a14b1dff_r1",
+    "manifest_sha256": "cde0fa5b91d50d1509872cbc577cf016d0a6c6697bfb066d607f420c1b568e84",
+    "receipt_sha256": "a917e093a2cdba7f5ce0cd2131a5d66fedd0c3fe086dc4ff2243dd7edb332a35",
+    "manifest_entries": 3802,
+    "files_including_manifest": 3803,
+    "allocated_bytes": 466288640,
+    "writable_members": 0,
+    "mamba_version": "2.3.2.post1",
+    "mamba_source_commit": "a14b1dff0454a3bc27d9eb31355dc01e4b2490ec",
+    "source_wheel_sha256": "c0c170a03648feec2f76ee08d86c83d62ce9c3665d53089881bd04e6dddd267c",
+    "selective_scan_cuda_sha256": "6b34c1b15de89f22e7e197573cf4886e0860c1ac25942388c6add07285d58e20",
+    "build_compiler": "gcc-12.2.0",
+    "build_host_glibc": "2.28",
+    "maximum_required_glibc": "2.25",
+    "compiler_runtime_linkage": "static_libstdcxx_and_libgcc",
+    "scientific_rows_read": 0,
+    "gpu_requested": false,
+    "selective_scan_extension_import_passed": true,
+    "full_mamba_triton_import": "deferred_to_replacement_two_H100_mechanics"
+  },
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_4907dccc_r1",
+    "source_commit": "4907dccc09dda3c4afab69d18de0ef6e84e3eee9",
+    "manifest_sha256": "1184ea2b254a807cb8517e6c9ae239023b79b45c84498db2b4e71186d54194cb",
+    "runtime_json_sha256": "2eb263efcd3878e384ae984481fabcb7d06e96aed09b782593a8d693127ca575",
+    "files": 152,
+    "writable_members": 0
+  },
+  "replacement_graph": {
+    "mechanics": 760382,
+    "fit": 760384,
+    "unchanged_array": 760385,
+    "self_refinement_array": 760386,
+    "revision_array": 760387,
+    "score": 760388,
+    "arms": [
+      "unchanged",
+      "self_refinement",
+      "revision"
+    ],
+    "shards_per_arm": 4,
+    "h100s_per_allocation": 2,
+    "no_requeue": true
+  },
+  "retired_dead_dependencies": {
+    "jobs": [
+      760278,
+      760279,
+      760280,
+      760281,
+      760282
+    ],
+    "all_elapsed_seconds": 0,
+    "all_nodes": "None assigned",
+    "all_scientific_outputs": 0
+  }
+}

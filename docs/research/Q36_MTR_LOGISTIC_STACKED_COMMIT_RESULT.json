@@ -1,0 +1,96 @@
+{
+  "schema": "shohin-q36-mtr-logistic-stacked-commit-result-v1",
+  "status": "complete",
+  "interpretation": "engineering_nested_out_of_fold_moe_trajectory_benchmark",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "split": "source_disjoint_development",
+  "rows": 1289,
+  "architecture": {
+    "owner_trajectories": ["current", "owner_71", "owner_8"],
+    "first_stage": "16-fold out-of-shard hashed-text sparse trajectory router",
+    "second_stage": "16-fold logistic disagreement router over sparse and production-commit selections",
+    "second_stage_training_excludes_selected_fold": true,
+    "conservative_executable_code_retention": true,
+    "regularization": 0.1,
+    "learning_rate": 0.2,
+    "steps": 800,
+    "selection_counts": {
+      "production_commit": 718,
+      "sparse_router": 571
+    }
+  },
+  "results": {
+    "best_individual_owner": {
+      "label": "owner_8",
+      "correct": 494,
+      "accuracy": 0.3832428238944919
+    },
+    "production_candidate_only_commit": {
+      "correct": 539,
+      "accuracy": 0.4181536074476338
+    },
+    "logistic_stacked_commit": {
+      "correct": 554,
+      "accuracy": 0.42979053529868116,
+      "gain_over_best_owner_count": 60,
+      "gain_over_best_owner_points": 4.654771140418929,
+      "gain_over_production_commit_count": 15,
+      "gain_over_production_commit_points": 1.1636927851047323,
+      "domains": {
+        "bbh_logic": {"rows": 637, "correct": 315, "accuracy": 0.4945054945054945},
+        "math500": {"rows": 623, "correct": 222, "accuracy": 0.3563402889245586},
+        "mbpp": {"rows": 29, "correct": 17, "accuracy": 0.5862068965517241}
+      }
+    },
+    "paired_vs_production_commit": {
+      "both_correct": 529,
+      "logistic_only_correct": 25,
+      "production_only_correct": 10,
+      "both_wrong": 725,
+      "mcnemar_exact_two_sided_p": 0.01667384780012071
+    }
+  },
+  "verification": {
+    "selection_job": 758557,
+    "independent_score_job": 758558,
+    "paired_comparison_job": 758559,
+    "score_matches_selection_report": true,
+    "all_jobs_completed_exit_zero": true
+  },
+  "artifacts": {
+    "selection_report": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_logistic_commit_82bfd4f/report.json",
+      "sha256": "7e2aab0302179e0558ec07200e869357bec9674e180c699d2edd77d13e7170a7"
+    },
+    "selected_candidates": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_logistic_commit_82bfd4f/candidates.jsonl",
+      "sha256": "e8df4e127a61931169be32dd1bfc959cad32ae2139a072ad1249655b65d8cdc9"
+    },
+    "decisions": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_logistic_commit_82bfd4f/decisions.jsonl",
+      "sha256": "92b793e6f0d3c022884b2b3af780371671e491ce5018bc090c17854b7635bca2"
+    },
+    "verified_score": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_logistic_commit_82bfd4f/development_score.json",
+      "sha256": "997c932d462f4d8733f50b48e427d8d0fced14c70f3f93159265b7a85b391817"
+    },
+    "paired_comparison": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/stacked_logistic_commit_82bfd4f/comparison.json",
+      "sha256": "d4564b19af971924ecda5e973ef82fd1ed7615d1ffde53bac74fdd612e2fca41"
+    },
+    "runtime_manifest": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_82bfd4f_r1/SHA256SUMS",
+      "sha256": "aca6f5ecbc96b0bbdbdb9f5bc18137efe371bbc8e9837d00a6fcc9484a3b491c"
+    }
+  },
+  "source_commit": "82bfd4fc622fa78bea4cabfa034ffeca9b10ab05",
+  "limitations": {
+    "publication_confirmation": false,
+    "hyperparameter_selection_used_this_engineering_board": true,
+    "fresh_external_board_required_for_unbiased_confirmation": true,
+    "remaining_three_owner_oracle_correct": 618,
+    "remaining_oracle_gap_count": 64
+  },
+  "conclusion": "The nested logistic whole-trajectory commit is the strongest demonstrated Qwen3.6 MoE system in this engineering phase: 554/1289, 60 more correct answers than the best owner and 15 more than the prior production commit. It improves both logic and mathematics, preserves executable-code performance, and beats the 539 commit with paired p=0.0167."
+}

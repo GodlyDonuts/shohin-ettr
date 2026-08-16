@@ -1,0 +1,32 @@
+{
+  "schema": "shohin-q36-mixtral-acquisition-runtime-receipt-v1",
+  "status": "complete_immutable_runtime_installed_on_newton",
+  "date": "2026-08-15",
+  "source_commit": "33c3289f4a67d5eb1c8f3bb5e9632e9f595d16dc",
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_33c3289f_r1",
+    "regular_files": 167,
+    "symlinks": 0,
+    "writable_members": 0,
+    "sha256sums_sha256": "c98f7df71d89de763db101d2eadea5ae75e48505d735f2d1de432950063aadd4",
+    "runtime_json_sha256": "6427f8d7bbb0df53002d3554fcd8749a3b83453ac1a8028b1ce91e83339c0938",
+    "manifest_verification": "pass",
+    "atomic_publish": true
+  },
+  "correction": {
+    "file": "pipeline/jobs/fetch_mixtral_8x22b.sbatch",
+    "behavior": "q36_init_local_tmp now creates the exact Slurm-job-owned temporary root before the wrapper validates it",
+    "scientific_contract_changed": false,
+    "model_or_source_bytes_changed": false,
+    "focused_tests": 4,
+    "focused_tests_passed": 4,
+    "bash_syntax": "pass"
+  },
+  "execution": {
+    "replacement_acquisition_job": 760561,
+    "replacement_job_runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_11c7a176_r1",
+    "replacement_launch_uses_equivalent_safe_export_workaround": true,
+    "future_mixtral_jobs_use_this_corrected_runtime": true,
+    "scientific_result": false
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "files": [
+    {
+      "name": "accounting.txt",
+      "sha256": "26bcadc59fc7f00f94ffa9a4840528f5f7d733beae9ba0cc00195535b8d880fb"
+    },
+    {
+      "name": "dispatch.json",
+      "sha256": "0d6a9c6260657ff84aa83c12bca9e4bbe53655946500d312d904e558015289ca"
+    },
+    {
+      "name": "execution_terminal.json",
+      "sha256": "dd5dc465e80635d88afde12b293607ee4ddcc210f271e4f9a8f7fb6836cbc16a"
+    },
+    {
+      "name": "live_preflight.json",
+      "sha256": "1531d1fabbf4978d13ebb66f371f59a3ab51e0df380114ddfd635d5ce2645cb5"
+    },
+    {
+      "name": "live_preflight_754562.err",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "live_preflight_754562.out",
+      "sha256": "e9c9f47dd639a58b4f02aed08de5bd97d42fb70e7c84f477ea9ea35ef27f3cf3"
+    },
+    {
+      "name": "mechanics_754563.err",
+      "sha256": "782e1aa720e9921c4f813e70277ae3869a61b1441bbf0a4f472387ea353755f7"
+    },
+    {
+      "name": "mechanics_754563.out",
+      "sha256": "47ac1df6a6d913484bc0f20b2a2e38378411fca50ea0e0c5e99605814c19b062"
+    },
+    {
+      "name": "queue.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "quota.txt",
+      "sha256": "d2896aea2da3717bb1f8c9dde8bcf77f313ea1d67f614cfca5e87c1f4d3e63df"
+    },
+    {
+      "name": "run_tree.txt",
+      "sha256": "3ecbce1aa65abb34e87fd93660a4f31f0f6b677967fb05893f9cf7dc64609c92"
+    },
+    {
+      "name": "tmp_audit_754595.err",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "tmp_audit_754595.out",
+      "sha256": "73b8f7c12b5fec8e603470add10bb939bce4284acc80d721874d41f5df6d7d46"
+    }
+  ],
+  "run_id": "q36-mtr-bf17823-r1",
+  "schema": "shohin-q36-mtr-terminal-evidence-manifest-v1",
+  "source_commit": "bf1782396821ffdf0d88d220da0c9fce8695c84b",
+  "status": "terminal_infrastructure_failure"
+}

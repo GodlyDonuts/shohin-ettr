@@ -1,0 +1,54 @@
+{
+  "schema": "shohin-pcf11-terminal-infrastructure-receipt-v1",
+  "status": "terminal_calibration_sandbox_resource_probe_wall_timeout",
+  "date": "2026-08-11",
+  "source_commit": "4f81a070de85c258db8b2125f5fdc2049374d38a",
+  "runtime_manifest_sha256": "d3ac4cbd952092628cae4485df809e0d43a9b233d4282929fb80015982f22be5",
+  "run_id": "pcf11_ministral_4f81a07_r1",
+  "jobs": {
+    "prepare": {"job_id": 752127, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 171, "node": "evc21", "restarts": 0},
+    "mechanics": {"job_id": 752128, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 224, "node": "evc30", "restarts": 0},
+    "b1": {"job_id": 752129, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 340, "node": "evc22", "restarts": 0},
+    "draft_array": {"root_job_id": 752130, "tasks": 16, "completed": 16, "failed": 0, "restarts": 0},
+    "draft_merge": {"job_id": 752131, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 77, "node": "evc21", "restarts": 0},
+    "materialize": {"job_id": 752132, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 16, "node": "evc21", "restarts": 0},
+    "revision": {"job_id": 752133, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 319, "node": "evc22", "restarts": 0},
+    "calibration_revision": {"root_job_id": 752134, "tasks_started": 4, "tasks_completed": 0, "tasks_cancelled": 4, "restarts": 0},
+    "calibration_unchanged": {"root_job_id": 752136, "tasks_started": 4, "tasks_failed": 2, "tasks_cancelled": 2, "restarts": 0},
+    "downstream_root_jobs_cancelled": 19,
+    "terminal_job_id": 752155
+  },
+  "failure_boundary": {
+    "cause": "two calibration-unchanged shards colocated on evc40 did not accumulate the trusted one-second SIGXCPU limit within the admission probe's 2.5-second outer wall allowance",
+    "message": "PCF1SandboxError: PCF1 sandbox exceeded the outer wall timeout",
+    "failed_task_ids": [752136, 752297],
+    "failed_node": "evc40",
+    "failed_elapsed_seconds": 169,
+    "failed_task_restarts": 0,
+    "accepted_calibration_candidate_files": 0,
+    "accepted_calibration_reports": 0
+  },
+  "scientific_state": {
+    "mechanics_completed": true,
+    "b1_training_completed": true,
+    "model_owned_drafts_completed": 7113,
+    "revision_training_presentations": 9655,
+    "revision_training_completed": true,
+    "calibration_rows": 5824,
+    "confirmation_runtime_rows": 1289,
+    "calibration_evaluation_completed": false,
+    "confirmation_candidate_generation_started": false,
+    "confirmation_assessor_semantic_reads": 0,
+    "confirmation_score_emitted": false,
+    "formal_scientific_result": null
+  },
+  "files": {
+    "failed_stderr_sha256": "0180b02e9176448f7c27cec048e473f77c374cf36b5e2154ed1f7119339da3c7",
+    "merged_drafts_sha256": "8198ea96882a53a52a65eb4abb6cc1a16f9e8043b5bbf8fdb253a737c8c9c574",
+    "merged_drafts_report_sha256": "c884a3eb2329b161ab6c808180af416de50fe074afdd17a5bfbbf48fabd5d8f3",
+    "materialization_report_sha256": "5b785c5a872b5b2b19a422ac2e4b9658d7dd7526989c486b73606c95fe3e4a8d",
+    "revision_report_sha256": "36befa2daba6874500413aeac57009f028c99d2bf0b57980bc41b422078fba7c"
+  },
+  "queue_empty_after": true,
+  "retry_count": 0
+}

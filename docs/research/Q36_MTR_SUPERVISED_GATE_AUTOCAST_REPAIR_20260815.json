@@ -1,0 +1,60 @@
+{
+  "schema": "shohin-q36-mtr-infrastructure-repair-v1",
+  "status": "replacement_submitted",
+  "scientific_result": false,
+  "variant": "response_supervised_temporal_gate",
+  "failed_job": {
+    "job_id": 760172,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 533,
+    "started": "2026-08-15T04:24:40-04:00",
+    "ended": "2026-08-15T04:33:33-04:00",
+    "node": "evc28",
+    "restarts": 0,
+    "h100s": 1,
+    "stderr_sha256": "81fc61dfd7c2e8219c2fb4cc63e7d5710501207ba19d9b0222405f9c46da453b",
+    "stdout_sha256": "e6dc92bdec76765252f95ddf3a0bcecaca3f8e4b17d6d997039cafddc1cf8ed3",
+    "last_completed_update": 0,
+    "checkpoint_published": false,
+    "evaluation_published": false,
+    "cause": "torch.nn.functional.binary_cross_entropy rejected probability-space BCE while CUDA autocast was active"
+  },
+  "repair": {
+    "scope": "disable autocast only around float32 probability-space BCE supervision",
+    "training_objective_changed": false,
+    "data_changed": false,
+    "seed_changed": false,
+    "model_changed": false,
+    "arms_changed": false,
+    "regression": "outer CPU autocast is active while the BCE call observes autocast disabled",
+    "focused_tests": "39 passed",
+    "q36_tests": "433 passed, 1 skipped",
+    "source_commit": "4cf9559d602483a71e25bc7b356e5d634e42c874",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_4cf9559d_r1",
+    "runtime_manifest_sha256": "b6e74fd2d63dced65e6fb15b89cc95fa35517826647b7af4e2ade00909c30582",
+    "environment_receipt_sha256": "09ee7dc2001d5441d1fc6a19f5476ba88c6a532a09d538be46eaf978287480a8"
+  },
+  "replacement": {
+    "job_id": 760219,
+    "state_at_receipt": "PENDING",
+    "time_limit": "01:30:00",
+    "requeue": false,
+    "h100s": 1,
+    "output_reused": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_supervised_response_1dad6dd6_r1/fit",
+    "downstream_screen_job": 760173,
+    "downstream_dependency": "afterok:760219",
+    "downstream_score_job": 760174
+  },
+  "failed_output_cleanup": {
+    "target": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_supervised_response_1dad6dd6_r1",
+    "bytes": 8192,
+    "inodes": 2,
+    "contents": "empty fit directory only",
+    "permanently_removed": true,
+    "locally_recoverable": false
+  },
+  "healthy_jobs_cancelled": [],
+  "healthy_jobs_duplicated": [],
+  "new_scientific_variant": false
+}

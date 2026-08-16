@@ -1,0 +1,60 @@
+{
+  "schema": "shohin-q36-mtr-infrastructure-repair-v1",
+  "status": "replacement_submitted",
+  "scientific_result": false,
+  "variant": "tri_trajectory_geometry_gate",
+  "failed_job": {
+    "job_id": 760204,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 326,
+    "started": "2026-08-15T04:56:22-04:00",
+    "ended": "2026-08-15T05:01:48-04:00",
+    "node": "evc39",
+    "restarts": 0,
+    "h100s": 1,
+    "stderr_sha256": "0024e679bcefc7e5990d0acd9da531f98f7578ebf661a05fba640cce02d21c19",
+    "stdout_sha256": "d8b8266c2d7e0e4876d5209223de518d472f61451e798efc1ec7b14d3bc5c403",
+    "model_load_completed": true,
+    "last_completed_update": 0,
+    "checkpoint_published": false,
+    "evaluation_published": false,
+    "cause": "the de8efe14 runtime parameter-count assertion omitted the tri-geometry projection weights and rejected the intended geometry before update 1"
+  },
+  "repair": {
+    "scope": "use the already-tested corrected runtime whose parameter receipt includes hidden-router, bias, and geometry-projection parameters",
+    "training_objective_changed": false,
+    "causal_loss_weight": 0.0,
+    "routing_supervision_weight": 0.1,
+    "data_changed": false,
+    "seed_changed": false,
+    "model_changed": false,
+    "arms_changed": false,
+    "source_commit": "4cf9559d602483a71e25bc7b356e5d634e42c874",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_4cf9559d_r1",
+    "runtime_manifest_sha256": "b6e74fd2d63dced65e6fb15b89cc95fa35517826647b7af4e2ade00909c30582",
+    "environment_receipt_sha256": "09ee7dc2001d5441d1fc6a19f5476ba88c6a532a09d538be46eaf978287480a8"
+  },
+  "replacement": {
+    "job_id": 760222,
+    "state_at_receipt": "PENDING",
+    "time_limit": "01:37:00",
+    "requeue": false,
+    "h100s": 1,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_tri_geometry_gate_de8efe14_r1/fit",
+    "downstream_screen_job": 760205,
+    "downstream_dependency": "afterok:760222",
+    "downstream_score_job": 760206
+  },
+  "failed_output_cleanup": {
+    "target": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_tri_geometry_gate_de8efe14_r1/fit",
+    "bytes": 4096,
+    "inodes": 1,
+    "contents": "empty fit directory only",
+    "permanently_removed": true,
+    "locally_recoverable": false
+  },
+  "healthy_jobs_cancelled": [],
+  "healthy_jobs_duplicated": [],
+  "new_scientific_variant": false
+}

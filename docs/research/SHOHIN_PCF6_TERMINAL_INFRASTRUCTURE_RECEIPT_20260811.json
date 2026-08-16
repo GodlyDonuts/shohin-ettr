@@ -1,0 +1,44 @@
+{
+  "schema": "shohin-pcf6-terminal-infrastructure-receipt-v1",
+  "status": "terminal_gpu_environment_canary_failure",
+  "date": "2026-08-11",
+  "source_commit": "dfd7e19e5c83d6f1d41598ecfa4e1e0c8ce00ef7",
+  "runtime_manifest_sha256": "c1349d2f6f44a713ee9be671d1e38033e40d19af1c92bf26f20ee11271f9fa44",
+  "failed_job": {
+    "job_id": 751779,
+    "name": "pcf6-gpu-env-canary",
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 2,
+    "node": "evc27",
+    "alloc_tres": "billing=4,cpu=2,gres/gpu=1,mem=4G,node=1",
+    "restarts": 0,
+    "cause": "Bash exported underscore as an exact alias of the invoked pinned Python entrypoint; the actual-variable firewall treated that control alias as a protected payload",
+    "message": "protected GPU environment variable: _"
+  },
+  "files": [
+    {
+      "path": "751779.err",
+      "sha256": "99f12c0a1e48b0734bdec8976449d704f47f3c1db772c4958104fb728ab85f0d"
+    },
+    {
+      "path": "751779.out",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "job_id.txt",
+      "sha256": "e3c6eaea12c09b59374a0a5e81a9baadc1b2b7e43fb64931478a10f3a1623f8b"
+    }
+  ],
+  "output_absent": true,
+  "slurm_export_metadata_scrub_reached": true,
+  "actual_environment_scan_reached": true,
+  "nvidia_smi_reached": false,
+  "model_opened": false,
+  "cuda_program_started": false,
+  "scientific_graph_submitted": false,
+  "scientific_score_emitted": false,
+  "formal_scientific_result": null,
+  "queue_empty": true,
+  "retry_count": 0
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "shohin-q36-upward-moe-publication-graph-v1",
+  "status": "implementation_tested_pushed_runtime_sealed_dependency_staged",
+  "date": "2026-08-15",
+  "source_commit": "a24272e77d5d1a81bb1a57c836197a28ef5f2571",
+  "purpose": "Turn the completed Qwen35/Super120/Mixtral141 matched screen into immediate publication-ready scaling evidence without changing any score or model job.",
+  "assets": {
+    "renderer": "pipeline/render_upward_moe_scaling.py",
+    "wrapper": "pipeline/jobs/render_upward_moe_scaling.sbatch",
+    "svg": "shohin-upward-moe-scaling.svg",
+    "csv": "shohin-upward-moe-scaling-points.csv",
+    "manifest": "manifest.json"
+  },
+  "figure_panels": [
+    "paired trained-revision gain versus log10 total parameters",
+    "paired trained-revision gain versus log10 active parameters",
+    "unchanged-correct retention versus active parameters"
+  ],
+  "uncertainty": {
+    "capability_gain": "paired Wald 95 percent interval from exact discordant counts",
+    "retention": "Wilson 95 percent interval over unchanged-correct cases",
+    "mcnemar_exact_two_sided_p_preserved": true
+  },
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_a24272e7_r1",
+    "regular_files": 170,
+    "symlinks": 0,
+    "writable_members": 0,
+    "sha256sums_sha256": "db709d5fb48bd498c9c76810a3ffa58034f7d28b8b233a65ea6515fd3313467d",
+    "runtime_json_sha256": "b37fbbaace01add087da8483ad4072468956e2b694d1d5dfed57ea417b691c7d",
+    "manifest_verification": "pass"
+  },
+  "job": {
+    "job_id": 760588,
+    "job_name": "q36-upward-moe-figure",
+    "dependency": "afterok:760575",
+    "resources": "CPU_2_cores_4GiB_10m",
+    "requeue": false,
+    "analysis": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_super120_mixtral141_r1/analysis.json",
+    "output_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_super120_mixtral141_r1/publication",
+    "observed_state": "PENDING_Dependency"
+  },
+  "verification": {
+    "focused_tests_passed": 20,
+    "black": "pass",
+    "ruff": "pass",
+    "bash_syntax": "pass",
+    "git_diff_check": "pass"
+  },
+  "scientific_contract": {
+    "new_model_variants": 0,
+    "new_gpu_jobs": 0,
+    "scores_changed": false,
+    "identities_changed": false,
+    "controls_changed": false,
+    "automatic_successor_authorized": false
+  }
+}

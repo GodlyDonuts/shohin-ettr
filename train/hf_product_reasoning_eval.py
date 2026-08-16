@@ -581,8 +581,10 @@ def _load_model(
         if metadata is not None
         else quantization
     )
-    if metadata is not None and quantization != "none" and (
-        quantization != checkpoint_quantization
+    if (
+        metadata is not None
+        and quantization != "none"
+        and (quantization != checkpoint_quantization)
     ):
         raise ProductEvalError("adapter checkpoint quantization differs")
     backbone, resolved_model_loader = load_product_backbone(
@@ -730,7 +732,10 @@ def _load_model(
             RME1Config(**rme),
             draft_control=str(metadata.get("rme1_draft_control", "normal")),
         ).to("cuda:0")
-    elif metadata.get("architecture") == "shohin-shared-post-mlp-revision-v1":
+    elif metadata.get("architecture") in {
+        "shohin-shared-post-mlp-revision-v1",
+        "shohin-q36-mtr-shared-post-mlp-v1",
+    }:
         from shared_post_mlp_revision import (
             SharedPostMLPConfig,
             SharedPostMLPProductModel,
@@ -921,6 +926,9 @@ def _completion_for_scoring(
     return None
 
 
+GENERATED_ONLY_SEQUENCE_CONTRACT = "inputs_embeds_generated_tokens_only_v1"
+
+
 def _generate_adapter(
     model: Any,
     encoded: dict[str, Any],
@@ -948,13 +956,28 @@ def _generate_adapter(
         extra_arguments = {}
         if hasattr(model, "generation_position_ids"):
             extra_arguments["position_ids"] = model.generation_position_ids()
-        return model.backbone.generate(
+        output = model.backbone.generate(
             inputs_embeds=embeddings,
             attention_mask=attention,
             pad_token_id=pad_token_id,
             **extra_arguments,
             **generation_arguments,
         )
+    maximum = generation_arguments.get("max_new_tokens")
+    if (
+        not isinstance(output, torch.Tensor)
+        or output.ndim != 2
+        or output.shape[0] != encoded["input_ids"].shape[0]
+        or isinstance(maximum, bool)
+        or not isinstance(maximum, int)
+        or maximum <= 0
+        or output.shape[1] <= 0
+        or output.shape[1] > maximum
+    ):
+        raise ProductEvalError(
+            "adapter generation did not return generated-token-only sequences"
+        )
+    return output
 
 
 def _generate_completions(
@@ -965,10 +988,17 @@ def _generate_completions(
     generation_mode: str,
     max_new_tokens: int,
     stop_token_ids: list[int],
+    *,
+    add_special_tokens: bool = True,
 ) -> tuple[list[str], list[tuple[int, bool]]]:
     import torch
 
-    encoded = tokenizer(rendered, padding=True, return_tensors="pt")
+    encoded = tokenizer(
+        rendered,
+        padding=True,
+        return_tensors="pt",
+        add_special_tokens=add_special_tokens,
+    )
     encoded = {key: value.to("cuda:0") for key, value in encoded.items()}
     if adapter and hasattr(model, "prepare_generation_draft_indicator"):
         model.prepare_generation_draft_indicator(
@@ -1107,9 +1137,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 ):
                     finalizations[index] = recovered_text
                     finalization_usage[index] = recovered_count
-        for row, completion, (token_count, exhausted), finalization, (
-            finalize_token_count,
-            finalize_exhausted,
+        for (
+            row,
+            completion,
+            (token_count, exhausted),
+            finalization,
+            (
+                finalize_token_count,
+                finalize_exhausted,
+            ),
         ) in zip(
             batch,
             completions,

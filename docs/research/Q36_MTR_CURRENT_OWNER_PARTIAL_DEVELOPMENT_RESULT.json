@@ -1,0 +1,54 @@
+{
+  "schema": "shohin-q36-mtr-engineering-milestone-v1",
+  "status": "partial_live_result",
+  "run_id": "q36-mtr-d9ff7f7-r1",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "owner_checkpoint_sha256": "8d22a8b882a12cdd64a42d3159a187dcfa2d74d6537fc5cf6a94d49e929a4b2c",
+  "completed_shards": [0, 1, 2, 3, 4, 5, 6],
+  "development": {
+    "rows": 554,
+    "correct": 221,
+    "accuracy": 0.3989169675090253,
+    "explicit_final_answers": 409,
+    "max_token_exhausted": 167,
+    "domains": {
+      "bbh_logic": {"rows": 285, "correct": 130, "accuracy": 0.45614035087719296},
+      "math500": {"rows": 249, "correct": 80, "accuracy": 0.321285140562249},
+      "mbpp": {"rows": 20, "correct": 11, "accuracy": 0.55}
+    }
+  },
+  "paired_with_owner_71ac37c1": {
+    "shared_identities": 554,
+    "current_correct": 221,
+    "prior_correct": 225,
+    "both_correct": 188,
+    "both_wrong": 296,
+    "current_only_correct": 33,
+    "prior_only_correct": 37,
+    "oracle_correct": 258,
+    "oracle_accuracy": 0.4657039711191336,
+    "oracle_gain_over_best_points": 5.956678700361011,
+    "mcnemar_exact_two_sided_p": 0.7202027723528613
+  },
+  "paired_with_owner_8cb345e4_shards01_06": {
+    "shared_identities": 469,
+    "current_correct": 193,
+    "prior_correct": 195,
+    "both_correct": 163,
+    "both_wrong": 244,
+    "current_only_correct": 30,
+    "prior_only_correct": 32,
+    "oracle_correct": 225,
+    "oracle_accuracy": 0.47974413646055436,
+    "oracle_gain_over_best_points": 6.3965884861407245,
+    "mcnemar_exact_two_sided_p": 0.899076313652859
+  },
+  "evidence": {
+    "aggregate_sha256": "82866836eeb69c7fff6a7a08b1301c2891f3a45366b15a910121343faca46c5e",
+    "owner_71_comparison_sha256": "0155cd2e3771b559b45b4f10fe9ac85b3934a8a0be4d57eaf4c41ecbfcb83104",
+    "owner_8_comparison_sha256": "e6a7baa89e89d198fcd3e13d3d50e3e0e9c3c38d7546d1bae3aa04fd3146abad"
+  },
+  "interpretation": "Engineering benchmark in progress. The current owner is statistically tied with two prior owners on completed identities, while their paired oracle exposes roughly six percentage points of complementary correct answers for a candidate-only trajectory commit to capture.",
+  "scientific_work_continues": true
+}

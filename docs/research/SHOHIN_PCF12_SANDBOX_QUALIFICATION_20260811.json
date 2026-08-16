@@ -1,0 +1,21 @@
+{
+  "schema": "shohin-pcf12-sandbox-qualification-v1",
+  "status": "pass",
+  "date": "2026-08-11",
+  "source_commit": "feca03a7ab84bc59cba9a235a1ca10e2b47b0af1",
+  "stage": "/tmp/pcf12-sandbox-qualification-20260811.X6wilR",
+  "sandbox_source_sha256": "389a673763b009aa929038770842040b5989e9a134174f558b1aaa25977c9d58",
+  "evaluation_source_sha256": "69dac0e0509f13a500d906c7b102a092e5ea35bcb9ec0d8eacf9321a2749b3b8",
+  "receipt_sha256": "a65304035c0898d2e40d76ca3acdd66ca7239b98103bdb1a8f0813f8455cd100",
+  "probe_sha256": "4d7bd7f009c802aff22a4a7550212e0b481b78c5fd10a86e1f202f6a90d160b4",
+  "sandbox_config_sha256": "af9b920835e5470d8f4dba6bd9ab09fde7b0bf6f0ed03c1e451cc6032a595868",
+  "candidate_policy_sha256": "f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e",
+  "python_runtime_descriptor_sha256": "025190cde6346cdbebfc04a06650f4813e2e8ead5350eec55c0b460caabb362f",
+  "sandbox_runtime_tree_sha256": "7c6ed935cd9585475e82c64d4e591837c0c4ccd9538ad2f41adcfd3c8b71ce0d",
+  "resource_probe_timeout_seconds": 2.0,
+  "resource_limit_exit_code": 79,
+  "probe_count": 40,
+  "all_probes_passed": true,
+  "queue_empty_after": true,
+  "scientific_jobs_submitted": 0
+}

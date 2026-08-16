@@ -1,0 +1,55 @@
+{
+  "schema": "shohin-q36-supervised-router-receipt-rebind-repair-v1",
+  "status": "replacement_submitted",
+  "scientific_result": false,
+  "scientific_variant": "supervised_response_temporal_gate",
+  "failed_job": {
+    "job_id": 760231,
+    "state": "FAILED",
+    "elapsed_seconds": 103,
+    "node": "evc28",
+    "restarts": 0,
+    "exit_code": "1:0",
+    "h100s": 1,
+    "failure": "environment receipt named runtime 9e72ff32 while the job executed immutable runtime d082bec4",
+    "stderr_sha256": "6286df3061cdf59411105f777d25397e2b9a509f3bb3b0292f90f065a2af9187",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "optimizer_updates_completed": 0,
+    "checkpoint_published": false,
+    "scientific_rows_read": 0
+  },
+  "repair": {
+    "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_d082bec4_r1",
+    "runtime_manifest_sha256": "de0deb5ac5ed3822bf626f9544f098aeffa240212da3dce12a9f1d4f51e0fc54",
+    "base_environment_receipt_sha256": "b88afa2dc12cb649a3b373d43ac9b0dca08fcfd7b350511f69426b60eec297dd",
+    "derived_environment_receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_environment_d082bec4_r1/environment.json",
+    "derived_environment_receipt_sha256": "22c5c5a0b3ebaffa957f6a1414422fc92782d061d55a24a93723afc66e481ff6",
+    "derivation": "runtime_rebind_no_scientific_reads_v1",
+    "environment_tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c"
+  },
+  "replacement": {
+    "fit_job": 760261,
+    "time_limit_seconds": 5820,
+    "requeue": false,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_supervised_response_1dad6dd6_r1/fit",
+    "data_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "owner_checkpoint_sha256": "5da79d81b55cb8867e7645449c4af214fbf8f5e425613574197eed54ca6fd4ae",
+    "revision_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "routing_supervision_weight": 0.1,
+    "causal_loss_weight": 1.0,
+    "updates": 256,
+    "screen_job": 760173,
+    "screen_dependency": "afterok:760261",
+    "validation_job": 760184,
+    "validation_dependency": "afterok:760261:759814"
+  },
+  "scientific_contract": {
+    "identities_changed": false,
+    "objective_changed": false,
+    "seed_changed": false,
+    "update_budget_changed": false,
+    "architecture_variant_added": false,
+    "healthy_job_canceled": false,
+    "duplicate_scientific_work": false
+  }
+}

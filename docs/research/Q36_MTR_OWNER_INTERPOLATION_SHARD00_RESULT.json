@@ -1,0 +1,56 @@
+{
+  "schema": "shohin-q36-mtr-owner-interpolation-result-v1",
+  "status": "complete",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "development_partition": "canonical_shard_00",
+  "rows": 85,
+  "interpolation": {
+    "first_owner_checkpoint_sha256": "4a98d020a18117545e4652dceec6695d96fbfa0f48968236ad7270c02aab007d",
+    "second_owner_checkpoint_sha256": "8d22a8b882a12cdd64a42d3159a187dcfa2d74d6537fc5cf6a94d49e929a4b2c",
+    "second_weight": 0.5,
+    "checkpoint_sha256": "6de46deff8f6294fb8d95dc63ab0119e4451e95566f8e379b7bbee3d6a010f68",
+    "correct": 33,
+    "accuracy": 0.38823529411764707,
+    "domains": {
+      "bbh_logic": {"rows": 43, "correct": 17, "accuracy": 0.3953488372093023},
+      "math500": {"rows": 40, "correct": 15, "accuracy": 0.375},
+      "mbpp": {"rows": 2, "correct": 1, "accuracy": 0.5}
+    }
+  },
+  "first_endpoint": {
+    "correct": 31,
+    "accuracy": 0.36470588235294116
+  },
+  "second_endpoint": {
+    "correct": 28,
+    "accuracy": 0.32941176470588235
+  },
+  "gain_over_best_endpoint": {
+    "correct": 2,
+    "percentage_points": 2.3529411764705883
+  },
+  "paired_with_first_endpoint": {
+    "both_correct": 28,
+    "interpolation_only_correct": 5,
+    "endpoint_only_correct": 3,
+    "both_wrong": 49,
+    "oracle_correct": 36,
+    "mcnemar_exact_two_sided_p": 0.7265625
+  },
+  "paired_with_second_endpoint": {
+    "both_correct": 23,
+    "interpolation_only_correct": 10,
+    "endpoint_only_correct": 5,
+    "both_wrong": 47,
+    "oracle_correct": 38,
+    "mcnemar_exact_two_sided_p": 0.3017578125
+  },
+  "evidence": {
+    "generated_candidates_sha256": "127abe0581d8c25a3385ef8f3c00706d0e980b3380b93bb26219fdeb9f65789b",
+    "score_report_sha256": "de5aec647399ee0973bd3cd3f20e8735248f21182c04df0f983ee952a6e9d40e",
+    "comparison_to_first_sha256": "e3f72a128dd2d1048d5bbd1ff9565c24e454bc26a1c121fc8b7c22a1391e96bb",
+    "comparison_to_second_sha256": "cafae8640ddbc4e9b8e37b8698f4287025fbb2f1b46bba4aee6812c70f9c50e6"
+  },
+  "interpretation": "Engineering result: linear interpolation between independently trained owner adapters improved exact capability over both endpoints on the same source-disjoint development partition. The sample is small, so broader interpolation evaluation remains in progress."
+}

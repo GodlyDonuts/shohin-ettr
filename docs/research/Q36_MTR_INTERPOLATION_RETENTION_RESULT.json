@@ -1,0 +1,52 @@
+{
+  "schema": "shohin-q36-mtr-interpolation-retention-result-v1",
+  "status": "complete_engineering_best",
+  "date": "2026-08-14",
+  "selection_rule": {
+    "bbh_logic": "hierarchical_synthesis",
+    "mbpp": "interpolation_w010",
+    "math500": "interpolation_w010_if_generated_tokens_lte_hierarchy_else_hierarchy",
+    "development_labels_read_at_inference": 0,
+    "leave_one_shard_out_math_thresholds": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    "leave_one_shard_out_correct": 666
+  },
+  "selection_counts": {
+    "bbh_logic": {"hierarchy": 637, "interpolation": 0},
+    "math500": {"hierarchy": 38, "interpolation": 585},
+    "mbpp": {"hierarchy": 0, "interpolation": 29}
+  },
+  "evaluation": {
+    "identities": 1289,
+    "retention_correct": 666,
+    "retention_accuracy": 0.5166795965865012,
+    "hierarchical_correct": 664,
+    "hierarchical_accuracy": 0.5151280062063616,
+    "paired_cells": {
+      "both_correct": 649,
+      "hierarchical_only_correct": 15,
+      "retention_only_correct": 17,
+      "both_wrong": 608
+    },
+    "mcnemar_exact_two_sided_p": 0.860050065908581,
+    "oracle_correct": 681,
+    "domains": {
+      "bbh_logic": {"rows": 637, "retention": 348, "hierarchical": 348},
+      "math500": {"rows": 623, "retention": 298, "hierarchical": 297},
+      "mbpp": {"rows": 29, "retention": 20, "hierarchical": 19}
+    }
+  },
+  "artifacts": {
+    "candidates_sha256": "4edf000c7c820b69c0839417c6f9b97c991c7f3efdfa1fba049b5e9eb60a0712",
+    "report_sha256": "9e733ed4295fcf72da98bb60e97dc6e0d36dd1b5fec2902c85d6cff2b8eeddcc",
+    "development_score_sha256": "d966700624b07c79c7298e16a4815d6ae51efd68f40ef17acb434289a16a3dd5",
+    "comparison_sha256": "ee4f1803a7d83623263ba635f5a146b70922dadeb8049a68ffeb4d4c1c6ac470"
+  },
+  "durable_evidence": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-interpolation-retention-371f2647-r1",
+    "files": 6,
+    "bytes": 1526155,
+    "sha256sums_sha256": "318542c5abdb6e4895324dc45a309e97feb22772b90ff2e45fee57f44c0a39ff"
+  },
+  "jobs": {"score": 759583, "comparison": 759584},
+  "interpretation": "transparent_engineering_retention_best_not_statistically_significant"
+}

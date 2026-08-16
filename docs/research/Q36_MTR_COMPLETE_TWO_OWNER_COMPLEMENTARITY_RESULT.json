@@ -1,0 +1,86 @@
+{
+  "schema": "shohin-q36-mtr-complete-two-owner-complementarity-v1",
+  "status": "complete",
+  "interpretation": "engineering_exact_identity_benchmark",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "split": "source_disjoint_development",
+  "rows": 1289,
+  "owners": {
+    "current": {
+      "correct": 492,
+      "accuracy": 0.3816912335143522,
+      "domains": {
+        "bbh_logic": {"rows": 637, "correct": 287, "accuracy": 0.45054945054945056},
+        "math500": {"rows": 623, "correct": 189, "accuracy": 0.30337078651685395},
+        "mbpp": {"rows": 29, "correct": 16, "accuracy": 0.5517241379310345}
+      }
+    },
+    "owner_71": {
+      "correct": 493,
+      "accuracy": 0.382467028704422,
+      "domains": {
+        "bbh_logic": {"rows": 637, "correct": 288, "accuracy": 0.4521193092621664},
+        "math500": {"rows": 623, "correct": 188, "accuracy": 0.3017656500802568},
+        "mbpp": {"rows": 29, "correct": 17, "accuracy": 0.5862068965517241}
+      }
+    }
+  },
+  "paired_correctness_patterns_current_owner71": {
+    "00": 718,
+    "01": 79,
+    "10": 78,
+    "11": 414
+  },
+  "two_owner_oracle": {
+    "correct": 571,
+    "accuracy": 0.4429790535298681,
+    "gain_over_best_count": 78,
+    "gain_over_best_points": 6.051202482544608,
+    "domains": {
+      "bbh_logic": {"rows": 637, "correct": 325},
+      "math500": {"rows": 623, "correct": 228},
+      "mbpp": {"rows": 29, "correct": 18}
+    }
+  },
+  "score_report_sha256": {
+    "current": [
+      "8504d918cb61b58239b9d30fc9faa26a3566b09eeee481484425dfe6886f100a",
+      "2dc7e60212f531b0aeacc7d9bcad22e58cf8ccd5016b1593574106d3bd2fe56d",
+      "6a02c832bd4d1e75913e85a12d5ea5e60108ce55f36e48454bbb3de89557c537",
+      "d4b32a0f7615bf7a25768e494895f768f901bfbdf0b60ee84e61c03477be29aa",
+      "399cd773b48f0bffc511ecdd3a2547450bdaf971754ca4283ddfd56b823c08ba",
+      "d63df32e81a3aaa63b6699ff998b461d6ec787d1a4a7fdbbc2c362e7b37389a5",
+      "53428e311566433e2880494471b7fe5817d3dfa27703c84c3230466a065594f2",
+      "a86380309a2128a78a7f31c021be29a64e09aff753d615cc8f410044cb365178",
+      "e422a0af6dd2c88f002ffa1a2c029f9c77173ffb2bbbee53f2586aa48d606af5",
+      "42a173bb653bcb9ceb447502b23804aa97893fe4c52df349859db1d01ed8463c",
+      "bbdc2a9c961bede9d6e99edfb6ac7b2e83e0f3dcfc2a29e0d3d14681c5736cb7",
+      "758bb7dcaf4ffe60f28039901db802e63afa305b0963c5f5421b09fa5ef72004",
+      "c04532e91255856690f20de26c3f80976698a29a1f024f6cbd3c0beb47d44fec",
+      "7fd37ab77cf982eba66fff06e8933aa9417ddedfc08fa3676c81960bc5a25713",
+      "5d288f3cfe8f6c2fd7850bffb9fd115676170bcf8148f0f1b4df1a61623f5215",
+      "6f82d987a85846b38fe361fef9535cc21b4454f10f6af6713b02989aa96fed5a"
+    ],
+    "owner_71": [
+      "2fa5244dfdc061aa8c70d47706feb7db98e81b157771b6781cb5929122aadf60",
+      "5347db052d6f48443851c977a440b6554de876fe976e6f276bef319a9cc989d9",
+      "8fd11858d418f2174ec6439fd907915c51552ea00afe8cec7474512912922248",
+      "a8c0cc09b2c64d83312d332efd9ae29402cda3d47f1f0cc7f5f6f65ab80f73a3",
+      "25583b7dc1997176465d35f2b599bb550536d14a372153f9d05d70016775efd3",
+      "5f10e975fb7467f713e80f83484d58aba66bd52b9a4ddbbe7ca98b78c6ca2e6d",
+      "a0bdac89a93211988cfe6eea3175e7b3222590ab6b1a0af1bf7b6ad903d19c78",
+      "58b4b856b1a482f74f0b2dfddd47a29ff17540ef2a8768951b43d3d4fd1d1bf1",
+      "36c772217ce140af52aec565b5dd96f9728239e553457a2810e371f0397b690e",
+      "85c119a9e28c06dcd8dc350e924b83a9644c2bd986763904472c4bba410f9762",
+      "5a513e67c1f03fe2f202d95f69d1fb5ae432f8e354418faa12830be14b51dbde",
+      "5c6962b2871b10eee74bc2452163e5efc8f8530508f2e37f143ef0209dc1ddb3",
+      "7470c9e5831ac8975719d1fb6ef32561ed15449c85aa45b56efa9cf69e0ad23a",
+      "c258c69d294b431bfa7e6b68036baa47627bea14a775d9e4ff28c4c5d5015fee",
+      "dcb911318a301f43ef0417354aaf7b221efbbaadb5d3d4761c4f7df55b074fbd",
+      "ed7850a8e42b3e1334e8e75572cc4695839f7f4523bca844adc3e08083fb31ae"
+    ]
+  },
+  "conclusion": "Two independently trained MoE trajectory owners are tied in aggregate accuracy but disagree symmetrically on 157 identities. Their exact paired oracle improves over the best owner by 78 correct answers and 6.05 percentage points across all three domains. This is direct full-board evidence that the architecture's main opportunity is learned semantic commit, not a uniformly stronger single owner.",
+  "next_measurement": "Measure binary, independent three-owner, diversified, higher-capacity, and contextual setwise learned commits against the 493-correct best endpoint and the three-owner oracle."
+}

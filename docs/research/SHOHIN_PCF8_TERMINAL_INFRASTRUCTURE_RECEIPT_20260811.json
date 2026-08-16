@@ -1,0 +1,47 @@
+{
+  "schema": "shohin-pcf8-terminal-infrastructure-receipt-v1",
+  "status": "terminal_draft_allocation_gpu_visibility_failure",
+  "date": "2026-08-11",
+  "source_commit": "9e0e58cf206bbe9d01d466d56499da7575cfb962",
+  "runtime_manifest_sha256": "34717c7ca3cacb0a820fa06f7ca58c1bf3c08693905c108ceffe22d93776e906",
+  "run_id": "pcf8_ministral_9e0e58c_r1",
+  "jobs": {
+    "prepare": {"job_id": 751820, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 139, "node": "evc21", "restarts": 0},
+    "mechanics": {"job_id": 751821, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 191, "node": "evc27", "restarts": 0},
+    "b1": {"job_id": 751822, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 323, "node": "evc27", "restarts": 0},
+    "draft_array_root": 751823,
+    "failed_draft_task": {"job_id": 751859, "array_task_id": 3, "state": "FAILED", "exit_code": "6:0", "elapsed_seconds": 252, "node": "evc33", "restarts": 0, "allocated_gpus": 1, "stdout": "No devices were found"},
+    "other_draft_tasks_cancelled": 15,
+    "downstream_root_jobs_cancelled": 25,
+    "terminal_job_id": 751848
+  },
+  "failure_boundary": {
+    "cause": "Slurm allocated one H100 GRES on evc33 but nvidia-smi reported no visible devices",
+    "failed_before_generator_entry": true,
+    "failed_task_stdout_sha256": "cda3a19e75eacfb91b9b2c2f85080bddea247dd500abec231f6212e3d8fff3bd",
+    "failed_task_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "draft_files": 0,
+    "draft_partials": 0
+  },
+  "scientific_state": {
+    "b1_training_completed": true,
+    "revision_training_started": false,
+    "complete_draft_candidates_published": 0,
+    "confirmation_assessor_semantic_reads": 0,
+    "confirmation_score_emitted": false,
+    "formal_scientific_result": null
+  },
+  "evidence": {
+    "b1_checkpoint_sha256": "6ada53ee55c8fc575f3ad6aa2749097542658d3e0aee6d8fc39ac4c7ccdd4a18",
+    "b1_report_sha256": "be6f125a8860ecc2a100bcb138bfdb7c8707eb422f7b1332e31cbcd6dfb6e64d",
+    "b1_receipt_sha256": "36efcf60cd6f2643eda90812e8eb5a9497a5c608395f9ef2b71451155751a56c",
+    "mechanics_report_sha256": "ba4ebe57d89089c1f0e65379736708603852884fe32b3b614bc497d17516bf11",
+    "dispatch_sha256": "8a06067042d59ef942fdd32e464f4ad163b9963b840cee8756f8daf372c470f2",
+    "prescore_dispatch_sha256": "e203bde11602a84d57ede81695a2346e9da485eaa4fc0de298527bf8bd540d10",
+    "confirmation_assessor_sha256": "a824ae4c071c0e1309268da40c4f644d778d50c01ced9fb9b8591a923efa82e8",
+    "confirmation_assessor_receipt_sha256": "9752ac3c25981764d4b8ae325cb1969d666c46496032f32313092be5a8fb1b77"
+  },
+  "remote_evidence": {"files": 61, "directories": 9, "logical_bytes": 55336844, "all_members_nonwritable": true},
+  "queue_empty_after": true,
+  "retry_count": 0
+}

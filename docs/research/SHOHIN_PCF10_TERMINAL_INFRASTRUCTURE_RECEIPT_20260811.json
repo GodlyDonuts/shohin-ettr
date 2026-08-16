@@ -1,0 +1,50 @@
+{
+  "schema": "shohin-pcf10-terminal-infrastructure-receipt-v1",
+  "status": "terminal_materialization_reference_receipt_validator_mismatch",
+  "date": "2026-08-11",
+  "source_commit": "6c0f0236875af4723eafc65384c6f531bef227f0",
+  "runtime_manifest_sha256": "21516b608e6652f1eba7a2e60261e20079771fdb20b6df12aaf8a97da7d7bc3e",
+  "run_id": "pcf10_ministral_6c0f023_r1",
+  "jobs": {
+    "prepare": {"job_id": 751907, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 138, "node": "evc21", "restarts": 0},
+    "mechanics": {"job_id": 751908, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 185, "node": "evc30", "restarts": 0},
+    "b1": {"job_id": 751909, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 309, "node": "evc30", "restarts": 0},
+    "draft_array": {"root_job_id": 751910, "tasks": 16, "completed": 16, "failed": 0, "restarts": 0, "nodes": ["evc30", "evc35", "evc37", "evc40", "evc41", "evc42", "evc44", "evc45", "evc47"]},
+    "draft_merge": {"job_id": 751911, "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 209, "node": "evc21", "restarts": 0},
+    "materialize": {"job_id": 751912, "state": "FAILED", "exit_code": "1:0", "elapsed_seconds": 17, "node": "evc21", "restarts": 0},
+    "downstream_root_jobs_cancelled": 23,
+    "downstream_started": 0,
+    "terminal_job_id": 751935
+  },
+  "failure_boundary": {
+    "cause": "the source-freeze writer emitted the current trusted-reference preflight fields while the later materializer still required the superseded generated-candidate receipt schema",
+    "message": "PCF1DataError: PCF1 MBPP reference preflight differs",
+    "writer_fields": ["all_references_passed", "reference_assessment_mode", "generated_candidate_policy_applied"],
+    "stale_validator_field": "all_policy_accepted",
+    "reference_rows": 167,
+    "merged_draft_rows": 7113
+  },
+  "scientific_state": {
+    "mechanics_completed": true,
+    "b1_training_completed": true,
+    "model_owned_drafts_completed": 7113,
+    "draft_merge_completed": true,
+    "revision_training_started": false,
+    "calibration_evaluation_started": false,
+    "confirmation_candidate_generation_started": false,
+    "confirmation_assessor_semantic_reads": 0,
+    "confirmation_score_emitted": false,
+    "formal_scientific_result": null
+  },
+  "files": {
+    "materialize_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "materialize_stderr_sha256": "63af91c72c19dde4b80a1ef59f7762b5490e018596a0b75cf9d26f6f0ba96063",
+    "merged_drafts_sha256": "00823c9909bd08c7fc963c3f4f142f640cb5f8909f3e4a96cb7422e1e8998d00",
+    "merged_drafts_report_sha256": "675d3bb93d0e34ed9749947a7e169c5512d326e6169e797aa4189212859a6671",
+    "source_freeze_report_sha256": "2261a5e98f67183e767579bf8597e2a8e67c76a13d3e101ab4f53f8a1f3f3d0b",
+    "reference_rows_sha256": "fcb5bd811b593d3e14910b33c3d2f90b3ed1db7719092542bcd3783b4da44034",
+    "reference_sandbox_receipt_sha256": "97fedcfd4fea999a493bb336d9aa7179be71d83a85690f56805630a4ced87f8f"
+  },
+  "queue_empty_after": true,
+  "retry_count": 0
+}

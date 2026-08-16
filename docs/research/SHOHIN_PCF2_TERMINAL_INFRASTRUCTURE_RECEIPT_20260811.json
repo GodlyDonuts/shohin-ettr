@@ -1,0 +1,89 @@
+{
+  "schema": "shohin-pcf2-terminal-infrastructure-receipt-v1",
+  "status": "terminal_infrastructure_failure",
+  "date": "2026-08-11",
+  "run_id": "pcf2_ministral_a439f05_r1",
+  "source_commit": "a439f05881d4256fedf97450d1f9b157228cbc0c",
+  "runtime_manifest_sha256": "4e979f6f12c86cad9f8a954a5a60103b6cc2b2c81c5ae81fd8219bbfc5c16a66",
+  "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf2_ministral_a439f05_r1",
+  "formal_scientific_result": null,
+  "failed_stage": {
+    "name": "prepare_inputs",
+    "job_id": 751656,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 160,
+    "node": "evc21",
+    "alloc_tres": "billing=2,cpu=2,mem=16G,node=1",
+    "restarts": 0,
+    "cause": "nonsealed frozen MBPP reference rejected by the generated-candidate capability policy",
+    "terminal_exception": "PCF1DataError: PCF1 nonsealed MBPP reference preflight failed",
+    "inner_exception": "PCF1SandboxError: PCF1 frozen MBPP reference violates policy: import"
+  },
+  "downstream": {
+    "integer_job_ids": "751657-751684",
+    "state": "CANCELLED by 1227834669",
+    "exit_code": "0:0",
+    "elapsed_seconds": 0,
+    "nodes_assigned": false,
+    "restarts": 0,
+    "arrays": {
+      "751659": 16,
+      "751663": 4,
+      "751665": 4,
+      "751669": 4,
+      "751671": 4,
+      "751673": 4
+    }
+  },
+  "execution_boundary": {
+    "cpu_only": true,
+    "h100_allocations_started": 0,
+    "model_opened": false,
+    "model_loaded": false,
+    "candidate_generation_started": false,
+    "training_started": false,
+    "confirmation_assessor_published": false,
+    "confirmation_assessor_opened": false,
+    "confirmation_scored": false,
+    "holdout_accesses": 0,
+    "product_accesses": 0,
+    "public_accesses": 0,
+    "nonsealed_source_bank_read": true,
+    "atomic_source_publication_completed": false
+  },
+  "scratch_cleanup": {
+    "path": "/tmp/pcf1-751656-scalar",
+    "in_job_cleanup_ran": true,
+    "independent_postcheck_job_id": 751687,
+    "independent_postcheck_state": "COMPLETED",
+    "independent_postcheck_exit_code": "0:0",
+    "independent_postcheck_node": "evc21",
+    "path_absent": true
+  },
+  "files": [
+    {
+      "path": "dispatch/dispatch.json",
+      "sha256": "4a8c47fb04f3f42bb0354106b17a1eb382d32ce733660e830f1bf1757ed686b2"
+    },
+    {
+      "path": "dispatch/prescore_dispatch.json",
+      "sha256": "fdc46c474d9dd7c7177aee41c2a585bc841a829a494d59737554e4fa6912aa5a"
+    },
+    {
+      "path": "logs/pcf1_prepare_751656.err",
+      "sha256": "516c0bf4823730f1a7c8e5cba952d48de57f01d4a3cd86c7113fa50cfc62551b"
+    },
+    {
+      "path": "logs/pcf1_prepare_751656.out",
+      "sha256": "c0c359bd44f6f8aacd20700abf844c9c05ee1c7140b17d270ef93d8bde6764df"
+    }
+  ],
+  "queue_empty_after_cancellation": true,
+  "durable_quota_used_kib": 842029820,
+  "durable_quota_limit_kib": 1059061760,
+  "durable_quota_used_inodes": 786139,
+  "durable_quota_limit_inodes": 1010000,
+  "retry_count": 0,
+  "successor_submitted": false
+}

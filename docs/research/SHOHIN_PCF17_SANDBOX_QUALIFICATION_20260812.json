@@ -1,0 +1,138 @@
+{
+  "schema": "shohin-pcf17-sandbox-qualification-v1",
+  "status": "pass",
+  "date": "2026-08-12",
+  "sealed_at_utc": "2026-08-12T14:20:01Z",
+  "admission": {
+    "publication_graph_authorized": true,
+    "scientific_jobs_submitted": 0,
+    "confirmation_assessor_semantic_reads": 0,
+    "public_accesses": 0,
+    "holdout_accesses": 0,
+    "product_accesses": 0,
+    "interpretation": "PCF17 infrastructure qualification passed. This receipt authorizes exactly one fresh frozen PCF17 publication graph; it is not a scientific result."
+  },
+  "frozen_boundary": {
+    "source_commit": "f4ae52dae902f2e4d7e56009d0cd7fe90197343e",
+    "contract": "docs/research/SHOHIN_PCF17_MINISTRAL_PUBLICATION_CONFIRMATION.md",
+    "infrastructure_change": "Parent-side namespace-launch grace is 30 seconds instead of PCF16's 5 seconds.",
+    "candidate_cpu_soft_hard_seconds": [3, 4],
+    "model_data_prompt_arm_seed_training_threshold_gate_changed": false
+  },
+  "sources": {
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf17_runtime_f4ae52d_r1",
+    "runtime_sha256sums_sha256": "1625f802f69eeee42af10a7d3978d85fca7116fc6ae7d9315ac3cc728d1c15f4",
+    "pcf1_code_sandbox_sha256": "7e97c28d407b5e93ca64da45ac1f0edeedb3b98565ea3e7766103f13156df1c4",
+    "hf_product_reasoning_eval_sha256": "69dac0e0509f13a500d906c7b102a092e5ea35bcb9ec0d8eacf9321a2749b3b8",
+    "sandbox_config_sha256": "70a37245f54549f3e9336bc669c06db82a90d4b8281a090727a6c49a8c601802",
+    "bootstrap_sha256": "726af7a5152908b860a69e222a602fd64f782f49261707ddb1416b47abde3a60",
+    "candidate_policy_sha256": "f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e",
+    "sandbox_runtime_tree_sha256": "7c6ed935cd9585475e82c64d4e591837c0c4ccd9538ad2f41adcfd3c8b71ce0d"
+  },
+  "frozen_inputs": {
+    "model_revision": "81eaece1948f3875421d9a45bc55487d10e2d894",
+    "model_manifest_sha256": "46cc9203a18a414e08a53109662c3802b57c046896185ca9ab31875e8167cf1f",
+    "adapter_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf15_ministral_ccd9f1a_r1/revision/checkpoint_0000256.pt",
+    "adapter_checkpoint_sha256": "ef85380d130248b45ed60b01dc7c1819fe3168a31ddc52c5edee7a0369882ca7",
+    "qualification_data": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf15_ministral_ccd9f1a_r1/data/commit_train_eval.jsonl",
+    "qualification_data_sha256": "7be50c5cb6bb032d9dc83a2649e9ab6258d8194a7b1c7ca287ef99310aba3f1b",
+    "qualification_identity_sha256": "e23c78d9f5be9763c0cac42c03b717be26f464e9be83019cf29e5b22b6f2a8dc"
+  },
+  "fresh_cpu_qualification": {
+    "job_id": 752846,
+    "node": "evc1",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 8,
+    "restarts": 0,
+    "gpus": 0,
+    "receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "probe_sha256": "43da238ea874ad7b15ae68091482c948c5c9b5a48a8ec23d3bf7a7add86ced09",
+    "probe_count": 41,
+    "all_probes_passed": true,
+    "stdout_sha256": "b8b47f2de0a39377cf2136f5394d0bc401c07176f07d3fae655c0e119437654c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "simultaneous_loaded_h100_stress": {
+    "array_root_job_id": 752847,
+    "node": "evc28",
+    "workers": 2,
+    "gpus_per_worker": 1,
+    "iterations_per_worker": 1000,
+    "total_iterations": 2000,
+    "model_loaded": true,
+    "generation_before_each_score": true,
+    "setup_receipts_per_worker": 1,
+    "process_threads_per_worker": 10,
+    "requested_background_threads": 0,
+    "model_receipt": {
+      "lora_layer_indices": [30, 31, 32, 33],
+      "trainable_parameter_name_sha256": "6af0b65e55b945bf0a847b33867b0ace56cd4aa0bb316aeb7fd5be90cbf27e80",
+      "trainable_parameters": 851968
+    },
+    "workers_detail": [
+      {
+        "worker": 0,
+        "job_id": 752847,
+        "gpu_uuid": "GPU-37dd585b-6770-a3fe-39e1-5e49b9c1769f",
+        "state": "COMPLETED",
+        "exit_code": "0:0",
+        "elapsed_seconds": 19247,
+        "complete_elapsed_seconds": 19076.668945312966,
+        "restarts": 0,
+        "structured_records": 42,
+        "ordered_progress_records": 40,
+        "stdout_sha256": "fb1e9d34e22ee1e017cc78b27e0ff7e9ff99defe7219885eeea14787aa918ccb",
+        "stderr_sha256": "955e727156b65520fd895f4dbed64352c5d42ad993cedf1d584ff987698f4877"
+      },
+      {
+        "worker": 1,
+        "job_id": 752848,
+        "gpu_uuid": "GPU-7a492566-36be-c24b-3d96-903d40f2f9dd",
+        "state": "COMPLETED",
+        "exit_code": "0:0",
+        "elapsed_seconds": 19263,
+        "complete_elapsed_seconds": 19041.198064933997,
+        "restarts": 0,
+        "structured_records": 42,
+        "ordered_progress_records": 40,
+        "stdout_sha256": "bdc233a64fcc1dae870069aac2abab54a6b20f9f6d62a4d0772fec070735bb7c",
+        "stderr_sha256": "b8798733e6607cdf8fd3958a1ad29470c37d6c0dc797638c504e79a172a07150"
+      }
+    ],
+    "stderr_classification_per_worker": {
+      "generation_setting_notices": 1000,
+      "model_load_progress_lines": 90,
+      "tokenizer_regex_advisories": 1,
+      "tied_weight_advisories": 1,
+      "blank_progress_lines": 1,
+      "unexpected_lines": 0,
+      "tracebacks": 0,
+      "cuda_errors": 0,
+      "sandbox_infrastructure_failures": 0
+    }
+  },
+  "postconditions": {
+    "scratch_teardown_job_id": 752952,
+    "scratch_teardown_node": "evc28",
+    "scratch_teardown_state": "COMPLETED",
+    "scratch_teardown_exit_code": "0:0",
+    "scratch_teardown_restarts": 0,
+    "worker_0_scratch_absent": true,
+    "worker_1_scratch_absent": true,
+    "queue_empty": true,
+    "quota_observations_equal": true,
+    "lustre_used_kib": 850433392,
+    "lustre_hard_limit_kib": 1059061760,
+    "lustre_headroom_kib": 208628368,
+    "lustre_files_used": 829481,
+    "lustre_files_hard_limit": 1010000,
+    "lustre_inode_headroom": 180519,
+    "required_headroom_kib": 134217728,
+    "required_inode_headroom": 150000,
+    "headroom_margin_kib": 74410640,
+    "inode_headroom_margin": 30519,
+    "symlinks_or_special_files_in_qualification_root": 0
+  },
+  "terminal_rule": "After this PASS, submit exactly one fresh PCF17 graph. Stop and preserve evidence after infrastructure terminal state or the single formal PASS/FAIL gate; authorize no retry or successor."
+}

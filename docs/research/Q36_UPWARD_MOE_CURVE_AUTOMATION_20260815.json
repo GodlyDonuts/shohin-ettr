@@ -1,0 +1,71 @@
+{
+  "schema": "shohin-q36-upward-moe-curve-automation-v1",
+  "status": "complete_dependency_staged_no_curve_result_yet",
+  "date": "2026-08-15",
+  "job": {
+    "job_id": 760575,
+    "job_name": "q36-upward-moe-curve",
+    "dependency": "afterok:760388:760571",
+    "nemotron_super_score_job": 760388,
+    "mixtral_score_job": 760571,
+    "resources": "CPU_4_cores_16GiB_20m",
+    "requeue": false,
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_super120_mixtral141_r1/analysis.json"
+  },
+  "points": [
+    {
+      "host": "Qwen3.6-35B-A3B",
+      "total_parameters": 35000000000,
+      "active_parameters": 3000000000,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_upward_moe_scaling_inputs_r1/qwen35_trained_revision_screen.json",
+      "sha256": "dbf6caa1c4f0546c1d1d11d0490edfa5e74ae573613c2978577a7ea5ab1941bb",
+      "status": "complete"
+    },
+    {
+      "host": "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+      "total_parameters": 120000000000,
+      "active_parameters": 12000000000,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_screen_glibc228_a14b1dff_r1/score.json",
+      "status": "pending_job_760388"
+    },
+    {
+      "host": "Mixtral-8x22B-Instruct-v0.1",
+      "total_parameters": 141000000000,
+      "active_parameters": 39000000000,
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/mixtral_8x22b_upward_trained_revision_cc88a6c_r1/score.json",
+      "status": "pending_job_760571"
+    }
+  ],
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_80bc320b_r1",
+    "source_commit": "80bc320b53c1e111b39015b2b180ca13661eb598",
+    "regular_files": 168,
+    "symlinks": 0,
+    "writable_members": 0,
+    "sha256sums_sha256": "6e191fa745d2eea76c4bc784489009b9211e691f0b4e3cd93d2c05c98b3b2887",
+    "runtime_json_sha256": "08229846c6b8353eb1c430bb12c12a31d6ca5567913cc5c3c4de7973c01c8afa",
+    "manifest_verification": "pass"
+  },
+  "analysis_contract": {
+    "architecture_series": "trained_revision",
+    "minimum_distinct_total_parameter_points": 3,
+    "minimum_distinct_active_parameter_points": 3,
+    "fit": "gain_percentage_points_vs_log10_total_and_active_parameters",
+    "positive_capability_requires": [
+      "positive_vs_unchanged_at_every_point",
+      "positive_vs_self_refinement_at_every_point",
+      "nonnegative_domain_delta_at_every_point",
+      "positive_active_parameter_slope"
+    ],
+    "conservative_retention_requires": "capability_conditions_and_at_least_95_percent_unchanged_correct_retention_at_every_point",
+    "result_available": false,
+    "automatic_successor": false
+  },
+  "verification": {
+    "focused_tests_passed": 14,
+    "bash_syntax": "pass",
+    "black": "pass",
+    "ruff": "pass",
+    "git_diff_check": "pass"
+  }
+}

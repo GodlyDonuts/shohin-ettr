@@ -1,0 +1,73 @@
+{
+  "schema": "shohin-q36-mtr-aligned-interpolation-screen-result-v1",
+  "status": "complete_promoted_010",
+  "date": "2026-08-14",
+  "fixed_identity_slice": {
+    "shards": [0, 1, 2, 3],
+    "identities": 322,
+    "hierarchical_synthesis_correct": 167,
+    "direct_synthesis_correct": 170
+  },
+  "endpoints": {
+    "base_aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "trained_aligned_checkpoint_sha256": "bc4db4c53d84f3b15ef4ba35797811eb7ffbe6934cefe3bf33bf8e328d2ba72b",
+    "endpoint_relative_l2": 0.06602170830187407
+  },
+  "scales": {
+    "0.10": {
+      "checkpoint_sha256": "806f1ccbf9fc4a814eea7ff1fdbb3af45740d1dea456c0278b849f163cc7f262",
+      "trainable_state_sha256": "73100f31a47850fcf870ef2c941c4509115c914264dd860896c7c410e18664d7",
+      "correct": 174,
+      "domains": {"bbh_logic": 92, "math500": 73, "mbpp": 9},
+      "versus_hierarchical": {
+        "repairs": 15,
+        "regressions": 8,
+        "net": 7,
+        "mcnemar_exact_two_sided_p": 0.21003961563110352,
+        "comparison_sha256": "90e28806daf593becf2044d48dacbde7e9247c6e570b42cf010703168a1bb396"
+      },
+      "versus_direct": {
+        "repairs": 12,
+        "regressions": 8,
+        "net": 4,
+        "mcnemar_exact_two_sided_p": 0.5034446716308594,
+        "comparison_sha256": "f7d5f5f189e65bbf1caec19ba0daa5ea881d3f5d1413c64acb0ca043b065487b"
+      },
+      "decision": "promote_to_all_1289_identities"
+    },
+    "0.25": {
+      "checkpoint_sha256": "f27eab4f89a16cf13d43eeaa7e687836c36ff408952fb193b574e045ff29bd21",
+      "trainable_state_sha256": "436b41d299aabaa0982f4f6d2bbeadbc9bd5bd649487fcf21233718ce6f4ff67",
+      "correct": 173,
+      "domains": {"bbh_logic": 92, "math500": 72, "mbpp": 9},
+      "versus_hierarchical": {
+        "repairs": 16,
+        "regressions": 10,
+        "net": 6,
+        "mcnemar_exact_two_sided_p": 0.32693958282470703,
+        "comparison_sha256": "81309c2967b2e852c759ff9500156950c3cf20301d0f153d5433d4bb067efcea"
+      },
+      "versus_direct": {
+        "repairs": 13,
+        "regressions": 10,
+        "net": 3,
+        "mcnemar_exact_two_sided_p": 0.6776394844055176,
+        "comparison_sha256": "5870012192086352510800ccab9936e0c9d6599f828fcf893a8702cc928393cb"
+      },
+      "decision": "reject_relative_to_0.10"
+    },
+    "0.50": {
+      "checkpoint_sha256": "b2c84bf50e619c660ed2a72305a75012a92fb4741af42d50768169e308b0f8a7",
+      "trainable_state_sha256": "1a1922d462bfec764de12734608ec4a6f2dd3d01efcb4a43da1988765d142c07",
+      "correct": null,
+      "decision": "early_stop_overgeneration_dominated",
+      "reason": "all four active shards exceeded the 0.10/0.25 runtimes while the measured scale trend and trained endpoint both worsened retention"
+    }
+  },
+  "jobs": {
+    "screen_generation_arrays": {"0.10": 759508, "0.25": 759514, "0.50": 759519},
+    "promoted_0.10_expansion_array": 759537,
+    "promoted_0.10_expansion_scores": [759538, 759539, 759540, 759541, 759542, 759543, 759544, 759545, 759546, 759547, 759548, 759549],
+    "promoted_0.10_full_comparisons": [759550, 759551]
+  }
+}

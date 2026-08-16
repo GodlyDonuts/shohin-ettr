@@ -1,0 +1,92 @@
+{
+  "schema": "shohin-q36-upward-moe-temporal-auto-launch-preparation-v1",
+  "status": "dependency_staged_waiting_for_larger_host_evidence",
+  "date": "2026-08-15",
+  "scientific_result": false,
+  "objective": "Immediately launch one exact host-owned temporal transfer on the strongest qualified completed 120B/141B MoE host, without duplicating either active screen or adding an unbound GPU request.",
+  "evidence_chain": {
+    "nemotron_super_score_job": 760388,
+    "mixtral_8x22b_score_job": 760571,
+    "promotion_job": 760596,
+    "promotion_dependency": "afterok:760388:760571",
+    "promotion_output": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_super120_mixtral141_r1/temporal_promotion.json",
+    "launch_job": 760598,
+    "launch_dependency": "afterok:760596",
+    "automatic_launch_before_qualified_evidence": false
+  },
+  "launch_contract": {
+    "replays_the_complete_promotion_receipt_from_source_score_bytes": true,
+    "requires_positive_gain_over_unchanged": true,
+    "requires_positive_gain_over_self_refinement": true,
+    "requires_nonnegative_bbh_math_mbpp_deltas": true,
+    "requires_minimum_unchanged_correct_retention": 0.95,
+    "atomic_single_launch_claim": true,
+    "duplicate_launch_authorized": false,
+    "no_qualifying_host_action": "write_no_launch_receipt_and_submit_zero_scientific_jobs",
+    "post_claim_failure_action": "preserve_terminal_failure_receipt_and_do_not_retry_automatically",
+    "partial_graph_submission_action": "cancel_only_newly_submitted_predecessors"
+  },
+  "selected_graph_if_qualified": {
+    "architecture": "host_owned_owner_trajectory_to_aligned_trained_revision_to_causal_hidden_state_temporal_gate",
+    "matched_arms": [
+      "unchanged",
+      "self_refinement",
+      "owner",
+      "aligned_revision",
+      "temporal_gate"
+    ],
+    "development_rows": 1289,
+    "source_disjoint": true,
+    "submission_roots": 12,
+    "allocation_tasks": 102,
+    "two_h100_tasks": 99,
+    "cpu_tasks": 3,
+    "draft_shards": 16,
+    "evaluation_shards_per_arm": 16,
+    "native_router_or_expert_trainables": 0,
+    "no_requeue": true
+  },
+  "immutable_inputs": {
+    "b1": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/data/v10_tokenbalanced_35m20c10s10p25t_4m_verified_r1.jsonl",
+    "source_root": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf17_ministral_037f122_r1/prepared/sources",
+    "train_source_sha256": "9696f064a8e2bb8c7e46e6a6a4a5ad8ade5edd0cb58a4f5ebf6171beb25d6fc0",
+    "development_source_sha256": "2385a653cf7f1b7208d3c924efca2a8305250d2361f90f9fa1e49af6fd9bbe68",
+    "assessor_board": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf17_ministral_037f122_r1/custodian/confirmation_assessors.jsonl",
+    "assessor_board_sha256": "a824ae4c071c0e1309268da40c4f644d778d50c01ced9fb9b8591a923efa82e8",
+    "nemotron_super_model_manifest_sha256": "8bb8bb898794651791de9d79c1041fe0ec6ad0f54a97b03f52620bd6e245ce92",
+    "mixtral_model_manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7"
+  },
+  "runtime": {
+    "source_commit": "2426e2da7c17dd66884429fa9d431e60d3fda9e2",
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_upward_moe_runtime_2426e2da_r1",
+    "sha256sums_sha256": "08db2f1282a406e8d7dd3ee9c5691294b071992e1d4fa24426a0c433b96398dd",
+    "runtime_json_sha256": "360c153eb2a8b6eee971d7f00683634ced95f9a8698a22fdaa2ec7340b28977c",
+    "regular_files": 192,
+    "allowlisted_files": 190,
+    "symlinks_or_specials": 0,
+    "writable_members": 0,
+    "full_manifest_verification": "PASS",
+    "scientific_dispatch_entries": [
+      "pipeline/dispatch_upward_moe_temporal.py"
+    ],
+    "q36_general_dispatcher_present": false,
+    "live_newton_import_replay": "PASS"
+  },
+  "outputs": {
+    "scientific_run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_temporal_selected_2426e2da_r1",
+    "automation_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_temporal_auto_2426e2da_r1"
+  },
+  "verification": {
+    "focused_upward_tests_passed": 73,
+    "launcher_and_package_tests_passed": 30,
+    "black": "PASS",
+    "ruff": "PASS",
+    "py_compile": "PASS",
+    "bash_syntax": "PASS",
+    "allowlist_order": "PASS",
+    "git_diff_check": "PASS",
+    "live_input_paths_present_except_dependency_generated_mechanics_reports": true,
+    "new_gpu_jobs_submitted_at_preparation": 0,
+    "healthy_running_or_pending_scientific_jobs_changed": 0
+  }
+}

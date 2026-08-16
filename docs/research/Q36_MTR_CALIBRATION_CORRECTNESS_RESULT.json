@@ -1,0 +1,113 @@
+{
+  "schema": "shohin-q36-mtr-calibration-correctness-result-v1",
+  "status": "complete",
+  "interpretation": "engineering_source_disjoint_development_benchmark",
+  "model": "Qwen3.6-35B-A3B",
+  "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "source_commit": "82250ae185d9565239894c7fd80d584f3b803fb3",
+  "conclusion": "Three independent calibration-only absolute-correctness heads with task-specific conservative override thresholds are the strongest demonstrated Qwen3.6 MoE trajectory system: 555/1289, 61 more correct than the best individual owner, 16 more than the production commit, 5 more than the deployable direct commit, and 1 more than the exploratory nested OOF logistic stack. Development labels were not read during model selection or application.",
+  "architecture": {
+    "owner_trajectories": ["current", "owner_71", "owner_8"],
+    "head": "independent_sparse_binary_correctness_probability_per_owner",
+    "training_rows": 5824,
+    "feature_dimension": 65536,
+    "development_labels_read": 0,
+    "selected_training": {
+      "balanced": false,
+      "epochs": 12,
+      "learning_rate": 0.15,
+      "calibration_development_correct": 563,
+      "calibration_development_rows": 1175
+    },
+    "conservative_thresholds": {
+      "bbh_logic": 0.25,
+      "math500": 0.04,
+      "mbpp": 1.1
+    },
+    "selection_counts": {
+      "correctness_head": 286,
+      "production_commit": 1003,
+      "lineage_current": 818,
+      "lineage_owner_71": 217,
+      "lineage_owner_8": 254
+    }
+  },
+  "results": {
+    "calibration_correctness": {
+      "correct": 555,
+      "accuracy": 0.430566330488751,
+      "domains": {
+        "bbh_logic": {"correct": 312, "rows": 637},
+        "math500": {"correct": 227, "rows": 623},
+        "mbpp": {"correct": 16, "rows": 29}
+      }
+    },
+    "exploratory_nested_oof_logistic": {"correct": 554},
+    "deployable_direct_commit": {"correct": 550},
+    "production_commit": {"correct": 539},
+    "best_individual_owner": {"label": "owner_8", "correct": 494}
+  },
+  "paired_vs_best_owner_8": {
+    "both_correct": 456,
+    "correctness_only_correct": 99,
+    "owner_8_only_correct": 38,
+    "both_wrong": 696,
+    "gain_count": 61,
+    "gain_points": 4.7323506594259115,
+    "mcnemar_exact_two_sided_p": 1.87794192808929e-07
+  },
+  "paired_vs_current_owner": {
+    "both_correct": 481,
+    "correctness_only_correct": 74,
+    "current_only_correct": 11,
+    "both_wrong": 723,
+    "gain_count": 63,
+    "mcnemar_exact_two_sided_p": 1.2888315230163817e-12
+  },
+  "paired_vs_production_commit": {
+    "both_correct": 497,
+    "correctness_only_correct": 58,
+    "production_only_correct": 42,
+    "both_wrong": 692,
+    "gain_count": 16,
+    "gain_points": 1.2412723041117144,
+    "mcnemar_exact_two_sided_p": 0.13321061920721333
+  },
+  "paired_vs_exploratory_logistic": {
+    "both_correct": 519,
+    "correctness_only_correct": 36,
+    "logistic_only_correct": 35,
+    "both_wrong": 699,
+    "gain_count": 1,
+    "mcnemar_exact_two_sided_p": 1.0
+  },
+  "oracle": {
+    "correctness_direct_logistic_production_correct": 603,
+    "correctness_all_three_owners_and_production_correct": 621
+  },
+  "artifacts": {
+    "remote_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/calibration_correctness_82250ae",
+    "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_82250ae_r1",
+    "runtime_manifest_sha256": "6f21ac31f2e94b3dd61d02e2651404aaef3d6f860603a71342fa44a6cbd12531",
+    "durable_evidence_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-engineering-calibration-correctness-82250ae-r1",
+    "durable_evidence_manifest_sha256": "ef2a2990843ea270390ad65be49bf0ea29c2d93d163fa6433477134bb75e21f4",
+    "model_sha256": "42bd81e1c88b593939cb641a5f953e9ee3c6912921cbdd1dbe5c857f521f2a7b",
+    "candidates_sha256": "784f1217d8a3aca549abda5121cbea7c71d182b20e78dbdf28ace5ef3e8509b3",
+    "decisions_sha256": "c03f900d9c1268c6803bf563b782480daecf90dbeeb3f18a635c38e8fae45602",
+    "report_sha256": "1bb26b78b345ffa1e98e69da6ce2622d84a75f5acd1b681e72425462d340d74e",
+    "development_score_sha256": "d1f933796240aedf1bd917e0ff17da3e2b9509a497a65c63455dfbc56d4cc894",
+    "comparison_sha256": "a00d3ecd1c5f577f5eed9ca535eb83a9eb176247fe297fcf35d613250bd4fc31",
+    "owner_comparison_sha256": "a0e8eb888ff93549c43d14082ffe3cc5ab3e462943a8adafcd99b3c23cdb237e"
+  },
+  "jobs": {
+    "train_and_apply": 758695,
+    "independent_score": 758696,
+    "semantic_comparison": 758697,
+    "owner_paired_comparison": 758706
+  },
+  "limitations": {
+    "publication_confirmation": false,
+    "engineering_board_reused_for_architecture_iteration": true,
+    "fresh_external_board_required_for_unbiased_generalization_claim": true
+  }
+}

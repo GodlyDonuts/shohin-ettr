@@ -1,0 +1,633 @@
+{
+  "accuracy": 0.32941176470588235,
+  "allocation_probe_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+  "assessor_board_sha256": "a824ae4c071c0e1309268da40c4f644d778d50c01ced9fb9b8591a923efa82e8",
+  "candidates_sha256": "65adc6dc14c43a6c93e8460d4b155166d2c823ff2ad4689d4ff19b932024b675",
+  "correct": 28,
+  "domains": {
+    "bbh_logic": {
+      "accuracy": 0.32558139534883723,
+      "correct": 14,
+      "max_token_exhausted": 10,
+      "rows": 43
+    },
+    "math500": {
+      "accuracy": 0.325,
+      "correct": 13,
+      "max_token_exhausted": 15,
+      "rows": 40
+    },
+    "mbpp": {
+      "accuracy": 0.5,
+      "correct": 1,
+      "max_token_exhausted": 0,
+      "rows": 2
+    }
+  },
+  "explicit_final_answers": 62,
+  "interpretation": "exploratory_model_owned_draft_only_not_matched_gate",
+  "max_token_exhausted": 25,
+  "mbpp_setup_receipts": 1,
+  "mbpp_setup_receipts_sha256": "810401463b0ef57577929623a8f51b971dc9eb045500989f15f2411efd684ef8",
+  "outcomes": [
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "00314983ad0895e3e74ca48e85004e9d7667344e2b2a68f27352d0b1e68f360d",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0066b0189531ec93ab952a37f56e4b79569c1c314cfbff8c2b8aa66adb81b258",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0093c49ba5887a302d4513e45ed055a240f76d1f246d40f0be6423684d8b98bf",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "00eaa5c9f40da5109195b433e6c40316d685afd0dffa60e10a71c6d23449ba12",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "01406be4d1c4e3c571ae4a097fa24ad6966a8a5bca6f3a741704072086946392",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "01494cc9beebf2bf263595cf6a2de8f8019a285216fcbdc605a3b033231bfde8",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "01c921a05f259849505700f78a1b78de6a0fab851c24356a7742cdd9dfada2b3",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0245af95eec8d7c7415f3bdbb9cd462b8964e7818935d72f89309d59b4ecb360",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0258f2894ade0d6d61cb8bd5ad279f995dc687291c253ede82e54a16f42297ad",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "027b0d62bfe5a89a088663af96bf23a4d181ed9be539c247e5b86230919d0c14",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "02d3f37973a99f94fca47edeb5e6005523234b292c0c2010204c188f13346312",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "02e9f1bfa502fcca053b84556d108bfebeb5b63e5e73f8e2608eb6abee502251",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "02fa06cd17bf8e699b5dd0db281f664dae4ec4a870391ddf441c4f60927be9fa",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "0311ec045e6a700a1229c7873d6a3155ec137a33d3ba141825bf0f9ca1d2ffb6",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "031a989c66a6285355beb949a5f337eb9872b587f3a1fcaba44268cd3ba05b37",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0341289b60a929c61b4a56b50ade918e4bcdaee41ead485f6a1f533745dd5cd7",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "034bce9a6bbd97fe9dc88142f7ab3c08c56881699ba55e2598bf7a53fef1ef6c",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "03b9316f5f3139ea7b9477aa1394475dc4e34373eb6dcedee382bed1978f3e02",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "03ceca1edca895a67b5a38012f2c6ce7cba07f545d0b4ce3aa6f655171ae46e0",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "03d9ed86cbff9856ea0956176131752c28c867f1ee6bb2df7792d34371b7469e",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "040d38e715c1429d51f779e6f9d6c7b22b3b781832580821a6d715b97f7159c9",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "045741535e86ae5cae6f1fd3c36bde05efdc2e7fcfd591d499754fc18f6eaaa5",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0471021225c428861e881c31e8fe79fed04304187962af824ac15ac2815ef2cd",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "049b19184bc754a4dc6bd693ddca806e97fdc5f9c24ae3c6fdfae864b5c52652",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "049fe7fcc661a4e281be7aa613268079df6f4edc1950af1e295f7e7c720e1927",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "04a5b27ff71bc6c3381e8b399ab802d41ef7a3a8c6231dda2d1afd731eb52843",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "04ac01b25e6752c115cbdd27d110d085b1c0ff80a00a7c05a64a4deac4cb8591",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "04c4e09879eb22e207d4093254e9801af205c0947c74210b5b37b0ed5a81b828",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "052ce3f59ee39db60ad9bba440dc9c412bf898fbc9185f3556486821eae090fb",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "053c4fe85b4b271ccf95b8d165c956fcf0fb610ce8d21c2deb54e818df7ad35f",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "05b12145beb57d25f3294d2b2b693cdb7b7cbc1e16d7aaa1ecd522136f36c0a3",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "05df184f0ca574c0d6ddbd4d4f87bf199920fc5b7dab3717010cf123773e195e",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "05f7f94fb05343c2c2fd29b4c3834e659201eb13ef28015ec72c8ece579f99f9",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "063a6619ba720d09891aa13a473281f80649038a9a26962c3a65b5e7f0e4e062",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "065348982697de89edb8911d544bcc4fc6e7c714119f77f0e3ff7d48808d2127",
+      "max_token_exhausted": false,
+      "task": "mbpp"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "067d4cd05eafc092c8760c1d17e33c6fe183c4dc9f27e3a78a39be45365440e6",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "067f56a1654e24e83578723ed3991f3fc26a5d2bd682f633aafda595ed5414fd",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "069b677e5beb3965378a18b35ad749f36f4decd979902a1616717bb716b8bf34",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "06d0a5d3b8eb84b75d9c9f0332195e2491cab26afb7712d4e253a76384dd179d",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "06ef3f7088aa2bf3a0a41026751a3613279fe72334d36d727e95c4e7c225685b",
+      "max_token_exhausted": false,
+      "task": "mbpp"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "070a3c67ad768c56f028576d94f83f27dec72297b84b354d3a7b12f08c53e222",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "07432931a81c2d738142a2708229aa59d9c62b7306254f51a8c8075b96814291",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "07564c9a65640424bbf77b95077f6541c9146ff7f7ccc5aba7eeb859df41e1e0",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "076ffbcda2bc71047da85ecb6d8c64c2517b1ab0b66cde03164aee47ba6ae15a",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "077a48402f24d3b75cb908ecfc6b76eea5f1da7f5bd1b9af85d0859dfb74ed0a",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "07899ab8ebdabbd21624642cc21cf11c4780fbf1fd66d0b0a9277876946e2a69",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "07969c4fefcb847ad59bbc8b5dca3c4f610f6b2e3ace17da2b00f4c934e5aca7",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0797a2ddc41d65b29ffa86f218f7a7ebf297dd85dad3cc1c95f550cf3aee3c42",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "07cba65193f99c1e502426cb08133df9bb8d24ab3c950c808beebe92c2dfc75c",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "07d03ca005e7d66b0bd7dc203ddee95431ba056a33897e297d26d81de1eb8c3c",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "081371bc6d3b58be8516a48bb1f9ff51ab7af643da78e7a72fdd8f407d39574c",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "083fd44e8a8b79fcc02385b482210824a586f153180fa4421b87d5b596d0d9e0",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0840229c6e94dafe43a2cb4d5936a101b2c3e6ac9d4a619e20b40587a3251b31",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "08839e532fae4657291abf146d14365a7898eb25757c2e66e21faf859f08b60b",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0906e5bb953c8e7e486f19926c3bd63ec6e1d42f2ba91cc4e51651c80ddaa5c4",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "092c118078fb9c3d980e6a4e13884c39b96e47466d8725b9a5a377a3eea4b507",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0976a98e754bd2fa5bd3f54ea1a69f33bea10e76cd195045bf9683cec0dcf4dd",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "09ab2c818b145e47362525ce7983683de16910138c9c27b512b58ea6e20b6535",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "09be1a1016142fdaca8e1c54b23e64787213f04eac060aa8ba785302d5b7bd6a",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "09c0f16cfc23e94762468275ad2f64d31e265662f2d54f903a493685a8a205dc",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "09f5e497dc6068eacfebdb0cd6006f857ba635cb5541ba57bd522d6abc8e1a2f",
+      "max_token_exhausted": true,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "09fcc654cb179fff8571e26e768ec368c10a94cef1c9b3d9c4006468fdd787f0",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "09ff5e373b3d5324beed819152a1de233a0dc54edb229e53f5c70b2261f175c1",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0a10118cf42f11325a771446a4e2098747863f299bf060ef3ce60ea64edb7f6c",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0a24b939f7ade76c438ffb1d52f38e90f0a103cc3b1da1b73f3b21f096747fb8",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "0a4139d4bc07bcff561152b5ac69768d4bfa88e9f68ba1e508f2b1d5495b84fc",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "0b41c70cda577b3adbd64a06326d4c08949b53a9748e4f42017508346bb18003",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0b51998e0a6f736c286f3424636905a957050055384de20a2caff7d0a4a75d7e",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0b52a09d199060d1e4ef81d55d240c70ea4a43776abe389c5580c2999ca33ff5",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0bae38eb1acedb174006f35c18a0a61ac1e2ef9cd551f5a0078602d19665947a",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0bafbb304783a00e73eaecd4f3ce4499d7fdc9ea71bb6d88467f2c10f0c06f6e",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "0bb2439afcbad8020c4099c9d120217d3b36f29108ce391ace3f9ec57de25ed2",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0bca0b43ad99ad2a22def43c1cc570f8fc20d175c7ba3f04c53d97ddfd33c07a",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0c1075cdfcfcccdeaf71f6648d981ceaf3fabeed16217ee7b33124996ebe3379",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0c172f1715dd87a1ce032b732b282659f8cad3a968605e56c7ff15e23692d2d5",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "0c25a5b5f74e4d8e8306c4bb61949c835c294e8b7dcee738a005f32f58656eca",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0c279f1c486048d4f98710d592dee781ec20aef8c66069ba69ef55d468c8b53b",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0ce92d6ff6cb00f37861f6eb202ffa0ee61003271392d973955fb293e7fc79d0",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0d07aa80e6e90cecaf9ae097951b9e2449c9112dfdb3b19df5bea78bcc31e6ec",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0d0ff1556ab7141e2a8c94ef71c199a8f6c4c26e50e02b2f7ac3d383306acabb",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0d2cc9eb0ec6bb519b46931f33d3309e672624c4ea78f80d6a28fc1a131d2d74",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0d8bc75f87fa343513f0c087711efbe3371316c418de00de51951008d3d09c2e",
+      "max_token_exhausted": false,
+      "task": "bbh_logic"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": false,
+      "identity_sha256": "0e4e3c3768f7e2d8d9b8f73b8fa21535252516c37046feb33d9cf2dd26d2a915",
+      "max_token_exhausted": true,
+      "task": "math500"
+    },
+    {
+      "correct": false,
+      "explicit_final_answer": true,
+      "identity_sha256": "0e62338f3f1cd868fd76296dae8722edac63c39dfbd936905f503be91e825252",
+      "max_token_exhausted": false,
+      "task": "math500"
+    },
+    {
+      "correct": true,
+      "explicit_final_answer": true,
+      "identity_sha256": "0e661388eca13e8f7615b8f3e577c27cc64c6fe8d8279bddacca05802722dd6a",
+      "max_token_exhausted": false,
+      "task": "math500"
+    }
+  ],
+  "rows": 85,
+  "schema": "shohin-q36-mtr-draft-preview-v1",
+  "split": "development",
+  "status": "complete"
+}

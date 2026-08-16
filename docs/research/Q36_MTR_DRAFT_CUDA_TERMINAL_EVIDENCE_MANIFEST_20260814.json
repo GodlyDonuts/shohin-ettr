@@ -1,0 +1,33 @@
+{
+  "artifact_count": 21,
+  "artifacts": {
+    "contracts/graph.json": "b4bc1e8bab1c923a985918471fca4f8e491cefd2c9bd2b20dc4d45571468d66a",
+    "contracts/plan.json": "fb07bbec5cfaf8a5cf63339e5338e0743a1a3b029262b9775d1327d215e84b35",
+    "contracts/runtime_SHA256SUMS": "37c215d8b8a40f7baf717746bf095316c7407e0e1c9fe0747e5a8360ac41ecad",
+    "prepare/cluster_preflight.json": "cb248c0c791b99b88eef93a4c669b26b9ff904c3391d1589d8767ee58a8024ba",
+    "prepare/environment.json": "fd2bb66bc3b85b507f84fa9ee36432d7206a02b85af4c6e6ac541fff0e85a4ff",
+    "prepare/phase_authorization.json": "55fd370649a47362cd4a002beec9951c23e9e11766e43dca375d0db83134c806",
+    "prepare/sandbox.json": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "run/dispatch.json": "5ceb513d909752439e1feb73314b016bdba0ea7bb64061ff0875fac31449da51",
+    "run/drafts/shard_00/candidates.jsonl": "880b69215751d049ffd17243142e972cc66e07ce18a584632dc2e87767bf6314",
+    "run/drafts/shard_00/report.json": "59d890384bf2bd818226f7ace915bc93bacbe2a999ae1b8b89ce28de55b84dc0",
+    "run/drafts/shard_01/candidates.jsonl": "69f4c6c51d301b84a120e834096e32c6f79e3c6fd5d515078e19ff5e7a839229",
+    "run/drafts/shard_01/report.json": "f314f164f1982916ccc375a1604594d50f750715eec9c65251519647b57d0ef6",
+    "run/drafts/shard_02/candidates.jsonl": "442fc3ff97594daa6ff467edebea3dbf303e5457975c4a105892bd85706ff469",
+    "run/drafts/shard_02/report.json": "3a831e15003ff79fe90995eda2a98c5a94c3a63526db994d7ff44b14bca30ec5",
+    "run/failure/q36_mtr_drafts_756445.err": "d17d5886dafe6e353ae276109da9211f1b5d897bd68d9ecb34cfd4b7cae2cff2",
+    "run/failure/q36_mtr_drafts_756445.out": "f3a902ba7bd193a20eb6d390464b77cfb50914e34501ca9be8b348241b80d226",
+    "run/live_preflight.json": "8bcff64e15c0a6c8df15c57969f9b839f4ae23c7ae7e50f48a83e32622edf4c7",
+    "run/mechanics_report.json": "d2d44249b158f63501fe11edfd28918ebc167466dc97a6a4b5a6c6880c7844b3",
+    "run/owner_checkpoint_0000256.pt": "4a98d020a18117545e4652dceec6695d96fbfa0f48968236ad7270c02aab007d",
+    "run/owner_report.json": "967169724589fbcd6a58b6a22547e9f5d75901dc6becee3ed52a2dd02086d427",
+    "terminal.json": "d1a0f1dab90e586e72af7b7d6fae82080ab45a09b4081d0ce34306b992c5de21"
+  },
+  "authorized_evidence_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/q36-mtr-03955353-r2-infrastructure-terminal",
+  "formal_scientific_result": null,
+  "run_id": "q36-mtr-03955353-r2",
+  "schema": "shohin-q36-mtr-infrastructure-evidence-manifest-v1",
+  "source_commit": "039553532497bfad261f65fb39fc439bd20c7380",
+  "status": "terminal_infrastructure_failure",
+  "write_once": true
+}

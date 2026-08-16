@@ -1,0 +1,219 @@
+{
+  "schema": "shohin-q36-temporal-causal-gate-screen-result-v1",
+  "status": "complete_numerically_strongest_qwen35_screen_preserved",
+  "date": "2026-08-15",
+  "host": {
+    "model": "Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "total_parameters": 35000000000,
+    "active_parameters": 3000000000
+  },
+  "architecture": {
+    "name": "q36-tokenwise-temporal-residual-gate-v1",
+    "branches": ["owner", "revision"],
+    "controlled_layer_indices": [
+      24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+    ],
+    "gate_parameters": 32784,
+    "router_features": "hidden_only",
+    "routing_structure": "flat",
+    "causal_loss_weight": 1.0,
+    "routing_supervision_weight": 0.0,
+    "routing_supervision_mask": "response_tokens_only",
+    "optimizer_updates": 256,
+    "training_seed": 2026081511,
+    "training_data_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "native_router_expert_trainables": 0,
+    "interpretation": "The numerically strongest gate was learned by causal response training without an auxiliary selector objective; this supports transferring the hidden-state causal blend rather than a label-trained edit selector."
+  },
+  "screen": {
+    "rows": 256,
+    "source_disjoint": true,
+    "domain_rows": {
+      "bbh_logic": 128,
+      "math500": 117,
+      "mbpp": 11
+    },
+    "unchanged_correct": 111,
+    "unchanged_accuracy": 0.43359375,
+    "temporal_gate_correct": 143,
+    "temporal_gate_accuracy": 0.55859375,
+    "absolute_gain_correct": 32,
+    "absolute_gain_percentage_points": 12.5,
+    "paired_wins": 38,
+    "paired_losses": 6,
+    "mcnemar_exact_two_sided_p": 9.430375484953402e-07,
+    "unchanged_correct_retained": 105,
+    "unchanged_correct_retention": 0.9459459459459459,
+    "empty_completions": 0,
+    "max_token_exhausted": 1,
+    "domains": {
+      "bbh_logic": {
+        "temporal_gate_correct": 86,
+        "unchanged_correct": 71,
+        "total": 128,
+        "delta": 15
+      },
+      "math500": {
+        "temporal_gate_correct": 46,
+        "unchanged_correct": 31,
+        "total": 117,
+        "delta": 15
+      },
+      "mbpp": {
+        "temporal_gate_correct": 11,
+        "unchanged_correct": 9,
+        "total": 11,
+        "delta": 2
+      }
+    }
+  },
+  "comparisons_to_existing_qwen35_systems": {
+    "trained_revision": {
+      "other_correct": 141,
+      "temporal_only_correct": 3,
+      "other_only_correct": 1,
+      "net_correct": 2,
+      "mcnemar_exact_two_sided_p": 0.625,
+      "interpretation": "numerically_better_not_yet_a_significant_pairwise_win"
+    },
+    "multi_trajectory": {
+      "other_correct": 141,
+      "temporal_only_correct": 6,
+      "other_only_correct": 4,
+      "net_correct": 2,
+      "mcnemar_exact_two_sided_p": 0.75390625,
+      "interpretation": "numerically_better_not_yet_a_significant_pairwise_win"
+    },
+    "routing_only": {
+      "other_correct": 138,
+      "temporal_only_correct": 8,
+      "other_only_correct": 3,
+      "net_correct": 5,
+      "mcnemar_exact_two_sided_p": 0.2265625
+    },
+    "tri_hierarchical": {
+      "other_correct": 132,
+      "temporal_only_correct": 16,
+      "other_only_correct": 5,
+      "net_correct": 11,
+      "mcnemar_exact_two_sided_p": 0.02660369873046875
+    },
+    "tri_trajectory": {
+      "other_correct": 128,
+      "temporal_only_correct": 20,
+      "other_only_correct": 5,
+      "net_correct": 15,
+      "mcnemar_exact_two_sided_p": 0.004077315330505371
+    }
+  },
+  "posthoc_complementarity_upper_bounds": {
+    "not_a_deployable_selector_result": true,
+    "revision_or_temporal_oracle_correct": 144,
+    "multi_trajectory_or_temporal_oracle_correct": 147,
+    "revision_or_tri_hierarchical_oracle_correct": 147,
+    "revision_or_temporal_or_tri_hierarchical_oracle_correct": 149,
+    "all_six_existing_systems_oracle_correct": 151,
+    "all_six_existing_systems_oracle_gain_over_unchanged": 40,
+    "all_six_existing_systems_oracle_unchanged_correct_retained": 109,
+    "all_six_existing_systems_oracle_retention": 0.9819819819819819,
+    "interpretation": "The completed systems contain measurable complementary correct cases, leaving up to eight additional correct rows over the best single system; this is architecture-development headroom, not permission to train a benchmark selector."
+  },
+  "routing": {
+    "evaluation_token_layer_events": 3537504,
+    "aggregate_mean_revision_weight": 0.7190592676770206,
+    "first_controlled_layer_mean_revision_weight": 0.6430639857580374,
+    "last_controlled_layer_mean_revision_weight": 0.9027952159206039,
+    "layer_mean_revision_weights": [
+      0.6430639857580374,
+      0.6994846595933177,
+      0.6499408596075086,
+      0.6836737764112776,
+      0.6600930256898649,
+      0.6419537021194888,
+      0.7174563221341941,
+      0.6850290973169217,
+      0.7191737186021556,
+      0.7537870231030127,
+      0.654689692577026,
+      0.6749118075202176,
+      0.7127614378669254,
+      0.8058955065845862,
+      0.9002384520271921,
+      0.9027952159206039
+    ],
+    "interpretation": "The learned blend is nondegenerate and increasingly revision-dominant in the deepest controlled layers."
+  },
+  "training_custody": {
+    "fit_report": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_causal_response_1dad6dd6_r1/fit/report.json",
+    "fit_report_sha256": "7b916cdbd7c7db98ce3a9fb48f02046dfa1ebc6f2859df9d6ac2d0d845e57339",
+    "checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_causal_response_1dad6dd6_r1/fit/checkpoint_0000256.pt",
+    "checkpoint_sha256": "803219a9ac797d6bb8f1dfd5dd028b075ef3cd1fba19762ce507c347d2208cbe",
+    "final_trainable_state_sha256": "6540f653b12c5d84ed28d9e550219226935d5502a1d75d02a96f41911d1aa0b1",
+    "trainable_parameter_name_sha256": "a8f4a922c685cfe4a38b89e928f9103d2e2d054ad05be7f0c4942deee1dee723",
+    "assessor_access_count": 0,
+    "charged_tokens": 365022,
+    "python_elapsed_seconds": 3917.540105555672,
+    "peak_gpu_memory_bytes": 73844222976
+  },
+  "evaluation_custody": {
+    "report_sha256s": [
+      "3dce78997debd13590bee1b95b8cc12184f8e1bab9a0ae71d5e0f1862f4cd40c",
+      "30ed34108864c9f8ce09738d3b72fbb308f1a800ea8401438d729f66b7ccfd69",
+      "d99b86d30654009e8ab73eff596d1534508c7cf9e5e6a5619909df1d7b5b471b",
+      "fcc176b3c099f54c42f03392b29a87cbefe4d1c58e41bc6b2f1477f49f69e9b1"
+    ],
+    "candidate_sha256s": [
+      "e5e28db286b6a93fdda3d1f54ac4ac6ca42aab4d1cbf5af9d9328c35ce1b37cb",
+      "25b79efad7632b3e6eb97a3421a2268b04cb2112004d47984f9c158daeac24be",
+      "0ada196467b8fba8013d5825776a251f903573c2eaac4c49ca044fd0d00785b3",
+      "3bf28f07840459f52276558b8133a60732e9134ca6e08738cdd8083570556516"
+    ],
+    "row_ranges": [[0, 64], [64, 128], [128, 192], [192, 256]],
+    "assessor_access_count": 0,
+    "development_labels_read": 0,
+    "maximum_peak_gpu_memory_bytes": 67746962944
+  },
+  "score_custody": {
+    "score": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_temporal_gate_1dad6dd6_r1/score.json",
+    "score_sha256": "1443dec00d79db529f5ba5fdbc6a044b2c910354d9cc91c740c998f709f03468",
+    "assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "baseline_score_sha256": "d5b5a59448c15ce00f48cf3a44b524688503e9f7ad00c877761ebcd859673a45",
+    "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "sandbox_probe_sha256": "43da238ea874ad7b15ae68091482c948c5c9b5a48a8ec23d3bf7a7add86ced09",
+    "mbpp_setup_qualification_count": 1
+  },
+  "jobs": {
+    "fit": {
+      "job_id": 760220,
+      "state": "COMPLETED",
+      "elapsed_seconds": 4197,
+      "node": "evc47",
+      "h100s": 1,
+      "restarts": 0,
+      "exit_code": "0:0"
+    },
+    "evaluation": [
+      {"job_id": 760272, "elapsed_seconds": 391, "node": "evc40"},
+      {"job_id": 760352, "elapsed_seconds": 322, "node": "evc40"},
+      {"job_id": 760360, "elapsed_seconds": 331, "node": "evc40"},
+      {"job_id": 760266, "elapsed_seconds": 318, "node": "evc39"}
+    ],
+    "score": {
+      "job_id": 760177,
+      "state": "COMPLETED",
+      "elapsed_seconds": 19,
+      "node": "evc1",
+      "h100s": 0,
+      "restarts": 0,
+      "exit_code": "0:0"
+    },
+    "all_scientific_jobs_completed_without_restart": true
+  },
+  "next_action": {
+    "existing_full_validation_array_job": 760286,
+    "existing_full_validation_score_job": 760187,
+    "current_state": "held_reversible_while_larger_MoE_mechanics_are_prioritized",
+    "cross_family_transfer": "After the already-staged trained-revision Super/Mixtral screens produce measurable host baselines, map this two-branch hidden-state causal gate onto the strongest larger host without introducing selector labels."
+  }
+}

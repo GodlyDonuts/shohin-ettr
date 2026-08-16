@@ -1,0 +1,177 @@
+{
+  "architecture": {
+    "branch_names": [
+      "owner",
+      "revision",
+      "draft_hidden"
+    ],
+    "controlled_layer_indices": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "geometry_feature_count_per_token_layer": 9,
+    "hidden_size": 2048,
+    "initial_branch_weights": [
+      0.1,
+      0.8,
+      0.1
+    ],
+    "initialization_invariant": "the hierarchical factorization is initialized to exactly 0.1 owner and a 0.8/0.1 revision/draft-hidden conditional split",
+    "name": "q36-tokenwise-tri-trajectory-hierarchical-gate-v1",
+    "routing_factorization": [
+      "owner_vs_adapted",
+      "revision_vs_draft_hidden_given_adapted"
+    ],
+    "routing_logits_per_token_layer": 2,
+    "total_trainable_parameters": 65856
+  },
+  "causal_basis": {
+    "analysis_result": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/trajectory_state_geometry_9f4bcbeb/result.json",
+    "analysis_result_sha256": "2a41a96eda518c29c4f8142b81600b6824d58502a11690ee3d87a0163e102180",
+    "owner_vs_draft_hidden": {
+      "operator_cosine_mean": 0.9877927216756518,
+      "relative_delta_mean": 0.15669748983935491
+    },
+    "owner_vs_revision": {
+      "operator_cosine_mean": 0.9874112439022011,
+      "relative_delta_mean": 0.15913369133436028
+    },
+    "revision_vs_draft_hidden": {
+      "early_four_relative_delta_mean": 0.09579625649277046,
+      "late_four_relative_delta_mean": 0.057440920106773985,
+      "operator_cosine_mean": 0.9968223197724069,
+      "relative_delta_mean": 0.07836431883484024
+    }
+  },
+  "development_basis": {
+    "draft_hidden_correct": 505,
+    "owner_correct": 493,
+    "presentations": 1189,
+    "revision_correct": 629,
+    "source_identities": 691,
+    "tri_trajectory_oracle_correct": 691
+  },
+  "evidence_inputs": {
+    "development_training_data": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_tri_trajectory_gate_data_6fac389a_r1/train.jsonl",
+    "development_training_data_sha256": "6fac389a588553fa2315fd57d92bf0374b673d7fb7029d06fb719c89dc52326b",
+    "development_training_report_sha256": "a1377e0877368f3378992d04eab0c10bf7243946a0b2b921eb7175adf0c52def",
+    "screen_assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "screen_source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "validation_assessors_sha256": "af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e",
+    "validation_source_sha256": "98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778"
+  },
+  "implementation": {
+    "environment_receipt_sha256": "8b21779e1dd9d8ad78aef42bc938966a77295cf5edd067109ab29f3e56d3d14d",
+    "environment_tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c",
+    "evaluation_sha256": "2eb366a1ab744cededa7225dc49b7f5b831df1376455c52050678f8ecb209ed8",
+    "git_commit": "9f4bcbebe65e24f2f7369c40c4ba8e587ec24910",
+    "private_branches": [
+      "codex/q36-mechanics-generation-prepare",
+      "codex/q36-moe-temporal-revision"
+    ],
+    "ranking_analyzer_sha256": "cee3b69801fea6cba756cd2ca3cc4316576cf5b107b7bf392ac7d243937d6a45",
+    "router_sha256": "764fc000791a2d9a869f625e30669100c663871767c7e158a7c7ee5b3b056b21",
+    "runtime_file_count": 130,
+    "runtime_manifest_sha256": "11bfba2230b718fc5ca0103072f2b0890e02a0f833ecc89f63023eb190a57c4a",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_9f4bcbeb_r1",
+    "state_geometry_analyzer_sha256": "3aefb01bd17606fcce00c228720aabb3f7773ccda7675a87b96b3b77a651e94f",
+    "training_sha256": "a005d2c2fe2db658e17faef0ca3bf462ccfa2cfbadd630431fc2d53ccfd3b006"
+  },
+  "jobs": {
+    "fit": 760211,
+    "screen_evaluation_array": 760212,
+    "screen_score": 760213,
+    "seven_variant_screen_analysis": 760216,
+    "seven_variant_validation_analysis": 760217,
+    "superseded_cpu_only_screen_analysis": 760209,
+    "superseded_cpu_only_validation_analysis": 760210,
+    "validation_evaluation_array": 760214,
+    "validation_score": 760215
+  },
+  "model": {
+    "config_sha256": "93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99",
+    "host": "Qwen3.6-35B-A3B",
+    "manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0"
+  },
+  "trajectory_checkpoints": {
+    "draft_hidden_sha256": "480b2421a699de9b3eabb0c94a6c7217d94b9d7826f1342baf8d89d279e644c9",
+    "owner_sha256": "5da79d81b55cb8867e7645449c4af214fbf8f5e425613574197eed54ca6fd4ae",
+    "revision_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f"
+  },
+  "prior_screen": {
+    "paired_mcnemar_exact_two_sided_p": 2.8288777684792876e-06,
+    "revision_correct": 141,
+    "revision_gain_percentage_points": 11.71875,
+    "revision_retention": 0.9459459459459459,
+    "rows": 256,
+    "unchanged_correct": 111
+  },
+  "rationale": "The owner trajectory is separated from both adapted trajectories at roughly twice the relative operator distance of the revision-versus-draft-hidden sibling decision. A flat three-way softmax couples these differently scaled decisions. The hierarchical gate decouples retention (owner versus adapted) from capability selection (revision versus draft-hidden) while preserving the exact matched initialization and global training budget.",
+  "scheduler_and_storage": {
+    "august_gpu_hours_all_states_at_submission": 1101.219167,
+    "excluded_nodes": "evc[26,29,31-34,37-38,43,46,50]",
+    "filesystem_hard_kib": 1059061760,
+    "filesystem_headroom_kib": 208768168,
+    "filesystem_used_kib": 850293592,
+    "inode_hard": 1010000,
+    "inode_headroom": 314170,
+    "inode_used": 695830,
+    "new_chain_max_concurrent_h100": 16,
+    "new_chain_worst_case_h100_hours": 19.333333333333332,
+    "nominal_august_gpu_hours_remaining_from_2000": 898.780833,
+    "qos": "normal",
+    "requeue_disabled": true
+  },
+  "schema": "shohin-q36-mtr-hierarchical-trajectory-router-execution-v1",
+  "source_disjointness": {
+    "development_source_identities": 691,
+    "development_vs_screen_intersection": 0,
+    "development_vs_validation_intersection": 0,
+    "screen_domain_counts": {
+      "bbh_logic": 128,
+      "math500": 117,
+      "mbpp": 11
+    },
+    "screen_identities": 256,
+    "screen_vs_validation_intersection": 0,
+    "validation_domain_counts": {
+      "bbh_logic": 497,
+      "math500": 504,
+      "mbpp": 22
+    },
+    "validation_identities": 1023
+  },
+  "status": "submitted",
+  "submission_guardrails": {
+    "existing_scientific_jobs_cancelled": [],
+    "no_duplicate_outputs": true,
+    "obsolete_cpu_only_aggregators_cancelled_before_start": [
+      760209,
+      760210
+    ],
+    "output_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_tri_hierarchical_gate_9f4bcbeb_r1",
+    "screen_rows": 256,
+    "validation_rows": 1023
+  },
+  "validation": {
+    "local_q36_tests_passed": 428,
+    "local_q36_tests_skipped": 1,
+    "runtime_de8efe14_manifest_check": "PASS",
+    "runtime_9f4bcbeb_manifest_check": "PASS"
+  }
+}

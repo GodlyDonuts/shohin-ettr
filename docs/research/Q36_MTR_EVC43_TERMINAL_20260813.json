@@ -1,0 +1,63 @@
+{
+  "schema": "shohin-q36-mtr-infrastructure-terminal-v1",
+  "status": "terminal_infrastructure_failure_before_candidate_generation",
+  "recorded_utc": "2026-08-13T11:31:22Z",
+  "run_id": "q36-mtr-bb06a34a-r1",
+  "source_commit": "bb06a34a564b5527d2090cf541f12420256e4dd4",
+  "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_bb06a34a_r1",
+  "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_runtime_bb06a34a_r1",
+  "dispatch_receipt_sha256": "29a17a6d43dcc71f99bac4e0ca8e03be0cbb542f4391b1b377a05d34fe361be6",
+  "completed_predecessors": {
+    "live_preflight_job": 754669,
+    "mechanics_job": 754670,
+    "owner_job": 754671,
+    "owner_updates": 256,
+    "owner_selected_rows": 26387,
+    "owner_charged_tokens": 619734,
+    "owner_checkpoint_sha256": "487ad8f0e2e178400a10338388377a755e49e089b627807875d608c6e87ee245",
+    "owner_report_sha256": "a186c5ae8aa49a81f65a653365abe58f149732c73e40345b2ce79d0877a995e7"
+  },
+  "failure": {
+    "array_job": 754672,
+    "failed_task_4_job": 754715,
+    "failed_task_5_job": 754716,
+    "node": "evc43",
+    "task_4_state": "FAILED",
+    "task_4_exit_code": "6:0",
+    "task_4_stdout_sha256": "cda3a19e75eacfb91b9b2c2f85080bddea247dd500abec231f6212e3d8fff3bd",
+    "task_4_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "task_4_boundary": "nvidia-smi reported No devices were found before model load",
+    "task_5_state": "FAILED",
+    "task_5_exit_code": "1:0",
+    "task_5_stdout_sha256": "cbd7318a865b12a4a596ee69755a386d612a1735e265cc96da5419190044d29b",
+    "task_5_stderr_sha256": "c53a2864ea2825027bec0290361f7fd04d632f5738508d9f9a7fecce5ec0907a",
+    "task_5_boundary": "CUDA device busy or unavailable during allocator warmup before model load"
+  },
+  "scientific_access": {
+    "draft_candidate_file_count": 0,
+    "draft_candidate_bytes": 0,
+    "development_assessor_open_count": 0,
+    "scoring_process_started": false,
+    "formal_gate_result": null,
+    "scientific_fail_claimed": false
+  },
+  "cleanup": {
+    "remaining_draft_tasks_cancelled": 14,
+    "dependency_dead_downstream_roots_cancelled": 29,
+    "queue_members_after_cleanup": 0,
+    "automatic_retry": false,
+    "automatic_successor": false
+  },
+  "prospective_correction": {
+    "scheduler_exclusion_added": "evc43",
+    "scientific_host": "Qwen/Qwen3.6-35B-A3B",
+    "model_revision_changed": false,
+    "data_changed": false,
+    "arms_changed": false,
+    "prompts_changed": false,
+    "thresholds_changed": false,
+    "seeds_changed": false,
+    "training_budget_changed": false
+  },
+  "disposition": "preserve evidence; run no scientific successor until a new explicit phase authorization and storage preflight pass"
+}

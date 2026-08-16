@@ -1,5 +1,277 @@
 # AGENT RUNBOOK — Shohin autonomous custody
 
+> **UPWARD-MoE EXECUTION RESUMED — 2026-08-16:** the user explicitly ended
+> the temporary hold after restoring the UCF VPN. Existing Nemotron
+> Super-120B-A12B jobs `760382`, `760384`–`760388`, Mixtral-141B-A39B jobs
+> `760565`–`760571`, curve analyzer `760575`, and renderer `760588` were
+> released in place. Do not resubmit or reshape them. Mechanics roots are
+> waiting for healthy two-H100 capacity and all downstream work retains the
+> original `afterok` graph and `Requeue=0`. Selector `760596` and launcher
+> `760598` are released behind both score roots and will promote only the
+> stronger large host into the exact temporal architecture graph. Fresh jobs `760725` and
+> `760726`/`760727` proved `evc33` still hangs under dual and independent
+> single-GPU CUDA qualification; keep it excluded. See
+> `docs/research/SHOHIN_UPWARD_MOE_RESUMPTION_20260816.md`.
+
+> **DENSE PUBLIC CAMPAIGN PREPARED, NOT SUBMITTED:** Qwen3.5-9B,
+> SmolLM3-3B, and OLMo2-7B retain exact executable treatment paths after
+> pinned base restoration. Qwen0.8B/Qwen4B do not. The prepared 94-job graph
+> contains 75 exact single-H100 requests and remains unscheduled during the
+> hold.
+
+> **Q36 TEMPORAL CAUSAL GATE IS THE NUMERICAL 35B SCREEN LEADER —
+> 2026-08-15:** hidden-state causal gating between frozen owner and revision
+> residuals scores `143/256` versus unchanged `111/256`, a gain of `32` /
+> `12.5` points with paired wins `38`, losses `6`, exact `p=9.4304e-7`.
+> Domains are logic `86/128`, math `46/117`, code `11/11`; empty outputs are
+> zero and only one output reaches the token limit. The 32,784-parameter gate
+> trains for 256 updates using causal response loss and **zero auxiliary
+> routing supervision**. Its mean revision weight climbs from `0.6431` to
+> `0.9028` across the controlled depth, establishing a nondegenerate causal
+> blend rather than a selector-only result. It is two answers above revision
+> and multi-trajectory (`141/256` each), but the direct pairwise differences
+> are not significant. Preserve exact fit/eval/score hashes in
+> `docs/research/Q36_TEMPORAL_CAUSAL_GATE_SCREEN_RESULT_20260815.json`.
+
+> **UPWARD MoE PRIORITY — 2026-08-15:** keep Nemotron Super mechanics
+> `760382` and Mixtral mechanics `760565` ahead of held lower-scale follow-up
+> roots. Their independent fit, unchanged/self-refinement/revision screens,
+> scores, three-point curve job `760575`, and publication figure job `760588`
+> are dependency-staged. Do not duplicate or modify them. After these plain
+> trained-revision host baselines complete, transfer the temporal two-branch
+> causal gate to the strongest larger host; do not substitute a benchmark
+> selector. Nemotron Ultra-550B-A55B remains the next scale target after
+> eight-H100 access and exact weight restoration.
+
+> **DENSE SCALING IS CLOSED — 2026-08-15:** do not allocate new compute to
+> dense-model scaling or smaller-MoE replicas. The upward ladder is fixed as
+> Qwen3.6-35B-A3B causal anchor -> Nemotron Super-120B-A12B and
+> Mixtral-141B-A39B cross-family screens -> exact host-owned temporal transfer
+> on the stronger larger host -> Nemotron Ultra-550B/55B-active. A complete
+> downward scale curve is not required; prioritize measurable capability and
+> conservative retention at larger total and active parameter counts.
+
+> **Q36-MTR INTERPOLATION SWEEP LIVE — 2026-08-14:** The current champion is
+> hierarchical synthesis at `664/1289`, versus matched production baseline
+> `539/1289`. Direct use of the new 256-update trained aligned reviser lost
+> `135/322` to `167/322` on four fixed shards (`p=4.2237e-5`) and is rejected.
+> Interpolation at trained weight `0.10` reverses that loss: `174/322` versus
+> hierarchy `167/322` and direct synthesis `170/322`, with 15 repairs / 8
+> regressions against hierarchy and nonnegative domain deltas. Weight `0.25`
+> is slightly weaker at `173/322`; `0.50` was early-stopped for renewed slow
+> overgeneration. The `0.10` expansion completed at `663/1289`, versus
+> hierarchy `664` and direct `656`; do not replace the incumbent. Retain the
+> interpolation because it has 52 unique correct cases against hierarchy's
+> 53, yielding oracle `716`. The next bounded composition uses hierarchy as
+> incumbent, interpolation as independent challenger, and direct synthesis as
+> recomputation evidence. Its fixed-shard screen is jobs `759572--759578`.
+> The label-free retention diagnostic is the current engineering best at
+> `666/1289` (hierarchy `664`), but its paired `p=0.860` is not significant;
+> retain it as a transparent control and continue model-owned composition.
+
+> **Q36-MTR ENGINEERING RECOVERY LIVE — 2026-08-14:** explicit user
+> authorization supersedes the prior no-successor rule for architecture
+> development. Execution `q36-mtr-d9ff7f7-r1` preserves the exact model,
+> source-disjoint data, arms, prompts, seeds, budgets, identity partitions,
+> and thresholds; commit `d9ff7f7d79b953179bf90510731c0bcd2f02e722`
+> adds only `evc50` to the scheduler exclusions. CPU live preflight job
+> `756996` passed in 177 seconds and mechanics job `756997` passed on `evc22`
+> (`0fa67fc9...f83ac`). Source-owner job `756998` completed `0:0` with zero
+> restarts: 256 updates, 619,734 charged tokens, 26,387 selected rows,
+> 1,179,648 trainables, report `3cc4efe5...5217`, checkpoint
+> `8d22a8b8...a4b2c`. Exact final-16 shared-post-MLP ownership, source-only
+> visibility, restore, and zero-assessor checks pass. Sixteen draft jobs are
+> now active/pending for resources; task 0 entered `evc22` immediately. All 61
+> requests remain dependency-prestaged through terminal job `757028`.
+> Supervise this graph to a scored recovery benchmark. Do not modify or
+> reinterpret the archived `03955353` evidence.
+
+> **Q36-MTR EXECUTION TERMINAL-NULL — 2026-08-14:** execution
+> `q36-mtr-03955353-r2` passed CPU live preflight, the full mechanics gate,
+> and the frozen 256-update source-owner fit. Draft shards 0–2 published
+> 1,333 unique trajectories with immutable reports. Draft task 3, job
+> `756445` on `evc50`, then failed after 5,600 seconds inside the Qwen MoE
+> grouped-matrix fallback with `CUDA error: unknown error`; no task-3 output
+> or report exists. Ten in-flight draft tasks, two never-admitted tasks, the
+> array root, and all 29 dependency-dead roots were cancelled. The queue is
+> empty, all allocation-local staging roots were cleaned, protected access is
+> zero, and no benchmark, assessor, score, or formal gate ran. Preserve
+> `docs/research/Q36_MTR_DRAFT_CUDA_TERMINAL_20260814.json`. Formal result is
+> `null`; do not resume, score, repair, retry, or submit a successor from this
+> execution.
+
+> **PCF17 TERMINAL-NULL — 2026-08-12:** the sole frozen graph completed 41
+> H100 allocations and produced all confirmation candidates plus learned-commit
+> application. Precompute custody job `752997` then failed closed on the safe
+> but noncanonical `./relative` spelling in the externally pinned model
+> manifest. Pre-score authorization and the sole assessor open never occurred;
+> formal result is `null`, protected access is zero, all dead dependencies were
+> cancelled, and retry/successor count is zero. Preserve
+> `docs/research/SHOHIN_PCF17_TERMINAL_INFRASTRUCTURE_RECEIPT_20260812.json`.
+> Do not score, resume, reinterpret, or retry PCF17.
+
+> **POST-PCF MoE HANDOFF ONLY — 2026-08-12:** no MoE job is authorized in this
+> phase. The prepared Q36-MTR document maps the surviving dense
+> draft/revision/whole-trajectory-commit recipe to exact
+> `Qwen3.6-35B-A3B@995ad96eacd98c81ed38be0c5b274b04031597b0`, with aligned,
+> unchanged, self-refinement, draft-hidden, and learned-commit arms on one
+> source-disjoint 1,289-row development gate. Its prospective graph is 61
+> independent single-H100 requests / `58.90` expected H100-hours, maximum 32
+> concurrent. Follow only
+> `docs/research/SHOHIN_Q36_MOE_TEMPORAL_REVISION_HANDOFF_20260812.md`; do not
+> launch, reacquire the host, or create phase data until a fresh phase freezes
+> its implementation and admission.
+
+> **PCF9 PROSPECTIVELY FROZEN — 2026-08-11:** PCF8 preparation, no-score
+> mechanics, and B1 completed. Draft task `751823_3` then failed before
+> generator entry on `evc33`: Slurm allocated an H100 GRES but `nvidia-smi`
+> reported no devices. Zero draft files exist; revision, confirmation,
+> assessor semantic-read, score, and final-gate stages did not run. PCF8 is
+> terminal-null; preserve
+> `docs/research/SHOHIN_PCF8_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF9 changes only the scheduler exclusion set by adding `evc33`, starts at a
+> fresh root, replays every stage, and reuses no PCF8 checkpoint or partial.
+> All scientific bytes, settings, custody, thresholds, and the stop rule are
+> unchanged. Follow only
+> `docs/research/SHOHIN_PCF9_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
+> **PCF2 PROSPECTIVELY FROZEN — 2026-08-11:** The user explicitly authorized
+> one separately named successor after PCF1's pre-science CPU-only terminal
+> failure was preserved. PCF2 changes only allocation-local scratch handling:
+> deterministic private `/tmp` per job/task, 128-GiB/150,000-inode capacity,
+> fail-closed lifecycle checks, exact cleanup, and independent CPU plus H100
+> canaries. The pinned host, sources, arms, prompts, seeds, training geometry,
+> thresholds, single assessor open, sealed-data counters, and stop rule are
+> unchanged. Execute only the contract in
+> `docs/research/SHOHIN_PCF2_MINISTRAL_PUBLICATION_CONFIRMATION.md`. PCF1
+> remains closed and `null`; do not rewrite or retry its receipt. PCF2 permits
+> exactly one fresh graph after both canaries and all admission gates pass,
+> then stops on infrastructure failure, formal `PASS`, or formal `FAIL`.
+> The scratch admission gate is now PASS: CPU canary `751649` and H100 canary
+> `751650` completed with zero restarts, and exact-node checks `751652--751653`
+> proved their private paths absent. Bind the successor to
+> `docs/research/SHOHIN_PCF2_SCRATCH_QUALIFICATION_20260811.json`.
+> PCF2 then stopped before science: CPU prepare job `751656` rejected a
+> hash-pinned nonsealed MBPP reference under the untrusted generated-candidate
+> capability policy. No source publication, H100/model/training/generation,
+> or assessor open occurred; jobs `751657--751684` never started and were
+> cancelled. Its formal result is `null`; preserve
+> `docs/research/SHOHIN_PCF2_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> **PCF3 is prospectively frozen:** exact supervisor reference solutions use
+> trusted-reference transport inside the same sandbox; generated candidates
+> retain policy SHA-256 `f27124db...f1e`. Require the full nonsealed reference
+> canary and fresh sandbox receipt before the one graph. Follow only
+> `docs/research/SHOHIN_PCF3_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF3 canary `751693` then failed before source open because the historical
+> hash-pinned path triggered the lexical firewall; preserve its terminal
+> receipt. PCF4 is frozen with only the already-established exact SHA-256
+> source-path exception for that CPU canary. Follow
+> `docs/research/SHOHIN_PCF4_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF4 canary `751696` passed all 40 sandbox probes, then failed before any
+> reference execution because its standalone setup preflight evaluated a
+> setup that requires the candidate-defined `Node` class. It ran no graph,
+> H100, model, published data, assessor, or score; its result remains `null`.
+> Preserve
+> `docs/research/SHOHIN_PCF4_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF5 is prospectively frozen with only a setup-lifecycle correction:
+> trusted setup/tests compile before candidate execution, while setup evaluates
+> only after the candidate in the real assessment. Generated-candidate policy
+> and all scientific clauses are unchanged. Follow only
+> `docs/research/SHOHIN_PCF5_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> The required PCF5 reference gate is PASS: CPU job `751699` completed with
+> zero restarts, all `167/167` nonsealed references and both unique setup
+> compilations passed, all 40 sandbox probes passed, and holdout-reference
+> payload access was zero. Exact-node postcheck `751701` proved the private
+> scratch path absent. Bind the one scientific graph to
+> `docs/research/SHOHIN_PCF5_REFERENCE_QUALIFICATION_20260811.json`.
+> PCF5 then closed before mechanics: preparation `751745` passed, while H100
+> job `751746` rejected Slurm's duplicate `SLURM_EXPORT_ENV` metadata after one
+> second, before model verification/staging/load or CUDA. Cancelled descendants
+> never started; the assessor has zero semantic reads. Preserve
+> `docs/research/SHOHIN_PCF5_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF6 is prospectively frozen with one correction: remove that Slurm-generated
+> duplicate metadata before scanning every unchanged actual GPU variable. Run
+> one no-model H100 environment canary before its graph, then follow only
+> `docs/research/SHOHIN_PCF6_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF6 canary `751779` then failed after two seconds on Bash's `_` control
+> variable, whose value exactly aliases the pinned Python entrypoint. It did
+> not reach `nvidia-smi`, CUDA, model access, or graph submission. Preserve
+> `docs/research/SHOHIN_PCF6_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF7 is frozen with only an exact `_ == pinned Python` control exception;
+> arbitrary `_` and every other actual variable remain fail-closed. Run one
+> fresh no-model H100 environment canary, then follow only
+> `docs/research/SHOHIN_PCF7_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> PCF7 environment canary `751782` is PASS with zero restarts: one eligible
+> H100 on `normal`, Slurm export metadata removed, all actual GPU variables
+> scanned, and no model or score opened. Bind the graph to
+> `docs/research/SHOHIN_PCF7_GPU_ENVIRONMENT_QUALIFICATION_20260811.json`.
+> PCF7 then closed after its no-score mechanics report passed: model load, one
+> ephemeral update, and 24/24 mechanics rows completed, but EXIT cleanup could
+> not unlink the read-only staged model. B1/capability work never started and
+> assessor semantic reads remain zero. Exact job `751816` permanently removed
+> only `/tmp/pcf1-751785-scalar`. Preserve
+> `docs/research/SHOHIN_PCF7_TERMINAL_INFRASTRUCTURE_RECEIPT_20260811.json`.
+> PCF8 is frozen with only bounded owner-permission restoration inside the
+> validated private scratch root. The tokenizer warning remains disclosed and
+> tokenizer semantics are unchanged. Require one no-model H100 read-only-tree
+> cleanup canary, then follow only
+> `docs/research/SHOHIN_PCF8_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+
+
+> **PCF1 TERMINAL INFRASTRUCTURE FAILURE; NO REPLAY, RETRY, OR SUCCESSOR —
+> 2026-08-11:** The surviving qualified claim is the dense
+> same-family source-only draft -> trained revision -> learned
+> whole-trajectory commit release: Qwen3.5-9B scores `383/538` versus
+> unchanged `316/538` (`374/538` revision). PCF1 freezes exactly one
+> source-disjoint confirmation on
+> `mistralai/Ministral-3-8B-Reasoning-2512@81eaece...d894`, with matched
+> unchanged/self-refinement controls and one atomic CPU assessor open over
+> all arms. Its exact 1,289-row conjunctive gate is in
+> `docs/research/SHOHIN_PCF1_MINISTRAL_PUBLICATION_CONFIRMATION.md`.
+> The single graph was submitted exactly once as
+> `pcf1_ministral_8264817_r1`, from commit
+> `8264817827d29795d107ff132e85950eb0c34163` and runtime-manifest SHA-256
+> `f6d5ebe59d7d889f8d804cec05ba8c1895f7ae1c180997a5069075ffb65f67cd`.
+> Root job `750976` was `FAILED 2:0` on `evc21` after one second with
+> `pcf1: SLURM_TMPDIR is required for offline caches`. No model/H100 work,
+> scientific gate, score, or protected-data open occurred. All 28 downstream
+> jobs `750977--751004` were explicitly cancelled, the queue is empty, and
+> every job records zero restarts. Formal result is `null`; remote terminal
+> receipt SHA-256 is
+> `366ebd73e13d1f944b1a233bf86c87440a23295ecdc4caa4b045462a8d3dbef0`.
+> This is preserved terminal infrastructure evidence, not a wrong answer.
+> The frozen contract forbids replay or retry, and no successor is authorized.
+>
+> The storage blocker is closed: settled Lustre use is
+> `838,918,136 KiB / 768,478`, leaving
+> `220,143,624 KiB / 241,522` of hard-limit headroom. The exact ledger is
+> `docs/research/SHOHIN_PCF1_STORAGE_RECLAMATION_20260811.md`; its authorized
+> closed-lane removals are permanent and not locally recoverable, and an
+> independent postcheck found every protected anchor present. Newton sandbox
+> source `7b1eb83fb5546fd3c782cccef9a3254b90657b36cc90c023184136a6ed196523`
+> independently passes all `40/40` adversarial probes; receipt SHA-256 is
+> `f1423aaed0d4b764f81f48a0289d4122b755955f9d961db50b45f485130df070`.
+> Config/policy/Python-descriptor SHA-256 values are
+> `4e3aaf268e3d16ba900b467c543ac074c9c738f5dee05d0d8b22f0366ae99a33`,
+> `f27124db3d134a1e3dbde06958ab03220cd5e9585abcc356baa6a49d9edd1f1e`,
+> and `025190cde6346cdbebfc04a06650f4813e2e8ead5350eec55c0b460caabb362f`.
+> Prior libc-pin, memfd-ABI, UTF-8-descriptor, direct-PID-1 CPU-exit-`137`, and
+> root-writability/safe-import admissions failed closed, emitted no receipt,
+> and ran no scientific/model/H100 work; their infrastructure evidence is
+> preserved. Both storage and sandbox gates remain PASS.
+>
+> The sole gate is immutable: unchanged >= `387/1289` with every domain
+> nonzero; revision >= unchanged + 65 and >= self-refinement + 39 with no
+> per-domain loss against either; commit >= revision + 13 with >=95% retention
+> of both revision-correct and unchanged-correct identities and no per-domain
+> loss against revision; and exact `1289/1289` custody/order, zero candidate
+> assessment truncation, zero malformed selections, complete hashes and
+> accounting, and zero holdout/public/product access. This gate was never
+> reached and emitted no formal PASS or FAIL; its result is `null`. The
+> terminal infrastructure outcome permits no replay, retry, successor, or
+> protected split. NDR1, KCR1, VTE1, the natural-language microcode bridge,
+> Q35 edit cascade, and small-OLMoE variants remain immutable closed lanes.
+
 > **PHASE CLOSED AFTER VTE1 CONJUNCTIVE FAIL — 2026-08-11:** Frozen fit
 > `750791`, source-disjoint shards `750841--750844`, and atomic merge `750845`
 > completed. VTE1 scores `1285/1566 = 82.0562%` semantic correctness versus

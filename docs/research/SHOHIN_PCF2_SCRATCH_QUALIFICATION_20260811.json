@@ -1,0 +1,83 @@
+{
+  "schema": "shohin-pcf2-scratch-qualification-v1",
+  "status": "pass",
+  "date": "2026-08-11",
+  "source_commit": "700abc41ee279269583049224fec55c2a96cd5e2",
+  "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf2_runtime_700abc4_r1",
+  "runtime_manifest_sha256": "174ff47d984956f9bc7bc3bc5062119dd6c80307947734c28a54bd36fa4f744d",
+  "scientific_work": false,
+  "model_opened": false,
+  "data_opened": false,
+  "assessor_opened": false,
+  "canaries": [
+    {
+      "role": "cpu",
+      "job_id": 751649,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 3,
+      "node": "evc21",
+      "restarts": 0,
+      "alloc_tres": "billing=2,cpu=2,mem=16G,node=1",
+      "receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf2_scratch_700abc4_r1/cpu.json",
+      "receipt_sha256": "f39f2fb873efb59875a349bee063d2c549b8f467e263f6d8dc49d0f350c8e48e",
+      "scratch_path": "/tmp/pcf1-751649-scalar",
+      "scratch_available_bytes": 343608287232,
+      "scratch_available_inodes": 200861698,
+      "cleanup_verified_in_job": true
+    },
+    {
+      "role": "h100",
+      "job_id": 751650,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 5,
+      "node": "evc23",
+      "restarts": 0,
+      "alloc_tres": "billing=4,cpu=2,gres/gpu=1,mem=16G,node=1",
+      "gpu_name": "NVIDIA H100 PCIe",
+      "receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/pcf2_scratch_700abc4_r1/h100.json",
+      "receipt_sha256": "5d206121d65b68767626118d7ea0bfb3f1ad3a0fcab6fab80e62dc111efd7b32",
+      "scratch_path": "/tmp/pcf1-751650-scalar",
+      "scratch_available_bytes": 183433740288,
+      "scratch_available_inodes": 358276564,
+      "cleanup_verified_in_job": true
+    }
+  ],
+  "independent_postchecks": [
+    {
+      "job_id": 751652,
+      "node": "evc21",
+      "path": "/tmp/pcf1-751649-scalar",
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "absent": true
+    },
+    {
+      "job_id": 751653,
+      "node": "evc23",
+      "path": "/tmp/pcf1-751650-scalar",
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "absent": true
+    }
+  ],
+  "diagnostic_failure": {
+    "job_id": 751651,
+    "state": "FAILED",
+    "exit_code": "2:0",
+    "elapsed_seconds": 0,
+    "node": "evc21",
+    "cause": "malformed shell quoting in the first read-only absence check",
+    "scientific_work": false,
+    "model_opened": false,
+    "data_opened": false,
+    "assessor_opened": false,
+    "superseded_by_successful_postcheck_job": 751652
+  },
+  "minimum_bytes": 137438953472,
+  "minimum_inodes": 150000,
+  "both_canaries_passed": true,
+  "both_scratch_paths_absent_after_jobs": true,
+  "scientific_submission_authorized": true
+}
