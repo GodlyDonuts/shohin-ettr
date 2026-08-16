@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=192G
 #SBATCH --gres=gpu:nvidia_h100_pcie:1
-#SBATCH --time=01:15:00
+#SBATCH --time=03:00:00
 #SBATCH --no-requeue
 #SBATCH --output=logs/mixtral_8x22b_multinode_tp_mechanics_%j.out
 #SBATCH --error=logs/mixtral_8x22b_multinode_tp_mechanics_%j.err
@@ -55,7 +55,7 @@ printf 'rank=%s\njob=%s\nnode=%s\ngpu=%s\n' \
 chmod 400 "$temporary"
 mv "$temporary" "$admitted"
 
-for _ in $(seq 1 900); do
+for _ in $(seq 1 7200); do
   [[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" \
     && -s "$coord/rank-2.admitted" && -s "$coord/rank-3.admitted" ]] && break
   sleep 1
