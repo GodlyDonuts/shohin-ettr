@@ -77,3 +77,32 @@ model-owned temporal-revision principle transfers across both family and
 scale: NVIDIA Nemotron at 120B total/12B active and Mistral Mixtral at 141B
 total/39B active. No scaling claim is made until both matched score artifacts
 close.
+
+## Automatic temporal-architecture continuation
+
+The first free H100 on `evc31` passed job `760728` in 30 seconds: PyTorch saw
+one `NVIDIA H100 PCIe` with 85,017,624,576 bytes, completed an 8192-square
+FP16 GEMM with finite output, and observed 816 GiB free on the node-local
+filesystem. Because the scientific jobs require both devices, this single-GPU
+pass does not by itself admit the node. Dual-H100 qualification `760729` is
+dependency-staged after the existing one-GPU occupant `760640`; CPU custodian
+`760730` will re-parse the exact two-device result and remove only `evc31`
+from the ten Super/Mixtral GPU-job exclusion lists if the dual test completes
+`0:0` with zero restarts. A failed qualification cannot alter the lists.
+
+The result-dependent temporal promotion path was also activated in place:
+
+- selector `760596` waits for scores `760388` and `760571`;
+- launcher `760598` waits for selector `760596` and can create the exact
+  owner/draft/aligned-revision/temporal-gate graph only for the selected host.
+
+Before release, selector runtime manifest
+`7d1de76fcd44b63de94d8ff517134bf5bb054a033eeeec3af978a566265374ca`
+and launcher runtime manifest
+`08db2f1282a406e8d7dd3ee9c5691294b071992e1d4fa24426a0c433b96398dd`
+passed full manifest replay; their promotion, run, and automation roots were
+absent. The exact selector/launcher/analyzer/renderer suite passed 37 tests.
+This makes the staged work an end-to-end architecture transfer rather than a
+plain host-baseline comparison: matched revision screens choose the stronger
+large family, and only then does that host receive the 35B-leading temporal
+causal architecture.

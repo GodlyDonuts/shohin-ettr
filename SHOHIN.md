@@ -10,7 +10,9 @@ Super-120B-A12B and Mixtral-141B-A39B graphs were selectively released without
 duplication or scientific-byte changes. Mechanics roots `760382` and `760565`
 are eligible for the first healthy two-H100 capacity; all matched controls,
 scores, joint curve analysis, and publication rendering remain dependency
-staged. A fresh dual- and two-single-GPU qualification proved that scheduler-
+staged. Result-dependent selector `760596` and launcher `760598` are also
+released: after both host scores close, they select the stronger family and
+launch its exact owner/draft/revision/temporal-gate transfer. A fresh dual- and two-single-GPU qualification proved that scheduler-
 idle `evc33` still hangs before CUDA results, so it remains excluded. Exact
 receipt: `docs/research/SHOHIN_UPWARD_MOE_RESUMPTION_20260816.md`.
 
