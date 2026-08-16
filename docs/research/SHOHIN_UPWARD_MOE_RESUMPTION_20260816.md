@@ -221,3 +221,30 @@ and installed read-only on Newton as
 digest is `f6e58644b11606ae345357c98a3fbb9d1de875d115339c475a7b07f02fe51f2a`;
 all 206 manifest members replayed and the installed tree contains 207 regular
 files, zero symlinks, and zero writable members.
+
+## TP4 first-attempt infrastructure disposition
+
+The fourth mechanics rank was admitted at 2026-08-16 06:25 EDT, completing
+the four independent one-H100 allocation set. Jobs `760739`--`760742`
+then failed together during the first NCCL object broadcast, before model
+construction, training data, or benchmark access. Dynamic rendezvous assigned
+process ranks by arrival rather than the frozen `WORLD_RANK`: jobs
+`760739` and `760742` became ranks 1 and 0 on the same host, `evc31`.
+Both reported
+`nvmlDeviceGetHandleByPciBusId() failed: Not Found`; the remote ranks then
+reported connection closure. The jobs had zero restarts and produced no
+mechanics report or checkpoint. Their stderr SHA-256 values, in job order,
+are:
+
+- `d514f43a7c0fd2282b0bb2a5f94fc18e3882012f8d1f1c950cc6c4a9ebc3fef2`;
+- `3bcf053bc5118b75d1ea157baf5664a0c63b4e049ea6de23a1df44134e32b84a`;
+- `5747337279b4919923b046a1d36a22ce6078c2dffb63c17453c6677a7082ada5`;
+- `65c52cee3912d4653fae7977addb3f0faf35ee4c93bd90d610e422b6f3bd3d88`.
+
+The bounded infrastructure repair retains four separate one-H100 requests and
+InfiniBand/NCCL TP4. It replaces arrival-ordered elastic rendezvous with
+static `node_rank` plus `master_addr`/`master_port`, and assigns each
+rank a disjoint pool of eligible H100 nodes. This preserves opportunistic
+single-GPU admission while making same-host collision impossible. The same
+repair is applied to mechanics, revision training, and matched evaluation;
+scientific data, prompts, updates, controls, and scoring remain unchanged.

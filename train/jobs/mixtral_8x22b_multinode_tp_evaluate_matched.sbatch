@@ -90,9 +90,8 @@ output="$RUN_ROOT/candidates"
   --nnodes=4 \
   --nproc_per_node=1 \
   --node_rank="$WORLD_RANK" \
-  --rdzv_backend=c10d \
-  --rdzv_endpoint="$master_node:$master_port" \
-  --rdzv_id="shohin-mixtral-tp4-eval-${master_job}" \
+  --master_addr="$master_node" \
+  --master_port="$master_port" \
   "$RUNTIME/train/hf_mixtral_8x22b_multinode_tp_evaluate_matched.py" \
   --model-root "$MODEL_ROOT" \
   --model-manifest "$MODEL_MANIFEST" \

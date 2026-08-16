@@ -66,16 +66,13 @@ master_node=$(awk -F= '$1 == "node" {print $2}' "$coord/rank-0.admitted")
 master_job=$(awk -F= '$1 == "job" {print $2}' "$coord/rank-0.admitted")
 [[ "$master_node" == evc[0-9]* && "$master_job" =~ ^[0-9]+$ ]]
 master_port=$((30000 + master_job % 20000))
-rdzv_id="shohin-mixtral-tp-${master_job}"
-
 output="$RUN_ROOT/mechanics.json"
 "$PYTHON" -P -s -B -m torch.distributed.run \
   --nnodes=4 \
   --nproc_per_node=1 \
   --node_rank="$WORLD_RANK" \
-  --rdzv_backend=c10d \
-  --rdzv_endpoint="$master_node:$master_port" \
-  --rdzv_id="$rdzv_id" \
+  --master_addr="$master_node" \
+  --master_port="$master_port" \
   "$RUNTIME/train/hf_mixtral_8x22b_multinode_tp_mechanics.py" \
   --model-root "$MODEL_ROOT" \
   --model-manifest "$MODEL_MANIFEST" \

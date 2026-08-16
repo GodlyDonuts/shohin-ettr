@@ -39,6 +39,12 @@ exports+=",MODEL_MANIFEST_SHA256=$MODEL_MANIFEST_SHA256"
 exports+=",MECHANICS_REPORT=$MECHANICS_REPORT,DATA=$DATA,RUN_ROOT=$RUN_ROOT"
 
 jobs=()
+rank_node_pools=(
+  "evc22,evc27,evc35,evc39,evc44"
+  "evc23,evc28,evc36,evc40,evc45"
+  "evc24,evc30,evc41,evc47,evc49"
+  "evc25,evc31,evc42,evc48"
+)
 cleanup_partial_submission() {
   if (( ${#jobs[@]} > 0 && ${#jobs[@]} < 4 )); then
     scancel "${jobs[@]}" 2>/dev/null || true
@@ -47,6 +53,7 @@ cleanup_partial_submission() {
 trap cleanup_partial_submission EXIT
 for rank in 0 1 2 3; do
   job=$(sbatch --parsable --dependency="$dependency" \
+    --nodelist="${rank_node_pools[$rank]}" \
     --export="$exports,WORLD_RANK=$rank" "$worker")
   [[ "$job" =~ ^[0-9]+$ ]]
   jobs+=("$job")
