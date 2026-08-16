@@ -248,3 +248,16 @@ rank a disjoint pool of eligible H100 nodes. This preserves opportunistic
 single-GPU admission while making same-host collision impossible. The same
 repair is applied to mechanics, revision training, and matched evaluation;
 scientific data, prompts, updates, controls, and scoring remain unchanged.
+
+The repair is packaged at source commit
+`1ec7390d8bdfd443d67993508c2cd939a19e1116` in immutable runtime
+`upward_moe_multinode_tp_runtime_1ec7390d_r1`, whose `SHA256SUMS`
+digest is
+`b12dec75887596318d779e8fa04b7a05228a04fa9b56e86002fb1c8a52034022`.
+Fresh mechanics jobs `760766`--`760769` use four mutually disjoint
+eligible-node pools. Dependency-staged training jobs are
+`760770`--`760773`; matched-evaluation jobs are
+`760774`--`760777`; score, scaling analysis, and renderer jobs are
+`760778`, `760779`, and `760780`. The eleven dead dependents of the
+failed attempt were cancelled after their terminal dependency state was
+recorded; no healthy job was cancelled.
