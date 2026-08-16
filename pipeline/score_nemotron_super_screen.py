@@ -41,8 +41,9 @@ def load_candidates(
     identities: set[str],
     *,
     candidate_schema: str = CANDIDATE_SCHEMA,
+    shards: int = SHARDS,
 ) -> dict[str, dict[str, Any]]:
-    if arm not in ARMS or len(paths) != SHARDS:
+    if arm not in ARMS or shards < 1 or len(paths) != shards:
         raise NemotronSuperScoreError("candidate shard geometry differs")
     candidates: dict[str, dict[str, Any]] = {}
     for path in paths:
@@ -105,10 +106,14 @@ def run(
     host: str = "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
     total_parameters: int = 120_000_000_000,
     active_parameters: int = 12_000_000_000,
+    rows: int = ROWS,
+    shards: int = SHARDS,
 ) -> dict[str, Any]:
+    if rows < 1 or shards < 1:
+        raise NemotronSuperScoreError("score geometry differs")
     if args.output.exists() or args.output.is_symlink():
         raise NemotronSuperScoreError("score output exists")
-    assessors = load_assessors(args.assessors, ROWS)
+    assessors = load_assessors(args.assessors, rows)
     identities = set(assessors)
     paths = {arm: getattr(args, f"{arm}_candidates") for arm in ARMS}
     candidates = {
@@ -117,6 +122,7 @@ def run(
             paths[arm],
             identities,
             candidate_schema=candidate_schema,
+            shards=shards,
         )
         for arm in ARMS
     }
@@ -157,12 +163,12 @@ def run(
         )
         arm_reports[arm] = {
             "correct": correct,
-            "total": ROWS,
-            "accuracy": correct / ROWS,
+            "total": rows,
+            "accuracy": correct / rows,
             "gain_over_unchanged_count": correct - unchanged_correct,
             "gain_over_unchanged_percentage_points": 100.0
             * (correct - unchanged_correct)
-            / ROWS,
+            / rows,
             "gain_over_self_refinement_count": correct - self_correct,
             "unchanged_correct_retained": retained,
             "unchanged_correct_retention": (
@@ -195,8 +201,8 @@ def run(
         "host": host,
         "total_parameters": total_parameters,
         "active_parameters": active_parameters,
-        "rows": ROWS,
-        "shards_per_arm": SHARDS,
+        "rows": rows,
+        "shards_per_arm": shards,
         "assessors_sha256": sha256_file(args.assessors),
         "sandbox_receipt_sha256": sandbox_sha256,
         "sandbox_probe_sha256": sandbox.get("probe_sha256"),

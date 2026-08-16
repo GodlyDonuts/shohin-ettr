@@ -110,7 +110,7 @@ def test_matched_evaluation_loads_once_and_emits_existing_score_layout() -> None
     assert 'for arm in ("unchanged", "self_refinement")' in EVALUATION
     assert 'arm="revision"' in EVALUATION
     assert "MixtralRevisionModel(backbone)" in EVALUATION
-    assert "for shard_index in range(SHARDS)" in EVALUATION
+    assert "for shard_index in range(shards)" in EVALUATION
     assert 'f"shard_{shard_index:02d}"' in EVALUATION
     assert '"schema": CANDIDATE_SCHEMA' in EVALUATION
     assert '"generation_mode": "greedy"' in EVALUATION
@@ -124,3 +124,17 @@ def test_matched_evaluation_is_four_independent_dependency_staged_jobs() -> None
     assert "for rank in 0 1 2 3" in EVAL_SUBMIT
     assert 'dependency="afterok"' in EVAL_SUBMIT
     assert 'sbatch --parsable --dependency="$dependency"' in EVAL_SUBMIT
+
+
+def test_matched_evaluation_admits_exact_screen_and_confirmation_geometries() -> None:
+    assert "VALIDATION_ROWS = 1023" in EVALUATION
+    assert "VALIDATION_SHARDS = 16" in EVALUATION
+    assert (
+        '"98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778"'
+        in EVALUATION
+    )
+    assert '"split": "external_validation_confirmation"' in EVALUATION
+    assert "256:4|1023:16" in EVAL_WORKER
+    assert "256:4|1023:16" in EVAL_SUBMIT
+    assert '[[ ${#draft_paths[@]} -eq "$shard_count" ]]' in EVAL_SUBMIT
+    assert "EXPECTED_ROWS=$expected_rows,SHARD_COUNT=$shard_count" in EVAL_SUBMIT

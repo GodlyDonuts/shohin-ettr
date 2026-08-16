@@ -22,8 +22,14 @@ done
 [[ ! -e "$RUN_ROOT" && ! -L "$RUN_ROOT" ]]
 [[ "$RUNTIME_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]]
 [[ "$MODEL_MANIFEST_SHA256" =~ ^[0-9a-f]{64}$ ]]
+expected_rows=${EXPECTED_ROWS:-256}
+shard_count=${SHARD_COUNT:-4}
+case "$expected_rows:$shard_count" in
+  256:4|1023:16) ;;
+  *) printf 'evaluation geometry differs\n' >&2; exit 2 ;;
+esac
 IFS=: read -r -a draft_paths <<< "$DRAFT_CANDIDATES"
-[[ ${#draft_paths[@]} -eq 4 ]]
+[[ ${#draft_paths[@]} -eq "$shard_count" ]]
 for path in "${draft_paths[@]}"; do
   [[ "$path" == /* ]]
 done
@@ -44,6 +50,7 @@ exports+=",MODEL_ROOT=$MODEL_ROOT,MODEL_MANIFEST=$MODEL_MANIFEST"
 exports+=",MODEL_MANIFEST_SHA256=$MODEL_MANIFEST_SHA256"
 exports+=",MECHANICS_REPORT=$MECHANICS_REPORT,REVISION_CHECKPOINT=$REVISION_CHECKPOINT"
 exports+=",SOURCE=$SOURCE,DRAFT_CANDIDATES=$DRAFT_CANDIDATES,RUN_ROOT=$RUN_ROOT"
+exports+=",EXPECTED_ROWS=$expected_rows,SHARD_COUNT=$shard_count"
 
 jobs=()
 cleanup_partial_submission() {

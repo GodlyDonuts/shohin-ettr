@@ -23,6 +23,12 @@ for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 [[ "$WORLD_RANK" =~ ^[0-3]$ ]]
+expected_rows=${EXPECTED_ROWS:-256}
+shard_count=${SHARD_COUNT:-4}
+case "$expected_rows:$shard_count" in
+  256:4|1023:16) ;;
+  *) printf 'evaluation geometry differs\n' >&2; exit 2 ;;
+esac
 [[ -x "$PYTHON" ]]
 [[ -d "$RUNTIME" && ! -L "$RUNTIME" ]]
 [[ -d "$MODEL_ROOT" && ! -L "$MODEL_ROOT" ]]
@@ -95,7 +101,9 @@ output="$RUN_ROOT/candidates"
   --revision-checkpoint "$REVISION_CHECKPOINT" \
   --source "$SOURCE" \
   "${draft_args[@]}" \
-  --output-root "$output"
+  --output-root "$output" \
+  --expected-rows "$expected_rows" \
+  --shard-count "$shard_count"
 
 completed="$coord/rank-${WORLD_RANK}.completed"
 [[ ! -e "$completed" && ! -L "$completed" ]]
@@ -113,7 +121,7 @@ if [[ "$WORLD_RANK" == 0 ]]; then
   done
   all_completed
   for arm in unchanged self_refinement revision; do
-    for shard in 00 01 02 03; do
+    for shard in $(seq -w 0 $((shard_count - 1))); do
       [[ -f "$output/$arm/shard_$shard/candidates.jsonl" ]]
       [[ -f "$output/$arm/shard_$shard/report.json" ]]
     done

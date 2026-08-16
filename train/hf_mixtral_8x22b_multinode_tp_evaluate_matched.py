@@ -20,10 +20,10 @@ from hf_mixtral_8x22b_evaluate import (
     ARMS,
     CANDIDATE_SCHEMA,
     MAX_NEW_TOKENS,
-    ROWS,
+    ROWS as SCREEN_ROWS,
     SEED,
-    SHARDS,
-    SOURCE_SHA256,
+    SHARDS as SCREEN_SHARDS,
+    SOURCE_SHA256 as SCREEN_SOURCE_SHA256,
 )
 from hf_mixtral_8x22b_mechanics import EXPECTED_PACKAGES, verify_model_manifest
 from hf_mixtral_8x22b_multinode_tp_mechanics import (
@@ -69,6 +69,21 @@ from q36_upward_moe_mixtral_host import (
 )
 
 REPORT_SCHEMA = "shohin-mixtral-8x22b-bf16-tp4-matched-evaluation-v1"
+VALIDATION_ROWS = 1023
+VALIDATION_SHARDS = 16
+VALIDATION_SOURCE_SHA256 = (
+    "98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778"
+)
+DATASET_SPECS = {
+    (SCREEN_ROWS, SCREEN_SHARDS): {
+        "source_sha256": SCREEN_SOURCE_SHA256,
+        "split": "external_validation_screen",
+    },
+    (VALIDATION_ROWS, VALIDATION_SHARDS): {
+        "source_sha256": VALIDATION_SOURCE_SHA256,
+        "split": "external_validation_confirmation",
+    },
+}
 
 
 class MixtralDistributedEvaluationError(RuntimeError):
@@ -233,17 +248,21 @@ def _generate_arm(
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     rank, world = _require_world()
+    dataset = DATASET_SPECS.get((args.expected_rows, args.shard_count))
     if (
-        args.seed != SEED
-        or args.expected_rows != ROWS
-        or args.shard_count != SHARDS
+        dataset is None
+        or args.seed != SEED
         or args.batch_size != 1
         or args.output_root.exists()
         or args.output_root.is_symlink()
-        or sha256_file(args.source) != SOURCE_SHA256
-        or len(args.draft_candidates) != SHARDS
+        or sha256_file(args.source) != dataset["source_sha256"]
+        or len(args.draft_candidates) != args.shard_count
     ):
         raise MixtralDistributedEvaluationError("evaluation settings differ")
+    rows = args.expected_rows
+    shards = args.shard_count
+    source_sha256 = dataset["source_sha256"]
+    split = dataset["split"]
 
     mechanics = None
     model_receipt = None
@@ -263,7 +282,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if _package_versions() != EXPECTED_PACKAGES:
         raise MixtralDistributedEvaluationError("evaluation package versions differ")
 
-    sources = load_sources(args.source, ROWS)
+    sources = load_sources(args.source, rows)
     drafts = load_drafts(args.draft_candidates, sources)
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from transformers.distributed.configuration_utils import DistributedConfig
@@ -366,8 +385,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.output_root.mkdir(parents=True)
         for arm in ARMS:
             all_candidates = results[arm]["candidates"]
-            for shard_index in range(SHARDS):
-                start, end = shard_bounds(ROWS, shard_index, SHARDS, 1)
+            for shard_index in range(shards):
+                start, end = shard_bounds(rows, shard_index, shards, 1)
                 shard_dir = args.output_root / arm / f"shard_{shard_index:02d}"
                 shard_dir.mkdir(parents=True)
                 candidate_path = shard_dir / "candidates.jsonl"
@@ -378,7 +397,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "schema": REPORT_SCHEMA,
                     "status": "complete",
                     "arm": arm,
-                    "split": "external_validation",
+                    "split": split,
                     "model_revision": MODEL_REVISION,
                     "model_manifest_sha256": args.expected_model_manifest_sha256,
                     "model_receipt": model_receipt,
@@ -409,7 +428,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         TRAINABLE_PARAMETERS_PER_ROLE if arm == "revision" else 0
                     ),
                     "native_router_expert_trainables": 0,
-                    "source_sha256": SOURCE_SHA256,
+                    "source_sha256": source_sha256,
                     "draft_candidate_sha256s": (
                         [sha256_file(path) for path in args.draft_candidates]
                         if arm != "unchanged"
@@ -422,10 +441,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "seed": SEED,
                     "batch_size": 1,
                     "shard_index": shard_index,
-                    "shard_count": SHARDS,
+                    "shard_count": shards,
                     "row_start": start,
                     "row_end": end,
-                    "full_row_count": ROWS,
+                    "full_row_count": rows,
                     "candidates_output": str(candidate_path.resolve()),
                     "candidates_sha256": candidates_sha256,
                     "counters": {
@@ -459,8 +478,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--draft-candidates", type=Path, action="append", default=[])
     parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--expected-rows", type=int, default=ROWS)
-    parser.add_argument("--shard-count", type=int, default=SHARDS)
+    parser.add_argument("--expected-rows", type=int, default=SCREEN_ROWS)
+    parser.add_argument("--shard-count", type=int, default=SCREEN_SHARDS)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--seed", type=int, default=SEED)
     return parser.parse_args()

@@ -184,3 +184,22 @@ Every GPU stage is four independent single-H100 Slurm requests joined across
 nodes by NCCL/InfiniBand. Rank `760742` has a scheduler reservation for
 2026-08-16 06:24:30 EDT; its one-hour allocation still exceeds the measured
 post-rendezvous mechanics duration by more than threefold.
+
+## Unscheduled 1,023-row Mixtral confirmation preparation
+
+The future TP4 evaluator and scorer now admit a second, exact geometry without
+changing the immutable live runtime: 1,023 validation identities over sixteen
+output shards. The source SHA-256 is
+`98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778`;
+the matching assessor SHA-256 is
+`af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e`.
+Sixteen already-generated Qwen3.6 unchanged candidate shards provide exactly
+1,023 fixed model-owned drafts (fifteen 64-row shards and one 63-row shard).
+The evaluator accepts only `256:4` or `1023:16`, the validation scorer requires
+all sixteen shards for each matched arm, and all other geometries fail closed.
+
+This confirmation path is code-only preparation: no confirmation job has been
+submitted. Promotion remains conditional on the completed 256-row screen
+showing positive paired gain over unchanged and self-refinement, at least 95%
+unchanged-correct retention, and nonnegative correct-count delta in every
+domain.
