@@ -203,3 +203,10 @@ submitted. Promotion remains conditional on the completed 256-row screen
 showing positive paired gain over unchanged and self-refinement, at least 95%
 unchanged-correct retention, and nonnegative correct-count delta in every
 domain.
+
+The clean commit `34b238f8bcb83f697179a6dfbf7c5591b547d1be` was packaged
+and installed read-only on Newton as
+`upward_moe_multinode_tp_validation_runtime_34b238f8_r1`. Its `SHA256SUMS`
+digest is `f6e58644b11606ae345357c98a3fbb9d1de875d115339c475a7b07f02fe51f2a`;
+all 206 manifest members replayed and the installed tree contains 207 regular
+files, zero symlinks, and zero writable members.
