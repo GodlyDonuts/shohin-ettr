@@ -141,3 +141,28 @@ Jobs `760739`--`760741` are currently admitted on `evc31`, `evc48`, and
 `evc49`; independent request `760742` is accumulating the fourth rank. The
 three admitted jobs wait inside a two-hour rendezvous bound and perform no
 model or benchmark access until all four ranks are present.
+
+The remainder of this independent-H100 graph is dependency-staged, with no
+idle reservation and no duplicate model load inside evaluation:
+
+- revision-training ranks `760743`--`760746` wait for all four mechanics
+  ranks and preserve the fixed 9,655-presentation, 2,048-consumption,
+  256-update geometry (`revision_train.jsonl` SHA-256
+  `802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff`);
+- matched-evaluation ranks `760747`--`760750` wait for all four training ranks
+  and evaluate unchanged, self-refinement, and trained revision in that fixed
+  order from one TP4 BF16 model load over the same source-disjoint 256-row
+  screen (`screen_sources.jsonl` SHA-256
+  `f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9`);
+- CPU score job `760751` waits for all four evaluation ranks and is the only
+  job bound to the 256-row assessor board (SHA-256
+  `ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351`).
+
+The training runtime manifest is
+`716a6bd5bc6d79f498abe5b2812e13a37d6f97bd660d9b2ade78a6c71a8765b1`;
+the one-load matched-evaluation/scoring runtime manifest is
+`a89bc0f2ee55cc252b989a85cf03d0ff1a4931b235e5d4369f0b141c673e606e`.
+Every GPU stage is four independent single-H100 Slurm requests joined across
+nodes by NCCL/InfiniBand. Rank `760742` has a scheduler reservation for
+2026-08-16 06:24:30 EDT; its one-hour allocation still exceeds the measured
+post-rendezvous mechanics duration by more than threefold.
