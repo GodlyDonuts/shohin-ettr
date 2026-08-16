@@ -106,3 +106,38 @@ This makes the staged work an end-to-end architecture transfer rather than a
 plain host-baseline comparison: matched revision screens choose the stronger
 large family, and only then does that host receive the 35B-leading temporal
 causal architecture.
+
+## Independent-H100 tensor-parallel fallback
+
+The scheduler does not need to place every model shard on one node. A fresh
+fallback now accumulates independent one-H100 allocations and joins them with
+PyTorch native tensor parallelism over NCCL/InfiniBand. This path does not
+alter or cancel the frozen two-local-H100 graphs above and reads no benchmark
+rows during qualification.
+
+The first two-rank launch exposed two bounded infrastructure facts:
+
+- jobs `760731`/`760732` were admitted simultaneously on `evc31`/`evc48`,
+  proving separate one-H100 requests can form the distributed world; they
+  exited in two to three seconds because the pinned environment has no
+  `torchrun` console script. Runtime `6d08d7b9` repaired only the launcher to
+  use `python -m torch.distributed.run`;
+- jobs `760733`/`760734` then verified the full 281 GB model manifest,
+  initialized NCCL across the same two nodes, and loaded 317 of 507 weight
+  groups before both ranks reached 79.13 GiB. The exact traceback showed that
+  Transformers native TP had materialized BF16 shards rather than applying
+  BitsAndBytes NF4. Both failed after 601 seconds with zero restarts and before
+  model forward, training data, or benchmark access. Stderr hashes are
+  `779bf326c37556eb90f42198f5f1cfa4fab133bf9eeb8d0cafe60c8bda38c7c6`
+  and `69a16185ba1c7f667082aaa5e134fb16aa8bfa3b4476ab3e5c42a9f6ada40574`.
+
+The corrected geometry is explicit BF16 TP4: four independent one-H100 ranks,
+approximately 70.3 GB of immutable weight bytes per rank, identical controls
+and treatment precision, replicated Shohin trainables with gradient
+all-reduction, and native routers/experts frozen. Runtime manifest
+`931d64a5f6fcd0b874bba91449da8395cadde1c76281e048fe945dca93001a3f`
+binds source commit `ca994c07d6e1a89144ee185edd6059cabe991068`.
+Jobs `760739`--`760741` are currently admitted on `evc31`, `evc48`, and
+`evc49`; independent request `760742` is accumulating the fourth rank. The
+three admitted jobs wait inside a two-hour rendezvous bound and perform no
+model or benchmark access until all four ranks are present.
