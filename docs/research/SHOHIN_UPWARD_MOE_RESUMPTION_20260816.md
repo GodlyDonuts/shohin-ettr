@@ -157,6 +157,12 @@ idle reservation and no duplicate model load inside evaluation:
 - CPU score job `760751` waits for all four evaluation ranks and is the only
   job bound to the 256-row assessor board (SHA-256
   `ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351`).
+- CPU curve job `760752` waits for the new Mixtral score and preserved
+  Nemotron score, then combines those points with the immutable 35B Qwen
+  trained-revision screen (SHA-256
+  `dbf6caa1c4f0546c1d1d11d0490edfa5e74ae573613c2978577a7ea5ab1941bb`);
+  renderer `760753` waits for that analysis and emits the hash-manifested SVG
+  and point CSV under the separate TP4-BF16 publication root.
 
 The training runtime manifest is
 `716a6bd5bc6d79f498abe5b2812e13a37d6f97bd660d9b2ade78a6c71a8765b1`;
