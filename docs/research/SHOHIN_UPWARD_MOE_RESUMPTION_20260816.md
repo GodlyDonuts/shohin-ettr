@@ -201,6 +201,11 @@ digest and sorted candidate identity-set digest are
 `1f3dcee9c65ad4c5692e5cf34688b10e086acea225f19af61829e250526e190a`;
 the ordered sixteen-shard draft manifest digest is
 `369ff24cc56084da3b1f71cba0a947499f453e9a7d273a3d22960d38f1bd94ed`.
+The installed runtime's exact production `load_sources`/`load_drafts` path
+then replayed all 1,023 rows successfully; its sorted identity boundary is
+`002403ac11e894455191f0ed96650f2ea680faf7d49d6c9fddf5d99082c577cf`
+through
+`ffce49e1a2e81670eb44ac61e27dcc58787d8895aa7aa01f2757f67ec2f9201c`.
 The evaluator accepts only `256:4` or `1023:16`, the validation scorer requires
 all sixteen shards for each matched arm, and all other geometries fail closed.
 
