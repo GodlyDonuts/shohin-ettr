@@ -23,6 +23,7 @@ pipeline/capture_pcf1_environment.py
 pipeline/capture_q36_mtr_accounting.py
 pipeline/capture_q36_mtr_cluster_preflight.py
 pipeline/capture_q36_mtr_environment.py
+pipeline/capture_upward_moe_accounting.py
 pipeline/compare_q36_mtr.py
 pipeline/compare_q36_mtr_semantic_commits.py
 pipeline/compile_q36_mtr_plan.py
@@ -31,6 +32,7 @@ pipeline/dispatch_upward_moe_temporal.py
 pipeline/fetch_mixtral_8x22b.py
 pipeline/jobs/analyze_upward_moe_scaling.sbatch
 pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
+pipeline/jobs/capture_upward_moe_accounting.sbatch
 pipeline/jobs/fetch_mixtral_8x22b.sbatch
 pipeline/jobs/launch_upward_moe_temporal_promotion.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
