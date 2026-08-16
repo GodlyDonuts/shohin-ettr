@@ -17,6 +17,7 @@ from capture_q36_mtr_accounting import _allocated_gpus
 
 SCHEMA = "shohin-upward-moe-slurm-accounting-v1"
 FIELDS = (
+    "JobID",
     "JobIDRaw",
     "State",
     "ExitCode",
@@ -64,7 +65,7 @@ def _parse_sacct(value: str) -> dict[str, dict[str, str]]:
                 f"sacct field count differs on line {number}"
             )
         record = dict(zip(FIELDS, fields, strict=True))
-        job_id = record["JobIDRaw"]
+        job_id = record["JobID"]
         if job_id in records:
             raise UpwardMoEAccountingError("duplicate sacct allocation")
         records[job_id] = record
@@ -157,6 +158,7 @@ def capture(
         stages.setdefault(stage, []).append(
             {
                 "job_id": job_id,
+                "job_id_raw": row["JobIDRaw"],
                 "state": state,
                 "exit_code": row["ExitCode"],
                 "elapsed_seconds": elapsed,

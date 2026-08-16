@@ -16,12 +16,12 @@ def _runner(text: str):
     return run
 
 
-def _row(job: str, elapsed: int, gpu: int = 1) -> str:
+def _row(job: str, elapsed: int, gpu: int = 1, raw_job: str | None = None) -> str:
     tres = "billing=16,cpu=16,mem=192G,node=1"
     if gpu:
         tres += f",gres/gpu={gpu},gres/gpu:nvidia_h100_pcie={gpu}"
     return (
-        f"{job}|COMPLETED|0:0|{elapsed}|{tres}|normal|evc35|0|"
+        f"{job}|{raw_job or job}|COMPLETED|0:0|{elapsed}|{tres}|normal|evc35|0|"
         "2026-08-17T20:00:00|2026-08-17T20:01:00"
     )
 
@@ -98,6 +98,21 @@ def test_rejects_missing_or_duplicate_job_coverage(tmp_path: Path) -> None:
             output=tmp_path / "accounting.json",
             runner=_runner(_row("101", 60)),
         )
+
+
+def test_array_task_identity_uses_stable_job_id_not_internal_raw_id(
+    tmp_path: Path,
+) -> None:
+    result = capture(
+        host="Nemotron-Super",
+        source_commit="b" * 40,
+        allocations=["evaluation,760385_0,2"],
+        output=tmp_path / "accounting.json",
+        runner=_runner(_row("760385_0", 90, 2, raw_job="760900")),
+    )
+    record = result["stages"]["evaluation"][0]
+    assert record["job_id"] == "760385_0"
+    assert record["job_id_raw"] == "760900"
 
 
 def test_job_is_cpu_only_runtime_bound_and_nonrequeueing() -> None:
