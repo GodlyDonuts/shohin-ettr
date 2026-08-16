@@ -295,3 +295,11 @@ publishing per-stage elapsed time and charged H100-hours. Runtime
 Renderer `760780` now waits for both the scientific analysis and this
 accounting receipt, so the publication graph cannot close without measured
 compute evidence.
+
+Nemotron-Super now has the same measured-compute boundary. CPU job `760786`
+waits for score `760388` and requires exact accounting for mechanics
+`760382` (two H100s), training `760384` (two H100s), all twelve
+two-H100 evaluation array tasks `760385_0`--`760387_3`, and the CPU
+scorer. Renderer `760780` also waits for this receipt. Consequently, the
+cross-family figure requires complete scientific scores and exact
+zero-restart H100 accounting for both 120B Nemotron-Super and 141B Mixtral.
