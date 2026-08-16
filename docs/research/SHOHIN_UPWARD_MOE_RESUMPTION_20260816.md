@@ -269,3 +269,17 @@ four pending mechanics jobs have a common scheduler eligibility time of
 H100 becoming available before that boundary. This is admission coordination
 only: each rank remains an independent one-H100 job and no GPU is reserved
 before it has bound TP4 mechanics work.
+
+A CPU-only independent-allocation canary then exercised the exact static
+four-node topology before the H100 window. Jobs `760781`--`760784` ran on
+`evc35`, `evc45`, `evc24`, and `evc42`, respectively. They formed
+fixed ranks 0--3, completed a cross-node Gloo all-gather in 2.22 seconds, and
+all exited `COMPLETED|0:0` after seven seconds with zero restarts. The
+collective digest is
+`f4ba4cf0c0bc054c9933e2cbdd386280b6751cdf564703852c93972140fa2b37`;
+the immutable result receipt SHA-256 is
+`f4010b080ca4369ee24787895c8f0deb3c2c3a423c8ee2333d0e347a9b1e4f98`.
+All eight stdout/stderr files are empty, the canary read zero scientific
+rows, and it requested no GPU. Static global-rank and hostname routing are
+therefore qualified independently; NCCL and native-TP model mechanics remain
+the live H100 qualification performed by `760766`--`760769`.
