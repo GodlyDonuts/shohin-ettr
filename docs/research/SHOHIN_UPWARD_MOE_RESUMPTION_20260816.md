@@ -261,3 +261,11 @@ eligible-node pools. Dependency-staged training jobs are
 `760778`, `760779`, and `760780`. The eleven dead dependents of the
 failed attempt were cancelled after their terminal dependency state was
 recorded; no healthy job was cancelled.
+
+To prevent partial-world timeout while retaining separate allocations, the
+four pending mechanics jobs have a common scheduler eligibility time of
+2026-08-17 20:00 EDT and exact distinct nodes: `760766=evc35`,
+`760767=evc45`, `760768=evc24`, and `760769=evc42`. Each node has an
+H100 becoming available before that boundary. This is admission coordination
+only: each rank remains an independent one-H100 job and no GPU is reserved
+before it has bound TP4 mechanics work.
