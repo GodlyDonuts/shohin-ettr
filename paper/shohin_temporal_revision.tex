@@ -259,6 +259,18 @@ Selective commitment restores 16/22 code and improves all domains over
 unchanged, but scores only 287 and retains 137/147 (93.2\%), three cases below
 the frozen 95\% floor. The formal selective-commit gate therefore fails.
 
+An identity-joined replay of all 1,023 scored candidate triples shows that the
+code failure is systematic. Every revision completion contains a boxed answer
+and revision emits only 9.99 tokens on average (median 9), versus 436.13 for
+unchanged and 296.84 for self-refinement. On the 22 MBPP rows, revision emits a
+median of seven tokens and no completion contains a code fence, function
+definition, or return statement. Unchanged produces 22/22 fences, 21/22
+definitions, and 22/22 returns. Thus the learned surface acquires an aggressive
+answer-extraction mode that helps answer-valued domains but violates executable
+output modality. Commitment restores code by selecting unmodified trajectories,
+localizing the next architecture problem to model-owned output-contract
+preservation rather than merely more reasoning capacity.
+
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{shohin_temporal_revision_evidence.pdf}

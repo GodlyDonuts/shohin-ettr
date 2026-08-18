@@ -336,6 +336,20 @@ therefore a formal failure. The measured result is a strong, replicated
 cross-family capability transfer plus a precisely localized retention/code
 failure, not a universal-win claim.
 
+The code failure is systematic rather than noisy. An identity-joined replay
+of all 1,023 already-scored candidate triples finds that every revision
+completion contains a boxed answer and that revision emits only `9.99` tokens
+on average (`9` median), versus `436.13` for unchanged and `296.84` for
+self-refinement. On the 22 MBPP rows, revision emits a median of `7` tokens:
+none contains a code fence, function definition, or return statement. The
+unchanged arm has `22/22` fences, `21/22` definitions, and `22/22` returns;
+self-refinement has `22/22`, `19/22`, and `21/22`. The learned surface has
+therefore acquired an aggressive answer-extraction mode that helps
+answer-valued logic and mathematics but violates executable-output modality.
+Commitment restores code by selecting unmodified trajectories. This localizes
+the next architecture problem to model-owned output-contract preservation,
+not merely more reasoning capacity.
+
 ## Scale boundary as of 2026-08-18
 
 | Host | Total / active parameters | Family | Status |
@@ -373,12 +387,13 @@ high-GPU measurement rather than a claimed result.
 | Mixtral screen evidence report | `618b40e658aa2af1168ac9b1b15114b4dca0aa2c96740e81c8ae224536d2958f` |
 | Mixtral 1,023-row raw score | `7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8` |
 | Mixtral validation evidence report | `9d98bff6cc3e244ed175c1ffe3574944ba326ef05b2925ab658eed5f317529b3` |
+| Mixtral revision-format analysis | `96f91983be41cd63a7007c05681b02efc96730b81ecb0ca8575afe4341f3b25d` |
 | GPT-OSS mechanics/screen launch receipt | `6107a5b4dd4298dabf3e5889d65df89b1b1e25c2df526c1772007773e987e083` |
 | publication architecture figure (SVG) | `ce1db3018e78d967be74c04343c7010863deb3a3135e08c5c58be66270e06e4c` |
 | publication architecture figure (PDF) | `13adc7fc6ecbcd163dba02c9153311cb566facbd604da445645a6c132429141e` |
 | publication evidence figure (SVG) | `2594a40af43989e662b8f86d2673a71530c81d38be5c86cee384a0aeab07a379` |
 | publication evidence figure (PDF) | `86484c12a361efbd37edef0bcb1a37f2aac98963dd71a7c0597d2f6656bc1383` |
-| deterministic five-page preprint (PDF) | `2d2452e72d047046a22d8c0ffdc4660679fce4387ffdf8bf5577800e8e6dc8f3` |
+| deterministic five-page preprint (PDF) | `ee1ffd18b72b4787537071f11cdb7c5e8f1098baf56a2d7f20620c7c8ab69203` |
 
 The deployable 9B release binds:
 

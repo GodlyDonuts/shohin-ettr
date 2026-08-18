@@ -1,0 +1,189 @@
+{
+  "claim_boundary": {
+    "existing_scored_artifacts_only": true,
+    "new_candidate_scoring": 0,
+    "new_model_execution": 0,
+    "universal_revision_claim": false
+  },
+  "date": "2026-08-18",
+  "finding": {
+    "architecture_implication": "Large-host revision needs model-owned output-contract preservation; aggregate capability and conservative modality retention are distinct.",
+    "interpretation": "The revision surface learned aggressive answer extraction across all domains. That compression helps logic and mathematics but systematically violates the executable-code output contract.",
+    "revision_all_rows_boxed": true,
+    "revision_mbpp_code_fenced": 0,
+    "revision_mbpp_correct": 0,
+    "revision_mbpp_function_definitions": 0,
+    "revision_mbpp_median_generated_tokens": 7.0,
+    "revision_mbpp_rows": 22,
+    "unchanged_mbpp_code_fenced": 22,
+    "unchanged_mbpp_correct": 16,
+    "unchanged_mbpp_function_definitions": 21
+  },
+  "metrics": {
+    "revision": {
+      "all": {
+        "boxed_completions": 1023,
+        "code_fenced_completions": 0,
+        "correct": 448,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 9.986314760508309,
+        "generated_tokens_median": 9,
+        "generated_tokens_sum": 10216,
+        "return_statement_completions": 0,
+        "rows": 1023,
+        "unique_completions": 319
+      },
+      "bbh_logic": {
+        "boxed_completions": 497,
+        "code_fenced_completions": 0,
+        "correct": 272,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 9.764587525150905,
+        "generated_tokens_median": 9,
+        "generated_tokens_sum": 4853,
+        "return_statement_completions": 0,
+        "rows": 497,
+        "unique_completions": 99
+      },
+      "math500": {
+        "boxed_completions": 504,
+        "code_fenced_completions": 0,
+        "correct": 176,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 10.113095238095237,
+        "generated_tokens_median": 8.0,
+        "generated_tokens_sum": 5097,
+        "return_statement_completions": 0,
+        "rows": 504,
+        "unique_completions": 225
+      },
+      "mbpp": {
+        "boxed_completions": 22,
+        "code_fenced_completions": 0,
+        "correct": 0,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 12.090909090909092,
+        "generated_tokens_median": 7.0,
+        "generated_tokens_sum": 266,
+        "return_statement_completions": 0,
+        "rows": 22,
+        "unique_completions": 9
+      }
+    },
+    "self_refinement": {
+      "all": {
+        "boxed_completions": 454,
+        "code_fenced_completions": 22,
+        "correct": 356,
+        "function_definition_completions": 19,
+        "generated_tokens_mean": 296.8426197458455,
+        "generated_tokens_median": 207,
+        "generated_tokens_sum": 303670,
+        "return_statement_completions": 29,
+        "rows": 1023,
+        "unique_completions": 1008
+      },
+      "bbh_logic": {
+        "boxed_completions": 262,
+        "code_fenced_completions": 0,
+        "correct": 224,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 171.6599597585513,
+        "generated_tokens_median": 116,
+        "generated_tokens_sum": 85315,
+        "return_statement_completions": 4,
+        "rows": 497,
+        "unique_completions": 482
+      },
+      "math500": {
+        "boxed_completions": 192,
+        "code_fenced_completions": 0,
+        "correct": 121,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 420.68055555555554,
+        "generated_tokens_median": 395.5,
+        "generated_tokens_sum": 212023,
+        "return_statement_completions": 4,
+        "rows": 504,
+        "unique_completions": 504
+      },
+      "mbpp": {
+        "boxed_completions": 0,
+        "code_fenced_completions": 22,
+        "correct": 11,
+        "function_definition_completions": 19,
+        "generated_tokens_mean": 287.8181818181818,
+        "generated_tokens_median": 241.0,
+        "generated_tokens_sum": 6332,
+        "return_statement_completions": 21,
+        "rows": 22,
+        "unique_completions": 22
+      }
+    },
+    "unchanged": {
+      "all": {
+        "boxed_completions": 203,
+        "code_fenced_completions": 22,
+        "correct": 147,
+        "function_definition_completions": 21,
+        "generated_tokens_mean": 436.1348973607038,
+        "generated_tokens_median": 411,
+        "generated_tokens_sum": 446166,
+        "return_statement_completions": 33,
+        "rows": 1023,
+        "unique_completions": 1023
+      },
+      "bbh_logic": {
+        "boxed_completions": 174,
+        "code_fenced_completions": 0,
+        "correct": 106,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 313.04426559356136,
+        "generated_tokens_median": 265,
+        "generated_tokens_sum": 155583,
+        "return_statement_completions": 6,
+        "rows": 497,
+        "unique_completions": 497
+      },
+      "math500": {
+        "boxed_completions": 29,
+        "code_fenced_completions": 0,
+        "correct": 25,
+        "function_definition_completions": 0,
+        "generated_tokens_mean": 565.9821428571429,
+        "generated_tokens_median": 570.0,
+        "generated_tokens_sum": 285255,
+        "return_statement_completions": 5,
+        "rows": 504,
+        "unique_completions": 504
+      },
+      "mbpp": {
+        "boxed_completions": 0,
+        "code_fenced_completions": 22,
+        "correct": 16,
+        "function_definition_completions": 21,
+        "generated_tokens_mean": 242.1818181818182,
+        "generated_tokens_median": 214.5,
+        "generated_tokens_sum": 5328,
+        "return_statement_completions": 22,
+        "rows": 22,
+        "unique_completions": 22
+      }
+    }
+  },
+  "schema": "shohin-mixtral-revision-format-analysis-v1",
+  "source": {
+    "candidate_file_receipts_sha256": "2198f2d2e26bb3dad73588916339fb2c06a67eaa3a4ea89c46ac73ef9954c609",
+    "candidate_files": 48,
+    "ordered_identity_replay": "pass",
+    "rows": 1023,
+    "score_schema": "shohin-mixtral-8x22b-selective-commit-validation-score-v1",
+    "score_sha256": "7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8",
+    "task_counts": {
+      "bbh_logic": 497,
+      "math500": 504,
+      "mbpp": 22
+    }
+  },
+  "status": "complete"
+}
