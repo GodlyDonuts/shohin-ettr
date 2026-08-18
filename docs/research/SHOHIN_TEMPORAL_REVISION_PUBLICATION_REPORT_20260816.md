@@ -378,6 +378,7 @@ high-GPU measurement rather than a claimed result.
 | publication architecture figure (PDF) | `13adc7fc6ecbcd163dba02c9153311cb566facbd604da445645a6c132429141e` |
 | publication evidence figure (SVG) | `2594a40af43989e662b8f86d2673a71530c81d38be5c86cee384a0aeab07a379` |
 | publication evidence figure (PDF) | `86484c12a361efbd37edef0bcb1a37f2aac98963dd71a7c0597d2f6656bc1383` |
+| deterministic five-page preprint (PDF) | `2d2452e72d047046a22d8c0ffdc4660679fce4387ffdf8bf5577800e8e6dc8f3` |
 
 The deployable 9B release binds:
 
