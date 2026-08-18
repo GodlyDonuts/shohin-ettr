@@ -14,9 +14,22 @@ def test_postcondition_uses_two_digit_shard_names() -> None:
 
 def test_validation_submitter_exports_only_each_groups_four_drafts() -> None:
     source = SUBMITTER.read_text(encoding="utf-8")
-    assert 'first_draft=$((group * 4))' in source
+    assert "first_draft=$((group * 4))" in source
     assert 'group_drafts=$(IFS=:; echo "${draft_paths[*]:first_draft:4}")' in source
-    assert '[[ ${#selected_drafts[@]} -eq 4 ]]' in source
-    assert '"${selected_drafts[$offset]}" == "${draft_paths[$((first_draft + offset))]}"' in source
-    assert 'DRAFT_CANDIDATES=$group_drafts' in source
-    assert 'DRAFT_CANDIDATES=$DRAFT_CANDIDATES' not in source
+    assert "[[ ${#selected_drafts[@]} -eq 4 ]]" in source
+    assert (
+        '"${selected_drafts[$offset]}" == "${draft_paths[$((first_draft + offset))]}"'
+        in source
+    )
+    assert "DRAFT_CANDIDATES=$group_drafts" in source
+    assert "DRAFT_CANDIDATES=$DRAFT_CANDIDATES" not in source
+
+
+def test_worker_validates_drafts_against_only_its_group_sources() -> None:
+    worker = SCRIPT.parents[1] / "hf_mixtral_8x22b_multinode_tp_evaluate_matched.py"
+    source = worker.read_text(encoding="utf-8")
+    assert "drafts_per_group = (" in source
+    assert "len(args.draft_candidates) != drafts_per_group" in source
+    assert "group_sources = sources[group_start:group_end]" in source
+    assert "drafts = load_drafts(args.draft_candidates, group_sources)" in source
+    assert "drafts = load_drafts(args.draft_candidates, sources)" not in source

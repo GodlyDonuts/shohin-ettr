@@ -253,13 +253,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.shard_group_index,
         args.shard_group_count,
     )
+    divisible_groups = (
+        args.shard_group_count > 0 and args.shard_count % args.shard_group_count == 0
+    )
+    drafts_per_group = (
+        args.shard_count // args.shard_group_count if divisible_groups else -1
+    )
     if (
         dataset is None
         or args.seed != SEED
         or args.batch_size != 1
         or args.output_root.is_symlink()
         or sha256_file(args.source) != dataset["source_sha256"]
-        or len(args.draft_candidates) != args.shard_count
+        or len(args.draft_candidates) != drafts_per_group
         or group_geometry
         not in (
             (0, 1),
@@ -269,7 +275,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             (3, 4),
         )
         or (args.expected_rows == SCREEN_ROWS and group_geometry != (0, 1))
-        or (args.shard_count % args.shard_group_count) != 0
+        or not divisible_groups
     ):
         raise MixtralDistributedEvaluationError("evaluation settings differ")
     rows = args.expected_rows
@@ -296,13 +302,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise MixtralDistributedEvaluationError("evaluation package versions differ")
 
     sources = load_sources(args.source, rows)
-    drafts = load_drafts(args.draft_candidates, sources)
     shards_per_group = shards // args.shard_group_count
     first_shard = args.shard_group_index * shards_per_group
     shard_indices = list(range(first_shard, first_shard + shards_per_group))
     group_start, _ = shard_bounds(rows, shard_indices[0], shards, 1)
     _, group_end = shard_bounds(rows, shard_indices[-1], shards, 1)
     group_sources = sources[group_start:group_end]
+    drafts = load_drafts(args.draft_candidates, group_sources)
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from transformers.distributed.configuration_utils import DistributedConfig
 
