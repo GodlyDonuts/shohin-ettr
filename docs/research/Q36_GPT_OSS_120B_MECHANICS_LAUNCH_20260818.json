@@ -1,7 +1,7 @@
 {
   "schema": "shohin-q36-gpt-oss-120b-mechanics-launch-v1",
-  "status": "model_and_overlay_complete_mechanics_pending_priority_screen_dependency_launcher_staged",
-  "recorded_at_utc": "2026-08-18T20:12:00Z",
+  "status": "model_and_overlay_complete_mechanics_pending_priority_screen_and_scaling_dependency_launchers_staged",
+  "recorded_at_utc": "2026-08-18T20:19:00Z",
   "purpose": "Establish a score-free one-H100 mechanics proof for transferring the Shohin post-MLP temporal-revision residual to the OpenAI GPT-OSS-120B MXFP4 MoE host.",
   "source": {
     "branch": "codex/q36-mechanics-generation-prepare",
@@ -115,6 +115,47 @@
     "manual_gap_removed": true,
     "scientific_jobs_submitted_at_record_time": 0
   },
+  "cross_family_scaling_auto_launch": {
+    "launcher_job": 764255,
+    "state": "PENDING",
+    "reason": "Dependency",
+    "dependency": "afterok:764230",
+    "resources": "CPU_2_cores_4GiB_10m",
+    "requeue": false,
+    "kill_on_invalid_dependency": true,
+    "analysis_runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/q36_gpt_oss_analysis_83ff494d_r1",
+    "analysis_runtime_source_commit": "83ff494d9ec15b5935098d35617d35e9118d1aa0",
+    "analysis_runtime_manifest_sha256": "f9361d8feb7f18016e014336dc4f635a22b5ec0b5c0bc52ff1903966e2ac0815",
+    "analysis_runtime_regular_files": 234,
+    "qwen_raw_score": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/external_screen_da8556c3_r1/detailed_score.json",
+      "sha256": "d5b5a59448c15ce00f48cf3a44b524688503e9f7ad00c877761ebcd859673a45"
+    },
+    "mixtral_raw_score": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/mixtral_8x22b_tp4_screen_64851366_r1/score.json",
+      "sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50"
+    },
+    "gpt_oss_score_path": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_fixed_draft_7ceb0400_r1/score.json",
+    "output_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_gptoss117_mixtral141_83ff494d_r1",
+    "post_score_jobs": [
+      "CPU_cross_family_scaling_analysis",
+      "CPU_publication_figure"
+    ],
+    "gpu_jobs_submitted": 0,
+    "scientific_scores_changed": false,
+    "raw_qwen_mixtral_replay": {
+      "status": "complete_insufficient_points",
+      "qwen_revision_correct": 141,
+      "qwen_unchanged_correct": 111,
+      "qwen_paired_wins": 36,
+      "qwen_paired_losses": 6,
+      "mixtral_revision_correct": 114,
+      "mixtral_unchanged_correct": 45,
+      "mixtral_paired_wins": 80,
+      "mixtral_paired_losses": 11,
+      "third_point_required": true
+    }
+  },
   "host_contract": {
     "total_parameters": 117000000000,
     "active_parameters": 5100000000,
@@ -160,5 +201,5 @@
     "evc46_h100s_allocated": 2,
     "mechanics_requests_idle_gpu_without_bound_work": false
   },
-  "interpretation": "The exact GPT-OSS model and MXFP4 execution overlay are acquired, independently hash-bound, and immutable. The score-free Shohin mechanics proof is released and awaiting one schedulable H100. A CPU-only dependency launcher will submit the frozen matched capability graph immediately after a successful mechanics result, eliminating a manual scheduling gap without duplicating science. No GPT-OSS capability or benchmark improvement is claimed by this launch receipt."
+  "interpretation": "The exact GPT-OSS model and MXFP4 execution overlay are acquired, independently hash-bound, and immutable. The score-free Shohin mechanics proof is released and awaiting one schedulable H100. CPU-only dependency launchers will submit the frozen matched capability graph immediately after a successful mechanics result and reduce its completed GPT-OSS score with the exact raw Qwen and Mixtral points into a three-family scaling analysis and publication figure. No GPT-OSS capability or benchmark improvement is claimed before those jobs complete."
 }
