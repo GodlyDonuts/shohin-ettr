@@ -122,7 +122,10 @@
       "cause": "two independent Slurm ranks were co-located on evc46; NCCL/NVML could not resolve the remapped PCI device across the four-rank process group",
       "scientific_outputs": 0,
       "replacement_jobs": [763726, 763727, 763728, 763729],
-      "replacement_constraint": "four distinct physical nodes"
+      "replacement_constraint": "four distinct physical nodes",
+      "replacement_nodes": ["evc46", "evc28", "evc43", "evc48"],
+      "replacement_model_load": "507_of_507_tensors_on_all_four_ranks",
+      "replacement_nccl_broadcast": "pass"
     }
   ],
   "next_action": "wait_for_generation_then_automatic_apply_and_atomic_score"
