@@ -1,7 +1,7 @@
 {
   "schema": "shohin-q36-gpt-oss-120b-mechanics-launch-v1",
-  "status": "model_and_overlay_complete_mechanics_pending_priority",
-  "recorded_at_utc": "2026-08-18T19:45:35Z",
+  "status": "model_and_overlay_complete_mechanics_pending_priority_screen_dependency_launcher_staged",
+  "recorded_at_utc": "2026-08-18T20:12:00Z",
   "purpose": "Establish a score-free one-H100 mechanics proof for transferring the Shohin post-MLP temporal-revision residual to the OpenAI GPT-OSS-120B MXFP4 MoE host.",
   "source": {
     "branch": "codex/q36-mechanics-generation-prepare",
@@ -89,6 +89,32 @@
     "score_or_assessor_rows_authorized": 0,
     "scientific_result_claimed": false
   },
+  "matched_screen_auto_launch": {
+    "launcher_job": 764230,
+    "state": "PENDING",
+    "reason": "Dependency",
+    "dependency": "afterok:764085",
+    "resources": "CPU_2_cores_4GiB_10m",
+    "requeue": false,
+    "kill_on_invalid_dependency": true,
+    "screen_source_commit": "7ceb0400bcf222560c6c4e1d48fae231e276d2d1",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_screen_7ceb0400_r1",
+    "runtime_manifest_sha256": "99cae8cff7a529b811d1dd5d35e3727b064f3c3cd9994ab06c1af7c6d87d6eb2",
+    "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_fixed_draft_7ceb0400_r1",
+    "revision_training_jobs": 1,
+    "independent_single_h100_evaluation_jobs": 12,
+    "evaluation_arms": [
+      "unchanged",
+      "self_refinement",
+      "revision"
+    ],
+    "evaluation_shards_per_arm": 4,
+    "cpu_score_jobs": 1,
+    "array_jobs": 0,
+    "launch_authorization": "only_after_mechanics_job_764085_exits_successfully_and_the_published_mechanics_report_passes_the_frozen_admission_checks",
+    "manual_gap_removed": true,
+    "scientific_jobs_submitted_at_record_time": 0
+  },
   "host_contract": {
     "total_parameters": 117000000000,
     "active_parameters": 5100000000,
@@ -134,5 +160,5 @@
     "evc46_h100s_allocated": 2,
     "mechanics_requests_idle_gpu_without_bound_work": false
   },
-  "interpretation": "The exact GPT-OSS model and MXFP4 execution overlay are acquired, independently hash-bound, and immutable. The score-free Shohin mechanics proof is released and awaiting one schedulable H100. No GPT-OSS capability or benchmark improvement is claimed by this launch receipt."
+  "interpretation": "The exact GPT-OSS model and MXFP4 execution overlay are acquired, independently hash-bound, and immutable. The score-free Shohin mechanics proof is released and awaiting one schedulable H100. A CPU-only dependency launcher will submit the frozen matched capability graph immediately after a successful mechanics result, eliminating a manual scheduling gap without duplicating science. No GPT-OSS capability or benchmark improvement is claimed by this launch receipt."
 }
