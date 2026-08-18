@@ -126,6 +126,17 @@ residual, and intermediate values form a causal hidden-state blend. The 32,784
 gate parameters are trained by response loss only; no selector target or
 auxiliary routing label is used in the reported result.
 
+![Figure 1: Shohin temporal architecture](figures/shohin_temporal_revision_architecture.svg)
+
+**Figure 1 — Learned ownership across inference time.** (a) A model-owned
+draft feeds matched unchanged and trained-revision roles; the commit owner
+selects one whole candidate trajectory. (b) On Mixtral, a trained low-rank
+post-MLP residual augments each of the final 16 frozen MoE blocks while native
+routers and experts remain unchanged. (c) On Qwen3.6-35B-A3B, a tokenwise
+causal gate interpolates two frozen temporal residual branches. Blue, orange,
+and green denote owner, revision, and commit/gating surfaces; gray modules are
+frozen or matched controls.
+
 ## Matched experimental design
 
 Every capability comparison holds the evaluation identities and decoding
@@ -146,9 +157,9 @@ weights remain frozen. Predeclared retention and per-domain gates are retained
 even when aggregate accuracy improves, which is why several large numerical
 gains remain non-promotions.
 
-![Figure 1: Shohin evidence overview](figures/shohin_temporal_revision_evidence.svg)
+![Figure 2: Shohin evidence overview](figures/shohin_temporal_revision_evidence.svg)
 
-**Figure 1 — Capability transfer and its retention boundary.** (a) Trained
+**Figure 2 — Capability transfer and its retention boundary.** (a) Trained
 revision improves the matched unchanged pass on all five dense hosts; `H` and
 `D` distinguish holdout from development measurements. (b) The learned causal
 gate improves Qwen3.6-35B-A3B, while trained revision improves Mixtral-8x22B
@@ -363,6 +374,8 @@ high-GPU measurement rather than a claimed result.
 | Mixtral 1,023-row raw score | `7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8` |
 | Mixtral validation evidence report | `9d98bff6cc3e244ed175c1ffe3574944ba326ef05b2925ab658eed5f317529b3` |
 | GPT-OSS mechanics/screen launch receipt | `6107a5b4dd4298dabf3e5889d65df89b1b1e25c2df526c1772007773e987e083` |
+| publication architecture figure (SVG) | `ce1db3018e78d967be74c04343c7010863deb3a3135e08c5c58be66270e06e4c` |
+| publication architecture figure (PDF) | `13adc7fc6ecbcd163dba02c9153311cb566facbd604da445645a6c132429141e` |
 | publication evidence figure (SVG) | `2594a40af43989e662b8f86d2673a71530c81d38be5c86cee384a0aeab07a379` |
 | publication evidence figure (PDF) | `86484c12a361efbd37edef0bcb1a37f2aac98963dd71a7c0597d2f6656bc1383` |
 
