@@ -25,8 +25,10 @@ done
 [[ "$WORLD_RANK" =~ ^[0-3]$ ]]
 expected_rows=${EXPECTED_ROWS:-256}
 shard_count=${SHARD_COUNT:-4}
-case "$expected_rows:$shard_count" in
-  256:4|1023:16) ;;
+group_index=${SHARD_GROUP_INDEX:-0}
+group_count=${SHARD_GROUP_COUNT:-1}
+case "$expected_rows:$shard_count:$group_index:$group_count" in
+  256:4:0:1|1023:16:[0-3]:4) ;;
   *) printf 'evaluation geometry differs\n' >&2; exit 2 ;;
 esac
 [[ -x "$PYTHON" ]]
@@ -60,8 +62,8 @@ export PYTHONDONTWRITEBYTECODE=1 CUDA_MODULE_LOADING=LAZY
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export NCCL_IB_DISABLE=0 TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 
-coord="$RUN_ROOT/coordination"
-mkdir -p "$coord"
+coord="$RUN_ROOT/coordination/group_${group_index}"
+[[ -d "$coord" && ! -L "$coord" ]]
 admitted="$coord/rank-${WORLD_RANK}.admitted"
 [[ ! -e "$admitted" && ! -L "$admitted" ]]
 temporary="$coord/.rank-${WORLD_RANK}.admitted.tmp.${SLURM_JOB_ID}"
@@ -102,7 +104,9 @@ output="$RUN_ROOT/candidates"
   "${draft_args[@]}" \
   --output-root "$output" \
   --expected-rows "$expected_rows" \
-  --shard-count "$shard_count"
+  --shard-count "$shard_count" \
+  --shard-group-index "$group_index" \
+  --shard-group-count "$group_count"
 
 completed="$coord/rank-${WORLD_RANK}.completed"
 [[ ! -e "$completed" && ! -L "$completed" ]]
@@ -119,13 +123,16 @@ if [[ "$WORLD_RANK" == 0 ]]; then
     sleep 1
   done
   all_completed
+  shards_per_group=$((shard_count / group_count))
+  first_shard=$((group_index * shards_per_group))
+  final_shard=$((first_shard + shards_per_group - 1))
   for arm in unchanged self_refinement revision; do
-    for shard_index in $(seq 0 $((shard_count - 1))); do
+    for shard_index in $(seq "$first_shard" "$final_shard"); do
       printf -v shard '%02d' "$shard_index"
       [[ -f "$output/$arm/shard_$shard/candidates.jsonl" ]]
       [[ -f "$output/$arm/shard_$shard/report.json" ]]
+      find "$output/$arm/shard_$shard" -type f -exec chmod a-w {} +
+      find "$output/$arm/shard_$shard" -type d -exec chmod a-w {} +
     done
   done
-  find "$output" -type f -exec chmod a-w {} +
-  find "$output" -type d -exec chmod a-w {} +
 fi

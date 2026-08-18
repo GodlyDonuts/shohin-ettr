@@ -22,6 +22,9 @@ EVAL_WORKER = (
 EVAL_SUBMIT = (
     ROOT / "train/jobs/submit_mixtral_8x22b_multinode_tp_evaluate_matched.sh"
 ).read_text()
+VALIDATION_SUBMIT = (
+    ROOT / "train/jobs/submit_mixtral_8x22b_tp4_validation_groups.sh"
+).read_text()
 
 
 def test_multinode_mechanics_uses_native_tensor_parallelism() -> None:
@@ -83,6 +86,7 @@ def test_runtime_allowlist_contains_multinode_path() -> None:
         "train/jobs/submit_mixtral_8x22b_multinode_tp_mechanics.sh",
         "train/jobs/submit_mixtral_8x22b_multinode_tp_evaluate_matched.sh",
         "train/jobs/submit_mixtral_8x22b_multinode_tp_train_revision.sh",
+        "train/jobs/submit_mixtral_8x22b_tp4_validation_groups.sh",
     ):
         assert f"{member}\n" in allowlist
 
@@ -122,7 +126,7 @@ def test_matched_evaluation_loads_once_and_emits_existing_score_layout() -> None
     assert 'for arm in ("unchanged", "self_refinement")' in EVALUATION
     assert 'arm="revision"' in EVALUATION
     assert "MixtralRevisionModel(backbone)" in EVALUATION
-    assert "for shard_index in range(shards)" in EVALUATION
+    assert "for shard_index in shard_indices" in EVALUATION
     assert 'f"shard_{shard_index:02d}"' in EVALUATION
     assert '"schema": CANDIDATE_SCHEMA' in EVALUATION
     assert '"generation_mode": "greedy"' in EVALUATION
@@ -151,7 +155,19 @@ def test_matched_evaluation_admits_exact_screen_and_confirmation_geometries() ->
         in EVALUATION
     )
     assert '"split": "external_validation_confirmation"' in EVALUATION
-    assert "256:4|1023:16" in EVAL_WORKER
+    assert "256:4:0:1|1023:16:[0-3]:4" in EVAL_WORKER
     assert "256:4|1023:16" in EVAL_SUBMIT
     assert '[[ ${#draft_paths[@]} -eq "$shard_count" ]]' in EVAL_SUBMIT
     assert "EXPECTED_ROWS=$expected_rows,SHARD_COUNT=$shard_count" in EVAL_SUBMIT
+
+
+def test_validation_fans_out_four_disjoint_tp4_groups() -> None:
+    assert "for group in 0 1 2 3" in VALIDATION_SUBMIT
+    assert "for rank in 0 1 2 3" in VALIDATION_SUBMIT
+    assert "${#jobs[@]} < 16" in VALIDATION_SUBMIT
+    assert "SHARD_GROUP_COUNT=4" in VALIDATION_SUBMIT
+    assert "SHARD_GROUP_INDEX=$group" in VALIDATION_SUBMIT
+    assert "--time=06:00:00" in VALIDATION_SUBMIT
+    assert 'scancel "${jobs[@]}"' in VALIDATION_SUBMIT
+    assert "shards_per_group = shards // args.shard_group_count" in EVALUATION
+    assert "group_candidates[start - group_start : end - group_start]" in EVALUATION

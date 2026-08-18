@@ -249,14 +249,27 @@ def _generate_arm(
 def run(args: argparse.Namespace) -> dict[str, Any]:
     rank, world = _require_world()
     dataset = DATASET_SPECS.get((args.expected_rows, args.shard_count))
+    group_geometry = (
+        args.shard_group_index,
+        args.shard_group_count,
+    )
     if (
         dataset is None
         or args.seed != SEED
         or args.batch_size != 1
-        or args.output_root.exists()
         or args.output_root.is_symlink()
         or sha256_file(args.source) != dataset["source_sha256"]
         or len(args.draft_candidates) != args.shard_count
+        or group_geometry
+        not in (
+            (0, 1),
+            (0, 4),
+            (1, 4),
+            (2, 4),
+            (3, 4),
+        )
+        or (args.expected_rows == SCREEN_ROWS and group_geometry != (0, 1))
+        or (args.shard_count % args.shard_group_count) != 0
     ):
         raise MixtralDistributedEvaluationError("evaluation settings differ")
     rows = args.expected_rows
@@ -284,6 +297,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     sources = load_sources(args.source, rows)
     drafts = load_drafts(args.draft_candidates, sources)
+    shards_per_group = shards // args.shard_group_count
+    first_shard = args.shard_group_index * shards_per_group
+    shard_indices = list(range(first_shard, first_shard + shards_per_group))
+    group_start, _ = shard_bounds(rows, shard_indices[0], shards, 1)
+    _, group_end = shard_bounds(rows, shard_indices[-1], shards, 1)
+    group_sources = sources[group_start:group_end]
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from transformers.distributed.configuration_utils import DistributedConfig
 
@@ -321,7 +340,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             arm=arm,
             backbone=backbone,
             tokenizer=tokenizer,
-            sources=sources,
+            sources=group_sources,
             drafts=drafts if arm == "self_refinement" else None,
             stop_ids=stop_ids,
         )
@@ -344,7 +363,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         arm="revision",
         backbone=backbone,
         tokenizer=tokenizer,
-        sources=sources,
+        sources=group_sources,
         drafts=drafts,
         stop_ids=stop_ids,
     )
@@ -365,6 +384,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         },
         "counters": {arm: results[arm]["counters"] for arm in ARMS},
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated(0)),
+        "shard_group_index": args.shard_group_index,
+        "shard_group_count": args.shard_group_count,
+        "group_row_start": group_start,
+        "group_row_end": group_end,
     }
     rank_receipts = _gather_rank_receipts(rank_payload, world)
     for arm in ARMS:
@@ -382,16 +405,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     reports: dict[str, dict[str, Any]] = {}
     if rank == 0:
-        args.output_root.mkdir(parents=True)
+        args.output_root.mkdir(parents=True, exist_ok=True)
         for arm in ARMS:
-            all_candidates = results[arm]["candidates"]
-            for shard_index in range(shards):
+            group_candidates = results[arm]["candidates"]
+            for shard_index in shard_indices:
                 start, end = shard_bounds(rows, shard_index, shards, 1)
                 shard_dir = args.output_root / arm / f"shard_{shard_index:02d}"
+                if shard_dir.exists() or shard_dir.is_symlink():
+                    raise MixtralDistributedEvaluationError(
+                        "evaluation shard output exists"
+                    )
                 shard_dir.mkdir(parents=True)
                 candidate_path = shard_dir / "candidates.jsonl"
                 candidates_sha256 = _atomic_bytes(
-                    candidate_path, _encoded_rows(all_candidates[start:end])
+                    candidate_path,
+                    _encoded_rows(
+                        group_candidates[start - group_start : end - group_start]
+                    ),
                 )
                 report = {
                     "schema": REPORT_SCHEMA,
@@ -442,6 +472,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "batch_size": 1,
                     "shard_index": shard_index,
                     "shard_count": shards,
+                    "shard_group_index": args.shard_group_index,
+                    "shard_group_count": args.shard_group_count,
+                    "group_row_start": group_start,
+                    "group_row_end": group_end,
                     "row_start": start,
                     "row_end": end,
                     "full_row_count": rows,
@@ -449,9 +483,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "candidates_sha256": candidates_sha256,
                     "counters": {
                         "rows": end - start,
-                        "full_arm_counters": results[arm]["counters"],
+                        (
+                            "full_arm_counters"
+                            if args.shard_group_count == 1
+                            else "group_arm_counters"
+                        ): results[arm]["counters"],
                     },
-                    "full_arm_elapsed_seconds": results[arm]["elapsed_seconds"],
+                    (
+                        "full_arm_elapsed_seconds"
+                        if args.shard_group_count == 1
+                        else "group_arm_elapsed_seconds"
+                    ): results[arm]["elapsed_seconds"],
                     "rank_receipts": rank_receipts,
                     "routing_receipt": results[arm]["routing_receipt"],
                     "assessor_access_count": 0,
@@ -482,6 +524,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--shard-count", type=int, default=SCREEN_SHARDS)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--shard-group-index", type=int, default=0)
+    parser.add_argument("--shard-group-count", type=int, default=1)
     return parser.parse_args()
 
 
