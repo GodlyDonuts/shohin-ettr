@@ -70,6 +70,15 @@
     "apply_and_score_commit": "c52ca30658b9467a6494be5d72e21a3cfd524407",
     "apply_and_score_runtime_manifest_sha256": "73ba8a2a6c4c0d46ebd11c4dd78862882f4b6e9ff3200f85c1edc46adde13f57",
     "score_contract": "score_three_distinct_matched_completions_once_and_derive_selective_commit_from_selected_arm",
+    "scheduler_acceleration": {
+      "changed_scientific_bytes": false,
+      "duplicate_jobs_created": 0,
+      "pending_jobs_retargeted": [763719, 763721],
+      "target_node": "evc46",
+      "target_independent_single_h100_allocations": 2,
+      "reason": "evc46 had two idle H100s while the unchanged rank-0 and rank-2 requests were pending only on disjoint original node pools",
+      "all_sixteen_ranks_admitted": true
+    },
     "automatic_requeue": false
   },
   "infrastructure_attempts": [
