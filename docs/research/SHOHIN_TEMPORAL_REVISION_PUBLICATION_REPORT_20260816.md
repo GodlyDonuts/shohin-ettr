@@ -1,9 +1,10 @@
 # Shohin: Model-Owned Temporal Revision and Commitment
 
-> Publication evidence report — 2026-08-16  
+> Publication evidence report — updated 2026-08-18
 > Primary result: protected Qwen3.5-9B product board  
-> Evidence boundary: completed dense transfer and a source-disjoint 35B MoE
-> architecture screen; larger-MoE measurements remain unfinished
+> Evidence boundary: completed dense transfer, a causal 35B MoE screen, and
+> matched 141B-total / 39B-active cross-family MoE screen and validation;
+> the independent GPT-OSS-120B point is executing
 
 ## Result in one sentence
 
@@ -16,6 +17,13 @@ draft → trained revision → learned whole-trajectory commit system solves
 This is the primary publication claim. It is a measured capability result on
 one pinned dense 9B host, not a claim of universal improvement or a completed
 MoE scaling law.
+
+The strongest cross-family scale result is now separate and complementary:
+on 1,023 source-disjoint rows, a 3.54M-parameter Shohin revision surface raises
+pinned Mixtral-8x22B from `147` to `448` correct and exceeds matched
+self-refinement by 92 answers. That result demonstrates large sparse-host
+capability transfer, while its code and retention regressions establish why
+the learned conservative commit remains essential rather than optional.
 
 ## What the system does
 
@@ -110,7 +118,51 @@ This is a development screen, not the protected 9B publication confirmation.
 It establishes a causal MoE transfer signal and motivates upward
 cross-family measurement.
 
-## Scale boundary as of 2026-08-16
+## Cross-family transfer to a 141B sparse host
+
+Pinned `mistralai/Mixtral-8x22B-Instruct-v0.1` has 141B total and 39B active
+parameters. Shohin attaches a shared post-MLP temporal-revision residual to
+the final 16 layers, trains exactly 3,538,944 parameters for 256 updates, and
+leaves every native router and expert parameter frozen. The intervention is
+`0.00251%` of total parameters and `0.00907%` of active parameters.
+
+The matched 256-row source-disjoint screen used identical identities and
+decoding for every arm, plus the same fixed Qwen-owned draft trajectories for
+the two draft-conditioned arms, self-refinement and trained revision:
+
+| Mixtral screen arm | Correct | Delta vs unchanged | Logic | Math | Code |
+|---|---:|---:|---:|---:|---:|
+| unchanged | `45/256` | — | 35 | 4 | 6 |
+| self-refinement | `105/256` | `+60` | 75 | 21 | 9 |
+| trained revision | **`114/256`** | **`+69`** | **81** | **33** | 0 |
+
+Revision records 80 paired wins and 11 paired losses against unchanged
+(`p = 4.4130e-14`) and improves self-refinement by nine answers. It retains
+only `34/45 = 75.56%` of unchanged-correct identities and loses all 11 code
+rows, so the predeclared conservative promotion gate correctly fails despite
+the large aggregate effect.
+
+The frozen 1,023-row validation makes the capability effect larger rather
+than smaller:
+
+| Mixtral validation arm | Correct | Delta vs unchanged | Logic | Math | Code |
+|---|---:|---:|---:|---:|---:|
+| unchanged | `147/1,023` | — | 106 | 25 | 16 |
+| self-refinement | `356/1,023` | `+209` | 224 | 121 | 11 |
+| trained revision | **`448/1,023`** | **`+301`** | **272** | **176** | 0 |
+| learned selective commit | `287/1,023` | `+140` | 222 | 49 | 16 |
+
+The revision's paired gain over unchanged is 353 wins to 52 losses
+(`p = 4.4389e-56`); its paired gain over self-refinement is 131 wins to 39
+losses (`p = 7.9222e-13`). The learned commit restores unchanged-level code
+and has nonnegative domain deltas versus unchanged, but retains `137/147 =
+93.20%` of unchanged-correct identities—three short of the frozen 95% floor—
+and underperforms both self-refinement and revision. The selector gate is
+therefore a formal failure. The measured result is a strong, replicated
+cross-family capability transfer plus a precisely localized retention/code
+failure, not a universal-win claim.
+
+## Scale boundary as of 2026-08-18
 
 | Host | Total / active parameters | Family | Status |
 |---|---:|---|---|
@@ -120,14 +172,18 @@ cross-family measurement.
 | OLMo2-7B | 7B dense | OLMo | completed weak positive / non-promotion |
 | Qwen3.5-9B | 9B dense | Qwen | completed protected publication result |
 | Qwen3.6-35B-A3B | 35B / 3B MoE | Qwen | completed source-disjoint causal screen |
-| Nemotron Super-120B-A12B | 120B / 12B MoE | Nemotron | staged and held; no result claimed |
-| Mixtral-8x22B | 141B / 39B MoE | Mistral | staged and held; no result claimed |
+| GPT-OSS-120B | 117B / 5.1B MoE | OpenAI | model/runtime sealed; one-H100 mechanics queued; matched screen dependency-staged |
+| Nemotron Super-120B-A12B | 120B / 12B MoE | Nemotron | ModelOpt restoration failed before science; no result claimed |
+| Mixtral-8x22B | 141B / 39B MoE | Mistral | completed screen and 1,023-row validation; large aggregate gain, conservative gate failure |
 | Nemotron Ultra-550B-A55B | 550B / 55B MoE | Nemotron | prepared only; no result claimed |
 
 The completed evidence supports cross-size dense transfer, cross-family dense
-transfer, and one causal sparse-host result. It does **not** yet support a
-monotonic MoE scaling law. That claim requires the staged 120B and 141B
-matched measurements and, if resources permit, the prepared 550B point.
+transfer, a causal Qwen sparse-host result, and a replicated aggregate gain on
+a much larger Mistral sparse host. It does **not** yet support a monotonic MoE
+scaling law or conservative transfer at every scale. The independent
+GPT-OSS-120B matched point is dependency-staged to test a third MoE family and
+an intermediate active-parameter scale; Nemotron Ultra remains a future
+high-GPU measurement rather than a claimed result.
 
 ## Immutable evidence
 
@@ -139,6 +195,11 @@ matched measurements and, if resources permit, the prepared 550B point.
 | 9B revision holdout result | `74834cad3ee4c32e1e263d968bbb2f5b1f4dfeb6eca91b124e1a4f5a03148b53` |
 | 4B protected product result | `4827808a5d0ec4635e8c72cbdcf23bc6b812f91ffe39b3303f29219854afaada` |
 | 35B MoE temporal-gate screen | `1bd645511fd9066aa364e3b4e4c8042b067bb50c1896eaae0810f5c2281b4871` |
+| Mixtral 256-row raw score | `ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50` |
+| Mixtral screen evidence report | `618b40e658aa2af1168ac9b1b15114b4dca0aa2c96740e81c8ae224536d2958f` |
+| Mixtral 1,023-row raw score | `7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8` |
+| Mixtral validation evidence report | `9d98bff6cc3e244ed175c1ffe3574944ba326ef05b2925ab658eed5f317529b3` |
+| GPT-OSS mechanics/screen launch receipt | `6107a5b4dd4298dabf3e5889d65df89b1b1e25c2df526c1772007773e987e083` |
 
 The deployable 9B release binds:
 
@@ -162,17 +223,24 @@ The deployable 9B release binds:
    trained revision on the protected 9B board.
 3. A small hidden-state temporal gate causes a large source-disjoint gain on a
    35B-total / 3B-active MoE development screen.
+4. A 3.54M-parameter trained revision surface produces a large, statistically
+   decisive aggregate gain on a 141B-total / 39B-active non-Qwen MoE host on
+   both a 256-row screen and a 1,023-row validation.
 
 ## Claims not supported yet
 
 1. Universal per-domain improvement or perfect retention.
 2. A unique benefit from antisymmetric commitment.
-3. A monotonic MoE scaling law across 35B, 120B, 141B, and 550B hosts.
+3. A monotonic or retention-preserving MoE scaling law across 35B, 117B,
+   141B, and 550B hosts.
 4. Superiority on unrelated public leaderboard suites that were not part of
    the matched protected evaluation.
 
 Shohin's strongest present conclusion is narrower and useful: model-owned
 temporal revision and coherent commitment can convert additional inference
 computation into measurable capability, the effect repeats across multiple
-dense hosts, and a causally trained hidden-state version transfers to a
-sparse MoE host.
+dense hosts, a causally trained hidden-state version improves a sparse Qwen
+host, and a tiny trained residual surface transfers a large aggregate effect
+to a 141B non-Qwen sparse host. The same evidence shows that capability gain
+and conservative retention are distinct objectives: revision supplies the
+gain, while commitment remains the unresolved large-host frontier.
