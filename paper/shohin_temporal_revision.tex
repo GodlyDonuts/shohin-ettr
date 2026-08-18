@@ -260,16 +260,31 @@ unchanged, but scores only 287 and retains 137/147 (93.2\%), three cases below
 the frozen 95\% floor. The formal selective-commit gate therefore fails.
 
 An identity-joined replay of all 1,023 scored candidate triples shows that the
-code failure is systematic. Every revision completion contains a boxed answer
-and revision emits only 9.99 tokens on average (median 9), versus 436.13 for
-unchanged and 296.84 for self-refinement. On the 22 MBPP rows, revision emits a
-median of seven tokens and no completion contains a code fence, function
-definition, or return statement. Unchanged produces 22/22 fences, 21/22
-definitions, and 22/22 returns. Thus the learned surface acquires an aggressive
-answer-extraction mode that helps answer-valued domains but violates executable
-output modality. Commitment restores code by selecting unmodified trajectories,
-localizing the next architecture problem to model-owned output-contract
-preservation rather than merely more reasoning capacity.
+code failure is systematic (Table~\ref{tab:format}).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Measured Mixtral output-form collapse. Boxed is over all 1,023 rows;
+the final three columns are over 22 MBPP rows.}
+\begin{tabular}{lrrrrr}
+\toprule
+Arm & Mean tokens & Boxed & Fences & Definitions & Code correct\\
+\midrule
+Unchanged & 436.13 & 203 & 22 & 21 & 16\\
+Self-refinement & 296.84 & 454 & 22 & 19 & 11\\
+Trained revision & 9.99 & 1,023 & 0 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\label{tab:format}
+\end{table}
+
+Revision's median output is nine tokens overall and seven on MBPP; no code
+completion contains a return statement. The learned surface has acquired an
+aggressive answer-extraction mode that helps answer-valued domains but violates
+executable output modality. Commitment restores code by selecting unmodified
+trajectories, localizing the next architecture problem to model-owned
+output-contract preservation rather than merely more reasoning capacity.
 
 \begin{figure*}[t]
   \centering
