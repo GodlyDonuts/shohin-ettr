@@ -120,7 +120,8 @@ if [[ "$WORLD_RANK" == 0 ]]; then
   done
   all_completed
   for arm in unchanged self_refinement revision; do
-    for shard in $(seq -w 0 $((shard_count - 1))); do
+    for shard_index in $(seq 0 $((shard_count - 1))); do
+      printf -v shard '%02d' "$shard_index"
       [[ -f "$output/$arm/shard_$shard/candidates.jsonl" ]]
       [[ -f "$output/$arm/shard_$shard/report.json" ]]
     done
