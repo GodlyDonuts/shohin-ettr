@@ -239,6 +239,9 @@ def render(output_dir: Path) -> tuple[Path, Path]:
         bbox_inches="tight",
         metadata={"Creator": "Shohin", "Date": "2026-08-18"},
     )
+    svg.write_text(
+        "\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n"
+    )
     fixed_time = datetime(2026, 8, 18, tzinfo=timezone.utc)
     fig.savefig(
         pdf,
