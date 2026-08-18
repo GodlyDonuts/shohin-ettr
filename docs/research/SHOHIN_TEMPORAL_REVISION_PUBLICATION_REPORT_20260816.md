@@ -6,6 +6,47 @@
 > matched 141B-total / 39B-active cross-family MoE screen and validation;
 > the independent GPT-OSS-120B point is executing
 
+## Abstract
+
+Can a language model use additional inference computation more effectively by
+assigning distinct learned owners to drafting, revision, and commitment?
+Shohin tests this question with model-owned temporal roles rather than an
+external verifier or answer-level ensemble. On a protected 538-problem board,
+a dense Qwen3.5-9B draft → revision → whole-trajectory-commit system solves
+`383` problems versus `316` for a matched unchanged second pass. Trained
+revision also produces positive aggregate gains across Qwen3.5-0.8B, 4B, and
+9B, SmolLM3-3B, and OLMo2-7B. Moving to sparse hosts, a 32,784-parameter
+causal temporal gate improves Qwen3.6-35B-A3B by `32/256`, with positive
+deltas in logic, mathematics, and executable code. On non-Qwen
+Mixtral-8x22B, a 3.54M-parameter revision surface improves `147/1,023` to
+`448/1,023` and beats self-refinement by 92 answers, while exposing severe
+code and unchanged-case retention regressions. These results support
+model-owned temporal revision as a parameter-efficient capability mechanism,
+but reject universal improvement and show that learned conservative
+commitment is a separate unsolved problem at large sparse scale.
+
+## Contributions
+
+1. **A model-owned temporal architecture.** Drafting, full-trajectory
+   revision, and coherent commitment are separately learned roles; no
+   correctness label, benchmark router, external verifier, or tool result is
+   available at inference time.
+2. **A protected end-to-end capability result.** The complete dense 9B system
+   adds 67 solved problems over its matched unchanged control on a held
+   538-problem board, with immutable model, adapter, runtime, and result
+   identities.
+3. **Cross-size and cross-family transfer.** The same revision principle
+   produces positive aggregate gains on five dense hosts spanning 0.8B–9B
+   and three model families.
+4. **Causal and large-MoE evidence.** Hidden-state intervention improves a
+   35B-total Qwen MoE with only 32,784 trainables; a distinct 3.54M-parameter
+   surface produces a replicated aggregate gain on a 141B-total Mistral MoE.
+5. **Negative results as architecture evidence.** Dense and sparse failures
+   localize the unresolved problem: capability-improving revision can regress
+   previously correct cases and executable code, while current commitment
+   restores some capabilities without yet meeting conservative large-host
+   retention.
+
 ## Result in one sentence
 
 On a protected 538-problem board, Shohin's same-family
@@ -37,6 +78,26 @@ Shohin spends inference-time computation through model-owned temporal roles:
 The deployable system does not receive correctness labels, task-router labels,
 external verifier feedback, or tool results at inference time. The published
 commit stage selects a whole trajectory rather than splicing answer fragments.
+
+## Matched experimental design
+
+Every capability comparison holds the evaluation identities and decoding
+contract fixed. “Unchanged” is the host's matched second-pass control.
+“Self-refinement” receives the same model-owned draft as trained revision but
+uses a fixed natural-language instruction rather than learned revision
+parameters. The commit owner sees candidate trajectories but not their labels
+and chooses one complete trajectory; it cannot assemble a post-hoc answer from
+correct fragments. Source-disjoint screens and holdouts are identity-separated
+from training inputs, and protected boards remain outside model-visible
+training and generation paths.
+
+Reported gains are paired on exact identities. Where available, the report
+preserves discordant win/loss counts and exact two-sided McNemar tests rather
+than treating arm accuracies as independent samples. Parameter counts refer
+only to trained Shohin surfaces; all reported large-MoE router and expert
+weights remain frozen. Predeclared retention and per-domain gates are retained
+even when aggregate accuracy improves, which is why several large numerical
+gains remain non-promotions.
 
 ## Primary protected-board result
 
