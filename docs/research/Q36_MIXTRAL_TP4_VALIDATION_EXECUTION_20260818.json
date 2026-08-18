@@ -1,6 +1,6 @@
 {
   "schema": "shohin-q36-mixtral-tp4-validation-execution-v1",
-  "status": "active",
+  "status": "complete",
   "date": "2026-08-18",
   "host": "mistralai/Mixtral-8x22B-Instruct-v0.1",
   "parameters": {
@@ -37,7 +37,8 @@
     "rows": 1023,
     "source_sha256": "98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778",
     "assessor_sha256": "af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e",
-    "assessor_opened": false,
+    "assessor_opened": true,
+    "assessor_open_phase": "after_all_four_arms_and_application_validated",
     "shards": 16,
     "groups": [
       {"group": 0, "row_start": 0, "row_end": 256},
@@ -90,12 +91,39 @@
     "apply_and_score_runtime_manifest_sha256": "73ba8a2a6c4c0d46ebd11c4dd78862882f4b6e9ff3200f85c1edc46adde13f57",
     "score_contract": "score_three_distinct_matched_completions_once_and_derive_selective_commit_from_selected_arm",
     "verified_generation_progress": {
-      "verified_at_utc": "2026-08-18T18:18:00Z",
-      "verified_rows": 512,
+      "verified_at_utc": "2026-08-18T18:31:00Z",
+      "verified_rows": 1023,
       "expected_rows": 1023,
-      "atomic_artifact_files": 48,
+      "atomic_artifact_files": 96,
       "assessor_opened": false,
       "completed_groups": [
+        {
+          "group": 0,
+          "row_start": 0,
+          "row_end": 256,
+          "identities": 256,
+          "jobs": [763707, 763708, 763709, 763710],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "40cbe45a7d33094d33d8cc13f7da28df0cf00aacf0137c764c7a03e1db13d976",
+          "artifact_bytes": 899280,
+          "generated_tokens": {
+            "unchanged": 115405,
+            "self_refinement": 78702,
+            "revision": 2271
+          },
+          "max_token_exhausted": {
+            "unchanged": 44,
+            "self_refinement": 27,
+            "revision": 0
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
+        },
         {
           "group": 1,
           "row_start": 256,
@@ -149,9 +177,38 @@
           "assessor_access_count": 0,
           "ordered_identity_replay": "pass",
           "hash_and_routing_replay": "pass"
+        },
+        {
+          "group": 3,
+          "row_start": 768,
+          "row_end": 1023,
+          "identities": 255,
+          "jobs": [763726, 763727, 763728, 763729],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "ee03bfae9c7036238dc519ddbc038eb32a9f646e2f6bf94bc32f284fe2de3f7a",
+          "artifact_bytes": 881283,
+          "generated_tokens": {
+            "unchanged": 110285,
+            "self_refinement": 75598,
+            "revision": 3128
+          },
+          "max_token_exhausted": {
+            "unchanged": 42,
+            "self_refinement": 25,
+            "revision": 1
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
         }
       ],
-      "remaining_groups": [0, 3]
+      "remaining_groups": [],
+      "generation_artifact_manifest_sha256": "ee4313254fee03021b8767282986fc452cbafee57d4e15b8cb40a89aeccd62a3",
+      "generation_artifact_bytes": 3543256
     },
     "scheduler_acceleration": {
       "changed_scientific_bytes": false,
@@ -192,5 +249,19 @@
       "replacement_nccl_broadcast": "pass"
     }
   ],
-  "next_action": "wait_for_generation_then_automatic_apply_and_atomic_score"
+  "final_result": {
+    "result": "FAIL_SELECTIVE_COMMIT_GATE",
+    "score_sha256": "7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8",
+    "application_report_sha256": "97eeb625792072c0a39d5e24ecd30ed61e71f7a1eebb8a5833c5f9698c4e3301",
+    "commit_candidates_sha256": "b5cf7ea41ff1b275247df36d46e5d01dc9bd0af7452e2b89b06d21c0d443dd3f",
+    "selections_sha256": "7b7430a7d9c7e9756ac0331b677a81715c3eb60b6f44096b7b03ec17dd01e943",
+    "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "trained_revision_correct": 448,
+    "unchanged_correct": 147,
+    "self_refinement_correct": 356,
+    "selective_commit_correct": 287,
+    "selective_commit_unchanged_correct_retention": 0.9319727891156463,
+    "stop_after_result": true
+  },
+  "next_action": "stop_and_preserve_result"
 }

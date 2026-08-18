@@ -1,0 +1,192 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-validation-result-v1",
+  "status": "complete",
+  "date": "2026-08-18",
+  "terminal_result": "FAIL_SELECTIVE_COMMIT_GATE",
+  "stop_after_result": true,
+  "host": {
+    "model": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "total_parameters": 141000000000,
+    "active_parameters": 39000000000,
+    "model_manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7"
+  },
+  "architecture": {
+    "draft_origin_model": "Qwen3.6-35B-A3B",
+    "draft_origin_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "revision_surface": "shohin-mixtral-8x22b-shared-post-mlp-v1",
+    "controlled_layer_indices": [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55],
+    "trainable_parameters": 3538944,
+    "native_router_expert_trainables": 0,
+    "revision_checkpoint_sha256": "341d2c4a596a9d51a57698f7782fa5a64242db0b85923d47fc7a76a9e9415044",
+    "commit_model_sha256": "eb7512137a9d13224dbbb25d0866eeda6bcf3aa252b6a323b0902fa1d998dbc6"
+  },
+  "validation": {
+    "rows": 1023,
+    "domains": {
+      "bbh_logic": 497,
+      "math500": 504,
+      "mbpp": 22
+    },
+    "source_sha256": "98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778",
+    "assessors_sha256": "af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e",
+    "generation_artifact_files": 96,
+    "generation_artifact_bytes": 3543256,
+    "generation_artifact_manifest_sha256": "ee4313254fee03021b8767282986fc452cbafee57d4e15b8cb40a89aeccd62a3",
+    "distinct_completions_scored_per_identity": 3,
+    "assessor_open_phase": "after_all_four_arms_and_application_validated"
+  },
+  "arms": {
+    "unchanged": {
+      "correct": 147,
+      "total": 1023,
+      "accuracy": 0.1436950146627566,
+      "unchanged_correct_retention": 1.0,
+      "domains": {
+        "bbh_logic": {"correct": 106, "total": 497},
+        "math500": {"correct": 25, "total": 504},
+        "mbpp": {"correct": 16, "total": 22}
+      },
+      "max_token_exhausted": 163,
+      "empty_completions": 0
+    },
+    "self_refinement": {
+      "correct": 356,
+      "total": 1023,
+      "accuracy": 0.3479960899315738,
+      "gain_over_unchanged_count": 209,
+      "gain_over_unchanged_percentage_points": 20.43010752688172,
+      "unchanged_correct_retained": 97,
+      "unchanged_correct_retention": 0.6598639455782312,
+      "domains": {
+        "bbh_logic": {"correct": 224, "total": 497},
+        "math500": {"correct": 121, "total": 504},
+        "mbpp": {"correct": 11, "total": 22}
+      },
+      "max_token_exhausted": 119,
+      "empty_completions": 0
+    },
+    "trained_revision": {
+      "correct": 448,
+      "total": 1023,
+      "accuracy": 0.43792766373411535,
+      "gain_over_unchanged_count": 301,
+      "gain_over_unchanged_percentage_points": 29.423264907135874,
+      "unchanged_correct_retained": 95,
+      "unchanged_correct_retention": 0.6462585034013606,
+      "domains": {
+        "bbh_logic": {"correct": 272, "total": 497},
+        "math500": {"correct": 176, "total": 504},
+        "mbpp": {"correct": 0, "total": 22}
+      },
+      "max_token_exhausted": 1,
+      "empty_completions": 0
+    },
+    "selective_commit": {
+      "correct": 287,
+      "total": 1023,
+      "accuracy": 0.2805474095796676,
+      "gain_over_unchanged_count": 140,
+      "gain_over_unchanged_percentage_points": 13.685239491691105,
+      "unchanged_correct_retained": 137,
+      "unchanged_correct_retention": 0.9319727891156463,
+      "retained_correct_required_for_95_percent": 140,
+      "retained_correct_shortfall": 3,
+      "domains": {
+        "bbh_logic": {"correct": 222, "total": 497},
+        "math500": {"correct": 49, "total": 504},
+        "mbpp": {"correct": 16, "total": 22}
+      },
+      "selection_counts": {
+        "unchanged": 699,
+        "self_refinement": 210,
+        "revision": 114
+      },
+      "max_token_exhausted": 141,
+      "empty_completions": 0
+    }
+  },
+  "paired_comparisons": {
+    "revision_vs_unchanged": {
+      "left_only_correct": 353,
+      "right_only_correct": 52,
+      "net_correct": 301,
+      "mcnemar_exact_two_sided_p": 4.438913225046853e-56
+    },
+    "revision_vs_self_refinement": {
+      "left_only_correct": 131,
+      "right_only_correct": 39,
+      "net_correct": 92,
+      "mcnemar_exact_two_sided_p": 7.922247806672471e-13
+    },
+    "commit_vs_unchanged": {
+      "left_only_correct": 150,
+      "right_only_correct": 10,
+      "net_correct": 140,
+      "mcnemar_exact_two_sided_p": 3.330893983425689e-33
+    },
+    "commit_vs_self_refinement": {
+      "left_only_correct": 56,
+      "right_only_correct": 125,
+      "net_correct": -69,
+      "mcnemar_exact_two_sided_p": 3.142983309403191e-7
+    },
+    "commit_vs_revision": {
+      "left_only_correct": 46,
+      "right_only_correct": 207,
+      "net_correct": -161,
+      "mcnemar_exact_two_sided_p": 1.4359605708105292e-25
+    }
+  },
+  "gate": {
+    "commit_improves_unchanged": true,
+    "commit_improves_self_refinement": false,
+    "commit_improves_revision": false,
+    "commit_retains_at_least_95_percent_unchanged_correct": false,
+    "commit_all_domains_nonnegative_vs_unchanged": true,
+    "pass": false
+  },
+  "interpretation": {
+    "demonstrated_moe_improvement": "The trained cross-family revision improves Mixtral by 301 correct answers over unchanged and 92 over self-refinement on the matched 1,023-row validation.",
+    "conservative_release_outcome": "The trained revision loses executable-code capability and baseline retention; the learned selective commit restores code and improves every domain over unchanged but retains 137/147 unchanged-correct cases, three fewer than the 140 required for 95 percent.",
+    "selector_generalization": "The selective commit passed 95 percent retention out of fold on the 256-row screen but did not retain that threshold on the source-disjoint 1,023-row validation.",
+    "qualified_release": false
+  },
+  "custody": {
+    "score_sha256": "7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8",
+    "application_report_sha256": "97eeb625792072c0a39d5e24ecd30ed61e71f7a1eebb8a5833c5f9698c4e3301",
+    "commit_candidates_sha256": "b5cf7ea41ff1b275247df36d46e5d01dc9bd0af7452e2b89b06d21c0d443dd3f",
+    "selections_sha256": "7b7430a7d9c7e9756ac0331b677a81715c3eb60b6f44096b7b03ec17dd01e943",
+    "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "sandbox_probe_sha256": "43da238ea874ad7b15ae68091482c948c5c9b5a48a8ec23d3bf7a7add86ced09",
+    "sandbox_probe_count": 41,
+    "sandbox_all_probes_passed": true,
+    "ordered_identity_replay": "pass",
+    "metric_and_pairing_replay": "pass",
+    "sealed_access": {"holdout": 0, "product": 0, "public": 0},
+    "task_label_used_as_commit_feature": false
+  },
+  "accounting": {
+    "generation_jobs": 16,
+    "generation_h100_seconds": 254899,
+    "generation_h100_hours": 70.80527777777777,
+    "generation_restarts": 0,
+    "application_job": 763730,
+    "application_elapsed_seconds": 14,
+    "score_job": 763731,
+    "score_elapsed_seconds": 77,
+    "all_required_jobs_completed_zero_exit": true,
+    "lustre_used_kib": 866537500,
+    "lustre_hard_limit_kib": 1059061760,
+    "lustre_headroom_kib": 192524260,
+    "lustre_used_inodes": 541338,
+    "lustre_hard_limit_inodes": 1010000,
+    "lustre_headroom_inodes": 468662
+  },
+  "code": {
+    "generation_commit": "35facaefe9567285501fd963a4ba0b3fab82e40a",
+    "generation_runtime_manifest_sha256": "b19b025234fd8f1a4ad7ecbb2f0c2ce82b08ab44455c8f3ea39ea0c4c51c085b",
+    "application_and_score_commit": "c52ca30658b9467a6494be5d72e21a3cfd524407",
+    "application_and_score_runtime_manifest_sha256": "73ba8a2a6c4c0d46ebd11c4dd78862882f4b6e9ff3200f85c1edc46adde13f57"
+  }
+}
