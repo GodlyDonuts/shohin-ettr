@@ -47,12 +47,12 @@ for group in 0 1 2 3; do
 done
 worker="$RUNTIME/train/jobs/mixtral_8x22b_multinode_tp_evaluate_matched.sbatch"
 [[ -f "$worker" && ! -L "$worker" ]]
-exports="PYTHON=$PYTHON,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256"
-exports+=",MODEL_ROOT=$MODEL_ROOT,MODEL_MANIFEST=$MODEL_MANIFEST"
-exports+=",MODEL_MANIFEST_SHA256=$MODEL_MANIFEST_SHA256"
-exports+=",MECHANICS_REPORT=$MECHANICS_REPORT,REVISION_CHECKPOINT=$REVISION_CHECKPOINT"
-exports+=",SOURCE=$SOURCE,DRAFT_CANDIDATES=$DRAFT_CANDIDATES,RUN_ROOT=$RUN_ROOT"
-exports+=",EXPECTED_ROWS=1023,SHARD_COUNT=16,SHARD_GROUP_COUNT=4"
+base_exports="PYTHON=$PYTHON,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256"
+base_exports+=",MODEL_ROOT=$MODEL_ROOT,MODEL_MANIFEST=$MODEL_MANIFEST"
+base_exports+=",MODEL_MANIFEST_SHA256=$MODEL_MANIFEST_SHA256"
+base_exports+=",MECHANICS_REPORT=$MECHANICS_REPORT,REVISION_CHECKPOINT=$REVISION_CHECKPOINT"
+base_exports+=",SOURCE=$SOURCE,RUN_ROOT=$RUN_ROOT"
+base_exports+=",EXPECTED_ROWS=1023,SHARD_COUNT=16,SHARD_GROUP_COUNT=4"
 
 rank_node_pools=(
   "evc22,evc27,evc35,evc39,evc44"
@@ -69,10 +69,18 @@ cleanup_partial_submission() {
 }
 trap cleanup_partial_submission EXIT
 for group in 0 1 2 3; do
+  first_draft=$((group * 4))
+  group_drafts=$(IFS=:; echo "${draft_paths[*]:first_draft:4}")
+  IFS=: read -r -a selected_drafts <<< "$group_drafts"
+  [[ ${#selected_drafts[@]} -eq 4 ]]
+  for offset in 0 1 2 3; do
+    [[ "${selected_drafts[$offset]}" == "${draft_paths[$((first_draft + offset))]}" ]]
+  done
+  group_exports="$base_exports,DRAFT_CANDIDATES=$group_drafts"
   for rank in 0 1 2 3; do
     job=$(sbatch --parsable "${dependency_args[@]}" --time=06:00:00 \
       --nodelist="${rank_node_pools[$rank]}" \
-      --export="$exports,SHARD_GROUP_INDEX=$group,WORLD_RANK=$rank" "$worker")
+      --export="$group_exports,SHARD_GROUP_INDEX=$group,WORLD_RANK=$rank" "$worker")
     [[ "$job" =~ ^[0-9]+$ ]]
     jobs+=("$job")
     records+=("group=$group rank=$rank job=$job")
