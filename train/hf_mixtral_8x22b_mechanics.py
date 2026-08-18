@@ -128,7 +128,7 @@ def _state_sha256(state: dict[str, torch.Tensor]) -> str:
         digest.update(name.encode())
         digest.update(str(value.dtype).encode())
         digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
-        digest.update(value.numpy().tobytes())
+        digest.update(value.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
 
 
@@ -139,7 +139,7 @@ def _router_receipt(model: MixtralRevisionModel) -> str:
         digest.update(str(index).encode())
         digest.update(str(value.dtype).encode())
         digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
-        digest.update(value.numpy().tobytes())
+        digest.update(value.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
 
 
