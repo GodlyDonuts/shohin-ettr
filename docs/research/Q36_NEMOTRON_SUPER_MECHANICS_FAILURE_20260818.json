@@ -1,0 +1,32 @@
+{
+  "schema": "shohin-q36-nemotron-super-mechanics-failure-v1",
+  "date": "2026-08-18",
+  "status": "closed_infrastructure_failure_no_scientific_result",
+  "job": {
+    "id": 763585,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 1152,
+    "node": "evc43",
+    "h100s": 2,
+    "restarts": 0
+  },
+  "repair_that_passed": {
+    "former_failure": "Mamba-SSM imported triton.set_allocator, which is absent from pinned Triton 3.2.0.",
+    "result": "The narrow allocator-registration compatibility bridge passed, and the job entered the complete 41,643-group weight load."
+  },
+  "terminal_failure": {
+    "cause": "Transformers 5.15.0.dev0 skipped the checkpoint's ModelOpt quantization metadata, reported quantization type modelopt as unknown, and loaded with CPU/disk offload plus meta tensors.",
+    "fail_closed_guard": "The exact two-H100 device-map assertion rejected every placement outside CUDA devices 0 and 1.",
+    "score_rows_read": 0,
+    "benchmark_rows_read": 0,
+    "scientific_result": false,
+    "stdout_sha256": "a07214a30e02367519aef64784e37919b0095cb071d5d9b10cf1da0ecf8ef5f5",
+    "stderr_sha256": "b4907cd285b9954d39a99963da7ff397fb11a072894cf355482d63651759060b"
+  },
+  "downstream": {
+    "cancelled_never_satisfiable_jobs": [763587, 763588, 763589, 763590, 763591],
+    "healthy_scientific_jobs_cancelled": 0,
+    "next_required_mechanics": "Use an actually ModelOpt-aware FP8 restoration path; do not weaken the no-CPU/no-disk placement guard or claim capability from this attempt."
+  }
+}
