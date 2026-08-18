@@ -43,7 +43,7 @@ rank_node_pools=(
   "evc22,evc27,evc35,evc39,evc44"
   "evc23,evc28,evc36,evc40,evc45"
   "evc24,evc30,evc41,evc47,evc49"
-  "evc25,evc31,evc42,evc48"
+  "evc25,evc31,evc42,evc43,evc46,evc48"
 )
 cleanup_partial_submission() {
   if (( ${#jobs[@]} > 0 && ${#jobs[@]} < 4 )); then

@@ -65,7 +65,7 @@ def test_submitter_requests_each_gpu_separately_and_avoids_orphans() -> None:
     assert SUBMIT.count('"evc22,evc27,evc35,evc39,evc44"') == 1
     assert SUBMIT.count('"evc23,evc28,evc36,evc40,evc45"') == 1
     assert SUBMIT.count('"evc24,evc30,evc41,evc47,evc49"') == 1
-    assert SUBMIT.count('"evc25,evc31,evc42,evc48"') == 1
+    assert SUBMIT.count('"evc25,evc31,evc42,evc43,evc46,evc48"') == 1
     assert "cleanup_partial_submission" in SUBMIT
     assert 'scancel "${jobs[@]}"' in SUBMIT
     assert '[[ ! -e "$RUN_ROOT" && ! -L "$RUN_ROOT" ]]' in SUBMIT
@@ -111,6 +111,7 @@ def test_distributed_training_is_four_independent_dependency_staged_jobs() -> No
     assert 'dependency+=":$job"' in TRAIN_SUBMIT
     assert 'sbatch --parsable --dependency="$dependency"' in TRAIN_SUBMIT
     assert '--nodelist="${rank_node_pools[$rank]}"' in TRAIN_SUBMIT
+    assert '"evc25,evc31,evc42,evc43,evc46,evc48"' in TRAIN_SUBMIT
     assert '--master_addr="$master_node"' in TRAIN_WORKER
     assert '--master_port="$master_port"' in TRAIN_WORKER
     assert "--rdzv_backend=c10d" not in TRAIN_WORKER
@@ -136,6 +137,7 @@ def test_matched_evaluation_is_four_independent_dependency_staged_jobs() -> None
     assert 'dependency="afterok"' in EVAL_SUBMIT
     assert 'sbatch --parsable --dependency="$dependency"' in EVAL_SUBMIT
     assert '--nodelist="${rank_node_pools[$rank]}"' in EVAL_SUBMIT
+    assert '"evc25,evc31,evc42,evc43,evc46,evc48"' in EVAL_SUBMIT
     assert '--master_addr="$master_node"' in EVAL_WORKER
     assert '--master_port="$master_port"' in EVAL_WORKER
     assert "--rdzv_backend=c10d" not in EVAL_WORKER
