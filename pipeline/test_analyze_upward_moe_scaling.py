@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from analyze_upward_moe_scaling import UpwardMoEScalingError, analyze
+from analyze_upward_moe_scaling import UpwardMoEScalingError, analyze, normalize_point
 
 DOMAINS = {"bbh_logic": 128, "math500": 117, "mbpp": 11}
 JOB = Path(__file__).with_name("jobs") / "analyze_upward_moe_scaling.sbatch"
@@ -87,6 +87,66 @@ def _qwen_revision() -> dict:
                 },
             },
         },
+    }
+
+
+def _qwen_external_score() -> dict:
+    summary = _qwen_revision()
+    tasks = ["bbh_logic"] * 128 + ["math500"] * 117 + ["mbpp"] * 11
+    desired = {
+        "unchanged": {"bbh_logic": 71, "math500": 31, "mbpp": 9},
+        "self_refinement": {"bbh_logic": 76, "math500": 39, "mbpp": 6},
+        "revision": {"bbh_logic": 85, "math500": 45, "mbpp": 11},
+    }
+    outcomes = []
+    domain_indices = {domain: 0 for domain in DOMAINS}
+    for index, task in enumerate(tasks):
+        offset = domain_indices[task]
+        domain_indices[task] += 1
+        outcomes.append(
+            {
+                "identity_sha256": f"{index:064x}",
+                "task": task,
+                "correct": {arm: offset < desired[arm][task] for arm in desired},
+            }
+        )
+    # Rewire six baseline-correct revision rows to produce 36 wins / 6 losses
+    # while preserving the exact marginal and domain totals.
+    bbh = [row for row in outcomes if row["task"] == "bbh_logic"]
+    for row in bbh[65:71]:
+        row["correct"]["revision"] = False
+    for row in bbh[85:91]:
+        row["correct"]["revision"] = True
+    arms = {}
+    for arm in ("unchanged", "self_refinement", "revision"):
+        domains = {}
+        for domain in DOMAINS:
+            selected = [row for row in outcomes if row["task"] == domain]
+            domains[domain] = {
+                "correct": sum(row["correct"][arm] for row in selected),
+                "total": len(selected),
+            }
+        arms[arm] = {
+            "correct": sum(row["correct"][arm] for row in outcomes),
+            "domains": domains,
+        }
+    arms["revision"].update(
+        {
+            "gain_over_unchanged_count": 30,
+            "paired_vs_unchanged": {
+                "arm_only_correct": 36,
+                "unchanged_only_correct": 6,
+                "mcnemar_exact_two_sided_p": 2.8288777684792876e-06,
+            },
+        }
+    )
+    assert arms["revision"]["correct"] == summary["arms"]["revision"]["correct"]
+    return {
+        "schema": "shohin-q36-mtr-external-score-v1",
+        "status": "complete",
+        "rows": 256,
+        "arms": arms,
+        "outcomes": outcomes,
     }
 
 
@@ -238,6 +298,25 @@ def test_gpt_oss_point_completes_cross_family_curve(tmp_path: Path) -> None:
     assert result["capability_curve_claim"] == (
         "positive_upward_cross_family_moe_capability_scaling_supported"
     )
+
+
+def test_raw_qwen_external_score_normalizes_without_summary_copy(
+    tmp_path: Path,
+) -> None:
+    point = normalize_point(_write(tmp_path / "qwen_raw.json", _qwen_external_score()))
+    assert point["host"] == "Qwen3.6-35B-A3B"
+    assert point["treatment_correct"] == 141
+    assert point["unchanged_correct"] == 111
+    assert point["paired_wins"] == 36
+    assert point["paired_losses"] == 6
+    assert point["unchanged_correct_retained"] == 105
+
+
+def test_raw_qwen_external_outcome_tamper_fails(tmp_path: Path) -> None:
+    payload = _qwen_external_score()
+    payload["outcomes"][0]["correct"]["revision"] = False
+    with pytest.raises(UpwardMoEScalingError, match="outcome totals"):
+        normalize_point(_write(tmp_path / "tampered.json", payload))
 
 
 def test_two_points_refuse_scaling_claim(tmp_path: Path) -> None:
