@@ -79,6 +79,53 @@ The deployable system does not receive correctness labels, task-router labels,
 external verifier feedback, or tool results at inference time. The published
 commit stage selects a whole trajectory rather than splicing answer fragments.
 
+## Architecture
+
+Let `G(θ, p; b)` denote one bounded generation by backbone state `θ` from
+prompt `p` with output budget `b`. The dense system first generates a complete
+internal draft
+
+`d = G(θ + δ_draft, x; b)`,
+
+then generates a complete revision conditioned on both source and draft,
+
+`r = G(θ + δ_revision, x || d; b)`.
+
+The matched unchanged role generates its own complete second-pass trajectory
+`u` from the same source and draft under the same output budget. The commit
+owner receives the two coherent candidate trajectories and emits one member
+of `{u, r}`. It does not average logits, splice answer fields, or observe which
+candidate is correct. In the primary protected system, draft and revision are
+same-family Qwen3.5-9B roles; the commit owner is learned exclusively over
+their model-owned trajectories.
+
+For a frozen MoE feed-forward block `m_l` at layer `l`, the transferable
+revision surface used on Mixtral is the post-block low-rank residual
+
+`m'_l(h) = m_l(h) + (α / q) B_l A_l h`,
+
+where `q` is the residual rank. Only `A_l` and `B_l` are trained; the native
+router, experts, attention, embeddings, and language-model head remain frozen.
+The executed Mixtral transfer controls the final 16 layers, uses rank 18 and
+`α = 18`, and trains 3,538,944 parameters. Both draft-conditioned Mixtral
+arms receive the same immutable Qwen3.6-35B-A3B draft trajectories, making
+this a deliberately cross-family model-owned transfer rather than a
+same-family draft claim.
+
+The Qwen3.6 causal gate instead freezes two already learned residual branches,
+owner `Δ_o,l(h)` and revision `Δ_r,l(h)`, and learns only a tokenwise scalar
+
+`g_l(h) = sigmoid(w_l h + b_l)`.
+
+Its controlled block is
+
+`m'_l(h) = m_l(h) + Δ_o,l(h) + g_l(h)[Δ_r,l(h) - Δ_o,l(h)]`.
+
+Thus `g_l(h)=0` recovers the owner residual, `g_l(h)=1` recovers the revision
+residual, and intermediate values form a causal hidden-state blend. The 32,784
+gate parameters are trained by response loss only; no selector target or
+auxiliary routing label is used in the reported result.
+
 ## Matched experimental design
 
 Every capability comparison holds the evaluation identities and decoding
