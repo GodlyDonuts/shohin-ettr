@@ -89,6 +89,70 @@
     "apply_and_score_commit": "c52ca30658b9467a6494be5d72e21a3cfd524407",
     "apply_and_score_runtime_manifest_sha256": "73ba8a2a6c4c0d46ebd11c4dd78862882f4b6e9ff3200f85c1edc46adde13f57",
     "score_contract": "score_three_distinct_matched_completions_once_and_derive_selective_commit_from_selected_arm",
+    "verified_generation_progress": {
+      "verified_at_utc": "2026-08-18T18:18:00Z",
+      "verified_rows": 512,
+      "expected_rows": 1023,
+      "atomic_artifact_files": 48,
+      "assessor_opened": false,
+      "completed_groups": [
+        {
+          "group": 1,
+          "row_start": 256,
+          "row_end": 512,
+          "identities": 256,
+          "jobs": [763711, 763712, 763713, 763714],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "a56bd19cc76b832ef3265c401bad13e098a29893ba075a903901e544c5cff8ba",
+          "artifact_bytes": 861420,
+          "generated_tokens": {
+            "unchanged": 109943,
+            "self_refinement": 71991,
+            "revision": 2407
+          },
+          "max_token_exhausted": {
+            "unchanged": 42,
+            "self_refinement": 36,
+            "revision": 0
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
+        },
+        {
+          "group": 2,
+          "row_start": 512,
+          "row_end": 768,
+          "identities": 256,
+          "jobs": [763715, 763716, 763717, 763718],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "545a6bbd9c7f8fd6060ac55095b1d8a245b79410a686e2c2d35a9e3eda9755d7",
+          "artifact_bytes": 901273,
+          "generated_tokens": {
+            "unchanged": 110533,
+            "self_refinement": 77379,
+            "revision": 2410
+          },
+          "max_token_exhausted": {
+            "unchanged": 35,
+            "self_refinement": 31,
+            "revision": 0
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
+        }
+      ],
+      "remaining_groups": [0, 3]
+    },
     "scheduler_acceleration": {
       "changed_scientific_bytes": false,
       "duplicate_jobs_created": 0,
