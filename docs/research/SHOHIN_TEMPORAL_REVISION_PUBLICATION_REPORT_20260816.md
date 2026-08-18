@@ -160,6 +160,47 @@ recovers retention without preserving the revision gain. The figure is
 reproducible with `pipeline/render_shohin_publication_figure.py`; vector PDF
 and SVG are preserved together.
 
+## Relation to prior work
+
+Shohin is closest to four research lines but changes the experimental object in
+each. Test-time methods such as
+[self-consistency](https://arxiv.org/abs/2203.11171) and compute-optimal
+[search or adaptive response refinement](https://arxiv.org/abs/2408.03314)
+spend additional inference compute by sampling or searching trajectories,
+often with answer aggregation or a verifier. Shohin instead assigns learned
+owners to a bounded draft, a complete revision, and a coherent commit; the
+reported deployable path does not use correctness feedback or answer-level
+majority voting.
+
+[Self-Refine](https://arxiv.org/abs/2303.17651) and
+[Reflexion](https://arxiv.org/abs/2303.11366) improve outputs through textual
+feedback or reflection. Work on
+[intrinsic self-correction](https://openreview.net/forum?id=IkmD3fKBPQ)
+also shows that an untrained request to reconsider can degrade reasoning.
+Shohin treats generic self-refinement as a matched control: both it and trained
+revision receive the same model-owned draft and output budget. The measured
+question is therefore whether a learned temporal role adds capability beyond
+prompted reconsideration, not whether another inference call is useful.
+
+Parameter-efficient adaptation such as
+[LoRA](https://arxiv.org/abs/2106.09685) learns low-rank weight updates, while
+[ReFT](https://arxiv.org/abs/2404.03592) learns interventions on frozen hidden
+representations. Shohin uses similarly small trainable surfaces but gives them
+an explicit temporal contract: the residual is conditioned on a prior
+model-owned trajectory, and the causal MoE gate interpolates frozen owner and
+revision residual paths token by token.
+
+Conditional-compute work allocates computation across experts, tokens, or
+depth. [Switch Transformers](https://arxiv.org/abs/2101.03961) route tokens
+among sparse experts; [Mixture-of-Depths](https://arxiv.org/abs/2404.02258)
+routes tokens through selected layers; recurrent-depth
+[latent reasoning](https://arxiv.org/abs/2502.05171) and
+[Coconut](https://arxiv.org/abs/2412.06769) extend internal computation without
+requiring every step to be natural language. Shohin's completed MoE results do
+not modify the native expert routers. They test a complementary axis: whether
+frozen sparse hosts can learn *which temporal state* should own a token or a
+whole answer after an explicit draft has already been produced.
+
 ## Primary protected-board result
 
 The solved-count denominator is 538: GSM8K 100, MATH-500 100, executable code
