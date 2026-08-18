@@ -1,0 +1,67 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-fit-complete-v1",
+  "recorded_utc": "2026-08-18T09:14:00Z",
+  "status": "COMPLETE",
+  "capability_result_available": false,
+  "runtime_source_commit": "648513663570cdd69ecbeb8cc693db76a3f27769",
+  "jobs": [
+    {"job_id": 763632, "rank": 0, "node": "evc35", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 3508, "restarts": 0},
+    {"job_id": 763633, "rank": 1, "node": "evc23", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 3508, "restarts": 0},
+    {"job_id": 763634, "rank": 2, "node": "evc30", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 3508, "restarts": 0},
+    {"job_id": 763635, "rank": 3, "node": "evc43", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 3508, "restarts": 0}
+  ],
+  "model": {
+    "name": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7",
+    "parallelism": "native-transformers-tensor-parallel",
+    "world_size": 4,
+    "weight_dtype": "bfloat16",
+    "quantization": "none"
+  },
+  "treatment": {
+    "architecture": "shohin-mixtral-8x22b-shared-post-mlp-v1",
+    "attachment_surface": "post-mlp-residual",
+    "controlled_layer_indices": [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55],
+    "trainable_parameters": 3538944,
+    "native_router_expert_trainables": 0,
+    "updates": 256,
+    "gradient_accumulation": 8,
+    "learning_rate": 0.00002,
+    "seed": 2026080815
+  },
+  "data": {
+    "schema": "shohin-q36-mtr-revision-train-v1",
+    "sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "draft_origin_model": "Qwen3.6-35B-A3B",
+    "draft_origin_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "consumed_presentations": 2048,
+    "charged_tokens": 2299343,
+    "prompt_tokens": 1930725,
+    "response_tokens": 368618,
+    "truncated_rows": 0,
+    "sequence_receipt_sha256": "d527d2ec15941e29a659bb1076a8b03d6594f5da26dbff810988add28c4732ae"
+  },
+  "artifacts": {
+    "training_report_sha256": "014329c802c0d7a23a8e99f36de6f53493d267da68d4cd7a1ef03b52e496e8a9",
+    "mechanics_report_sha256": "58c259cee31f9a74d6d571442557e64cce7d8d7c694f8e65b893e22ffdd571e1",
+    "checkpoint_sha256": "341d2c4a596a9d51a57698f7782fa5a64242db0b85923d47fc7a76a9e9415044",
+    "checkpoint_bytes": 14169506,
+    "initial_trainable_state_sha256": "19a6abcb24ba2dab5576af0b3c0a7e6371a1f01c15f085f8c153ad221e046dcd",
+    "final_trainable_state_sha256": "8068951539a5639c6ea545c9fe77a9fdb36514512a3a3603c025c56890290b59",
+    "serialization_restore_exact": true
+  },
+  "resources": {
+    "fit_elapsed_seconds": 2530.7941061370075,
+    "total_elapsed_seconds": 3449.735982546117,
+    "maximum_rank_peak_gpu_memory_bytes": 73855438848
+  },
+  "sealed_access": {"holdout": 0, "product": 0, "public": 0},
+  "active_measurement": {
+    "evaluation_jobs": [763636, 763637, 763638, 763639],
+    "score_job": 763640,
+    "rows": 256,
+    "arms": ["unchanged", "self_refinement", "revision"]
+  },
+  "interpretation": "The fixed 256-update cross-family Shohin fit completed and restored exactly on the pinned Mixtral 8x22B host. This establishes a trained, immutable treatment checkpoint and routing receipt; it is not yet evidence of capability improvement. The source-disjoint matched screen is running separately."
+}
