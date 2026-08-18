@@ -1,0 +1,92 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-validation-execution-v1",
+  "status": "active",
+  "date": "2026-08-18",
+  "host": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+  "parameters": {
+    "total": 141000000000,
+    "active": 39000000000
+  },
+  "measured_screen": {
+    "rows": 256,
+    "unchanged_correct": 45,
+    "self_refinement_correct": 105,
+    "revision_correct": 114,
+    "revision_gain_over_unchanged_count": 69,
+    "revision_gain_over_unchanged_percentage_points": 26.953125,
+    "revision_gain_over_self_refinement_count": 9,
+    "revision_unchanged_correct_retention": 0.7555555555555555,
+    "revision_mbpp_correct": 0,
+    "screen_score_sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50"
+  },
+  "learned_commit": {
+    "model_sha256": "eb7512137a9d13224dbbb25d0866eeda6bcf3aa252b6a323b0902fa1d998dbc6",
+    "training_report_sha256": "43872a529d98cc74c2e6875b5c3f685dab04a8c574a8144a6b9925eceb777703",
+    "oof_selections_sha256": "280ea94ee0e566838aa6d48644e099f453fbc4d5e1b08c4b139bb76f95d24a76",
+    "screen_oof_correct": 80,
+    "screen_oof_unchanged_correct_retention": 0.9555555555555556,
+    "screen_oof_domain_correct": {
+      "bbh_logic": 65,
+      "math500": 8,
+      "mbpp": 7
+    },
+    "validation_labels_read": 0,
+    "task_label_used_as_feature": false
+  },
+  "validation": {
+    "rows": 1023,
+    "source_sha256": "98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778",
+    "assessor_sha256": "af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e",
+    "assessor_opened": false,
+    "shards": 16,
+    "groups": [
+      {"group": 0, "row_start": 0, "row_end": 256},
+      {"group": 1, "row_start": 256, "row_end": 512},
+      {"group": 2, "row_start": 512, "row_end": 768},
+      {"group": 3, "row_start": 768, "row_end": 1023}
+    ],
+    "generation_commit": "35facaefe9567285501fd963a4ba0b3fab82e40a",
+    "generation_runtime_manifest_sha256": "b19b025234fd8f1a4ad7ecbb2f0c2ce82b08ab44455c8f3ea39ea0c4c51c085b",
+    "generation_jobs": [
+      763707,
+      763708,
+      763709,
+      763710,
+      763711,
+      763712,
+      763713,
+      763714,
+      763715,
+      763716,
+      763717,
+      763718,
+      763719,
+      763720,
+      763721,
+      763722
+    ],
+    "apply_job": 763723,
+    "score_job": 763724,
+    "apply_and_score_commit": "c52ca30658b9467a6494be5d72e21a3cfd524407",
+    "apply_and_score_runtime_manifest_sha256": "73ba8a2a6c4c0d46ebd11c4dd78862882f4b6e9ff3200f85c1edc46adde13f57",
+    "score_contract": "score_three_distinct_matched_completions_once_and_derive_selective_commit_from_selected_arm",
+    "automatic_requeue": false
+  },
+  "infrastructure_attempts": [
+    {
+      "jobs": "763668-763683",
+      "status": "failed_before_model_load",
+      "elapsed_seconds_max": 1,
+      "cause": "launcher exported all sixteen fixed-draft shards to a four-shard group worker",
+      "scientific_outputs": 0
+    },
+    {
+      "jobs": "763689-763704",
+      "status": "failed_before_model_load",
+      "elapsed_seconds_range": [9, 43],
+      "cause": "Python worker retained full-dataset draft-count and floor-balanced source geometry after launcher partition repair",
+      "scientific_outputs": 0
+    }
+  ],
+  "next_action": "wait_for_generation_then_automatic_apply_and_atomic_score"
+}
