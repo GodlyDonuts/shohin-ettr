@@ -1,0 +1,138 @@
+{
+  "schema": "shohin-q36-gpt-oss-120b-mechanics-launch-v1",
+  "status": "model_and_overlay_complete_mechanics_pending_priority",
+  "recorded_at_utc": "2026-08-18T19:45:35Z",
+  "purpose": "Establish a score-free one-H100 mechanics proof for transferring the Shohin post-MLP temporal-revision residual to the OpenAI GPT-OSS-120B MXFP4 MoE host.",
+  "source": {
+    "branch": "codex/q36-mechanics-generation-prepare",
+    "commit": "fb759d28de20864ba30c089f4b7023402ed25815",
+    "private_origin_pushed": true,
+    "public_push_disabled": true
+  },
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_mechanics_fb759d28_r1",
+    "manifest_sha256": "49891d4099e2122333bb44fcfa48a07d110c4452fe93bee021c73a2101f91c1e",
+    "regular_files": 198,
+    "directories": 5,
+    "symlinks": 0,
+    "special_files": 0,
+    "writable_members": 0,
+    "source_commit": "fb759d28de20864ba30c089f4b7023402ed25815"
+  },
+  "model": {
+    "id": "openai/gpt-oss-120b",
+    "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/gpt-oss-120b-b5c939de-r1",
+    "acquisition_job": 764083,
+    "acquisition_state": "COMPLETED",
+    "acquisition_exit_code": "0:0",
+    "acquisition_elapsed_seconds": 862,
+    "model_files": 26,
+    "manifest_entries": 27,
+    "covered_bytes": 65276859410,
+    "manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "acquisition_report_sha256": "9b33b1c269070124963168ae3245dae5f6fb445f26ea217a1ea9f6da501370c5",
+    "projection_excludes": [
+      "metal/**",
+      "original/**"
+    ],
+    "exact_membership": true,
+    "symlinks": 0,
+    "writable_members": 0
+  },
+  "overlay": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_mxfp4_overlay_fb759d28_r1",
+    "report": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_mxfp4_overlay_fb759d28_r1.report.json",
+    "construction_job": 764084,
+    "construction_state": "COMPLETED",
+    "construction_exit_code": "0:0",
+    "construction_elapsed_seconds": 176,
+    "manifest_entries": 596,
+    "covered_bytes": 570183575,
+    "manifest_sha256": "b30e527f324e018aacd17bb3fdfb3275ef01f9fca4f13043fa44681f6b26244c",
+    "report_sha256": "97049327cd066aab8636f5335689f1396e3f0cd435b3fd5e865d8bc234e10296",
+    "packages": {
+      "kernels": "0.16.0",
+      "kernels-data": "0.16.0",
+      "triton": "3.4.0"
+    },
+    "kernel_repository": "kernels-community/gpt-oss-triton-kernels",
+    "kernel_revision": "9655fcf7d0f638bec4a82f6f1a70014f0aa8cfb0",
+    "exact_membership": true,
+    "writable_members": 0
+  },
+  "mechanics": {
+    "job": 764085,
+    "state": "PENDING",
+    "reason": "Priority",
+    "dependency": null,
+    "gpu_request": "gres/gpu:nvidia_h100_pcie:1",
+    "nodes": 1,
+    "cpus": 16,
+    "memory": "128G",
+    "requeue": false,
+    "excluded_nodes": [
+      "evc26",
+      "evc29",
+      "evc31",
+      "evc32",
+      "evc38"
+    ],
+    "original_time_limit_seconds": 7200,
+    "current_time_limit_seconds": 2700,
+    "walltime_adjustment_basis": {
+      "comparable_mixtral_141b_mechanics_elapsed_seconds": 931,
+      "required_safety_multiplier": 1.25,
+      "provided_safety_multiplier": 2.9,
+      "scientific_bytes_changed": false
+    },
+    "score_or_assessor_rows_authorized": 0,
+    "scientific_result_claimed": false
+  },
+  "host_contract": {
+    "total_parameters": 117000000000,
+    "active_parameters": 5100000000,
+    "layers": 36,
+    "experts": 128,
+    "experts_active_per_token": 4,
+    "native_quantization": "mxfp4",
+    "shohin_attachment": "post-mlp-residual",
+    "controlled_layers": 16,
+    "controlled_layer_indices": [
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35
+    ],
+    "rank": 18,
+    "alpha": 18.0,
+    "trainable_parameters": 1658880,
+    "native_router_expert_trainables": 0
+  },
+  "newton": {
+    "quota_observed_at_utc": "2026-08-18T19:44:24Z",
+    "lustre_used_kib": 930845780,
+    "lustre_hard_limit_kib": 1059061760,
+    "lustre_headroom_kib": 128215980,
+    "lustre_files": 542294,
+    "lustre_file_hard_limit": 1010000,
+    "lustre_inode_headroom": 467706,
+    "schedulable_free_h100s_at_observation": 0,
+    "evc43_h100s_allocated": 2,
+    "evc46_h100s_allocated": 2,
+    "mechanics_requests_idle_gpu_without_bound_work": false
+  },
+  "interpretation": "The exact GPT-OSS model and MXFP4 execution overlay are acquired, independently hash-bound, and immutable. The score-free Shohin mechanics proof is released and awaiting one schedulable H100. No GPT-OSS capability or benchmark improvement is claimed by this launch receipt."
+}
