@@ -1,20 +1,35 @@
 # Shohin: Model-Owned Temporal Revision
 
-> Current architecture and evidence boundary — 2026-08-11
+> Current architecture and evidence boundary — 2026-08-18
 
 ## Read this first
 
-**UPWARD-MoE EXECUTION RESUMED — 2026-08-16.** After the user ended the
-temporary hold and restored the UCF VPN path, the preserved Nemotron
-Super-120B-A12B and Mixtral-141B-A39B graphs were selectively released without
-duplication or scientific-byte changes. Mechanics roots `760382` and `760565`
-are eligible for the first healthy two-H100 capacity; all matched controls,
-scores, joint curve analysis, and publication rendering remain dependency
-staged. Result-dependent selector `760596` and launcher `760598` are also
-released: after both host scores close, they select the stronger family and
-launch its exact owner/draft/revision/temporal-gate transfer. A fresh dual- and two-single-GPU qualification proved that scheduler-
-idle `evc33` still hangs before CUDA results, so it remains excluded. Exact
-receipt: `docs/research/SHOHIN_UPWARD_MOE_RESUMPTION_20260816.md`.
+**UPWARD-MoE MEASUREMENT HAS A SECOND FAMILY RESULT — 2026-08-18.** The
+Mixtral-8x22B (`141B` total, `39B` active) transfer is complete. On the frozen
+256-row screen, trained temporal revision scores `114/256`, versus unchanged
+`45/256` and self-refinement `105/256`. On the independently frozen 1,023-row
+validation it scores `448/1023`, versus unchanged `147/1023` and
+self-refinement `356/1023`: `+301` and `+92` correct respectively. The
+selective commit retains `137/147` unchanged-correct cases (`93.2%`) but
+scores only `287/1023`, so its formal retention/control gate fails and no
+universal commit claim is made. Preserve
+`docs/research/Q36_MIXTRAL_TP4_SCREEN_RESULT_20260818.json` and
+`docs/research/Q36_MIXTRAL_TP4_VALIDATION_RESULT_20260818.json`.
+
+**THE THIRD-FAMILY GPT-OSS TEST IS LIVE BUT HAS NOT YET RUN SCIENCE.** The
+exact `openai/gpt-oss-120b` revision (`117B` total, `5.1B` active), MXFP4
+overlay, mechanics runtime, fixed identity partitions, and matched-control
+screen are sealed. One-H100 mechanics job `764085` is pending for capacity;
+CPU launchers `764230` and `764255` dependency-stage the complete screen and
+three-family scaling analysis without reserving idle GPUs. No scientific
+GPT-OSS output exists yet. Preserve
+`docs/research/Q36_GPT_OSS_120B_MECHANICS_LAUNCH_20260818.json`.
+
+**NEMOTRON SUPER IS A NULL RESTORATION, NOT A RESULT.** Its exact ModelOpt
+restoration failed before scientific execution and is excluded from scaling
+claims. Nemotron Ultra remains a future eight-H100 restoration target; it has
+not been launched and is not needed to interpret the completed Qwen and
+Mixtral evidence.
 
 **A matched dense public-benchmark campaign is prepared but unscheduled.**
 Exact executable pairs survive for Qwen3.5-9B, SmolLM3-3B, and the historical
@@ -37,24 +52,24 @@ multi-trajectory gate, but that direct difference is not significant on this
 screen. Full evidence and exact hashes are in
 `docs/research/Q36_TEMPORAL_CAUSAL_GATE_SCREEN_RESULT_20260815.json`.
 
-**Upward MoE scaling remains the active execution priority.** The existing
-Qwen 35B result anchors independent Nemotron Super-120B-A12B and
-Mixtral-141B-A39B trained-revision measurements; mechanics jobs `760382` and
-`760565` are first in the Shohin eligible GPU queue, with all downstream
-matched controls, scoring, curve analysis, and publication rendering staged.
-Once those host baselines close, the temporal causal gate is the leading
-architecture for cross-family upward transfer. Nemotron Ultra-550B-A55B is
-prepared after eight-H100 access and exact weight restoration.
+**Upward MoE scaling remains the active execution priority.** Qwen3.6-35B-A3B
+provides the causal-gated MoE result; Mixtral-8x22B provides an independent
+non-Qwen large-MoE trained-revision result; GPT-OSS-120B is the next exact
+family/active-scale point. The publication boundary is therefore already a
+cross-family result rather than a proposal, while the third point remains
+prospective. See
+`docs/research/SHOHIN_TEMPORAL_REVISION_PUBLICATION_REPORT_20260816.md` for the
+claim hierarchy and evidence hashes.
 
 **Dense scaling is complete and no longer consumes experimental capacity.**
-The scale program moves upward through sparse hosts rather than spending on
-additional dense or smaller-MoE replicas: Qwen3.6-35B-A3B is the causal
-anchor, Nemotron Super-120B-A12B and Mixtral-141B-A39B are the first
-cross-family scale tests, the stronger successful host receives the exact
-host-owned owner/draft/revision/temporal-gate transfer, and Nemotron
-Ultra-550B/55B-active is the next large-scale target. Active-parameter count
-need not form a downward-complete curve; measurable improvement at materially
-larger total and active scale is the target.
+Its five-family transfer evidence supplies the lower-scale boundary, while
+the sparse program now spans Qwen (`35B/3B-active`) and Mixtral
+(`141B/39B-active`) with GPT-OSS (`117B/5.1B-active`) queued. The architecture
+claim is deliberately component-specific: trained temporal revision transfers
+strongly across the two completed MoE families; learned routing/commit is
+supported on Qwen but fails the conservative Mixtral gate. Measurable
+capability transfer, paired controls, and honest retention boundaries—not a
+forced monotone curve—define the publication claim.
 
 **Q36-MTR has demonstrated a material MoE improvement and is actively scaling
 it.** Hierarchical synthesis scores `664/1289` (`51.5128%`) versus the matched
