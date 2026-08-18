@@ -28,13 +28,17 @@ IFS=: read -r -a draft_paths <<< "$DRAFT_CANDIDATES"
 for path in "${draft_paths[@]}"; do
   [[ "$path" == /* && -f "$path" && ! -L "$path" ]]
 done
-IFS=, read -r -a fit_jobs <<< "$FIT_JOB_IDS"
-[[ ${#fit_jobs[@]} -eq 4 ]]
-dependency=afterok
-for job in "${fit_jobs[@]}"; do
-  [[ "$job" =~ ^[0-9]+$ ]]
-  dependency+=":$job"
-done
+dependency_args=()
+if [[ "$FIT_JOB_IDS" != none ]]; then
+  IFS=, read -r -a fit_jobs <<< "$FIT_JOB_IDS"
+  [[ ${#fit_jobs[@]} -eq 4 ]]
+  dependency=afterok
+  for job in "${fit_jobs[@]}"; do
+    [[ "$job" =~ ^[0-9]+$ ]]
+    dependency+=":$job"
+  done
+  dependency_args=(--dependency="$dependency")
+fi
 
 mkdir -m 700 "$RUN_ROOT"
 mkdir -m 700 "$RUN_ROOT/coordination"
@@ -66,7 +70,7 @@ cleanup_partial_submission() {
 trap cleanup_partial_submission EXIT
 for group in 0 1 2 3; do
   for rank in 0 1 2 3; do
-    job=$(sbatch --parsable --dependency="$dependency" --time=06:00:00 \
+    job=$(sbatch --parsable "${dependency_args[@]}" --time=06:00:00 \
       --nodelist="${rank_node_pools[$rank]}" \
       --export="$exports,SHARD_GROUP_INDEX=$group,WORLD_RANK=$rank" "$worker")
     [[ "$job" =~ ^[0-9]+$ ]]
