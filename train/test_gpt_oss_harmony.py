@@ -4,6 +4,7 @@ import pytest
 
 from gpt_oss_harmony import (
     FINAL_MARKER,
+    FROZEN_CURRENT_DATE,
     GptOssHarmonyError,
     REASONING_EFFORT,
     RETURN_MARKER,
@@ -18,7 +19,8 @@ class FakeTokenizer:
         assert kwargs["reasoning_effort"] == REASONING_EFFORT
         question = messages[0]["content"]
         prefix = (
-            "<|start|>system<|message|>Reasoning: low<|end|>"
+            "<|start|>system<|message|>Reasoning: low\n"
+            "Current date: 2099-12-31\n<|end|>"
             f"<|start|>user<|message|>{question}<|end|>"
             "<|start|>assistant"
         )
@@ -48,6 +50,8 @@ def test_prompt_and_training_target_share_exact_prefix() -> None:
         max_sequence_length=512,
     )
     assert bytes(prompt_ids).decode() == prompt
+    assert f"Current date: {FROZEN_CURRENT_DATE}" in prompt
+    assert "2099-12-31" not in prompt
     assert bytes(target_ids).decode() == FINAL_MARKER + "4" + RETURN_MARKER
 
 

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from typing import Any, Sequence
 
 REASONING_EFFORT = "low"
+FROZEN_CURRENT_DATE = "2026-08-18"
 START_ASSISTANT = "<|start|>assistant"
 FINAL_MARKER = "<|channel|>final<|message|>"
 ANALYSIS_MARKER = "<|channel|>analysis<|message|>"
@@ -15,6 +17,17 @@ END_MARKER = "<|end|>"
 
 class GptOssHarmonyError(RuntimeError):
     """A GPT-OSS prompt or generated Harmony trajectory differed."""
+
+
+def _freeze_current_date(rendered: str) -> str:
+    frozen, count = re.subn(
+        r"(?m)^Current date: \d{4}-\d{2}-\d{2}$",
+        f"Current date: {FROZEN_CURRENT_DATE}",
+        rendered,
+    )
+    if count != 1:
+        raise GptOssHarmonyError("GPT-OSS current-date projection differs")
+    return frozen
 
 
 def _encode(tokenizer: Any, text: str) -> list[int]:
@@ -41,9 +54,11 @@ def render_prompt(tokenizer: Any, question: str) -> str:
         tokenize=False,
         reasoning_effort=REASONING_EFFORT,
     )
+    if not isinstance(rendered, str):
+        raise GptOssHarmonyError("GPT-OSS generation prompt differs")
+    rendered = _freeze_current_date(rendered)
     if (
-        not isinstance(rendered, str)
-        or not rendered.endswith(START_ASSISTANT)
+        not rendered.endswith(START_ASSISTANT)
         or FINAL_MARKER in rendered[rendered.rfind("<|start|>user") :]
     ):
         raise GptOssHarmonyError("GPT-OSS generation prompt differs")
@@ -77,9 +92,11 @@ def tokenize_training_example(
         tokenize=False,
         reasoning_effort=REASONING_EFFORT,
     )
+    if not isinstance(full_text, str):
+        raise GptOssHarmonyError("GPT-OSS training template differs")
+    full_text = _freeze_current_date(full_text)
     if (
-        not isinstance(full_text, str)
-        or not full_text.startswith(prompt_text)
+        not full_text.startswith(prompt_text)
         or not full_text[len(prompt_text) :].startswith(FINAL_MARKER)
         or not full_text.endswith(RETURN_MARKER)
     ):
