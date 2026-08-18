@@ -18,6 +18,7 @@ MATCHED_SCHEMAS = frozenset(
         "shohin-nemotron-super-fixed-draft-screen-score-v1",
         "shohin-mixtral-8x22b-fixed-draft-screen-score-v1",
         "shohin-nemotron-ultra-fixed-draft-screen-score-v1",
+        "shohin-gpt-oss-120b-fixed-draft-screen-score-v1",
     }
 )
 REPORT_SCHEMA = "shohin-upward-moe-scaling-analysis-v1"

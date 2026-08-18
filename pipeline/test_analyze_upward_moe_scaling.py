@@ -203,6 +203,43 @@ def test_three_points_fit_positive_active_curve(tmp_path: Path) -> None:
     ]
 
 
+def test_gpt_oss_point_completes_cross_family_curve(tmp_path: Path) -> None:
+    points = [
+        _write(tmp_path / "qwen.json", _qwen_revision()),
+        _write(
+            tmp_path / "gpt_oss.json",
+            _matched(
+                "shohin-gpt-oss-120b-fixed-draft-screen-score-v1",
+                "openai/gpt-oss-120b",
+                117_000_000_000,
+                5_100_000_000,
+                31,
+            ),
+        ),
+        _write(
+            tmp_path / "mixtral.json",
+            _matched(
+                "shohin-mixtral-8x22b-fixed-draft-screen-score-v1",
+                "mistralai/Mixtral-8x22B-Instruct-v0.1",
+                141_000_000_000,
+                39_000_000_000,
+                36,
+            ),
+        ),
+    ]
+    result = analyze(points)
+    assert result["status"] == "complete_curve"
+    assert result["point_count"] == 3
+    assert [point["host"] for point in result["points"]] == [
+        "Qwen3.6-35B-A3B",
+        "openai/gpt-oss-120b",
+        "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    ]
+    assert result["capability_curve_claim"] == (
+        "positive_upward_cross_family_moe_capability_scaling_supported"
+    )
+
+
 def test_two_points_refuse_scaling_claim(tmp_path: Path) -> None:
     points = [
         _write(tmp_path / "qwen.json", _qwen_revision()),
