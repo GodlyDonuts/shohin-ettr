@@ -65,8 +65,27 @@
       763721,
       763722
     ],
-    "apply_job": 763723,
-    "score_job": 763724,
+    "required_generation_jobs": [
+      763707,
+      763708,
+      763709,
+      763710,
+      763711,
+      763712,
+      763713,
+      763714,
+      763715,
+      763716,
+      763717,
+      763718,
+      763726,
+      763727,
+      763728,
+      763729
+    ],
+    "replaced_group_3_jobs": [763719, 763720, 763721, 763722],
+    "apply_job": 763730,
+    "score_job": 763731,
     "apply_and_score_commit": "c52ca30658b9467a6494be5d72e21a3cfd524407",
     "apply_and_score_runtime_manifest_sha256": "73ba8a2a6c4c0d46ebd11c4dd78862882f4b6e9ff3200f85c1edc46adde13f57",
     "score_contract": "score_three_distinct_matched_completions_once_and_derive_selective_commit_from_selected_arm",
@@ -95,6 +114,15 @@
       "elapsed_seconds_range": [9, 43],
       "cause": "Python worker retained full-dataset draft-count and floor-balanced source geometry after launcher partition repair",
       "scientific_outputs": 0
+    },
+    {
+      "jobs": "763719-763722",
+      "status": "failed_before_model_load_and_generation",
+      "elapsed_seconds_range": [487, 968],
+      "cause": "two independent Slurm ranks were co-located on evc46; NCCL/NVML could not resolve the remapped PCI device across the four-rank process group",
+      "scientific_outputs": 0,
+      "replacement_jobs": [763726, 763727, 763728, 763729],
+      "replacement_constraint": "four distinct physical nodes"
     }
   ],
   "next_action": "wait_for_generation_then_automatic_apply_and_atomic_score"
