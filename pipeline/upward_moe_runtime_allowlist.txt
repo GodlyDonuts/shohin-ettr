@@ -38,6 +38,7 @@ pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/capture_upward_moe_accounting.sbatch
 pipeline/jobs/fetch_gpt_oss_120b.sbatch
 pipeline/jobs/fetch_mixtral_8x22b.sbatch
+pipeline/jobs/gpt_oss_120b_score.sbatch
 pipeline/jobs/launch_upward_moe_temporal_promotion.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
 pipeline/jobs/materialize_upward_moe_data.sbatch
@@ -103,6 +104,7 @@ pipeline/q36_mtr_evidence.py
 pipeline/read_upward_moe_data_receipt.py
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/render_upward_moe_scaling.py
+pipeline/score_gpt_oss_120b_screen.py
 pipeline/score_mixtral_8x22b_commit_validation.py
 pipeline/score_mixtral_8x22b_screen.py
 pipeline/score_mixtral_8x22b_validation.py
@@ -129,10 +131,13 @@ pipeline/train_apply_q36_mtr_sparse_router.py
 pipeline/upward_moe_runtime_allowlist.txt
 pipeline/validate_q36_mtr_commit_application.py
 pipeline/validate_q36_mtr_live_preflight.py
+train/gpt_oss_harmony.py
 train/gpt_oss_post_mlp_revision.py
 train/hf_aqc1_train_commit.py
 train/hf_cvg1_completion_verifier.py
+train/hf_gpt_oss_120b_evaluate.py
 train/hf_gpt_oss_120b_mechanics.py
+train/hf_gpt_oss_120b_train_revision.py
 train/hf_mixtral_8x22b_evaluate.py
 train/hf_mixtral_8x22b_mechanics.py
 train/hf_mixtral_8x22b_multinode_tp_evaluate_matched.py
@@ -167,7 +172,9 @@ train/hf_upward_moe_train_aligned.py
 train/hf_upward_moe_train_owner.py
 train/hf_upward_moe_train_temporal_gate.py
 train/integrated_reasoning_workspace.py
+train/jobs/gpt_oss_120b_evaluate.sbatch
 train/jobs/gpt_oss_120b_mechanics.sbatch
+train/jobs/gpt_oss_120b_train_revision.sbatch
 train/jobs/mixtral_8x22b_evaluate.sbatch
 train/jobs/mixtral_8x22b_mechanics.sbatch
 train/jobs/mixtral_8x22b_multinode_tp_evaluate_matched.sbatch
@@ -195,6 +202,7 @@ train/jobs/q36_mtr_train_commit_256.sbatch
 train/jobs/q36_mtr_train_role.sbatch
 train/jobs/q36_mtr_train_setwise_commit.sbatch
 train/jobs/q36_mtr_train_temporal_gate.sbatch
+train/jobs/submit_gpt_oss_120b_screen.sh
 train/jobs/submit_mixtral_8x22b_multinode_tp_evaluate_matched.sh
 train/jobs/submit_mixtral_8x22b_multinode_tp_mechanics.sh
 train/jobs/submit_mixtral_8x22b_multinode_tp_train_revision.sh
