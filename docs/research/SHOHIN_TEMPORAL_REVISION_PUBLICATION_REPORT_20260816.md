@@ -99,6 +99,20 @@ weights remain frozen. Predeclared retention and per-domain gates are retained
 even when aggregate accuracy improves, which is why several large numerical
 gains remain non-promotions.
 
+![Figure 1: Shohin evidence overview](figures/shohin_temporal_revision_evidence.svg)
+
+**Figure 1 — Capability transfer and its retention boundary.** (a) Trained
+revision improves the matched unchanged pass on all five dense hosts; `H` and
+`D` distinguish holdout from development measurements. (b) The learned causal
+gate improves Qwen3.6-35B-A3B, while trained revision improves Mixtral-8x22B
+on both its screen and validation; bar labels are correct counts. (c) Aggregate
+gain does not imply conservative retention. The Qwen gate nearly reaches the
+95% unchanged-correct floor, Mixtral revision makes a larger capability gain
+while retaining fewer baseline-correct identities, and Mixtral commitment
+recovers retention without preserving the revision gain. The figure is
+reproducible with `pipeline/render_shohin_publication_figure.py`; vector PDF
+and SVG are preserved together.
+
 ## Primary protected-board result
 
 The solved-count denominator is 538: GSM8K 100, MATH-500 100, executable code
@@ -261,6 +275,8 @@ high-GPU measurement rather than a claimed result.
 | Mixtral 1,023-row raw score | `7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8` |
 | Mixtral validation evidence report | `9d98bff6cc3e244ed175c1ffe3574944ba326ef05b2925ab658eed5f317529b3` |
 | GPT-OSS mechanics/screen launch receipt | `6107a5b4dd4298dabf3e5889d65df89b1b1e25c2df526c1772007773e987e083` |
+| publication evidence figure (SVG) | `fd8b580566e8be315877cbdc2cd38927c9e56f7ea22ba7d2f390b081f699c896` |
+| publication evidence figure (PDF) | `86484c12a361efbd37edef0bcb1a37f2aac98963dd71a7c0597d2f6656bc1383` |
 
 The deployable 9B release binds:
 
