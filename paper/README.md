@@ -14,3 +14,9 @@ The paper consumes the deterministic vector PDFs in
 python3 pipeline/render_shohin_publication_figure.py \
   --output-dir docs/research/figures
 ```
+
+Verify the exact publication snapshot from the repository root with:
+
+```bash
+shasum -a 256 -c paper/SHA256SUMS
+```
