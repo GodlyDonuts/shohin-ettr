@@ -15,6 +15,7 @@ SCORE_SCHEMA = "shohin-mixtral-8x22b-selective-commit-validation-score-v1"
 CANDIDATE_SCHEMA = "shohin-mixtral-8x22b-fixed-draft-candidate-v1"
 REPORT_SCHEMA = "shohin-mixtral-revision-format-analysis-v1"
 ARMS = ("unchanged", "self_refinement", "revision")
+SCORED_ARMS = (*ARMS, "selective_commit")
 TASKS = ("bbh_logic", "math500", "mbpp")
 EXPECTED_ROWS = 1023
 EXPECTED_TASK_COUNTS = {"bbh_logic": 497, "math500": 504, "mbpp": 22}
@@ -120,13 +121,17 @@ def analyze(
         identity = row.get("identity_sha256")
         task = row.get("task")
         correct = row.get("correct")
+        selected_arm = row.get("selected_arm")
         if (
             not isinstance(identity, str)
             or len(identity) != 64
             or identity in outcomes
             or task not in TASKS
             or not isinstance(correct, dict)
-            or any(not isinstance(correct.get(arm), bool) for arm in ARMS)
+            or set(correct) != set(SCORED_ARMS)
+            or any(not isinstance(correct.get(arm), bool) for arm in SCORED_ARMS)
+            or selected_arm not in ARMS
+            or correct["selective_commit"] != correct[selected_arm]
         ):
             raise FormatAnalysisError("outcome row differs")
         outcomes[identity] = row
@@ -134,6 +139,16 @@ def analyze(
         observed_task_counts[task] += 1
     if observed_task_counts != expected_task_counts:
         raise FormatAnalysisError("outcome task counts differ")
+    observed_selection_counts = {
+        arm: sum(row["selected_arm"] == arm for row in raw_outcomes) for arm in ARMS
+    }
+    if (
+        score.get("selection_counts") != observed_selection_counts
+        or score.get("selective_commit_score_derived_from_selected_scored_arm")
+        is not True
+        or score.get("task_label_used_as_commit_feature") is not False
+    ):
+        raise FormatAnalysisError("selective-commit projection differs")
 
     if (
         not candidates_root.is_dir()
@@ -222,6 +237,35 @@ def analyze(
     ):
         raise FormatAnalysisError("frozen revision-format observation differs")
 
+    selection_by_task: dict[str, Any] = {}
+    revision_transitions: dict[str, Any] = {}
+    for task in (*TASKS, "all"):
+        rows = (
+            raw_outcomes
+            if task == "all"
+            else [row for row in raw_outcomes if row["task"] == task]
+        )
+        selection_by_task[task] = {
+            arm: sum(row["selected_arm"] == arm for row in rows) for arm in ARMS
+        }
+        revision_transitions[task] = {
+            "rows": len(rows),
+            "unchanged_correct": sum(row["correct"]["unchanged"] for row in rows),
+            "revision_correct": sum(row["correct"]["revision"] for row in rows),
+            "paired_wins": sum(
+                not row["correct"]["unchanged"] and row["correct"]["revision"]
+                for row in rows
+            ),
+            "paired_losses": sum(
+                row["correct"]["unchanged"] and not row["correct"]["revision"]
+                for row in rows
+            ),
+            "unchanged_correct_retained": sum(
+                row["correct"]["unchanged"] and row["correct"]["revision"]
+                for row in rows
+            ),
+        }
+
     return {
         "schema": REPORT_SCHEMA,
         "status": "complete",
@@ -236,6 +280,11 @@ def analyze(
             "ordered_identity_replay": "pass",
         },
         "metrics": metrics,
+        "selection": {
+            "by_task": selection_by_task,
+            "task_label_used_as_commit_feature": False,
+        },
+        "revision_transitions": revision_transitions,
         "finding": {
             "revision_all_rows_boxed": True,
             "revision_mbpp_correct": 0,
@@ -253,6 +302,11 @@ def analyze(
             ],
             "unchanged_mbpp_function_definitions": metrics["unchanged"]["mbpp"][
                 "function_definition_completions"
+            ],
+            "commit_selected_unchanged_for_all_mbpp": selection_by_task["mbpp"]
+            == {"unchanged": 22, "self_refinement": 0, "revision": 0},
+            "commit_math_unchanged_selections": selection_by_task["math500"][
+                "unchanged"
             ],
             "interpretation": (
                 "The revision surface learned aggressive answer extraction across "

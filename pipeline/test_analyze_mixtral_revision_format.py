@@ -27,15 +27,21 @@ def fixture(tmp_path: Path) -> tuple[Path, Path, str]:
     identities = [f"{index + 1:064x}" for index in range(len(TASKS))]
     outcomes = []
     for identity, task in zip(identities, TASKS, strict=True):
+        selected_arm = "unchanged" if task == "mbpp" else "revision"
+        correct = {
+            "unchanged": True,
+            "self_refinement": task != "mbpp",
+            "revision": task != "mbpp",
+        }
         outcomes.append(
             {
                 "identity_sha256": identity,
                 "task": task,
                 "correct": {
-                    "unchanged": True,
-                    "self_refinement": task != "mbpp",
-                    "revision": task != "mbpp",
+                    **correct,
+                    "selective_commit": correct[selected_arm],
                 },
+                "selected_arm": selected_arm,
             }
         )
     score_path = tmp_path / "score.json"
@@ -46,6 +52,13 @@ def fixture(tmp_path: Path) -> tuple[Path, Path, str]:
             "status": "complete",
             "rows": len(TASKS),
             "outcomes": outcomes,
+            "selection_counts": {
+                "unchanged": 1,
+                "self_refinement": 0,
+                "revision": 2,
+            },
+            "selective_commit_score_derived_from_selected_scored_arm": True,
+            "task_label_used_as_commit_feature": False,
         },
     )
 
@@ -108,6 +121,12 @@ def test_analyze_replays_identity_join_and_format_collapse(tmp_path: Path) -> No
     assert report["metrics"]["revision"]["all"]["boxed_completions"] == 3
     assert report["metrics"]["revision"]["mbpp"]["correct"] == 0
     assert report["metrics"]["unchanged"]["mbpp"]["code_fenced_completions"] == 1
+    assert report["selection"]["by_task"]["mbpp"] == {
+        "unchanged": 1,
+        "self_refinement": 0,
+        "revision": 0,
+    }
+    assert report["revision_transitions"]["all"]["paired_losses"] == 1
 
 
 def test_analyze_rejects_candidate_projection_tamper(tmp_path: Path) -> None:
@@ -133,6 +152,25 @@ def test_analyze_rejects_score_hash_tamper(tmp_path: Path) -> None:
             score_path,
             candidates_root,
             expected_score_sha256="0" * 64,
+            expected_candidate_receipts_sha256=receipts_sha256,
+            expected_rows=3,
+            expected_task_counts={task: 1 for task in TASKS},
+            expected_shards=1,
+        )
+
+
+def test_analyze_rejects_selective_commit_projection_tamper(tmp_path: Path) -> None:
+    score_path, candidates_root, receipts_sha256 = fixture(tmp_path)
+    score = json.loads(score_path.read_text())
+    score["selection_counts"]["unchanged"] = 0
+    write_json(score_path, score)
+    with pytest.raises(
+        FormatAnalysisError, match="selective-commit projection differs"
+    ):
+        analyze(
+            score_path,
+            candidates_root,
+            expected_score_sha256=sha256_file(score_path),
             expected_candidate_receipts_sha256=receipts_sha256,
             expected_rows=3,
             expected_task_counts={task: 1 for task in TASKS},
