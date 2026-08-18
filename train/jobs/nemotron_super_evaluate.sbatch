@@ -8,7 +8,7 @@
 #SBATCH --gres=gpu:nvidia_h100_pcie:2
 #SBATCH --time=04:00:00
 #SBATCH --no-requeue
-#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc34,evc37,evc38,evc43,evc46,evc50
+#SBATCH --exclude=evc26,evc29,evc31,evc32,evc33,evc34,evc37,evc38,evc50
 #SBATCH --output=logs/nemotron_super_eval_%A_%a.out
 #SBATCH --error=logs/nemotron_super_eval_%A_%a.err
 
