@@ -16,6 +16,19 @@ universal commit claim is made. Preserve
 `docs/research/Q36_MIXTRAL_TP4_SCREEN_RESULT_20260818.json` and
 `docs/research/Q36_MIXTRAL_TP4_VALIDATION_RESULT_20260818.json`.
 
+**THE MIXTRAL FAILURE MECHANISM IS NOW MEASURED.** An exact identity-joined
+replay of all 1,023 scored candidate triples shows that every trained-revision
+completion contains a boxed answer and averages only `9.99` generated tokens,
+versus `436.13` unchanged and `296.84` self-refinement. On all 22 MBPP rows,
+revision emits no code fence, function definition, or return statement and
+scores zero. The task-label-free commit recognizes that output boundary and
+selects unchanged on all 22 code rows, but it also selects unchanged on
+`460/504` math rows and revision only 10 times. The next architecture problem
+is therefore joint capability promotion and model-owned output-contract
+preservation, not undirected extra reasoning. Preserve
+`docs/research/Q36_MIXTRAL_REVISION_FORMAT_ANALYSIS_20260818.json` (SHA-256
+`6d53371877b729747c92ae552ddb5a7a399c937e3f284c276e1c47efde80512c`).
+
 **THE THIRD-FAMILY GPT-OSS TEST IS LIVE BUT HAS NOT YET RUN SCIENCE.** The
 exact `openai/gpt-oss-120b` revision (`117B` total, `5.1B` active), MXFP4
 overlay, mechanics runtime, fixed identity partitions, and matched-control
