@@ -39,6 +39,8 @@ pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
 pipeline/jobs/materialize_upward_moe_data.sbatch
 pipeline/jobs/merge_upward_moe_drafts.sbatch
 pipeline/jobs/mirror_upward_moe_publication.sbatch
+pipeline/jobs/mixtral_8x22b_commit_apply.sbatch
+pipeline/jobs/mixtral_8x22b_commit_validation_score.sbatch
 pipeline/jobs/mixtral_8x22b_score.sbatch
 pipeline/jobs/mixtral_8x22b_validation_score.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
@@ -97,6 +99,7 @@ pipeline/q36_mtr_evidence.py
 pipeline/read_upward_moe_data_receipt.py
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/render_upward_moe_scaling.py
+pipeline/score_mixtral_8x22b_commit_validation.py
 pipeline/score_mixtral_8x22b_screen.py
 pipeline/score_mixtral_8x22b_validation.py
 pipeline/score_nemotron_super_screen.py
