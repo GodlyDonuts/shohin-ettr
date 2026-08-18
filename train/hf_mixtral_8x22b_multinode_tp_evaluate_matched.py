@@ -58,7 +58,6 @@ from hf_product_reasoning_eval import (
 )
 from hf_q36_mtr_evaluate import q36_nonpadding_prompt_tokens
 from hf_q36_mtr_external_evaluate import load_drafts, load_sources, prompt_for
-from hf_pcf1_evaluate import shard_bounds
 from mixtral_post_mlp_revision import MixtralRevisionError, MixtralRevisionModel
 from q36_upward_moe_mixtral_host import (
     MODEL_CONFIG_SHA256,
@@ -88,6 +87,19 @@ DATASET_SPECS = {
 
 class MixtralDistributedEvaluationError(RuntimeError):
     """The distributed matched evaluation contract differed."""
+
+
+def _shard_bounds(total: int, shard_index: int, shard_count: int) -> tuple[int, int]:
+    """Match the frozen 64-row-prefix validation shard geometry exactly."""
+
+    if total <= 0 or shard_count <= 0 or not 0 <= shard_index < shard_count:
+        raise MixtralDistributedEvaluationError("evaluation shard geometry differs")
+    shard_size = (total + shard_count - 1) // shard_count
+    start = min(total, shard_index * shard_size)
+    end = min(total, start + shard_size)
+    if start >= end:
+        raise MixtralDistributedEvaluationError("evaluation shard is empty")
+    return start, end
 
 
 def _encoded_rows(rows: list[dict[str, Any]]) -> bytes:
@@ -305,8 +317,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     shards_per_group = shards // args.shard_group_count
     first_shard = args.shard_group_index * shards_per_group
     shard_indices = list(range(first_shard, first_shard + shards_per_group))
-    group_start, _ = shard_bounds(rows, shard_indices[0], shards, 1)
-    _, group_end = shard_bounds(rows, shard_indices[-1], shards, 1)
+    group_start, _ = _shard_bounds(rows, shard_indices[0], shards)
+    _, group_end = _shard_bounds(rows, shard_indices[-1], shards)
     group_sources = sources[group_start:group_end]
     drafts = load_drafts(args.draft_candidates, group_sources)
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -415,7 +427,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         for arm in ARMS:
             group_candidates = results[arm]["candidates"]
             for shard_index in shard_indices:
-                start, end = shard_bounds(rows, shard_index, shards, 1)
+                start, end = _shard_bounds(rows, shard_index, shards)
                 shard_dir = args.output_root / arm / f"shard_{shard_index:02d}"
                 if shard_dir.exists() or shard_dir.is_symlink():
                     raise MixtralDistributedEvaluationError(
