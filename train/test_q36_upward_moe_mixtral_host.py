@@ -15,12 +15,27 @@ from q36_upward_moe_mixtral_host import (
     NUM_EXPERTS,
     Q36UpwardMoEMixtralHostError,
     ROUTER_TOP_K,
+    TWO_H100_LAYER_BOUNDARY,
     TRAINABLE_PARAMETERS_PER_ROLE,
     load_pinned_config,
     static_host_contract,
+    two_h100_device_map,
     validate_config_payload,
     validate_loaded_surface,
 )
+
+
+def test_two_h100_device_map_is_exact_balanced_and_has_no_offload() -> None:
+    mapping = two_h100_device_map()
+    assert mapping["model.embed_tokens"] == 0
+    assert mapping["model.norm"] == 1
+    assert mapping["lm_head"] == 1
+    assert mapping[f"model.layers.{TWO_H100_LAYER_BOUNDARY - 1}"] == 0
+    assert mapping[f"model.layers.{TWO_H100_LAYER_BOUNDARY}"] == 1
+    assert (
+        len([key for key in mapping if key.startswith("model.layers.")]) == MODEL_LAYERS
+    )
+    assert set(mapping.values()) == {0, 1}
 
 
 def _config_payload() -> dict:

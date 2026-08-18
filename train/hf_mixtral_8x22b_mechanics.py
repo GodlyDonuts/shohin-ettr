@@ -22,6 +22,7 @@ from q36_upward_moe_mixtral_host import (
     TRAINABLE_PARAMETERS_PER_ROLE,
     load_pinned_config,
     sha256_file,
+    two_h100_device_map,
 )
 
 SCHEMA = "shohin-mixtral-8x22b-two-h100-mechanics-v1"
@@ -237,7 +238,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         model_root,
         local_files_only=True,
         trust_remote_code=False,
-        device_map="balanced",
+        device_map=two_h100_device_map(),
         max_memory={0: GPU_MEMORY, 1: GPU_MEMORY, "cpu": "64GiB"},
         quantization_config=quantization,
         dtype=torch.bfloat16,

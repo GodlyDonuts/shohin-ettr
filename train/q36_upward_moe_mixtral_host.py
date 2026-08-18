@@ -28,6 +28,7 @@ RANK = 18
 ALPHA = 18.0
 TRAINABLE_PARAMETERS_PER_ROLE = CONTROLLED_LAYERS * 2 * HIDDEN_SIZE * RANK
 ATTACHMENT_SURFACE = "post-mlp-residual"
+TWO_H100_LAYER_BOUNDARY = MODEL_LAYERS // 2
 
 
 class Q36UpwardMoEMixtralHostError(RuntimeError):
@@ -66,6 +67,20 @@ def static_host_contract() -> dict[str, Any]:
         "attachment_surface": ATTACHMENT_SURFACE,
         "native_router_expert_trainables": 0,
     }
+
+
+def two_h100_device_map() -> dict[str, int]:
+    """Return the exact no-offload NF4 placement for the two-H100 host."""
+
+    mapping = {"model.embed_tokens": 0}
+    mapping.update(
+        {
+            f"model.layers.{index}": (0 if index < TWO_H100_LAYER_BOUNDARY else 1)
+            for index in range(MODEL_LAYERS)
+        }
+    )
+    mapping.update({"model.norm": 1, "lm_head": 1})
+    return mapping
 
 
 def validate_config_payload(payload: Mapping[str, Any]) -> None:
