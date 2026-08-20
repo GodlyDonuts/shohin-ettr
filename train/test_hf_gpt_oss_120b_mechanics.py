@@ -8,9 +8,11 @@ import torch
 import torch.nn as nn
 
 from hf_gpt_oss_120b_mechanics import (
+    EXPECTED_H100_MAX_SHARED_MEMORY,
     GptOssMechanicsError,
     _cuda_residency_receipt,
     _gradient_receipt,
+    _kernel_compatibility_receipt,
     _native_mxfp4_load_receipt,
     verify_manifest,
 )
@@ -161,3 +163,56 @@ def test_manifest_verifier_rejects_symbolic_member(tmp_path: Path) -> None:
     manifest.write_text(text, encoding="utf-8")
     with pytest.raises(GptOssMechanicsError, match="member"):
         verify_manifest(tmp_path, manifest, hashlib.sha256(text.encode()).hexdigest())
+
+
+def test_kernel_compatibility_receipt_binds_patch_and_h100_capacity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    relative = Path(
+        "kernel-repo/build/torch-cuda/matmul_ogs_details/opt_flags_details/"
+        "opt_flags_nvidia.py"
+    )
+    target = tmp_path / relative
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"patched kernel")
+    digest = hashlib.sha256(b"patched kernel").hexdigest()
+    monkeypatch.setattr(
+        "hf_gpt_oss_120b_mechanics.KERNEL_COMPATIBILITY_PATCHED_SHA256",
+        digest,
+    )
+    receipt = _kernel_compatibility_receipt(
+        tmp_path,
+        EXPECTED_H100_MAX_SHARED_MEMORY,
+        torch_property_present=False,
+    )
+    assert receipt["patched_sha256"] == digest
+    assert receipt["max_shared_memory_bytes"] == 232448
+
+
+@pytest.mark.parametrize(
+    ("max_shared_memory", "torch_property_present"),
+    [(0, False), (232448, True)],
+)
+def test_kernel_compatibility_receipt_rejects_interface_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    max_shared_memory: int,
+    torch_property_present: bool,
+) -> None:
+    relative = Path(
+        "kernel-repo/build/torch-cuda/matmul_ogs_details/opt_flags_details/"
+        "opt_flags_nvidia.py"
+    )
+    target = tmp_path / relative
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"patched kernel")
+    monkeypatch.setattr(
+        "hf_gpt_oss_120b_mechanics.KERNEL_COMPATIBILITY_PATCHED_SHA256",
+        hashlib.sha256(b"patched kernel").hexdigest(),
+    )
+    with pytest.raises(GptOssMechanicsError, match="compatibility receipt"):
+        _kernel_compatibility_receipt(
+            tmp_path,
+            max_shared_memory,
+            torch_property_present=torch_property_present,
+        )

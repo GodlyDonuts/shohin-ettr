@@ -22,6 +22,22 @@ PACKAGES = {
 }
 KERNEL_REPOSITORY = "kernels-community/gpt-oss-triton-kernels"
 KERNEL_REVISION = "9655fcf7d0f638bec4a82f6f1a70014f0aa8cfb0"
+KERNEL_COMPATIBILITY_RELATIVE = Path(
+    "kernel-repo/build/torch-cuda/matmul_ogs_details/opt_flags_details/"
+    "opt_flags_nvidia.py"
+)
+KERNEL_COMPATIBILITY_SOURCE_SHA256 = (
+    "31d8e422bd0ca00d67d45dc2d2cc20ad685df624f1ebadb872002de837f642e1"
+)
+KERNEL_COMPATIBILITY_PATCHED_SHA256 = (
+    "6cc30325a3df036fd56b535e0246a1a36150c7a7d66871df68a740d121bcd0ff"
+)
+KERNEL_COMPATIBILITY_SOURCE = (
+    b"    smem_capacity = device_props.shared_memory_per_block_optin\n"
+)
+KERNEL_COMPATIBILITY_PATCHED = (
+    b"    smem_capacity = triton.compiler.compiler.max_shared_mem(0)\n"
+)
 
 
 class GptOssOverlayError(RuntimeError):
@@ -118,6 +134,78 @@ def _remove_generated_caches(root: Path) -> None:
         shutil.rmtree(local_cache)
 
 
+def patched_kernel_bytes(
+    source: bytes,
+    *,
+    expected_source_sha256: str = KERNEL_COMPATIBILITY_SOURCE_SHA256,
+    expected_patched_sha256: str = KERNEL_COMPATIBILITY_PATCHED_SHA256,
+) -> bytes:
+    """Apply the one pinned Torch-2.6/H100 shared-memory compatibility edit."""
+
+    if hashlib.sha256(source).hexdigest() != expected_source_sha256:
+        raise GptOssOverlayError("kernel compatibility source hash differs")
+    if (
+        source.count(KERNEL_COMPATIBILITY_SOURCE) != 1
+        or KERNEL_COMPATIBILITY_PATCHED in source
+    ):
+        raise GptOssOverlayError("kernel compatibility source geometry differs")
+    patched = source.replace(KERNEL_COMPATIBILITY_SOURCE, KERNEL_COMPATIBILITY_PATCHED)
+    if hashlib.sha256(patched).hexdigest() != expected_patched_sha256:
+        raise GptOssOverlayError("kernel compatibility patched hash differs")
+    return patched
+
+
+def _patch_pinned_kernel(root: Path) -> dict[str, Any]:
+    path = root / KERNEL_COMPATIBILITY_RELATIVE
+    if path.is_symlink() or not path.is_file():
+        raise GptOssOverlayError("kernel compatibility target differs")
+    patched = patched_kernel_bytes(path.read_bytes())
+    temporary = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    with temporary.open("xb") as handle:
+        handle.write(patched)
+        handle.flush()
+        os.fsync(handle.fileno())
+    temporary.chmod(path.stat().st_mode & 0o777)
+    os.replace(temporary, path)
+    return {
+        "relative_path": KERNEL_COMPATIBILITY_RELATIVE.as_posix(),
+        "source_sha256": KERNEL_COMPATIBILITY_SOURCE_SHA256,
+        "patched_sha256": KERNEL_COMPATIBILITY_PATCHED_SHA256,
+        "torch_interface": "torch-2.6-omits-shared_memory_per_block_optin",
+        "replacement_interface": "triton.compiler.compiler.max_shared_mem(0)",
+        "expected_h100_bytes": 232448,
+    }
+
+
+def _validate_source_overlay(root: Path, report: Path) -> dict[str, Any]:
+    if root.is_symlink() or not root.is_dir():
+        raise GptOssOverlayError("source overlay root differs")
+    if report.is_symlink() or not report.is_file():
+        raise GptOssOverlayError("source overlay report differs")
+    try:
+        payload = json.loads(report.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise GptOssOverlayError("source overlay report is unreadable") from error
+    if (
+        not isinstance(payload, dict)
+        or payload.get("schema") != SCHEMA
+        or payload.get("status") != "complete"
+        or payload.get("kernel_repository") != KERNEL_REPOSITORY
+        or payload.get("kernel_revision") != KERNEL_REVISION
+    ):
+        raise GptOssOverlayError("source overlay report contract differs")
+    manifest = root / "SHA256SUMS"
+    if manifest.is_symlink() or not manifest.is_file():
+        raise GptOssOverlayError("source overlay manifest differs")
+    manifest_sha256 = sha256_file(manifest)
+    if payload.get("manifest_sha256") != manifest_sha256:
+        raise GptOssOverlayError("source overlay manifest authorization differs")
+    expected, _ = manifest_tree(root)
+    if manifest.read_text(encoding="utf-8") != expected:
+        raise GptOssOverlayError("source overlay manifest membership differs")
+    return payload
+
+
 def _validate_imports(python: Path, root: Path) -> dict[str, Any]:
     program = """
 import importlib.metadata as metadata
@@ -176,23 +264,43 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     stage = output_root.with_name(f".{output_root.name}.partial")
     if stage.exists() or stage.is_symlink():
         raise GptOssOverlayError("overlay staging output exists")
-    stage.mkdir(parents=True)
-    subprocess.run(pip_command(python, stage), check=True)
+    if args.source_root is not None:
+        if args.source_root.is_symlink() or not args.source_root.is_dir():
+            raise GptOssOverlayError("source overlay root differs")
+        if args.source_report.is_symlink() or not args.source_report.is_file():
+            raise GptOssOverlayError("source overlay report differs")
+        source_root = args.source_root.resolve(strict=True)
+        source_report = args.source_report.resolve(strict=True)
+        source_payload = _validate_source_overlay(source_root, source_report)
+        shutil.copytree(source_root, stage, copy_function=shutil.copy2)
+        stage.chmod(stage.stat().st_mode | stat.S_IWUSR)
+        compatibility_parent = stage / KERNEL_COMPATIBILITY_RELATIVE.parent
+        compatibility_parent.chmod(compatibility_parent.stat().st_mode | stat.S_IWUSR)
+    else:
+        source_payload = None
+        stage.mkdir(parents=True)
+        subprocess.run(pip_command(python, stage), check=True)
 
-    from huggingface_hub import snapshot_download
+        from huggingface_hub import snapshot_download
 
-    snapshot_download(
-        repo_id=KERNEL_REPOSITORY,
-        repo_type="kernel",
-        revision=KERNEL_REVISION,
-        local_dir=stage / "kernel-repo",
-        max_workers=args.workers,
-    )
+        snapshot_download(
+            repo_id=KERNEL_REPOSITORY,
+            repo_type="kernel",
+            revision=KERNEL_REVISION,
+            local_dir=stage / "kernel-repo",
+            max_workers=args.workers,
+        )
     _remove_generated_caches(stage)
+    compatibility_patch = _patch_pinned_kernel(stage)
     versions = installed_versions(stage)
     imports = _validate_imports(python, stage)
     _remove_generated_caches(stage)
     sums, tree = manifest_tree(stage)
+    existing_manifest = stage / "SHA256SUMS"
+    if existing_manifest.exists():
+        if existing_manifest.is_symlink() or not existing_manifest.is_file():
+            raise GptOssOverlayError("staged overlay manifest differs")
+        existing_manifest.unlink()
     _atomic_text(stage / "SHA256SUMS", sums)
     manifest_sha256 = hashlib.sha256(sums.encode()).hexdigest()
     os.replace(stage, output_root)
@@ -206,6 +314,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             Path(imports["kernel_module"]).relative_to(stage)
         ),
         "manifest_sha256": manifest_sha256,
+        "compatibility_patch": compatibility_patch,
+        "derived_from_manifest_sha256": (
+            source_payload.get("manifest_sha256")
+            if source_payload is not None
+            else None
+        ),
         **tree,
         "python": str(python),
         "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
@@ -220,9 +334,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--source-root", type=Path)
+    parser.add_argument("--source-report", type=Path)
     args = parser.parse_args()
     if args.workers < 1 or args.workers > 16:
         raise GptOssOverlayError("overlay worker count differs")
+    if (args.source_root is None) != (args.source_report is None):
+        raise GptOssOverlayError(
+            "source overlay root and report must be provided together"
+        )
     return args
 
 
