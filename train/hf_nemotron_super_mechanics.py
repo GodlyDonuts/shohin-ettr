@@ -61,6 +61,10 @@ BACKBONE_WEIGHT_MAP_ENTRIES = 123_898
 MTP_WEIGHT_MAP_ENTRIES = 1_042
 LM_HEAD_WEIGHT_MAP_ENTRIES = 1
 FP8_SCALE_MULTIPLIER = 448.0
+KV_CACHE_SCALE_COUNT = 16
+KV_CACHE_AMAX_NAMES_SHA256 = (
+    "d4b7afa82f4f1ceef8ce45e8e03bbfec03eb4237c7a5cda043b86af24f5c9d27"
+)
 FP8_MODULE_NAMES_SHA256 = (
     "cd608a21448741388b00a63bfd25cf38040029f6196685e0e8838247de307912"
 )
@@ -121,6 +125,8 @@ def _modelopt_fp8_quantization_config(
         or exported.get("quant_algo") != "FP8"
         or exported.get("producer")
         != {"name": "modelopt", "version": MODELOPT_EXPORT_VERSION}
+        or exported.get("kv_cache_scheme")
+        != {"dynamic": False, "num_bits": 8, "type": "float"}
         or list(exported.get("config_groups", {})) != ["group_0"]
         or exported["config_groups"]["group_0"].get("targets") != ["Linear"]
         or not isinstance(exported.get("ignore"), list)
@@ -139,12 +145,23 @@ def _modelopt_fp8_quantization_config(
         for name in weight_map
         if name.endswith(".weight") and f"{name[:-7]}.weight_scale" in weight_map
     }
+    kv_cache_amax_names = frozenset(
+        f"model.{name[len('backbone.') : -len(source_suffix)]}{target_suffix}"
+        for name in weight_map
+        for source_suffix, target_suffix in (
+            (".k_proj.k_scale", ".k_bmm_quantizer._amax"),
+            (".v_proj.v_scale", ".v_bmm_quantizer._amax"),
+        )
+        if name.startswith("backbone.") and name.endswith(source_suffix)
+    )
     if (
         len(weight_map) != MODEL_WEIGHT_MAP_ENTRIES
         or len(set(weight_map.values())) != MODEL_WEIGHT_SHARDS
         or len(weight_scales) != FP8_LINEAR_COUNT
         or len(input_scales) != FP8_LINEAR_COUNT
         or len(fp8_weights) != FP8_LINEAR_COUNT
+        or len(kv_cache_amax_names) != KV_CACHE_SCALE_COUNT
+        or _canonical_sha256(sorted(kv_cache_amax_names)) != KV_CACHE_AMAX_NAMES_SHA256
     ):
         raise NemotronSuperMechanicsError("ModelOpt FP8 tensor geometry differs")
 
@@ -183,6 +200,16 @@ def _modelopt_fp8_quantization_config(
         quant_cfg["quant_cfg"][pattern] = {"enable": False}
         source_disabled_patterns.append(source_pattern)
         disabled_patterns.append(pattern)
+    # KV-cache quantization is a distinct producer-declared surface. The
+    # checkpoint stores its calibrated amax values as k_proj/v_proj scales,
+    # including on attention blocks whose Linear weights are intentionally
+    # excluded. Re-enable only the exact hash-bound quantizers after applying
+    # the broader Linear exclusion patterns.
+    for amax_name in sorted(kv_cache_amax_names):
+        quant_cfg["quant_cfg"][amax_name.removesuffix("._amax")] = {
+            "num_bits": (4, 3),
+            "axis": None,
+        }
     receipt = {
         "hf_quant_config_sha256": HF_QUANT_CONFIG_SHA256,
         "model_index_sha256": MODEL_INDEX_SHA256,
@@ -191,6 +218,9 @@ def _modelopt_fp8_quantization_config(
         "modelopt_loader_config_sha256": _canonical_sha256(quant_cfg),
         "modelopt_export_version": MODELOPT_EXPORT_VERSION,
         "fp8_linear_count": FP8_LINEAR_COUNT,
+        "kv_cache_scale_count": len(kv_cache_amax_names),
+        "kv_cache_amax_names_sha256": _canonical_sha256(sorted(kv_cache_amax_names)),
+        "kv_cache_scheme": exported["kv_cache_scheme"],
         "weight_map_entries": len(weight_map),
         "weight_shards": len(set(weight_map.values())),
         "disabled_patterns": len(disabled_patterns),
@@ -240,9 +270,34 @@ def _expected_fp8_module_names(model_root: Path) -> frozenset[str]:
     return names
 
 
+def _expected_kv_cache_amax_names(model_root: Path) -> frozenset[str]:
+    index = json.loads(
+        (model_root / "model.safetensors.index.json").read_text(encoding="utf-8")
+    )
+    weight_map = index.get("weight_map") if isinstance(index, dict) else None
+    if not isinstance(weight_map, dict):
+        raise NemotronSuperMechanicsError("ModelOpt weight index differs")
+    names = frozenset(
+        f"model.{name[len('backbone.') : -len(source_suffix)]}{target_suffix}"
+        for name in weight_map
+        for source_suffix, target_suffix in (
+            (".k_proj.k_scale", ".k_bmm_quantizer._amax"),
+            (".v_proj.v_scale", ".v_bmm_quantizer._amax"),
+        )
+        if name.startswith("backbone.") and name.endswith(source_suffix)
+    )
+    if (
+        len(names) != KV_CACHE_SCALE_COUNT
+        or _canonical_sha256(sorted(names)) != KV_CACHE_AMAX_NAMES_SHA256
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt KV-cache identities differ")
+    return names
+
+
 @contextmanager
 def _translate_export_checkpoint_keys(
     expected_fp8_modules: frozenset[str],
+    expected_kv_cache_amax: frozenset[str],
 ) -> Any:
     """Translate the pinned Megatron export namespace during streamed loading.
 
@@ -296,6 +351,20 @@ def _translate_export_checkpoint_keys(
                 )
                 value = value.to(dtype=torch.float32) * FP8_SCALE_MULTIPLIER
                 counts["weight_scale_to_amax"] += 1
+            elif translated_name.endswith(".k_proj.k_scale"):
+                translated_name = (
+                    f"{translated_name[:-len('.k_proj.k_scale')]}"
+                    ".k_bmm_quantizer._amax"
+                )
+                value = value.to(dtype=torch.float32) * FP8_SCALE_MULTIPLIER
+                counts["k_scale_to_amax"] += 1
+            elif translated_name.endswith(".v_proj.v_scale"):
+                translated_name = (
+                    f"{translated_name[:-len('.v_proj.v_scale')]}"
+                    ".v_bmm_quantizer._amax"
+                )
+                value = value.to(dtype=torch.float32) * FP8_SCALE_MULTIPLIER
+                counts["v_scale_to_amax"] += 1
             if translated_name in translated:
                 raise NemotronSuperMechanicsError(
                     "checkpoint export translation collides"
@@ -306,7 +375,9 @@ def _translate_export_checkpoint_keys(
     def prepared_load_checkpoint_and_dispatch(
         model: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        _prepare_fp8_scale_buffers(model, counts, expected_fp8_modules)
+        _prepare_fp8_scale_buffers(
+            model, counts, expected_fp8_modules, expected_kv_cache_amax
+        )
         return original_dispatch(model, *args, **kwargs)
 
     accelerate_modeling.load_state_dict = translated_load_state_dict
@@ -343,6 +414,7 @@ def _prepare_fp8_scale_buffers(
     model: Any,
     counts: Counter[str],
     expected_fp8_modules: frozenset[str],
+    expected_kv_cache_amax: frozenset[str],
 ) -> None:
     quantized_linears = _enabled_fp8_linears(model)
     if set(quantized_linears) != expected_fp8_modules:
@@ -367,6 +439,24 @@ def _prepare_fp8_scale_buffers(
             "_amax", torch.empty((), dtype=torch.float32, device="meta")
         )
         counts["input_amax_placeholders"] += 1
+    modules = dict(model.named_modules())
+    for amax_name in expected_kv_cache_amax:
+        quantizer_name = amax_name.removesuffix("._amax")
+        quantizer = modules.get(quantizer_name)
+        if (
+            quantizer is None
+            or getattr(quantizer, "is_enabled", None) is not True
+            or getattr(quantizer, "num_bits", None) != (4, 3)
+            or hasattr(quantizer, "_amax")
+        ):
+            raise NemotronSuperMechanicsError(
+                "ModelOpt KV-cache amax pre-state differs"
+            )
+        quantizer.register_buffer(
+            "_amax", torch.empty((), dtype=torch.float32, device="meta")
+        )
+        counts["kv_cache_amax_placeholders"] += 1
+    counts["kv_cache_amax_identities"] = len(expected_kv_cache_amax)
 
 
 def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
@@ -379,6 +469,10 @@ def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
         "input_amax_placeholders": FP8_LINEAR_COUNT,
         "weight_amax_placeholders": FP8_LINEAR_COUNT,
         "enabled_fp8_module_identities": FP8_LINEAR_COUNT,
+        "k_scale_to_amax": KV_CACHE_SCALE_COUNT // 2,
+        "v_scale_to_amax": KV_CACHE_SCALE_COUNT // 2,
+        "kv_cache_amax_placeholders": KV_CACHE_SCALE_COUNT,
+        "kv_cache_amax_identities": KV_CACHE_SCALE_COUNT,
     }
     observed = {name: counts.get(name, 0) for name in expected}
     namespace_total = sum(
@@ -398,12 +492,16 @@ def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
         "weight_amax_dtype": "torch.float32",
         "weight_amax_shape": [],
         "input_amax_shape": [],
+        "kv_cache_amax_shape": [],
+        "kv_cache_amax_names_sha256": KV_CACHE_AMAX_NAMES_SHA256,
         "translation_sha256": _canonical_sha256(observed),
     }
 
 
 def _modelopt_fp8_runtime_receipt(
-    backbone: Any, expected_fp8_modules: frozenset[str]
+    backbone: Any,
+    expected_fp8_modules: frozenset[str],
+    expected_kv_cache_amax: frozenset[str],
 ) -> dict[str, Any]:
     device_map = getattr(backbone, "hf_device_map", None)
     if not isinstance(device_map, dict) or not device_map:
@@ -436,6 +534,24 @@ def _modelopt_fp8_runtime_receipt(
         )
     ):
         raise NemotronSuperMechanicsError("ModelOpt real FP8 execution differs")
+    modules = dict(backbone.named_modules())
+    kv_cache_devices: Counter[str] = Counter()
+    for amax_name in expected_kv_cache_amax:
+        quantizer = modules.get(amax_name.removesuffix("._amax"))
+        amax = getattr(quantizer, "_amax", None)
+        if (
+            quantizer is None
+            or getattr(quantizer, "is_enabled", None) is not True
+            or not isinstance(amax, torch.Tensor)
+            or amax.shape != torch.Size([])
+            or amax.dtype != torch.float32
+            or amax.is_meta
+            or not bool(torch.isfinite(amax))
+            or not bool(amax > 0)
+            or _cuda_index(amax.device) is None
+        ):
+            raise NemotronSuperMechanicsError("ModelOpt KV-cache FP8 runtime differs")
+        kv_cache_devices[str(amax.device)] += 1
     return {
         "device_map_sha256": _canonical_sha256(normalized_map),
         "device_map_entries": len(normalized_map),
@@ -444,6 +560,9 @@ def _modelopt_fp8_runtime_receipt(
         "real_quant_gemm_enabled": True,
         "real_fp8_linear_count": len(quantized_linears),
         "enabled_fp8_module_names_sha256": _canonical_sha256(sorted(quantized_linears)),
+        "kv_cache_amax_count": len(expected_kv_cache_amax),
+        "kv_cache_amax_names_sha256": _canonical_sha256(sorted(expected_kv_cache_amax)),
+        "kv_cache_amax_devices": dict(sorted(kv_cache_devices.items())),
         "cpu_tensors": 0,
         "disk_tensors": 0,
         "meta_tensors": 0,
@@ -465,6 +584,10 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and export.get("hf_quant_config_sha256") == HF_QUANT_CONFIG_SHA256
         and export.get("model_index_sha256") == MODEL_INDEX_SHA256
         and export.get("fp8_linear_count") == FP8_LINEAR_COUNT
+        and export.get("kv_cache_scale_count") == KV_CACHE_SCALE_COUNT
+        and export.get("kv_cache_amax_names_sha256") == KV_CACHE_AMAX_NAMES_SHA256
+        and export.get("kv_cache_scheme")
+        == {"dynamic": False, "num_bits": 8, "type": "float"}
         and export.get("weight_map_entries") == MODEL_WEIGHT_MAP_ENTRIES
         and export.get("weight_shards") == MODEL_WEIGHT_SHARDS
         and export.get("disabled_patterns") == MODELOPT_IGNORE_PATTERNS
@@ -492,10 +615,19 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         == FP8_LINEAR_COUNT
         and checkpoint_translation.get("enabled_fp8_module_names_sha256")
         == FP8_MODULE_NAMES_SHA256
+        and checkpoint_translation.get("k_scale_to_amax") == KV_CACHE_SCALE_COUNT // 2
+        and checkpoint_translation.get("v_scale_to_amax") == KV_CACHE_SCALE_COUNT // 2
+        and checkpoint_translation.get("kv_cache_amax_placeholders")
+        == KV_CACHE_SCALE_COUNT
+        and checkpoint_translation.get("kv_cache_amax_identities")
+        == KV_CACHE_SCALE_COUNT
+        and checkpoint_translation.get("kv_cache_amax_names_sha256")
+        == KV_CACHE_AMAX_NAMES_SHA256
         and checkpoint_translation.get("weight_amax_pre_dtype") == "torch.bfloat16"
         and checkpoint_translation.get("weight_amax_dtype") == "torch.float32"
         and checkpoint_translation.get("weight_amax_shape") == []
         and checkpoint_translation.get("input_amax_shape") == []
+        and checkpoint_translation.get("kv_cache_amax_shape") == []
         and checkpoint_translation.get("scale_to_amax_multiplier")
         == FP8_SCALE_MULTIPLIER
         and remote_model.get("configuration_sha256") == REMOTE_CONFIGURATION_SHA256
@@ -504,6 +636,12 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and runtime.get("real_quant_gemm_enabled") is True
         and runtime.get("real_fp8_linear_count") == FP8_LINEAR_COUNT
         and runtime.get("enabled_fp8_module_names_sha256") == FP8_MODULE_NAMES_SHA256
+        and runtime.get("kv_cache_amax_count") == KV_CACHE_SCALE_COUNT
+        and runtime.get("kv_cache_amax_names_sha256") == KV_CACHE_AMAX_NAMES_SHA256
+        and isinstance(runtime.get("kv_cache_amax_devices"), dict)
+        and sum(runtime.get("kv_cache_amax_devices", {}).values())
+        == KV_CACHE_SCALE_COUNT
+        and set(runtime.get("kv_cache_amax_devices", {})) <= {"cuda:0", "cuda:1"}
         and runtime.get("cpu_tensors") == 0
         and runtime.get("disk_tensors") == 0
         and runtime.get("meta_tensors") == 0
@@ -517,6 +655,7 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
 
     quant_cfg, export_receipt = _modelopt_fp8_quantization_config(model_root)
     expected_fp8_modules = _expected_fp8_module_names(model_root)
+    expected_kv_cache_amax = _expected_kv_cache_amax_names(model_root)
     from modelopt.torch.quantization.plugins.accelerate import init_quantized_weights
     from transformers import AutoConfig, AutoModelForCausalLM
     from transformers.dynamic_module_utils import get_class_from_dynamic_module
@@ -551,7 +690,9 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     AutoModelForCausalLM.register(type(config), model_class, exist_ok=True)
     delattr(config, "quantization_config")
     config.torch_dtype = torch.bfloat16
-    with _translate_export_checkpoint_keys(expected_fp8_modules) as translation_counts:
+    with _translate_export_checkpoint_keys(
+        expected_fp8_modules, expected_kv_cache_amax
+    ) as translation_counts:
         with init_quantized_weights(
             quant_cfg, gpu_mem_percentage=0.95, quant_gemm=True
         ):
@@ -562,7 +703,9 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
                 strict=True,
             )
     translation_receipt = _checkpoint_translation_receipt(translation_counts)
-    runtime_receipt = _modelopt_fp8_runtime_receipt(backbone, expected_fp8_modules)
+    runtime_receipt = _modelopt_fp8_runtime_receipt(
+        backbone, expected_fp8_modules, expected_kv_cache_amax
+    )
     return backbone, {
         "export": export_receipt,
         "checkpoint_translation": translation_receipt,

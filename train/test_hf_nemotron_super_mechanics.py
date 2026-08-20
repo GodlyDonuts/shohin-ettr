@@ -127,6 +127,7 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
         },
         "ignore": ["backbone.block.linear", "backbone.block.*"],
         "producer": {"name": "modelopt", "version": "0.41.0"},
+        "kv_cache_scheme": {"dynamic": False, "num_bits": 8, "type": "float"},
         "quant_algo": "FP8",
         "quant_method": "modelopt",
     }
@@ -140,6 +141,8 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
                     "backbone.block.linear.weight": "one.safetensors",
                     "backbone.block.linear.weight_scale": "one.safetensors",
                     "backbone.block.linear.input_scale": "one.safetensors",
+                    "backbone.block.k_proj.k_scale": "one.safetensors",
+                    "backbone.block.v_proj.v_scale": "one.safetensors",
                 }
             }
         )
@@ -155,10 +158,20 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
         _sha256(tmp_path / "model.safetensors.index.json"),
     )
     monkeypatch.setattr(mechanics, "FP8_LINEAR_COUNT", 1)
-    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 3)
+    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 5)
     monkeypatch.setattr(mechanics, "MODEL_WEIGHT_SHARDS", 1)
     monkeypatch.setattr(mechanics, "MODELOPT_IGNORE_PATTERNS", 2)
     monkeypatch.setattr(mechanics, "MODELOPT_BACKBONE_IGNORE_PATTERNS", 2)
+    kv_names = sorted(
+        {
+            "model.block.k_bmm_quantizer._amax",
+            "model.block.v_bmm_quantizer._amax",
+        }
+    )
+    monkeypatch.setattr(mechanics, "KV_CACHE_SCALE_COUNT", 2)
+    monkeypatch.setattr(
+        mechanics, "KV_CACHE_AMAX_NAMES_SHA256", mechanics._canonical_sha256(kv_names)
+    )
 
     convert_module = ModuleType("modelopt.torch.export.convert_hf_config")
     convert_module.convert_hf_quant_config_format = lambda payload: exported
@@ -181,9 +194,21 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
     config, receipt = _modelopt_fp8_quantization_config(tmp_path)
     assert config["quant_cfg"]["model.block.linear*"] == {"enable": False}
     assert config["quant_cfg"]["model.block.*"] == {"enable": False}
+    assert config["quant_cfg"]["model.block.k_bmm_quantizer"] == {
+        "num_bits": (4, 3),
+        "axis": None,
+    }
+    assert config["quant_cfg"]["model.block.v_bmm_quantizer"] == {
+        "num_bits": (4, 3),
+        "axis": None,
+    }
     assert "backbone.block.linear*" not in config["quant_cfg"]
     assert "backbone.block.*" not in config["quant_cfg"]
     assert receipt["fp8_linear_count"] == 1
+    assert receipt["kv_cache_scale_count"] == 2
+    assert receipt["kv_cache_amax_names_sha256"] == mechanics._canonical_sha256(
+        kv_names
+    )
     assert receipt["disabled_patterns"] == 2
     assert receipt["renamed_disabled_patterns"] == 2
     assert receipt["disabled_pattern_source_prefix"] == "backbone."
@@ -233,6 +258,13 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "hf_quant_config_sha256": mechanics.HF_QUANT_CONFIG_SHA256,
             "model_index_sha256": mechanics.MODEL_INDEX_SHA256,
             "fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "kv_cache_scale_count": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "kv_cache_scheme": {
+                "dynamic": False,
+                "num_bits": 8,
+                "type": "float",
+            },
             "weight_map_entries": mechanics.MODEL_WEIGHT_MAP_ENTRIES,
             "weight_shards": mechanics.MODEL_WEIGHT_SHARDS,
             "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
@@ -261,16 +293,28 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
             "enabled_fp8_module_identities": mechanics.FP8_LINEAR_COUNT,
             "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "k_scale_to_amax": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            "v_scale_to_amax": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            "kv_cache_amax_placeholders": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_identities": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
             "weight_amax_pre_dtype": "torch.bfloat16",
             "weight_amax_dtype": "torch.float32",
             "weight_amax_shape": [],
             "input_amax_shape": [],
+            "kv_cache_amax_shape": [],
             "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
         },
         "runtime": {
             "real_quant_gemm_enabled": True,
             "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
             "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "kv_cache_amax_count": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "kv_cache_amax_devices": {
+                "cuda:0": mechanics.KV_CACHE_SCALE_COUNT // 2,
+                "cuda:1": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            },
             "cpu_tensors": 0,
             "disk_tensors": 0,
             "meta_tensors": 0,
@@ -308,12 +352,15 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
             "backbone.layer.weight": sentinel,
             "backbone.layer.input_scale": torch.tensor(2.0),
             "backbone.layer.weight_scale": torch.tensor(3.0),
+            "backbone.layer.k_proj.k_scale": torch.tensor(4.0),
+            "backbone.layer.v_proj.v_scale": torch.tensor(5.0),
             "mtp.layer.weight": object(),
             "lm_head.weight": sentinel,
         }
 
     class Quantizer(torch.nn.Module):
         fake_quant = False
+        num_bits = (4, 3)
 
         @property
         def is_enabled(self) -> bool:
@@ -330,24 +377,42 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
                 "_amax", torch.empty((), dtype=torch.bfloat16, device="meta")
             )
             self.input_quantizer = Quantizer()
+            self.k_bmm_quantizer = Quantizer()
+            self.v_bmm_quantizer = Quantizer()
 
     model = torch.nn.Module()
     model.model = torch.nn.Module()
     model.model.layer = QuantizedLinear()
 
     monkeypatch.setattr(accelerate_modeling, "load_state_dict", fake_load)
-    monkeypatch.setattr(mechanics, "BACKBONE_WEIGHT_MAP_ENTRIES", 3)
+    monkeypatch.setattr(mechanics, "BACKBONE_WEIGHT_MAP_ENTRIES", 5)
     monkeypatch.setattr(mechanics, "MTP_WEIGHT_MAP_ENTRIES", 1)
     monkeypatch.setattr(mechanics, "LM_HEAD_WEIGHT_MAP_ENTRIES", 1)
-    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 5)
+    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 7)
     monkeypatch.setattr(mechanics, "FP8_LINEAR_COUNT", 1)
-    with _translate_export_checkpoint_keys(frozenset({"model.layer"})) as counts:
+    kv_names = frozenset(
+        {
+            "model.layer.k_bmm_quantizer._amax",
+            "model.layer.v_bmm_quantizer._amax",
+        }
+    )
+    monkeypatch.setattr(mechanics, "KV_CACHE_SCALE_COUNT", 2)
+    monkeypatch.setattr(
+        mechanics,
+        "KV_CACHE_AMAX_NAMES_SHA256",
+        mechanics._canonical_sha256(sorted(kv_names)),
+    )
+    with _translate_export_checkpoint_keys(
+        frozenset({"model.layer"}), kv_names
+    ) as counts:
         assert modelopt_accelerate.load_checkpoint_and_dispatch(model) is model
         translated = accelerate_modeling.load_state_dict("one.safetensors")
         assert set(translated) == {
             "model.layer.weight",
             "model.layer.input_quantizer._amax",
             "model.layer.weight_quantizer._amax",
+            "model.layer.k_bmm_quantizer._amax",
+            "model.layer.v_bmm_quantizer._amax",
             "lm_head.weight",
         }
         assert translated["model.layer.weight"] is sentinel
@@ -356,16 +421,23 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
         assert translated["model.layer.input_quantizer._amax"].item() == 896.0
         assert translated["model.layer.weight_quantizer._amax"].shape == ()
         assert translated["model.layer.weight_quantizer._amax"].item() == 1344.0
+        assert translated["model.layer.k_bmm_quantizer._amax"].item() == 1792.0
+        assert translated["model.layer.v_bmm_quantizer._amax"].item() == 2240.0
         assert model.model.layer.weight_quantizer._amax.shape == ()
         assert model.model.layer.weight_quantizer._amax.dtype == torch.float32
         assert model.model.layer.weight_quantizer._amax.is_meta
+        assert model.model.layer.k_bmm_quantizer._amax.is_meta
+        assert model.model.layer.v_bmm_quantizer._amax.is_meta
     assert accelerate_modeling.load_state_dict is fake_load
     receipt = _checkpoint_translation_receipt(counts)
-    assert receipt["backbone_to_model"] == 3
+    assert receipt["backbone_to_model"] == 5
     assert receipt["mtp_ignored"] == 1
     assert receipt["lm_head_unchanged"] == 1
     assert receipt["input_amax_placeholders"] == 1
     assert receipt["weight_amax_placeholders"] == 1
+    assert receipt["k_scale_to_amax"] == 1
+    assert receipt["v_scale_to_amax"] == 1
+    assert receipt["kv_cache_amax_placeholders"] == 2
 
 
 def test_enabled_fp8_classifier_uses_linear_weight_and_enabled_quantizers() -> None:
@@ -415,7 +487,7 @@ def test_checkpoint_translation_rejects_unknown_namespace(
         "load_state_dict",
         lambda *args, **kwargs: {"unexpected.weight": object()},
     )
-    with _translate_export_checkpoint_keys(frozenset()):
+    with _translate_export_checkpoint_keys(frozenset(), frozenset()):
         with pytest.raises(NemotronSuperMechanicsError, match="namespace"):
             accelerate_modeling.load_state_dict("one.safetensors")
 
@@ -449,13 +521,19 @@ def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
     )
     monkeypatch.setattr(
         mechanics,
+        "_expected_kv_cache_amax_names",
+        lambda root: frozenset({"model.attention.k_bmm_quantizer._amax"}),
+    )
+    monkeypatch.setattr(
+        mechanics,
         "_modelopt_fp8_runtime_receipt",
-        lambda model, expected: {"runtime": "exact"},
+        lambda model, expected, kv_expected: {"runtime": "exact"},
     )
 
     @contextmanager
-    def fake_translation(expected):
+    def fake_translation(expected, kv_expected):
         assert expected == frozenset({"model.layer"})
+        assert kv_expected == frozenset({"model.attention.k_bmm_quantizer._amax"})
         yield mechanics.Counter()
 
     monkeypatch.setattr(
