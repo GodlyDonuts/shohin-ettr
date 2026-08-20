@@ -21,6 +21,11 @@ def _modelopt_fp8() -> dict[str, object]:
             "weight_map_entries": mechanics.MODEL_WEIGHT_MAP_ENTRIES,
             "weight_shards": mechanics.MODEL_WEIGHT_SHARDS,
             "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
+            "renamed_disabled_patterns": mechanics.MODELOPT_BACKBONE_IGNORE_PATTERNS,
+            "disabled_pattern_source_prefix": "backbone.",
+            "disabled_pattern_target_prefix": "model.",
+            "source_disabled_pattern_sha256": mechanics.MODELOPT_SOURCE_IGNORE_SHA256,
+            "disabled_pattern_sha256": mechanics.MODELOPT_TARGET_IGNORE_SHA256,
             "quant_gemm": True,
         },
         "remote_model": {

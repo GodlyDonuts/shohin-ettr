@@ -125,7 +125,7 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
                 },
             }
         },
-        "ignore": ["block.linear", "block.*"],
+        "ignore": ["backbone.block.linear", "backbone.block.*"],
         "producer": {"name": "modelopt", "version": "0.41.0"},
         "quant_algo": "FP8",
         "quant_method": "modelopt",
@@ -137,9 +137,9 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
         json.dumps(
             {
                 "weight_map": {
-                    "block.linear.weight": "one.safetensors",
-                    "block.linear.weight_scale": "one.safetensors",
-                    "block.linear.input_scale": "one.safetensors",
+                    "backbone.block.linear.weight": "one.safetensors",
+                    "backbone.block.linear.weight_scale": "one.safetensors",
+                    "backbone.block.linear.input_scale": "one.safetensors",
                 }
             }
         )
@@ -158,6 +158,7 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
     monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 3)
     monkeypatch.setattr(mechanics, "MODEL_WEIGHT_SHARDS", 1)
     monkeypatch.setattr(mechanics, "MODELOPT_IGNORE_PATTERNS", 2)
+    monkeypatch.setattr(mechanics, "MODELOPT_BACKBONE_IGNORE_PATTERNS", 2)
 
     convert_module = ModuleType("modelopt.torch.export.convert_hf_config")
     convert_module.convert_hf_quant_config_format = lambda payload: exported
@@ -178,10 +179,15 @@ def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
     monkeypatch.setitem(sys.modules, "modelopt.torch.quantization", quantization_module)
 
     config, receipt = _modelopt_fp8_quantization_config(tmp_path)
-    assert config["quant_cfg"]["block.linear*"] == {"enable": False}
-    assert config["quant_cfg"]["block.*"] == {"enable": False}
+    assert config["quant_cfg"]["model.block.linear*"] == {"enable": False}
+    assert config["quant_cfg"]["model.block.*"] == {"enable": False}
+    assert "backbone.block.linear*" not in config["quant_cfg"]
+    assert "backbone.block.*" not in config["quant_cfg"]
     assert receipt["fp8_linear_count"] == 1
     assert receipt["disabled_patterns"] == 2
+    assert receipt["renamed_disabled_patterns"] == 2
+    assert receipt["disabled_pattern_source_prefix"] == "backbone."
+    assert receipt["disabled_pattern_target_prefix"] == "model."
     assert receipt["quant_gemm"] is True
 
 
@@ -230,6 +236,11 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "weight_map_entries": mechanics.MODEL_WEIGHT_MAP_ENTRIES,
             "weight_shards": mechanics.MODEL_WEIGHT_SHARDS,
             "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
+            "renamed_disabled_patterns": mechanics.MODELOPT_BACKBONE_IGNORE_PATTERNS,
+            "disabled_pattern_source_prefix": "backbone.",
+            "disabled_pattern_target_prefix": "model.",
+            "source_disabled_pattern_sha256": mechanics.MODELOPT_SOURCE_IGNORE_SHA256,
+            "disabled_pattern_sha256": mechanics.MODELOPT_TARGET_IGNORE_SHA256,
             "quant_gemm": True,
         },
         "remote_model": {

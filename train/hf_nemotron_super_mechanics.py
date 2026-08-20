@@ -62,6 +62,13 @@ MTP_WEIGHT_MAP_ENTRIES = 1_042
 LM_HEAD_WEIGHT_MAP_ENTRIES = 1
 FP8_SCALE_MULTIPLIER = 448.0
 MODELOPT_IGNORE_PATTERNS = 130
+MODELOPT_BACKBONE_IGNORE_PATTERNS = 128
+MODELOPT_SOURCE_IGNORE_SHA256 = (
+    "a3ab4871ac4c811c37fa01d964c3364972ddc959e6f96b4ebcb23ffcd799266c"
+)
+MODELOPT_TARGET_IGNORE_SHA256 = (
+    "8180f3be29deacecaeb02701156cb5c80e688c3bddd125d5a9f1aa574660b832"
+)
 REMOTE_CONFIGURATION_SHA256 = (
     "0fc818c10506c91bd02df5a605f49cb0704b5498954f46dbde2d63999ae36c3d"
 )
@@ -147,7 +154,9 @@ def _modelopt_fp8_quantization_config(
         != {"num_bits": (4, 3), "axis": None}
     ):
         raise NemotronSuperMechanicsError("pinned ModelOpt FP8 defaults differ")
+    source_disabled_patterns: list[str] = []
     disabled_patterns: list[str] = []
+    renamed_disabled_patterns = 0
     for value in exported["ignore"]:
         if (
             not isinstance(value, str)
@@ -156,8 +165,20 @@ def _modelopt_fp8_quantization_config(
             or ".." in value
         ):
             raise NemotronSuperMechanicsError("ModelOpt ignore pattern differs")
-        pattern = value if any(mark in value for mark in "*?[") else f"{value}*"
+        source_pattern = value if any(mark in value for mark in "*?[") else f"{value}*"
+        # The immutable export names the causal stack ``backbone`` whereas the
+        # pinned Transformers implementation names the same stack ``model``.
+        # ModelOpt matches these patterns against the instantiated module
+        # namespace, so replay the same namespace translation used for streamed
+        # checkpoint tensors. Leaving the export spelling untouched silently
+        # quantizes modules that the producer explicitly excluded.
+        if source_pattern.startswith("backbone."):
+            pattern = f"model.{source_pattern[len('backbone.') :]}"
+            renamed_disabled_patterns += 1
+        else:
+            pattern = source_pattern
         quant_cfg["quant_cfg"][pattern] = {"enable": False}
+        source_disabled_patterns.append(source_pattern)
         disabled_patterns.append(pattern)
     receipt = {
         "hf_quant_config_sha256": HF_QUANT_CONFIG_SHA256,
@@ -170,6 +191,10 @@ def _modelopt_fp8_quantization_config(
         "weight_map_entries": len(weight_map),
         "weight_shards": len(set(weight_map.values())),
         "disabled_patterns": len(disabled_patterns),
+        "renamed_disabled_patterns": renamed_disabled_patterns,
+        "disabled_pattern_source_prefix": "backbone.",
+        "disabled_pattern_target_prefix": "model.",
+        "source_disabled_pattern_sha256": _canonical_sha256(source_disabled_patterns),
         "disabled_pattern_sha256": _canonical_sha256(disabled_patterns),
         "quant_gemm": True,
     }
@@ -394,6 +419,12 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and export.get("weight_map_entries") == MODEL_WEIGHT_MAP_ENTRIES
         and export.get("weight_shards") == MODEL_WEIGHT_SHARDS
         and export.get("disabled_patterns") == MODELOPT_IGNORE_PATTERNS
+        and export.get("renamed_disabled_patterns") == MODELOPT_BACKBONE_IGNORE_PATTERNS
+        and export.get("disabled_pattern_source_prefix") == "backbone."
+        and export.get("disabled_pattern_target_prefix") == "model."
+        and export.get("source_disabled_pattern_sha256")
+        == MODELOPT_SOURCE_IGNORE_SHA256
+        and export.get("disabled_pattern_sha256") == MODELOPT_TARGET_IGNORE_SHA256
         and export.get("quant_gemm") is True
         and checkpoint_translation.get("backbone_to_model")
         == BACKBONE_WEIGHT_MAP_ENTRIES
