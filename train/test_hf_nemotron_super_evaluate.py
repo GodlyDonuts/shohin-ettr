@@ -35,6 +35,11 @@ def _modelopt_fp8() -> dict[str, object]:
             "source_prefix": "backbone.",
             "target_prefix": "model.",
             "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+            "input_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "weight_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "input_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
         },
         "runtime": {
             "real_quant_gemm_enabled": True,

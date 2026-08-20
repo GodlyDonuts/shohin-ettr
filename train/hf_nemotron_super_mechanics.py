@@ -15,6 +15,7 @@ import math
 import os
 from pathlib import Path
 import stat
+import sys
 import time
 from typing import Any
 
@@ -59,6 +60,7 @@ MODEL_WEIGHT_SHARDS = 26
 BACKBONE_WEIGHT_MAP_ENTRIES = 123_898
 MTP_WEIGHT_MAP_ENTRIES = 1_042
 LM_HEAD_WEIGHT_MAP_ENTRIES = 1
+FP8_SCALE_MULTIPLIER = 448.0
 MODELOPT_IGNORE_PATTERNS = 130
 REMOTE_CONFIGURATION_SHA256 = (
     "0fc818c10506c91bd02df5a605f49cb0704b5498954f46dbde2d63999ae36c3d"
@@ -204,6 +206,14 @@ def _translate_export_checkpoint_keys() -> Any:
     import accelerate.utils.modeling as accelerate_modeling
 
     original = accelerate_modeling.load_state_dict
+    modelopt_accelerate = sys.modules.get(
+        "modelopt.torch.quantization.plugins.accelerate"
+    )
+    if modelopt_accelerate is None or not hasattr(
+        modelopt_accelerate, "load_checkpoint_and_dispatch"
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt Accelerate loader differs")
+    original_dispatch = modelopt_accelerate.load_checkpoint_and_dispatch
     counts: Counter[str] = Counter()
 
     def translated_load_state_dict(*args: Any, **kwargs: Any) -> dict[str, Any]:
@@ -223,6 +233,19 @@ def _translate_export_checkpoint_keys() -> Any:
                 counts["lm_head_unchanged"] += 1
             else:
                 raise NemotronSuperMechanicsError("checkpoint export namespace differs")
+            if translated_name.endswith(".input_scale"):
+                translated_name = (
+                    f"{translated_name[:-len('.input_scale')]}" ".input_quantizer._amax"
+                )
+                value = value.to(dtype=torch.float32) * FP8_SCALE_MULTIPLIER
+                counts["input_scale_to_amax"] += 1
+            elif translated_name.endswith(".weight_scale"):
+                translated_name = (
+                    f"{translated_name[:-len('.weight_scale')]}"
+                    ".weight_quantizer._amax"
+                )
+                value = value.to(dtype=torch.float32) * FP8_SCALE_MULTIPLIER
+                counts["weight_scale_to_amax"] += 1
             if translated_name in translated:
                 raise NemotronSuperMechanicsError(
                     "checkpoint export translation collides"
@@ -230,11 +253,51 @@ def _translate_export_checkpoint_keys() -> Any:
             translated[translated_name] = value
         return translated
 
+    def prepared_load_checkpoint_and_dispatch(
+        model: Any, *args: Any, **kwargs: Any
+    ) -> Any:
+        _prepare_fp8_scale_buffers(model, counts)
+        return original_dispatch(model, *args, **kwargs)
+
     accelerate_modeling.load_state_dict = translated_load_state_dict
+    modelopt_accelerate.load_checkpoint_and_dispatch = (
+        prepared_load_checkpoint_and_dispatch
+    )
     try:
         yield counts
     finally:
         accelerate_modeling.load_state_dict = original
+        modelopt_accelerate.load_checkpoint_and_dispatch = original_dispatch
+
+
+def _prepare_fp8_scale_buffers(model: Any, counts: Counter[str]) -> None:
+    quantized_linears = [
+        module
+        for module in model.modules()
+        if hasattr(module, "weight_quantizer") and hasattr(module, "input_quantizer")
+    ]
+    if len(quantized_linears) != FP8_LINEAR_COUNT:
+        raise NemotronSuperMechanicsError("ModelOpt scale-buffer geometry differs")
+    for module in quantized_linears:
+        weight_quantizer = module.weight_quantizer
+        input_quantizer = module.input_quantizer
+        weight_amax = getattr(weight_quantizer, "_amax", None)
+        if (
+            not isinstance(weight_amax, torch.Tensor)
+            or not weight_amax.is_meta
+            or weight_amax.dtype != torch.float32
+            or weight_amax.shape != torch.Size([])
+        ):
+            raise NemotronSuperMechanicsError(
+                "ModelOpt weight amax placeholder differs"
+            )
+        counts["weight_amax_placeholders"] += 1
+        if hasattr(input_quantizer, "_amax"):
+            raise NemotronSuperMechanicsError("ModelOpt input amax pre-state differs")
+        input_quantizer.register_buffer(
+            "_amax", torch.empty((), dtype=torch.float32, device="meta")
+        )
+        counts["input_amax_placeholders"] += 1
 
 
 def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
@@ -242,15 +305,24 @@ def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
         "backbone_to_model": BACKBONE_WEIGHT_MAP_ENTRIES,
         "mtp_ignored": MTP_WEIGHT_MAP_ENTRIES,
         "lm_head_unchanged": LM_HEAD_WEIGHT_MAP_ENTRIES,
+        "input_scale_to_amax": FP8_LINEAR_COUNT,
+        "weight_scale_to_amax": FP8_LINEAR_COUNT,
+        "input_amax_placeholders": FP8_LINEAR_COUNT,
+        "weight_amax_placeholders": FP8_LINEAR_COUNT,
     }
     observed = {name: counts.get(name, 0) for name in expected}
-    if observed != expected or sum(observed.values()) != MODEL_WEIGHT_MAP_ENTRIES:
+    namespace_total = sum(
+        observed[name]
+        for name in ("backbone_to_model", "mtp_ignored", "lm_head_unchanged")
+    )
+    if observed != expected or namespace_total != MODEL_WEIGHT_MAP_ENTRIES:
         raise NemotronSuperMechanicsError("checkpoint export translation differs")
     return {
         **observed,
         "source_prefix": "backbone.",
         "target_prefix": "model.",
         "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+        "scale_to_amax_multiplier": FP8_SCALE_MULTIPLIER,
         "translation_sha256": _canonical_sha256(observed),
     }
 
@@ -332,6 +404,12 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and checkpoint_translation.get("target_prefix") == "model."
         and checkpoint_translation.get("mtp_policy")
         == "ignored_not_implemented_by_remote_causal_lm"
+        and checkpoint_translation.get("input_scale_to_amax") == FP8_LINEAR_COUNT
+        and checkpoint_translation.get("weight_scale_to_amax") == FP8_LINEAR_COUNT
+        and checkpoint_translation.get("input_amax_placeholders") == FP8_LINEAR_COUNT
+        and checkpoint_translation.get("weight_amax_placeholders") == FP8_LINEAR_COUNT
+        and checkpoint_translation.get("scale_to_amax_multiplier")
+        == FP8_SCALE_MULTIPLIER
         and remote_model.get("configuration_sha256") == REMOTE_CONFIGURATION_SHA256
         and remote_model.get("modeling_sha256") == REMOTE_MODELING_SHA256
         and str(remote_model.get("model_class", "")).endswith(".NemotronHForCausalLM")

@@ -244,6 +244,11 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "source_prefix": "backbone.",
             "target_prefix": "model.",
             "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+            "input_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "weight_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "input_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
         },
         "runtime": {
             "real_quant_gemm_enabled": True,
@@ -270,36 +275,82 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
     import hf_nemotron_super_mechanics as mechanics
 
     sentinel = object()
+    modelopt_accelerate = ModuleType("modelopt.torch.quantization.plugins.accelerate")
+    modelopt_accelerate.load_checkpoint_and_dispatch = (
+        lambda model, *args, **kwargs: model
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "modelopt.torch.quantization.plugins.accelerate",
+        modelopt_accelerate,
+    )
 
     def fake_load(*args, **kwargs):
         return {
             "backbone.layer.weight": sentinel,
+            "backbone.layer.input_scale": torch.tensor(2.0),
+            "backbone.layer.weight_scale": torch.tensor(3.0),
             "mtp.layer.weight": object(),
             "lm_head.weight": sentinel,
         }
 
+    class Quantizer(torch.nn.Module):
+        pass
+
+    class QuantizedLinear(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.weight_quantizer = Quantizer()
+            self.weight_quantizer.register_buffer(
+                "_amax", torch.empty((), dtype=torch.float32, device="meta")
+            )
+            self.input_quantizer = Quantizer()
+
+    model = torch.nn.Module()
+    model.linear = QuantizedLinear()
+
     monkeypatch.setattr(accelerate_modeling, "load_state_dict", fake_load)
-    monkeypatch.setattr(mechanics, "BACKBONE_WEIGHT_MAP_ENTRIES", 1)
+    monkeypatch.setattr(mechanics, "BACKBONE_WEIGHT_MAP_ENTRIES", 3)
     monkeypatch.setattr(mechanics, "MTP_WEIGHT_MAP_ENTRIES", 1)
     monkeypatch.setattr(mechanics, "LM_HEAD_WEIGHT_MAP_ENTRIES", 1)
-    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 3)
+    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 5)
+    monkeypatch.setattr(mechanics, "FP8_LINEAR_COUNT", 1)
     with _translate_export_checkpoint_keys() as counts:
+        assert modelopt_accelerate.load_checkpoint_and_dispatch(model) is model
         translated = accelerate_modeling.load_state_dict("one.safetensors")
-        assert translated == {
-            "model.layer.weight": sentinel,
-            "lm_head.weight": sentinel,
+        assert set(translated) == {
+            "model.layer.weight",
+            "model.layer.input_quantizer._amax",
+            "model.layer.weight_quantizer._amax",
+            "lm_head.weight",
         }
+        assert translated["model.layer.weight"] is sentinel
+        assert translated["lm_head.weight"] is sentinel
+        assert translated["model.layer.input_quantizer._amax"].item() == 896.0
+        assert translated["model.layer.weight_quantizer._amax"].item() == 1344.0
     assert accelerate_modeling.load_state_dict is fake_load
     receipt = _checkpoint_translation_receipt(counts)
-    assert receipt["backbone_to_model"] == 1
+    assert receipt["backbone_to_model"] == 3
     assert receipt["mtp_ignored"] == 1
     assert receipt["lm_head_unchanged"] == 1
+    assert receipt["input_amax_placeholders"] == 1
+    assert receipt["weight_amax_placeholders"] == 1
 
 
 def test_checkpoint_translation_rejects_unknown_namespace(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import accelerate.utils.modeling as accelerate_modeling
+
+    modelopt_accelerate = ModuleType("modelopt.torch.quantization.plugins.accelerate")
+    modelopt_accelerate.load_checkpoint_and_dispatch = (
+        lambda model, *args, **kwargs: model
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "modelopt.torch.quantization.plugins.accelerate",
+        modelopt_accelerate,
+    )
 
     monkeypatch.setattr(
         accelerate_modeling,
