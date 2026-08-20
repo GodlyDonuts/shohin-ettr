@@ -153,8 +153,11 @@ def test_mechanics_report_is_score_free_and_exact(tmp_path: Path) -> None:
         ("prompt_tokens", 0),
         ("response_tokens", True),
         ("ignore_index", 0),
+        ("ignore_index", -100.0),
         ("gradient_accumulation_scale", 1),
+        ("gradient_accumulation_scale", 8.0),
         ("learning_rate", 1e-5),
+        ("learning_rate", True),
         ("autocast_dtype", "torch.float32"),
     ],
 )

@@ -900,3 +900,29 @@ def test_mechanics_training_objective_constants_match_frozen_trainer() -> None:
 
     assert mechanics.TRAINING_GRADIENT_ACCUMULATION == trainer.GRADIENT_ACCUMULATION
     assert mechanics.TRAINING_LEARNING_RATE == trainer.LEARNING_RATE
+
+
+def test_training_objective_receipt_rejects_nonexact_types_and_members() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    payload = {
+        "objective": "response_only_next_token_cross_entropy",
+        "prompt_tokens": 3,
+        "response_tokens": 2,
+        "ignore_index": -100,
+        "gradient_accumulation_scale": mechanics.TRAINING_GRADIENT_ACCUMULATION,
+        "learning_rate": mechanics.TRAINING_LEARNING_RATE,
+        "autocast_dtype": "torch.bfloat16",
+    }
+    assert mechanics.training_objective_receipt_is_exact(payload)
+    for field, value in (
+        ("prompt_tokens", True),
+        ("ignore_index", -100.0),
+        ("gradient_accumulation_scale", 8.0),
+        ("learning_rate", True),
+    ):
+        mutated = {**payload, field: value}
+        assert not mechanics.training_objective_receipt_is_exact(mutated)
+    assert not mechanics.training_objective_receipt_is_exact(
+        {**payload, "unbound": True}
+    )

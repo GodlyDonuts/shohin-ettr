@@ -134,6 +134,9 @@ def training_objective_receipt_is_exact(payload: Any) -> bool:
         return False
     prompt_tokens = payload.get("prompt_tokens")
     response_tokens = payload.get("response_tokens")
+    ignore_index = payload.get("ignore_index")
+    accumulation_scale = payload.get("gradient_accumulation_scale")
+    learning_rate = payload.get("learning_rate")
     return bool(
         payload.get("objective") == "response_only_next_token_cross_entropy"
         and isinstance(prompt_tokens, int)
@@ -142,12 +145,14 @@ def training_objective_receipt_is_exact(payload: Any) -> bool:
         and isinstance(response_tokens, int)
         and not isinstance(response_tokens, bool)
         and response_tokens > 0
-        and payload.get("ignore_index") == -100
-        and not isinstance(payload.get("ignore_index"), bool)
-        and payload.get("gradient_accumulation_scale") == TRAINING_GRADIENT_ACCUMULATION
-        and not isinstance(payload.get("gradient_accumulation_scale"), bool)
-        and payload.get("learning_rate") == TRAINING_LEARNING_RATE
-        and not isinstance(payload.get("learning_rate"), bool)
+        and isinstance(ignore_index, int)
+        and not isinstance(ignore_index, bool)
+        and ignore_index == -100
+        and isinstance(accumulation_scale, int)
+        and not isinstance(accumulation_scale, bool)
+        and accumulation_scale == TRAINING_GRADIENT_ACCUMULATION
+        and isinstance(learning_rate, float)
+        and learning_rate == TRAINING_LEARNING_RATE
         and payload.get("autocast_dtype") == "torch.bfloat16"
     )
 
