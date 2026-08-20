@@ -1,0 +1,163 @@
+{
+  "schema": "shohin-q36-gpt-oss-120b-mechanics-relaunch-v1",
+  "status": "corrected_score_free_mechanics_running_screen_and_scaling_launchers_dependency_staged",
+  "recorded_at": "2026-08-19T21:17:54-04:00",
+  "purpose": "Repair only the single-device native-MXFP4 admission assertion that stopped the first GPT-OSS-120B attempt before science, then preserve the previously frozen matched screen and three-family reducer unchanged.",
+  "source": {
+    "branch": "codex/q36-mechanics-generation-prepare",
+    "commit": "37fa45395bb958d829de5eae9d68cc776bce4cf9",
+    "private_origin_pushed": true,
+    "public_push_disabled": true,
+    "worktree_clean_at_packaging": true
+  },
+  "superseded_admission_attempt": {
+    "mechanics_job": 764085,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "restarts": 0,
+    "scientific_rows_scored": 0,
+    "scientific_updates": 0,
+    "classification": "mechanics_admission_software_assertion_failure",
+    "failure_receipt": "docs/research/Q36_GPT_OSS_120B_MECHANICS_ADMISSION_FAILURE_20260818.json",
+    "failure_receipt_sha256": "7b4c24b31244a4b79be6a870bd4a6ff2854bb066b26f4cc826561f415ce59c60",
+    "old_launch_receipt_sha256": "6107a5b4dd4298dabf3e5889d65df89b1b1e25c2df526c1772007773e987e083"
+  },
+  "repair": {
+    "scope": "mechanics_admission_only",
+    "reason": "Transformers 5.15 does not attach hf_device_map when a one-value device map is already resident on one device, so absence of that advisory attribute is valid for this single-H100 load.",
+    "new_proof": "Enumerate every model parameter, every buffer, and both packed native-MXFP4 expert projections in all 36 layers; require every tensor on CUDA device zero and exactly 72 packed expert tensors. An explicit map, when present, must normalize entirely to CUDA zero.",
+    "still_rejected": [
+      "cpu",
+      "disk",
+      "meta",
+      "nonzero_cuda_device",
+      "wrong_quantizer",
+      "wrong_quantization_config",
+      "dequantized_load"
+    ],
+    "scientific_host_data_arms_prompts_thresholds_seeds_changed": false,
+    "focused_tests_passed": 32,
+    "black": "PASS",
+    "ruff": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "mechanics_runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_mechanics_37fa4539_r1",
+    "source_commit": "37fa45395bb958d829de5eae9d68cc776bce4cf9",
+    "sha256sums_sha256": "fc0baefa0a2d5a154115e6e36cf595d784d1a7686c85cb3e1a154f22b61712b8",
+    "runtime_json_sha256": "7f79008c936270175767b40d6bd84006fefb18335335c0c294ad70a1b87ee45f",
+    "mechanics_source_sha256": "52fe27046a35b13f82b1f83976606020018d8be48d0cf6ea55abed9424d44e0b",
+    "mechanics_sbatch_sha256": "7baf2a59804e3ccdcb61deb59e03a0699c550d68e8a3f1afb25c23d547ef1348",
+    "regular_files": 234,
+    "directories": 5,
+    "symlinks": 0,
+    "special_files": 0,
+    "writable_members": 0,
+    "full_manifest_verification": "PASS"
+  },
+  "immutable_host": {
+    "model": "openai/gpt-oss-120b",
+    "model_revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/gpt-oss-120b-b5c939de-r1",
+    "model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "overlay_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_mxfp4_overlay_fb759d28_r1",
+    "overlay_manifest_sha256": "b30e527f324e018aacd17bb3fdfb3275ef01f9fca4f13043fa44681f6b26244c",
+    "overlay_report_sha256": "97049327cd066aab8636f5335689f1396e3f0cd435b3fd5e865d8bc234e10296",
+    "quantization": "native_mxfp4",
+    "total_parameters": 117000000000,
+    "active_parameters": 5100000000
+  },
+  "fresh_mechanics": {
+    "job": 766128,
+    "submitted_at": "2026-08-19T21:14:24-04:00",
+    "state_at_record": "RUNNING",
+    "node": "evc44",
+    "dependency": null,
+    "gpu_request": "gres/gpu:nvidia_h100_pcie:1",
+    "cpus": 16,
+    "memory": "128G",
+    "time_limit_seconds": 2700,
+    "requeue": false,
+    "excluded_nodes": [
+      "evc26",
+      "evc29",
+      "evc31",
+      "evc32",
+      "evc38"
+    ],
+    "output": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/gpt_oss_120b_mechanics_37fa4539_r1.json",
+    "checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/gpt_oss_120b_mechanics_37fa4539_r1.checkpoint.pt",
+    "score_or_assessor_rows_authorized": 0,
+    "scientific_result_claimed": false
+  },
+  "frozen_screen_launcher": {
+    "job": 766131,
+    "submitted_at": "2026-08-19T21:16:42-04:00",
+    "state_at_record": "PENDING_DEPENDENCY",
+    "dependency": "afterok:766128",
+    "kill_on_invalid_dependency": true,
+    "requeue": false,
+    "screen_runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_screen_7ceb0400_r1",
+    "screen_runtime_manifest_sha256": "99cae8cff7a529b811d1dd5d35e3727b064f3c3cd9994ab06c1af7c6d87d6eb2",
+    "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_fixed_draft_7ceb0400_r2",
+    "training_data_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "screen_source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "screen_assessor_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "ordered_fixed_draft_sha256s": [
+      "505b42345dda545b0967090bb8fd35fc73400841816d5008ef780bd0cacbc7a8",
+      "642b3cf4d923d4e8f83366e7c6c39925bacd65a6a50d1bd619c4cccedf750629",
+      "8fcabbe9e2dfb2052ce9fe51708e0651fe31e43bbd52d1739c4ea5a4397921fa",
+      "2b64429234d1667d0d83282eedb15626602e38117973d99108beb0e3b06cd8f0"
+    ],
+    "children_after_success": {
+      "revision_fit_h100_jobs": 1,
+      "unchanged_single_h100_jobs": 4,
+      "self_refinement_single_h100_jobs": 4,
+      "trained_revision_single_h100_jobs": 4,
+      "cpu_score_jobs": 1,
+      "array_jobs": 0
+    }
+  },
+  "frozen_scaling_launcher": {
+    "job": 766132,
+    "submitted_at": "2026-08-19T21:17:17-04:00",
+    "state_at_record": "PENDING_DEPENDENCY",
+    "dependency": "afterok:766131",
+    "kill_on_invalid_dependency": true,
+    "requeue": false,
+    "analysis_runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/q36_gpt_oss_analysis_83ff494d_r1",
+    "analysis_runtime_manifest_sha256": "f9361d8feb7f18016e014336dc4f635a22b5ec0b5c0bc52ff1903966e2ac0815",
+    "qwen_point_sha256": "d5b5a59448c15ce00f48cf3a44b524688503e9f7ad00c877761ebcd859673a45",
+    "mixtral_point_sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50",
+    "gpt_point": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_fixed_draft_7ceb0400_r2/score.json",
+    "output_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_gptoss117_mixtral141_83ff494d_r2",
+    "post_score_cpu_jobs": [
+      "three_point_scaling_analysis",
+      "publication_figure"
+    ]
+  },
+  "fresh_graph": {
+    "jobs_total": 19,
+    "h100_jobs": 14,
+    "cpu_jobs": 5,
+    "independent_single_h100_requests": true,
+    "duplicate_scientific_jobs": 0,
+    "benchmark_access_before_mechanics_pass": 0,
+    "assessor_access_before_final_cpu_score": 0,
+    "manual_gap_after_mechanics": false
+  },
+  "newton_at_launch": {
+    "lustre_used_kib": 931031884,
+    "lustre_hard_limit_kib": 1059061760,
+    "lustre_headroom_kib": 128029876,
+    "lustre_files": 543217,
+    "lustre_file_hard_limit": 1010000,
+    "lustre_inode_headroom": 466783,
+    "selected_node": "evc44",
+    "selected_node_h100s_configured": 2,
+    "selected_node_h100s_requested": 1,
+    "other_idle_node": "evc50",
+    "other_idle_node_h100s": 2
+  },
+  "interpretation": "The first GPT-OSS attempt never reached science. The repaired score-free mechanics proof is now running from immutable pushed bytes, and the exact prior matched screen plus three-point reducer are dependency-staged behind it. No GPT-OSS capability result is claimed until the matched CPU score publishes."
+}
