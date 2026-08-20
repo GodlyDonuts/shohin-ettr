@@ -13,16 +13,39 @@
 #SBATCH --error=logs/q36_cross_host_commit_%j.err
 
 set -euo pipefail
-for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON MODEL_ROOT ALIGNED_CHECKPOINT COMMIT_CHECKPOINT HOST SOURCE REVISION_CANDIDATES UNCHANGED_CANDIDATES OUTPUT SELECTIONS REPORT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256; do
+for variable in RUNTIME RUNTIME_MANIFEST_SHA256 SOURCE_COMMIT PYTHON MODEL_ROOT ALIGNED_CHECKPOINT COMMIT_CHECKPOINT HOST SOURCE REVISION_CANDIDATES UNCHANGED_CANDIDATES OUTPUT SELECTIONS REPORT ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256 CROSS_HOST_CONTRACT CROSS_HOST_CONTRACT_SHA256 RUN_ROOT; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
-q36_require_authorization
 q36_verify_model
 q36_verify_environment
+q36_verify_sha256 "$CROSS_HOST_CONTRACT" "$CROSS_HOST_CONTRACT_SHA256"
+"$PYTHON" - "$CROSS_HOST_CONTRACT" "$HOST" "$RUN_ROOT" "$OUTPUT" "$SELECTIONS" "$REPORT" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+contract = json.load(open(sys.argv[1], encoding="utf-8"))
+root = Path(sys.argv[3]).resolve(strict=False)
+if (
+    contract.get("schema") != "shohin-q36-cross-host-model-owned-commit-contract-v1"
+    or contract.get("status") != "frozen_before_execution"
+    or sys.argv[2] not in contract.get("hosts", {})
+    or root in {Path("/"), Path.home().resolve()}
+):
+    raise SystemExit("cross-host authorization differs")
+for value in sys.argv[4:]:
+    target = Path(value).resolve(strict=False)
+    try:
+        relative = target.relative_to(root)
+    except ValueError as error:
+        raise SystemExit("cross-host output escapes run root") from error
+    if not relative.parts:
+        raise SystemExit("cross-host output equals run root")
+PY
 case "$HOST" in
   gpt_oss_120b_screen) expected_shards=4 ;;
   mixtral_8x22b_validation) expected_shards=16 ;;
