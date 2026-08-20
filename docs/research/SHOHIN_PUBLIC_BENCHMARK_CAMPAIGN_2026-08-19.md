@@ -180,6 +180,36 @@ The analyzer is pushed at `89af615b` with 87 public-campaign tests passing and
 is reusable without benchmark labels in model-visible data on every subsequent
 dense or MoE host.
 
+### Training-target provenance of the horizon collapse
+
+The matched public outputs can now be connected to the exact immutable IDR1
+curriculum rather than inferred from checkpoint behavior alone.  A standalone
+auditor replayed all `9,655` training presentations from input SHA-256
+`6df3204573ce807db1b5057bce709189366b6674e38e5224ee3d17a3e6f0ac6c`.
+The resulting owner-nonwritable Newton report has SHA-256
+`7a868f2f83dc2486294adcbffbeba6ac89c2fe421ee71af6409cfabcf654f4a3`;
+its exact repository mirror is
+`SHOHIN_QWEN9_IDR1_TRAINING_TARGET_HORIZON_20260820.json`.
+
+The curriculum contains `3,294` `source_verified_repair` presentations, all
+from the `both_wrong` outcome class.  Their response median is only `11`
+characters, `2,969` are under 20 characters, `3,214` are under 80, and
+`3,245` are exactly a boxed-answer response.  None contains a `<think>` block.
+By contrast, the `5,108` `verified_candidate` presentations have a 706-character
+median and only 16 responses under 20 characters.  This is a direct target
+policy asymmetry, not a post-hoc label inferred from public benchmark scores.
+
+The evidence supports a narrower successor than a generic “reason longer” or
+another selector.  It must alter the answer-only both-wrong target/EOS geometry
+while keeping the correction residual and using only the model-visible draft
+trajectory at inference.  It is distinct from all closed lanes: VFR1's teacher
+could not generate reliable fault traces; CFR1's synthetic faults caused
+overlong draft trust; NDR1's natural aligned drafts lost to shuffled drafts;
+and TCS1 showed post-hoc selection was not the bottleneck.  No new fit is
+claimed or launched by this diagnosis.  A prospective intervention still
+requires a matched source-disjoint development screen before untouched
+confirmation.
+
 ## Cross-family expansion staged — 2026-08-20 17:34 EDT
 
 The second exact dense host is SmolLM3-3B at upstream revision

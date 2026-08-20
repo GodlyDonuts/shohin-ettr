@@ -20,6 +20,32 @@
     "total_rows": 2578,
     "decoding_matched": true
   },
+  "training_target_provenance": {
+    "input_path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_data_ad790b0_r1/train.jsonl",
+    "input_sha256": "6df3204573ce807db1b5057bce709189366b6674e38e5224ee3d17a3e6f0ac6c",
+    "input_rows": 9655,
+    "unique_source_identities": 5824,
+    "report_path": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/training_target_horizon_b8a0555b_r1/report.json",
+    "report_sha256": "7a868f2f83dc2486294adcbffbeba6ac89c2fe421ee71af6409cfabcf654f4a3",
+    "analyzer_source_sha256": "33f6466c4dbdc7f7f959a085209deaf1b34f50d97186a74299ed379fc0df5ad2",
+    "source_verified_repair": {
+      "rows": 3294,
+      "outcome_class": "both_wrong",
+      "median_response_characters": 11.0,
+      "mean_response_characters": 17.55069823922283,
+      "under_20_characters": 2969,
+      "under_80_characters": 3214,
+      "exact_boxed_response": 3245,
+      "contains_think_open_tag": 0
+    },
+    "verified_candidate": {
+      "rows": 5108,
+      "median_response_characters": 706.0,
+      "under_20_characters": 16,
+      "contains_think_open_tag": 456
+    },
+    "evidence_scope": "direct curriculum provenance aligned with matched-prompt output behavior; an intervention is still required to establish causal improvement"
+  },
   "benchmarks": {
     "correctbench": {
       "rows": 739,
@@ -166,8 +192,15 @@
   },
   "prospective_architecture_hypothesis": {
     "name": "draft_relative_reasoning_horizon_preservation",
-    "description": "Retain the learned revision residual while adding a task-agnostic identity prior that prevents early-EOS collapse when a model-owned draft contains a long reasoning trajectory. Preserve ordinary shortening when the draft itself is concise.",
+    "description": "Retain the learned revision residual while removing the answer-only both-wrong target policy and adding a task-agnostic draft-relative identity prior that prevents early-EOS collapse when a model-owned draft contains a long reasoning trajectory. Preserve ordinary shortening when the draft itself is concise.",
     "training_boundary": "model-visible draft trajectory only; no benchmark name, task label, assessor, or correctness signal",
+    "historical_lane_differentiation": {
+      "VFR1": "does not retry fault-first teacher traces; its 128-row pilot missed both parse and correctness floors",
+      "CFR1": "does not retry synthetic appended faults; aligned training lost 144 answers and caused overlong draft trust",
+      "NDR1": "does not retry natural aligned-draft full-answer CE; aligned lost 37 answers to its shuffled control",
+      "TCS1": "does not add another post-hoc selector; semantic selection lost to the shape control",
+      "new_intervention": "change the target/EOS geometry directly while retaining the source-disjoint broad matched-control evaluation"
+    },
     "required_controls": [
       "unchanged continuation",
       "self refinement",
