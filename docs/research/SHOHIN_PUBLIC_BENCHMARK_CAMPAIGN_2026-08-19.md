@@ -98,6 +98,36 @@ partial ledgers.  Its source SHA-256 is
 `e441242d7248aab29251b66a820c8c0a361d5afcebd650c5809bc70ee80c54e9`.
 No official score or aggregate result exists yet.
 
+## Cross-family expansion staged — 2026-08-20 17:34 EDT
+
+The second exact dense host is SmolLM3-3B at upstream revision
+`a07cc9a04f16550a088caea529712d1d335b0ac1`.  Its surviving immutable
+checkpoint pair was reverified before staging:
+
+- normalized draft SHA-256
+  `b260d1acb20931e53f9f380f67a9d6b3feab89ae26f79dabb874f991f9c10edb`;
+- trained revision SHA-256
+  `e2b7a1798aa9430e139118222d3e469de42dc8cfd9affc954819ab5b0db37691`.
+
+To restore that independent model family without reducing the 128-GiB
+durable reserve, the completed and exactly re-downloadable GPT-OSS-120B base
+was reclaimed.  Its 63,747,048-KiB tree passed a fresh full manifest replay,
+had zero active Slurm/process references, and was the only deleted target.
+The GPT score, accounting, mechanics report/checkpoint, trained checkpoint,
+overlay, and publication evidence remain present.  The preserved base
+manifest/config/revision receipt is
+`/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/gpt-oss-120b-b5c939de-r1-base-reclamation/reclamation.json`,
+SHA-256 `2de0df3ea5e2836f8c705be2e2ab19d66725ad0e855e99e626f641102c1b3623`.
+Settled quota usage fell from 978,864,880 to 915,117,868 KiB.
+
+CPU restore job `767443` is pending with zero retries.  It uses a conservative
+7-GiB upper bound, above the previously measured 6,167,617,536-byte model
+tree, and therefore retains the full reserve.  One-GPU allocation `767126`
+is already queued independently for this host.  The host-generic controller
+claims its artifact root atomically, runs one resumable screen, then the same
+ten frozen benchmark manifests with identical greedy arm contracts.  It does
+not alter or duplicate the active Qwen campaign.
+
 ## Publication gate
 
 The website graph may be populated only after:
