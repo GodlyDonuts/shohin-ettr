@@ -40,6 +40,7 @@ PY
 
 mkdir -m 700 "$RUN_ROOT"
 workdir=/lustre/fs1/home/sa305415/shohin
+gpu_exclude=evc26,evc29,evc31,evc32,evc38,evc50
 fit_output="$RUN_ROOT/training"
 candidate_root="$RUN_ROOT/candidates"
 score_output="$RUN_ROOT/score.json"
@@ -48,6 +49,7 @@ common="PYTHON=$PYTHON,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFES
 
 fit_job=$(env -u SLURM_OVERLAP -u SLURM_WHOLE sbatch --parsable \
   --chdir="$workdir" \
+  --exclude="$gpu_exclude" \
   --export="$common,DATA=$DATA,OUTPUT=$fit_output" \
   "$RUNTIME/train/jobs/gpt_oss_120b_train_revision.sbatch")
 
@@ -66,6 +68,7 @@ for arm in unchanged self_refinement revision; do
     fi
     job=$(env -u SLURM_OVERLAP -u SLURM_WHOLE sbatch --parsable \
       --chdir="$workdir" \
+      --exclude="$gpu_exclude" \
       "${dependency[@]}" \
       --export="$exports" \
       "$RUNTIME/train/jobs/gpt_oss_120b_evaluate.sbatch")
@@ -93,6 +96,7 @@ payload = {
     "evaluation_job_count": len(sys.argv[4:]),
     "independent_single_h100_evaluations": True,
     "array_jobs": 0,
+    "excluded_nodes": ["evc26", "evc29", "evc31", "evc32", "evc38", "evc50"],
     "requeue": False,
     "slurm_overlap_scrubbed": True,
     "slurm_whole_scrubbed": True,

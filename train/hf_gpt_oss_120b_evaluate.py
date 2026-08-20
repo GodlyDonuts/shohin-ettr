@@ -242,7 +242,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
-    backbone = _load_backbone(model_root)
+    backbone, native_load_receipt = _load_backbone(model_root)
     revision_model = None
     metadata = None
     if args.arm == "revision":
@@ -302,6 +302,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_receipt": model_receipt,
         "overlay_receipt": overlay_receipt,
         "packages": packages,
+        "native_mxfp4_load_receipt": native_load_receipt,
         "draft_origin_model": DRAFT_ORIGIN_MODEL,
         "draft_origin_revision": DRAFT_ORIGIN_REVISION,
         "transfer_scope": TRANSFER_SCOPE,

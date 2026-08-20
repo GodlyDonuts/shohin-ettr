@@ -31,6 +31,7 @@ def test_evaluator_projects_harmony_final_and_keeps_assessors_closed() -> None:
 
 def test_each_evaluation_loads_one_native_mxfp4_host() -> None:
     source = Path(__file__).with_name("hf_gpt_oss_120b_evaluate.py").read_text()
-    assert "_load_backbone(model_root)" in source
+    assert "backbone, native_load_receipt = _load_backbone(model_root)" in source
+    assert '"native_mxfp4_load_receipt": native_load_receipt' in source
     assert "torch.cuda.device_count() != 1" in source
     assert "GptOssRevisionModel(backbone)" in source

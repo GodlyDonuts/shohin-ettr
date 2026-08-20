@@ -20,7 +20,9 @@ from gpt_oss_harmony import tokenize_training_example
 from gpt_oss_post_mlp_revision import GptOssRevisionModel
 from hf_gpt_oss_120b_mechanics import (
     EXPECTED_PACKAGES,
+    GptOssMechanicsError,
     SCHEMA as MECHANICS_SCHEMA,
+    _native_mxfp4_load_receipt,
     _package_receipt,
     _restore_trainables,
     _state_sha256,
@@ -180,7 +182,7 @@ def validate_mechanics(
     return payload
 
 
-def _load_backbone(model_root: Path) -> Any:
+def _load_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     from kernels import get_loaded_kernels
     from transformers import AutoModelForCausalLM
 
@@ -194,18 +196,13 @@ def _load_backbone(model_root: Path) -> Any:
         low_cpu_mem_usage=True,
         attn_implementation="eager",
     )
-    device_map = getattr(backbone, "hf_device_map", None)
-    quantizer = getattr(backbone, "hf_quantizer", None)
-    quantization = getattr(quantizer, "quantization_config", None)
-    if (
-        not isinstance(device_map, dict)
-        or set(device_map.values()) != {0}
-        or type(quantizer).__name__ != "Mxfp4HfQuantizer"
-        or bool(getattr(quantization, "dequantize", True))
-        or len(get_loaded_kernels()) != 1
-    ):
+    try:
+        native_load_receipt = _native_mxfp4_load_receipt(backbone)
+    except GptOssMechanicsError as error:
+        raise GptOssTrainingError("native MXFP4 training load differs") from error
+    if len(get_loaded_kernels()) != 1:
         raise GptOssTrainingError("native MXFP4 training load differs")
-    return backbone
+    return backbone, native_load_receipt
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -253,7 +250,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     random.seed(SEED)
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
-    backbone = _load_backbone(model_root)
+    backbone, native_load_receipt = _load_backbone(model_root)
     if hasattr(backbone, "gradient_checkpointing_enable"):
         backbone.gradient_checkpointing_enable(
             gradient_checkpointing_kwargs={"use_reentrant": False}
@@ -390,6 +387,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_receipt": model_receipt,
         "overlay_receipt": overlay_receipt,
         "packages": packages,
+        "native_mxfp4_load_receipt": native_load_receipt,
         "mechanics_report_sha256": sha256_file(args.mechanics_report),
         "mechanics_checkpoint_sha256": mechanics["checkpoint_sha256"],
         "data_sha256": DATA_SHA256,

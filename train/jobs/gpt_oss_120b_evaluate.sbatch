@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=gpt-oss-120b-eval
 #SBATCH --partition=normal
-#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38
+#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc50
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8

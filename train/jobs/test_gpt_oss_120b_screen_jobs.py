@@ -12,6 +12,7 @@ def test_fit_is_one_h100_native_mxfp4_and_nonrequeueing() -> None:
     assert "LOCAL_KERNELS=" in source
     assert "hf_gpt_oss_120b_train_revision.py" in source
     assert '[[ "${SLURM_GPUS_ON_NODE:-}" == "1" ]]' in source
+    assert "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc50" in source
 
 
 def test_each_evaluation_is_an_independent_single_h100_request() -> None:
@@ -21,6 +22,7 @@ def test_each_evaluation_is_an_independent_single_h100_request() -> None:
     assert "SHARD_INDEX" in source
     assert "hf_gpt_oss_120b_evaluate.py" in source
     assert "--no-requeue" in source
+    assert "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc50" in source
 
 
 def test_controls_cannot_receive_the_revision_checkpoint() -> None:
