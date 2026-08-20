@@ -1,0 +1,113 @@
+{
+  "schema": "shohin-q36-gpt-oss-120b-model-owned-commit-result-v1",
+  "status": "complete",
+  "date": "2026-08-20",
+  "scientific_classification": "prospective exploratory cross-host transfer; selector weights were frozen before the target-host result",
+  "host": {
+    "model": "openai/gpt-oss-120b",
+    "total_parameters": 117000000000,
+    "active_parameters": 5100000000,
+    "rows": 256
+  },
+  "architecture": {
+    "selector_backbone": "Qwen3.6-35B-A3B",
+    "selector_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "selector_training_updates": 128,
+    "selector_training_pair_presentations": 1024,
+    "model_visible_projection": "question_plus_complete_candidate_only_v1",
+    "target_host_retraining": false,
+    "target_host_label_visibility": false,
+    "assessor_access_during_selection": 0
+  },
+  "results": {
+    "unchanged_correct": 101,
+    "trained_revision_correct": 111,
+    "model_owned_commit_correct": 114,
+    "gain_over_unchanged_count": 13,
+    "gain_over_unchanged_percentage_points": 5.078125,
+    "gain_over_trained_revision_count": 3,
+    "gain_over_trained_revision_percentage_points": 1.171875,
+    "unchanged_correct_retained": 98,
+    "unchanged_correct_retention": 0.9702970297029703,
+    "retention_at_least_95_percent": true,
+    "selection_counts": {
+      "revision": 192,
+      "unchanged": 64
+    },
+    "domains": {
+      "bbh_logic": {
+        "unchanged_correct": 78,
+        "trained_revision_correct": 82,
+        "model_owned_commit_correct": 83
+      },
+      "math500": {
+        "unchanged_correct": 12,
+        "trained_revision_correct": 18,
+        "model_owned_commit_correct": 20
+      },
+      "mbpp": {
+        "unchanged_correct": 11,
+        "trained_revision_correct": 11,
+        "model_owned_commit_correct": 11
+      }
+    },
+    "all_domains_nonnegative_vs_unchanged": true,
+    "all_domains_nonnegative_vs_revision": true
+  },
+  "paired_comparisons": {
+    "commit_vs_unchanged": {
+      "commit_only_correct": 16,
+      "unchanged_only_correct": 3,
+      "net_correct": 13,
+      "mcnemar_exact_two_sided_p": 0.004425048828125
+    },
+    "commit_vs_revision": {
+      "commit_only_correct": 6,
+      "revision_only_correct": 3,
+      "net_correct": 3,
+      "mcnemar_exact_two_sided_p": 0.5078125
+    }
+  },
+  "gate": {
+    "improves_unchanged": true,
+    "retains_at_least_95_percent_unchanged_correct": true,
+    "all_domains_nonnegative_vs_unchanged": true,
+    "pass": true
+  },
+  "interpretation": {
+    "demonstrated_result": "A Qwen3.6-trained model-owned semantic commit policy transferred without retraining to GPT-OSS-120B trajectories, improved the raw trained revision from 111 to 114 correct, and raised unchanged-correct retention from the raw revision's 92/101 to 98/101.",
+    "publication_boundary": "This is a predeclared exploratory cross-host screen. Publication-grade confirmation still requires new untouched source-disjoint identities."
+  },
+  "custody": {
+    "contract_sha256": "e986213c362d8305e7068daa52418aa9299d11162af097add94899bedebe2fa7",
+    "application_sha256": "e297b8125f85f9e91b1cc07c3b0091546109ef1e83cc46205755d3e5a20560b3",
+    "selections_sha256": "75766dd2bcb4eef93a0123cc84add59e612cd780cd2f5e6746c151ae43c6d8ac",
+    "selected_candidates_sha256": "801f42feee4a86ae8a955de81b0be224f238d92f9be4765772c4ac506328e3b5",
+    "result_sha256": "416f8f27c31a8369e80736e0f8c5a9522095ea6a8e05ca5a242b5b8dc590ee7f",
+    "frozen_target_score_sha256": "906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59",
+    "prompt_truncated": 0,
+    "order_consistent": 256,
+    "maximum_swap_error": 0.0,
+    "selection_files_mode": "0444"
+  },
+  "accounting": {
+    "selector_job": 766352,
+    "selector_state": "COMPLETED",
+    "selector_exit_code": "0:0",
+    "selector_elapsed_seconds": 394,
+    "selector_restarts": 0,
+    "selector_node": "evc35",
+    "selector_h100_hours": 0.10944444444444444,
+    "analysis_job": 766353,
+    "analysis_state": "COMPLETED",
+    "analysis_exit_code": "0:0",
+    "analysis_elapsed_seconds": 2,
+    "analysis_restarts": 0
+  },
+  "code": {
+    "implementation_commit": "aaaab852ea14963d41f890173899c7297dcc0675",
+    "runtime_manifest_sha256": "c7a8ee957d9bcf2741ca687e4387ee7dccd0ea9a6fc80f1159e980739aa2c127"
+  }
+}
