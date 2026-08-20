@@ -31,6 +31,8 @@ FIELDS = (
 )
 JOB_ID = re.compile(r"^[0-9]+(?:_[0-9]+)?$")
 STAGE = re.compile(r"^[a-z][a-z0-9_]*$")
+NODE = re.compile(r"^[a-z0-9-]+$")
+H100_GRES = "nvidia_h100_pcie"
 
 
 class UpwardMoEAccountingError(RuntimeError):
@@ -84,6 +86,47 @@ def _nonnegative_integer(value: str, label: str) -> int:
     return result
 
 
+def _node_h100_receipt(node: str, runner: Any) -> dict[str, Any]:
+    if not NODE.fullmatch(node):
+        raise UpwardMoEAccountingError("allocation node identity differs")
+    completed = runner(
+        ["scontrol", "show", "node", "-o", node],
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    lines = [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+    if len(lines) != 1:
+        raise UpwardMoEAccountingError("node GRES receipt differs")
+    fields = {}
+    for item in lines[0].split():
+        key, separator, value = item.partition("=")
+        if separator:
+            fields[key] = value
+    if fields.get("NodeName") != node or "Gres" not in fields:
+        raise UpwardMoEAccountingError("node GRES receipt differs")
+    members = fields["Gres"].split(",")
+    gpu_members = [member for member in members if member.startswith("gpu:")]
+    if len(gpu_members) != 1:
+        raise UpwardMoEAccountingError("node GPU inventory differs")
+    match = re.fullmatch(r"gpu:([^:(),]+):([0-9]+)(?:\([^)]*\))?", gpu_members[0])
+    if match is None or match.group(1) != H100_GRES:
+        raise UpwardMoEAccountingError("node GPU inventory differs")
+    count = _nonnegative_integer(match.group(2), "configured GPU count")
+    if count < 1:
+        raise UpwardMoEAccountingError("node GPU inventory differs")
+    canonical = {
+        "node": node,
+        "configured_gres": fields["Gres"],
+        "gpu_type": H100_GRES,
+        "configured_gpu_count": count,
+    }
+    canonical["receipt_sha256"] = hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return canonical
+
+
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
     if path.exists() or path.is_symlink():
         raise UpwardMoEAccountingError("accounting output exists")
@@ -135,6 +178,7 @@ def capture(
         raise UpwardMoEAccountingError("sacct allocation coverage differs")
 
     stages: dict[str, list[dict[str, Any]]] = {}
+    node_gpu_type_receipts: dict[str, dict[str, Any]] = {}
     charged_gpu_seconds = 0
     for stage, job_id, expected_gpus in parsed:
         row = raw[job_id]
@@ -151,8 +195,23 @@ def capture(
         gpus, gpu_types = _allocated_gpus(row["AllocTRES"])
         if gpus != expected_gpus:
             raise UpwardMoEAccountingError("allocated GPU count differs")
-        if expected_gpus > 0 and gpu_types != {"nvidia_h100_pcie": expected_gpus}:
-            raise UpwardMoEAccountingError("allocated GPU type differs")
+        gpu_type_source = "not_applicable_cpu"
+        node_receipt_sha256 = None
+        if expected_gpus > 0:
+            if gpu_types == {H100_GRES: expected_gpus}:
+                gpu_type_source = "sacct_alloc_tres"
+            elif not gpu_types:
+                node = row["NodeList"]
+                if node not in node_gpu_type_receipts:
+                    node_gpu_type_receipts[node] = _node_h100_receipt(node, runner)
+                receipt = node_gpu_type_receipts[node]
+                if receipt["configured_gpu_count"] < expected_gpus:
+                    raise UpwardMoEAccountingError("node GPU inventory differs")
+                gpu_types = {H100_GRES: expected_gpus}
+                gpu_type_source = "scontrol_node_gres"
+                node_receipt_sha256 = receipt["receipt_sha256"]
+            else:
+                raise UpwardMoEAccountingError("allocated GPU type differs")
         charged = elapsed * gpus
         charged_gpu_seconds += charged
         stages.setdefault(stage, []).append(
@@ -164,6 +223,8 @@ def capture(
                 "elapsed_seconds": elapsed,
                 "allocated_gpus": gpus,
                 "gpu_types": gpu_types,
+                "gpu_type_source": gpu_type_source,
+                "node_gpu_type_receipt_sha256": node_receipt_sha256,
                 "charged_gpu_seconds": charged,
                 "node": row["NodeList"],
                 "partition": row["Partition"],
@@ -180,6 +241,7 @@ def capture(
         "source_commit": source_commit,
         "allocation_count": len(parsed),
         "stages": stages,
+        "node_gpu_type_receipts": node_gpu_type_receipts,
         "charged_gpu_seconds": charged_gpu_seconds,
         "charged_h100_hours": charged_gpu_seconds / 3600.0,
         "all_required_complete": True,
