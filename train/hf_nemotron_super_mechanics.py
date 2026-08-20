@@ -331,10 +331,8 @@ def _enabled_fp8_linears(model: Any) -> dict[str, Any]:
             or weight.dim() != 2
             or weight_quantizer is None
             or input_quantizer is None
-            or not callable(getattr(weight_quantizer, "is_enabled", None))
-            or not callable(getattr(input_quantizer, "is_enabled", None))
-            or not weight_quantizer.is_enabled()
-            or not input_quantizer.is_enabled()
+            or getattr(weight_quantizer, "is_enabled", None) is not True
+            or getattr(input_quantizer, "is_enabled", None) is not True
         ):
             continue
         observed[name] = module

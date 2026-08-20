@@ -311,8 +311,8 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
     class Quantizer(torch.nn.Module):
         fake_quant = False
 
-        @staticmethod
-        def is_enabled() -> bool:
+        @property
+        def is_enabled(self) -> bool:
             return True
 
     class QuantizedLinear(torch.nn.Module):
@@ -367,6 +367,7 @@ def test_enabled_fp8_classifier_uses_linear_weight_and_enabled_quantizers() -> N
             super().__init__()
             self.enabled = enabled
 
+        @property
         def is_enabled(self) -> bool:
             return self.enabled
 
