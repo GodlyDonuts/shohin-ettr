@@ -17,6 +17,8 @@ readonly Q36_NEMOTRON_GCC_ROOT=/apps/gcc/gcc-12.2.0
 readonly Q36_NEMOTRON_NVCC_SHA256=e701519f13153518f0143cc0c18c66f0226eabf73ddd6a7eca0d36b26ebc976b
 readonly Q36_NEMOTRON_GCC_SHA256=b617db0d6e6fade76990baa29f1372255575d3178ee2e8f60ba19980db37100f
 readonly Q36_NEMOTRON_GXX_SHA256=6264680f3e8ee209ed3b2c22c4040282e9b63fb0d7ec17df71e81765e53db34d
+readonly Q36_NEMOTRON_NINJA_SHA256=696f9628a79d9ce50314cf9556d7cd1a1d1ec52b8fd52828f6f9db1719565b67
+readonly Q36_NEMOTRON_NINJA_VERSION=1.13.0.git.kitware.jobserver-pipe-1
 
 q36_die() {
   printf 'q36-mtr: %s\n' "$*" >&2
@@ -66,6 +68,7 @@ q36_init_local_tmp() {
 }
 
 q36_export_nemotron_cuda_toolchain() {
+  q36_require OVERLAY_ROOT
   [[ -d "$Q36_NEMOTRON_CUDA_HOME" && ! -L "$Q36_NEMOTRON_CUDA_HOME" ]] \
     || q36_die "Nemotron CUDA root differs"
   [[ -d "$Q36_NEMOTRON_GCC_ROOT" && ! -L "$Q36_NEMOTRON_GCC_ROOT" ]] \
@@ -76,10 +79,14 @@ q36_export_nemotron_cuda_toolchain() {
     "$Q36_NEMOTRON_GCC_ROOT/bin/gcc" "$Q36_NEMOTRON_GCC_SHA256"
   q36_verify_sha256 \
     "$Q36_NEMOTRON_GCC_ROOT/bin/g++" "$Q36_NEMOTRON_GXX_SHA256"
+  q36_verify_sha256 \
+    "$OVERLAY_ROOT/bin/ninja" "$Q36_NEMOTRON_NINJA_SHA256"
+  [[ "$("$OVERLAY_ROOT/bin/ninja" --version)" == "$Q36_NEMOTRON_NINJA_VERSION" ]] \
+    || q36_die "Nemotron Ninja version differs"
   export CUDA_HOME="$Q36_NEMOTRON_CUDA_HOME"
   export CC="$Q36_NEMOTRON_GCC_ROOT/bin/gcc"
   export CXX="$Q36_NEMOTRON_GCC_ROOT/bin/g++"
-  export PATH="$CUDA_HOME/bin:$Q36_NEMOTRON_GCC_ROOT/bin:/apps/slurm/current/bin:/usr/bin:/bin"
+  export PATH="$OVERLAY_ROOT/bin:$CUDA_HOME/bin:$Q36_NEMOTRON_GCC_ROOT/bin:/apps/slurm/current/bin:/usr/bin:/bin"
   export LD_LIBRARY_PATH="$Q36_NEMOTRON_GCC_ROOT/lib64:$CUDA_HOME/lib64"
   export TORCH_CUDA_ARCH_LIST=9.0
   export TORCH_EXTENSIONS_DIR="$SLURM_TMPDIR/torch_extensions"
