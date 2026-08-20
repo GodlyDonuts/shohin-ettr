@@ -54,6 +54,18 @@
     "py_compile": "pass",
     "git_diff_check": "pass"
   },
+  "newton_cpu_admission": {
+    "status": "pass",
+    "runtime_imported_from_sealed_root": true,
+    "python": "/lustre/fs1/home/sa305415/shohin/envs/product-reasoning-b3a3603-r2/bin/python",
+    "torch": "2.6.0+cu124",
+    "cuda": "12.4",
+    "objective_validator_positive_and_negative_replay": true,
+    "gradient_validator_positive_and_negative_replay": true,
+    "receipt_sha256": "1f62a9874742039397cbdd170cf004da2e26175c4b509ef5c9c6f56191cdea49",
+    "numerical_library_threads": 1,
+    "unbounded_login_import_classification": "infrastructure_only_openblas_thread_pool_allocation_failure_before_runtime_import"
+  },
   "active_graph": {
     "mechanics_job": 767352,
     "fit_job": 767353,
