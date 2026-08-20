@@ -9,6 +9,30 @@ import pytest
 import torch
 
 import hf_nemotron_super_evaluate as evaluation
+import hf_nemotron_super_mechanics as mechanics
+
+
+def _modelopt_fp8() -> dict[str, object]:
+    return {
+        "export": {
+            "hf_quant_config_sha256": mechanics.HF_QUANT_CONFIG_SHA256,
+            "model_index_sha256": mechanics.MODEL_INDEX_SHA256,
+            "fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "weight_map_entries": mechanics.MODEL_WEIGHT_MAP_ENTRIES,
+            "weight_shards": mechanics.MODEL_WEIGHT_SHARDS,
+            "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
+            "quant_gemm": True,
+        },
+        "runtime": {
+            "real_quant_gemm_enabled": True,
+            "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "cpu_tensors": 0,
+            "disk_tensors": 0,
+            "meta_tensors": 0,
+            "parameter_devices": {"cuda:0": 1, "cuda:1": 1},
+            "buffer_devices": {"cuda:0": 1},
+        },
+    }
 
 
 def _mechanics() -> dict[str, object]:
@@ -22,6 +46,7 @@ def _mechanics() -> dict[str, object]:
         "native_router_expert_trainables": 0,
         "serialization_restore_exact": True,
         "devices": [{"index": 0}, {"index": 1}],
+        "modelopt_fp8": _modelopt_fp8(),
     }
 
 
@@ -75,6 +100,7 @@ def test_revision_checkpoint_restore_binds_schedule_and_state(
         "optimizer_state_serialized": False,
         "checkpoint_trainable_only": True,
         "final_trainable_state_sha256": evaluation._state_sha256(state),
+        "modelopt_fp8": _modelopt_fp8(),
     }
     path = tmp_path / "checkpoint.pt"
     torch.save(

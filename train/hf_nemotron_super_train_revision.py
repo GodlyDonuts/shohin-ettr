@@ -24,6 +24,8 @@ from hf_nemotron_super_mechanics import (
     OVERLAY_RECEIPT_SHA256,
     TORCH_VERSION,
     install_triton_allocator_compatibility,
+    load_modelopt_fp8_backbone,
+    modelopt_fp8_receipt_is_exact,
     verify_manifest,
 )
 from hf_product_reasoning_train import PRODUCT_SYSTEM_PROMPT, render_reasoning_messages
@@ -177,8 +179,7 @@ def _package_versions() -> dict[str, str | None]:
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     install_triton_allocator_compatibility()
-    from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoTokenizer
 
     started = time.monotonic()
     if args.output.exists() or args.output.is_symlink():
@@ -195,6 +196,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or mechanics.get("trainable_parameters") != TRAINABLE_PARAMETERS_PER_ROLE
         or mechanics.get("native_router_expert_trainables") != 0
         or mechanics.get("serialization_restore_exact") is not True
+        or not modelopt_fp8_receipt_is_exact(mechanics.get("modelopt_fp8"))
     ):
         raise NemotronSuperTrainingError("mechanics authorization differs")
 
@@ -234,20 +236,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     random.seed(SEED)
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
-    enable_huggingface_checkpointing()
-    backbone = AutoModelForCausalLM.from_pretrained(
-        model_root,
-        local_files_only=True,
-        trust_remote_code=True,
-        device_map="balanced",
-        max_memory={0: "77GiB", 1: "77GiB", "cpu": "32GiB"},
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True,
-    )
-    if not isinstance(getattr(backbone, "hf_device_map", None), dict) or set(
-        backbone.hf_device_map.values()
-    ) - {0, 1}:
-        raise NemotronSuperTrainingError("training device map differs")
+    try:
+        backbone, modelopt_fp8 = load_modelopt_fp8_backbone(model_root)
+    except Exception as error:
+        raise NemotronSuperTrainingError(
+            "training ModelOpt FP8 load differs"
+        ) from error
     if hasattr(backbone, "gradient_checkpointing_enable"):
         backbone.gradient_checkpointing_enable(
             gradient_checkpointing_kwargs={"use_reentrant": False}
@@ -344,6 +338,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "final_trainable_state_sha256": final_state_sha256,
         "sequence_receipt": sequence_receipt,
         "mechanics_report_sha256": sha256_file(args.mechanics_report),
+        "modelopt_fp8": modelopt_fp8,
         "optimizer_state_serialized": False,
         "checkpoint_trainable_only": True,
     }

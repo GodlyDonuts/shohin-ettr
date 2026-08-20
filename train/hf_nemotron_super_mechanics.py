@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
+import copy
 import hashlib
 import importlib.metadata
 import json
@@ -44,10 +46,241 @@ CAUSAL_CONV_VERSION = "1.6.2.post1"
 TORCH_VERSION = "2.6.0+cu124"
 CUDA_VERSION = "12.4"
 TRITON_VERSION = "3.2.0"
+HF_QUANT_CONFIG_SHA256 = (
+    "827209265a15cc7161e96773c4538da60f0980288dc0b86dd5dc2f906a5cfb4f"
+)
+MODEL_INDEX_SHA256 = "126f3105feb375f4f0390aa2b339d5d27d37d1dc720f797bafb4263252c12628"
+MODELOPT_EXPORT_VERSION = "0.41.0"
+FP8_LINEAR_COUNT = 41_120
+MODEL_WEIGHT_MAP_ENTRIES = 124_941
+MODEL_WEIGHT_SHARDS = 26
+MODELOPT_IGNORE_PATTERNS = 130
 
 
 class NemotronSuperMechanicsError(RuntimeError):
     """The score-free upward-MoE mechanics contract failed."""
+
+
+def _canonical_sha256(payload: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def _modelopt_fp8_quantization_config(
+    model_root: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Reconstruct the pinned ModelOpt FP8 loader config without mutating the host."""
+
+    config_path = model_root / "config.json"
+    legacy_path = model_root / "hf_quant_config.json"
+    index_path = model_root / "model.safetensors.index.json"
+    if (
+        sha256_file(legacy_path) != HF_QUANT_CONFIG_SHA256
+        or sha256_file(index_path) != MODEL_INDEX_SHA256
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt export receipts differ")
+    config_payload = json.loads(config_path.read_text(encoding="utf-8"))
+    legacy_payload = json.loads(legacy_path.read_text(encoding="utf-8"))
+    exported = config_payload.get("quantization_config")
+    if not isinstance(exported, dict) or not isinstance(legacy_payload, dict):
+        raise NemotronSuperMechanicsError("ModelOpt export configuration differs")
+
+    from modelopt.torch.export.convert_hf_config import convert_hf_quant_config_format
+
+    converted = convert_hf_quant_config_format(legacy_payload)
+    if converted != exported:
+        raise NemotronSuperMechanicsError("ModelOpt converted configuration differs")
+    import modelopt.torch.quantization as mtq
+
+    if (
+        exported.get("quant_method") != "modelopt"
+        or exported.get("quant_algo") != "FP8"
+        or exported.get("producer")
+        != {"name": "modelopt", "version": MODELOPT_EXPORT_VERSION}
+        or list(exported.get("config_groups", {})) != ["group_0"]
+        or exported["config_groups"]["group_0"].get("targets") != ["Linear"]
+        or not isinstance(exported.get("ignore"), list)
+        or len(exported["ignore"]) != MODELOPT_IGNORE_PATTERNS
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt FP8 export contract differs")
+
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    weight_map = index.get("weight_map") if isinstance(index, dict) else None
+    if not isinstance(weight_map, dict):
+        raise NemotronSuperMechanicsError("ModelOpt weight index differs")
+    weight_scales = {name for name in weight_map if name.endswith(".weight_scale")}
+    input_scales = {name for name in weight_map if name.endswith(".input_scale")}
+    fp8_weights = {
+        name
+        for name in weight_map
+        if name.endswith(".weight") and f"{name[:-7]}.weight_scale" in weight_map
+    }
+    if (
+        len(weight_map) != MODEL_WEIGHT_MAP_ENTRIES
+        or len(set(weight_map.values())) != MODEL_WEIGHT_SHARDS
+        or len(weight_scales) != FP8_LINEAR_COUNT
+        or len(input_scales) != FP8_LINEAR_COUNT
+        or len(fp8_weights) != FP8_LINEAR_COUNT
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt FP8 tensor geometry differs")
+
+    quant_cfg = copy.deepcopy(mtq.FP8_DEFAULT_CFG)
+    if (
+        quant_cfg.get("algorithm") != "max"
+        or quant_cfg.get("quant_cfg", {}).get("*weight_quantizer")
+        != {"num_bits": (4, 3), "axis": None}
+        or quant_cfg.get("quant_cfg", {}).get("*input_quantizer")
+        != {"num_bits": (4, 3), "axis": None}
+    ):
+        raise NemotronSuperMechanicsError("pinned ModelOpt FP8 defaults differ")
+    disabled_patterns: list[str] = []
+    for value in exported["ignore"]:
+        if (
+            not isinstance(value, str)
+            or not value
+            or value.startswith("/")
+            or ".." in value
+        ):
+            raise NemotronSuperMechanicsError("ModelOpt ignore pattern differs")
+        pattern = value if any(mark in value for mark in "*?[") else f"{value}*"
+        quant_cfg["quant_cfg"][pattern] = {"enable": False}
+        disabled_patterns.append(pattern)
+    receipt = {
+        "hf_quant_config_sha256": HF_QUANT_CONFIG_SHA256,
+        "model_index_sha256": MODEL_INDEX_SHA256,
+        "exported_quantization_config_sha256": _canonical_sha256(exported),
+        "converted_quantization_config_sha256": _canonical_sha256(converted),
+        "modelopt_loader_config_sha256": _canonical_sha256(quant_cfg),
+        "modelopt_export_version": MODELOPT_EXPORT_VERSION,
+        "fp8_linear_count": FP8_LINEAR_COUNT,
+        "weight_map_entries": len(weight_map),
+        "weight_shards": len(set(weight_map.values())),
+        "disabled_patterns": len(disabled_patterns),
+        "disabled_pattern_sha256": _canonical_sha256(disabled_patterns),
+        "quant_gemm": True,
+    }
+    return quant_cfg, receipt
+
+
+def _cuda_index(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if value in {0, 1} else None
+    if isinstance(value, torch.device):
+        return value.index if value.type == "cuda" and value.index in {0, 1} else None
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"0", "cuda", "cuda:0"}:
+            return 0
+        if normalized in {"1", "cuda:1"}:
+            return 1
+    return None
+
+
+def _modelopt_fp8_runtime_receipt(backbone: Any) -> dict[str, Any]:
+    device_map = getattr(backbone, "hf_device_map", None)
+    if not isinstance(device_map, dict) or not device_map:
+        raise NemotronSuperMechanicsError("ModelOpt device map differs")
+    normalized_map = {name: _cuda_index(value) for name, value in device_map.items()}
+    if None in normalized_map.values() or set(normalized_map.values()) != {0, 1}:
+        raise NemotronSuperMechanicsError("ModelOpt device placement differs")
+
+    parameter_devices = Counter(str(value.device) for value in backbone.parameters())
+    buffer_devices = Counter(str(value.device) for value in backbone.buffers())
+    if any(not name.startswith("cuda:") for name in parameter_devices | buffer_devices):
+        raise NemotronSuperMechanicsError("ModelOpt tensor residency differs")
+    observed_devices = {
+        _cuda_index(name) for name in set(parameter_devices) | set(buffer_devices)
+    }
+    if None in observed_devices or observed_devices != {0, 1}:
+        raise NemotronSuperMechanicsError("ModelOpt tensor device coverage differs")
+
+    from modelopt.torch.quantization.backends.gemm_registry import (
+        is_real_quant_gemm_enabled,
+    )
+
+    quantized_linears = [
+        module
+        for module in backbone.modules()
+        if hasattr(module, "weight_quantizer") and hasattr(module, "input_quantizer")
+    ]
+    if (
+        len(quantized_linears) != FP8_LINEAR_COUNT
+        or not is_real_quant_gemm_enabled(backbone)
+        or any(
+            getattr(module.weight_quantizer, "fake_quant", True)
+            for module in quantized_linears
+        )
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt real FP8 execution differs")
+    return {
+        "device_map_sha256": _canonical_sha256(normalized_map),
+        "device_map_entries": len(normalized_map),
+        "parameter_devices": dict(sorted(parameter_devices.items())),
+        "buffer_devices": dict(sorted(buffer_devices.items())),
+        "real_quant_gemm_enabled": True,
+        "real_fp8_linear_count": len(quantized_linears),
+        "cpu_tensors": 0,
+        "disk_tensors": 0,
+        "meta_tensors": 0,
+    }
+
+
+def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    export = payload.get("export")
+    runtime = payload.get("runtime")
+    return bool(
+        isinstance(export, dict)
+        and isinstance(runtime, dict)
+        and export.get("hf_quant_config_sha256") == HF_QUANT_CONFIG_SHA256
+        and export.get("model_index_sha256") == MODEL_INDEX_SHA256
+        and export.get("fp8_linear_count") == FP8_LINEAR_COUNT
+        and export.get("weight_map_entries") == MODEL_WEIGHT_MAP_ENTRIES
+        and export.get("weight_shards") == MODEL_WEIGHT_SHARDS
+        and export.get("disabled_patterns") == MODELOPT_IGNORE_PATTERNS
+        and export.get("quant_gemm") is True
+        and runtime.get("real_quant_gemm_enabled") is True
+        and runtime.get("real_fp8_linear_count") == FP8_LINEAR_COUNT
+        and runtime.get("cpu_tensors") == 0
+        and runtime.get("disk_tensors") == 0
+        and runtime.get("meta_tensors") == 0
+        and set(runtime.get("parameter_devices", {})) == {"cuda:0", "cuda:1"}
+        and set(runtime.get("buffer_devices", {})) <= {"cuda:0", "cuda:1"}
+    )
+
+
+def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
+    """Load the immutable ModelOpt FP8 export across exactly two local H100s."""
+
+    quant_cfg, export_receipt = _modelopt_fp8_quantization_config(model_root)
+    from modelopt.torch.quantization.plugins.accelerate import init_quantized_weights
+    from transformers import AutoConfig, AutoModelForCausalLM
+
+    config = AutoConfig.from_pretrained(
+        model_root,
+        local_files_only=True,
+        trust_remote_code=True,
+    )
+    observed_quantization = getattr(config, "quantization_config", None)
+    expected_quantization = json.loads(
+        (model_root / "config.json").read_text(encoding="utf-8")
+    )["quantization_config"]
+    if observed_quantization != expected_quantization:
+        raise NemotronSuperMechanicsError("Transformers ModelOpt configuration differs")
+    delattr(config, "quantization_config")
+    config.torch_dtype = torch.bfloat16
+    with init_quantized_weights(quant_cfg, gpu_mem_percentage=0.95, quant_gemm=True):
+        backbone = AutoModelForCausalLM.from_pretrained(
+            model_root,
+            config=config,
+            trust_remote_code=True,
+        )
+    runtime_receipt = _modelopt_fp8_runtime_receipt(backbone)
+    return backbone, {"export": export_receipt, "runtime": runtime_receipt}
 
 
 def install_triton_allocator_compatibility() -> dict[str, Any]:
@@ -239,10 +472,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     triton_allocator = install_triton_allocator_compatibility()
     import mamba_ssm
     import modelopt
-    from modelopt.torch.opt.plugins.huggingface import (
-        enable_huggingface_checkpointing,
-    )
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoTokenizer
 
     module_origins = {
         "mamba_ssm": str(Path(mamba_ssm.__file__).resolve()),
@@ -260,24 +490,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
-    enable_huggingface_checkpointing()
     tokenizer = AutoTokenizer.from_pretrained(
         model_root,
         local_files_only=True,
         trust_remote_code=True,
     )
-    backbone = AutoModelForCausalLM.from_pretrained(
-        model_root,
-        local_files_only=True,
-        trust_remote_code=True,
-        device_map="balanced",
-        max_memory={0: "77GiB", 1: "77GiB", "cpu": "32GiB"},
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True,
-    )
+    backbone, modelopt_fp8 = load_modelopt_fp8_backbone(model_root)
     device_map = getattr(backbone, "hf_device_map", None)
-    if not isinstance(device_map, dict) or set(device_map.values()) - {0, 1}:
-        raise NemotronSuperMechanicsError("model device map differs")
     model = NemotronSuperRevisionModel(backbone)
     if model.trainable_parameter_count() != TRAINABLE_PARAMETERS_PER_ROLE:
         raise NemotronSuperMechanicsError("trainable surface differs")
@@ -356,6 +575,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "overlay_receipt": overlay_receipt,
         "package_versions": package_versions,
         "triton_allocator_compatibility": triton_allocator,
+        "modelopt_fp8": modelopt_fp8,
         "module_origins": module_origins,
         "devices": [
             {

@@ -20,6 +20,8 @@ from hf_nemotron_super_mechanics import (
     MODELOPT_VERSION,
     TORCH_VERSION,
     install_triton_allocator_compatibility,
+    load_modelopt_fp8_backbone,
+    modelopt_fp8_receipt_is_exact,
 )
 from hf_nemotron_super_train_revision import (
     CHECKPOINT_SCHEMA,
@@ -114,6 +116,7 @@ def validate_mechanics_report(path: Path) -> dict[str, Any]:
         or payload.get("native_router_expert_trainables") != 0
         or payload.get("serialization_restore_exact") is not True
         or len(payload.get("devices", [])) != 2
+        or not modelopt_fp8_receipt_is_exact(payload.get("modelopt_fp8"))
     ):
         raise NemotronSuperEvaluationError("mechanics authorization differs")
     return payload
@@ -174,6 +177,7 @@ def load_revision_checkpoint(
         or metadata.get("trainable_parameter_name_sha256")
         != model.trainable_parameter_name_sha256()
         or metadata.get("final_trainable_state_sha256") != _state_sha256(state)
+        or not modelopt_fp8_receipt_is_exact(metadata.get("modelopt_fp8"))
     ):
         raise NemotronSuperEvaluationError("revision checkpoint contract differs")
     with torch.no_grad():
@@ -202,8 +206,7 @@ def _package_versions() -> dict[str, str | None]:
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     install_triton_allocator_compatibility()
-    from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoTokenizer
 
     if (
         args.arm not in ARMS
@@ -246,20 +249,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    enable_huggingface_checkpointing()
-    backbone = AutoModelForCausalLM.from_pretrained(
-        args.model_root,
-        local_files_only=True,
-        trust_remote_code=True,
-        device_map="balanced",
-        max_memory={0: "77GiB", 1: "77GiB", "cpu": "32GiB"},
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True,
-    )
-    if not isinstance(getattr(backbone, "hf_device_map", None), dict) or set(
-        backbone.hf_device_map.values()
-    ) - {0, 1}:
-        raise NemotronSuperEvaluationError("evaluation device map differs")
+    try:
+        backbone, modelopt_fp8 = load_modelopt_fp8_backbone(args.model_root)
+    except Exception as error:
+        raise NemotronSuperEvaluationError(
+            "evaluation ModelOpt FP8 load differs"
+        ) from error
     metadata = None
     revision_model = None
     if args.arm == "revision":
@@ -321,6 +316,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "split": "external_validation",
         "model_revision": MODEL_REVISION,
         "model_manifest_sha256": MODEL_MANIFEST_SHA256,
+        "modelopt_fp8": modelopt_fp8,
         "mechanics_report_sha256": sha256_file(args.mechanics_report),
         "mechanics_checkpoint_sha256": mechanics["checkpoint_sha256"],
         "revision_checkpoint": (
