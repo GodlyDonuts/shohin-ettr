@@ -31,7 +31,12 @@ for path in "$RUNTIME_ROOT" "$BOARD_ROOT" "$SCREEN_MANIFEST" \
 done
 
 source_commit=$(git -C "$RUNTIME_ROOT" rev-parse HEAD)
-if [ -n "$(git -C "$RUNTIME_ROOT" status --porcelain --untracked-files=all)" ]; then
+if ! runtime_status=$(git -c core.preloadIndex=false -C "$RUNTIME_ROOT" \
+  status --porcelain --untracked-files=all); then
+  echo "host-queue runtime status check failed" >&2
+  exit 2
+fi
+if [ -n "$runtime_status" ]; then
   echo "host-queue runtime is dirty" >&2
   exit 2
 fi

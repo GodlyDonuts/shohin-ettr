@@ -20,7 +20,12 @@ for path in "$RUNTIME_ROOT" "$ARTIFACT_ROOT" "$BOARD_ROOT" "$SCORER"; do
 done
 
 source_commit=$(git -C "$RUNTIME_ROOT" rev-parse HEAD)
-if [ -n "$(git -C "$RUNTIME_ROOT" status --porcelain --untracked-files=all)" ]; then
+if ! runtime_status=$(git -c core.preloadIndex=false -C "$RUNTIME_ROOT" \
+  status --porcelain --untracked-files=all); then
+  echo "score-controller runtime status check failed" >&2
+  exit 2
+fi
+if [ -n "$runtime_status" ]; then
   echo "score-controller runtime is dirty" >&2
   exit 2
 fi

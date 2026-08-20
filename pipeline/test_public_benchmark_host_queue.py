@@ -14,6 +14,8 @@ def test_host_queue_is_single_claimed_and_host_parameterized() -> None:
     assert '--model-loader "$MODEL_LOADER"' in source
     assert 'manifest="$BOARD_ROOT/manifests/$benchmark.json"' in source
     assert '--jobid="$ALLOCATION_JOB_ID"' in source
+    assert "git -c core.preloadIndex=false" in source
+    assert "host-queue runtime status check failed" in source
     for field in (
         '"allocation_job_id"',
         '"artifact_root"',
@@ -58,6 +60,8 @@ def test_host_score_queue_is_single_claimed_and_waits_for_allocation() -> None:
     assert "os.O_EXCL" in source
     assert 'squeue -h -j "$ALLOCATION_JOB_ID" -t RUNNING' in source
     assert 'exec env BOARD_ROOT="$BOARD_ROOT" "$SCORER"' in source
+    assert "git -c core.preloadIndex=false" in source
+    assert "score-controller runtime status check failed" in source
     for field in (
         '"allocation_job_id"',
         '"artifact_root"',
