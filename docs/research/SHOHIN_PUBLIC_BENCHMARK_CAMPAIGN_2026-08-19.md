@@ -151,6 +151,25 @@ SHA-256 `a9b64c5cbb51533fea3fe10f505fa9ba9bb1ec73bd295a686f88fabf786a2bf3`.
 It covers 3,564,211 bytes and binds the zero-restart Slurm accounting snapshot
 at SHA-256 `7405c1369cd84990bcae5bdc1afc74e37ed6cb25aed3c7378a5c096aca214287`.
 
+### Measured revision-horizon boundary
+
+The five complete ledgers isolate a sharper architecture diagnosis.  Every
+unchanged/revision prompt hash matches, yet the revision median is only 26
+characters on MuSR and 12 on CorrectBench, compared with 1,885.5 and 863 for
+unchanged.  The trained arm changed 95.24% and 95.13% of rows on those two
+negative boards.  Conversely, the three positive boards retained a median
+revision-to-unchanged character ratio of `1.0` and changed only 48.24%, 11.59%,
+and 14.29% of rows.  Revision also exhausted the token ceiling less often than
+unchanged, so the short outputs are learned early stops rather than truncation.
+
+The exact public-development diagnosis is recorded in
+`SHOHIN_QWEN9_REVISION_HORIZON_BOUNDARY_20260820.json`.  Its prospective
+hypothesis is a task-agnostic draft-relative reasoning-horizon identity prior:
+preserve the existing learned residual, but prevent early-EOS collapse when a
+model-owned draft contains a long reasoning trajectory.  This is preparation,
+not a new result or authorized launch; it requires a new source-disjoint broad
+development screen and untouched confirmation before any claim.
+
 ## Cross-family expansion staged — 2026-08-20 17:34 EDT
 
 The second exact dense host is SmolLM3-3B at upstream revision

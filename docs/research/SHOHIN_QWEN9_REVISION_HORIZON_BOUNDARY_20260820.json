@@ -1,0 +1,171 @@
+{
+  "schema": "shohin-qwen9-revision-horizon-boundary-v1",
+  "status": "public_development_diagnosis_complete",
+  "claim_scope": "prospective_architecture_diagnosis_not_confirmation",
+  "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "draft_checkpoint_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971",
+  "revision_checkpoint_sha256": "df3c264d426941fef8ba9c10a90fe9fab304ec2864738209a4d79f9f81e0c473",
+  "matched_prompt_contract": {
+    "unchanged_and_revision_prompt_sha256_equal_on_every_row": true,
+    "prompt_equal_rows": 2578,
+    "total_rows": 2578,
+    "decoding_matched": true
+  },
+  "benchmarks": {
+    "correctbench": {
+      "rows": 739,
+      "prompt_equal_rows": 739,
+      "byte_changed_rows": 703,
+      "byte_change_rate": 0.9512855209742895,
+      "unchanged_median_characters": 863,
+      "revision_median_characters": 12,
+      "revision_to_unchanged_median_character_ratio": 0.0226,
+      "unchanged_under_20_characters": 11,
+      "revision_under_20_characters": 519,
+      "unchanged_max_token_exhausted": 127,
+      "revision_max_token_exhausted": 2,
+      "paired_delta_points": -17.456021650879567,
+      "wins": 0,
+      "losses": 129,
+      "score_report_sha256": "bc01e307e202494539470aafd2897ac87213debd1b283dc06eab125fb7dd5247"
+    },
+    "humaneval_plus": {
+      "rows": 164,
+      "prompt_equal_rows": 164,
+      "byte_changed_rows": 19,
+      "byte_change_rate": 0.11585365853658537,
+      "unchanged_median_characters": 204.5,
+      "revision_median_characters": 196.0,
+      "revision_to_unchanged_median_character_ratio": 1.0,
+      "unchanged_under_20_characters": 1,
+      "revision_under_20_characters": 1,
+      "unchanged_max_token_exhausted": 2,
+      "revision_max_token_exhausted": 0,
+      "paired_delta_points": 2.4390243902439024,
+      "wins": 5,
+      "losses": 1,
+      "score_report_sha256": "b3ec70ace2b4441efa31c3a1c6a2e0ab97f84d5f2bee07d0703598e359258139"
+    },
+    "ifeval": {
+      "rows": 541,
+      "prompt_equal_rows": 541,
+      "byte_changed_rows": 261,
+      "byte_change_rate": 0.4824399260628466,
+      "unchanged_median_characters": 762,
+      "revision_median_characters": 679,
+      "revision_to_unchanged_median_character_ratio": 1.0,
+      "unchanged_under_20_characters": 26,
+      "revision_under_20_characters": 28,
+      "unchanged_max_token_exhausted": 42,
+      "revision_max_token_exhausted": 31,
+      "paired_delta_points": 2.7726432532347505,
+      "wins": 27,
+      "losses": 12,
+      "strata": {
+        "one_instruction": {
+          "rows": 305,
+          "paired_delta_points": 1.3114754098360655,
+          "wins": 14,
+          "losses": 10
+        },
+        "two_instructions": {
+          "rows": 179,
+          "paired_delta_points": 6.145251396648045,
+          "wins": 11,
+          "losses": 0
+        },
+        "three_instructions": {
+          "rows": 57,
+          "paired_delta_points": 0.0,
+          "wins": 2,
+          "losses": 2
+        }
+      },
+      "score_report_sha256": "ebfa8fb9053dc8bc20f9abfae65685b5b2f759e8942a3196f652388e39619e99"
+    },
+    "mbpp_plus": {
+      "rows": 378,
+      "prompt_equal_rows": 378,
+      "byte_changed_rows": 54,
+      "byte_change_rate": 0.14285714285714285,
+      "unchanged_median_characters": 138.0,
+      "revision_median_characters": 136.0,
+      "revision_to_unchanged_median_character_ratio": 1.0,
+      "unchanged_under_20_characters": 3,
+      "revision_under_20_characters": 1,
+      "unchanged_max_token_exhausted": 4,
+      "revision_max_token_exhausted": 2,
+      "paired_delta_points": 0.26455026455026454,
+      "wins": 1,
+      "losses": 0,
+      "score_report_sha256": "3e37ef792dbbada48dad34b7d5540277031837f38b09c6e0d960e0fc6ecd3d4e"
+    },
+    "musr": {
+      "rows": 756,
+      "prompt_equal_rows": 756,
+      "byte_changed_rows": 720,
+      "byte_change_rate": 0.9523809523809523,
+      "unchanged_median_characters": 1885.5,
+      "revision_median_characters": 26.0,
+      "revision_to_unchanged_median_character_ratio": 0.0123,
+      "unchanged_under_20_characters": 3,
+      "revision_under_20_characters": 322,
+      "unchanged_max_token_exhausted": 66,
+      "revision_max_token_exhausted": 7,
+      "paired_delta_points": -23.544973544973544,
+      "wins": 38,
+      "losses": 216,
+      "strata": {
+        "murder_mystery": {
+          "rows": 250,
+          "paired_delta_points": -27.2,
+          "wins": 5,
+          "losses": 73
+        },
+        "object_placements": {
+          "rows": 256,
+          "paired_delta_points": -1.5625,
+          "wins": 23,
+          "losses": 27
+        },
+        "team_allocation": {
+          "rows": 250,
+          "paired_delta_points": -42.4,
+          "wins": 10,
+          "losses": 116
+        }
+      },
+      "score_report_sha256": "50ca5f1bcb79fd7d2144f17345e1727959ee37fdd9be8a5e8768c2fb40a73e5d"
+    }
+  },
+  "diagnosis": {
+    "supported": true,
+    "name": "learned_revision_horizon_collapse",
+    "evidence": [
+      "unchanged and revision prompts are byte-hash matched on all 2578 rows",
+      "negative boards activate byte-changing revisions on more than 95 percent of rows",
+      "negative-board revision medians collapse to 12 and 26 characters",
+      "positive-board revision medians remain near matched controls",
+      "revision has fewer max-token exhaustions, excluding truncation as the collapse cause"
+    ],
+    "not_supported_as_causes": [
+      "prompt mismatch",
+      "decoding mismatch",
+      "maximum-token truncation",
+      "row-identity mismatch"
+    ]
+  },
+  "prospective_architecture_hypothesis": {
+    "name": "draft_relative_reasoning_horizon_preservation",
+    "description": "Retain the learned revision residual while adding a task-agnostic identity prior that prevents early-EOS collapse when a model-owned draft contains a long reasoning trajectory. Preserve ordinary shortening when the draft itself is concise.",
+    "training_boundary": "model-visible draft trajectory only; no benchmark name, task label, assessor, or correctness signal",
+    "required_controls": [
+      "unchanged continuation",
+      "self refinement",
+      "draft hidden",
+      "current revision checkpoint"
+    ],
+    "required_gate": "one new source-disjoint broad development screen followed by an untouched confirmation board",
+    "launch_authorized": false
+  }
+}
