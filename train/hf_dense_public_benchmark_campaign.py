@@ -35,7 +35,7 @@ MANIFEST_SCHEMA = "shohin-dense-public-campaign-manifest-v1"
 QUESTION_SCHEMA = "shohin-dense-public-benchmark-question-v1"
 LEDGER_SCHEMA = "shohin-dense-public-campaign-ledger-v1"
 REPORT_SCHEMA = "shohin-dense-public-campaign-report-v1"
-STAGES = ("draft", "unchanged_continuation", "trained_revision")
+STAGES = ("direct_base", "draft", "unchanged_continuation", "trained_revision")
 
 
 def canonical_json(value: Any) -> str:
@@ -142,7 +142,7 @@ def append_ledger(path: Path, row: dict[str, Any]) -> None:
 def stage_prompt(
     stage: str, row: dict[str, Any], drafts: dict[str, dict[str, Any]]
 ) -> str:
-    if stage == "draft":
+    if stage in {"direct_base", "draft"}:
         return row["question"]
     draft = drafts.get(row["id"])
     if draft is None:
@@ -157,7 +157,7 @@ def run_stage(
     drafts: dict[str, dict[str, Any]],
     ledger_path: Path,
     model_root: Path,
-    checkpoint: Path,
+    checkpoint: Path | None,
     model_loader: str,
     tokenizer: Any,
     seed: int,
@@ -207,7 +207,7 @@ def run_stage(
             model,
             tokenizer,
             rendered,
-            True,
+            checkpoint is not None,
             "greedy",
             maximum,
             stop_ids,
@@ -246,7 +246,7 @@ def run_stage(
         "elapsed_seconds": elapsed,
         "model_loader": resolved_loader,
         "adapter_metadata": metadata,
-        "checkpoint_sha256": sha256_file(checkpoint),
+        "checkpoint_sha256": sha256_file(checkpoint) if checkpoint else None,
     }
 
 
@@ -295,9 +295,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     stage_reports = {}
     for stage, checkpoint, offset in (
-        ("draft", args.draft_checkpoint, 0),
-        ("unchanged_continuation", args.draft_checkpoint, len(rows)),
-        ("trained_revision", args.revision_checkpoint, len(rows)),
+        ("direct_base", None, 0),
+        ("draft", args.draft_checkpoint, len(rows)),
+        ("unchanged_continuation", args.draft_checkpoint, 2 * len(rows)),
+        ("trained_revision", args.revision_checkpoint, 2 * len(rows)),
     ):
         stage_reports[stage] = run_stage(
             stage=stage,
@@ -342,6 +343,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "revision_checkpoint_sha256": args.revision_checkpoint_sha256,
         "generation_mode": "greedy",
         "matched_second_pass": True,
+        "direct_base_is_one_pass_no_adapter": True,
         "stage_reports": stage_reports,
     }
     _atomic_json(args.output_root / "report.json", report)

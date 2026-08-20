@@ -85,3 +85,8 @@ def test_second_pass_prompt_is_bound_to_its_own_draft() -> None:
     )
     assert "Original request:\nOriginal" in prompt
     assert "Internal draft:\nDraft answer" in prompt
+
+
+def test_direct_base_and_draft_use_the_identical_source_prompt() -> None:
+    row = {"id": "a" * 64, "question": "Original", "response_mode": "general"}
+    assert stage_prompt("direct_base", row, {}) == stage_prompt("draft", row, {})

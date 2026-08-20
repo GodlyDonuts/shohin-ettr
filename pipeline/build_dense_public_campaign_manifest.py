@@ -51,6 +51,7 @@ def run(bindings: list[str], output: Path) -> dict[str, object]:
         "benchmarks": benchmarks,
         "rows": sum(int(item["rows"]) for item in benchmarks),
         "generation": {
+            "direct_base": "one_pass_no_adapter_same_model_visible_envelope",
             "draft": "trained_draft_adapter",
             "control": "same_draft_adapter_second_pass",
             "treatment": "trained_revision_adapter_second_pass",

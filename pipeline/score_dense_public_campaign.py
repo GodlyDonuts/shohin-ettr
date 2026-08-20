@@ -111,7 +111,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             benchmark_by_id[identity] = benchmark
             assessor_by_id[identity] = assessor
     ledgers = {}
-    for stage in ("unchanged_continuation", "trained_revision"):
+    scored_stages = ("direct_base", "unchanged_continuation", "trained_revision")
+    for stage in scored_stages:
         path = args.generation_root / f"{stage}.jsonl"
         rows = load_jsonl(path)
         if (
@@ -128,7 +129,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         benchmark = benchmark_by_id[identity]
         assessor = assessor_by_id[identity]["assessor"]
         results = {}
-        for stage in ("unchanged_continuation", "trained_revision"):
+        for stage in scored_stages:
             completion = ledgers[stage][identity]["completion"]
             if benchmark == "mmlu_pro":
                 parsed = mmlu_answer(completion)
@@ -150,13 +151,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             else:
                 continue
             results[stage] = result
-        if len(results) == 2:
+        if len(results) == len(scored_stages):
             outcomes_by_benchmark[benchmark].append(
                 {
                     "id": identity,
                     "stratum": assessor_by_id[identity]["stratum"],
                     "unchanged_correct": bool(results["unchanged_continuation"]["correct"]),
                     "revision_correct": bool(results["trained_revision"]["correct"]),
+                    "direct_base_correct": bool(results["direct_base"]["correct"]),
                     "arms": results,
                 }
             )
@@ -167,10 +169,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             benchmarks[name] = {"status": "pending_official_scorer"}
             continue
         metrics = summarize(outcomes)
+        metrics["direct_base_correct"] = sum(row["direct_base_correct"] for row in outcomes)
+        metrics["direct_base_score"] = 100 * metrics["direct_base_correct"] / len(outcomes)
+        metrics["trained_revision_vs_direct_base_points"] = (
+            metrics["trained_revision_score"] - metrics["direct_base_score"]
+        )
         if name == "ifeval":
             metrics["official_instruction_metrics"] = {
                 stage: dict(instruction_metrics[f"ifeval:{stage}"])
-                for stage in ("unchanged_continuation", "trained_revision")
+                for stage in scored_stages
             }
         benchmarks[name] = {
             "status": "complete",
@@ -191,11 +198,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "benchmarks": len(complete),
             "unchanged_score": sum(row["metrics"]["unchanged_score"] for row in complete) / len(complete),
             "trained_revision_score": sum(row["metrics"]["trained_revision_score"] for row in complete) / len(complete),
+            "direct_base_score": sum(row["metrics"]["direct_base_score"] for row in complete) / len(complete),
         },
     }
     report["standardized_overall"]["paired_delta_points"] = (
         report["standardized_overall"]["trained_revision_score"]
         - report["standardized_overall"]["unchanged_score"]
+    )
+    report["standardized_overall"]["trained_revision_vs_direct_base_points"] = (
+        report["standardized_overall"]["trained_revision_score"]
+        - report["standardized_overall"]["direct_base_score"]
     )
     if args.output.exists():
         raise CampaignScoreError("refusing to replace campaign score")
