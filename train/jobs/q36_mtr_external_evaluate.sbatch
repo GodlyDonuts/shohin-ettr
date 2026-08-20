@@ -56,7 +56,8 @@ export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
 q36_export_pythonpath
 confirmation_args=()
 if [[ "${CONFIRMATION_MMLU_PRO:-0}" == 1 ]]; then
-  [[ "$ARM" == unchanged && "$EXPECTED_ROWS" == 256 && "$SHARD_COUNT" == 4 ]]
+  [[ "$ARM" == unchanged ]]
+  [[ "$EXPECTED_ROWS:$SHARD_COUNT" == 256:4 || "$EXPECTED_ROWS:$SHARD_COUNT" == 1023:16 ]]
   confirmation_args=(--confirmation-mmlu-pro)
 fi
 nvidia-smi

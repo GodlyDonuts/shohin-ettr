@@ -9,9 +9,11 @@ import pytest
 import score_gpt_oss_120b_commit_confirmation as module
 
 
-def _write_source(path: Path, *, include_label: bool = False) -> None:
+def _write_source(
+    path: Path, *, rows_count: int = 256, include_label: bool = False
+) -> None:
     rows = []
-    for index in range(256):
+    for index in range(rows_count):
         row = {
             "schema": module.SOURCE_SCHEMA,
             "split": "external_validation",
@@ -42,6 +44,13 @@ def test_confirmation_source_projection_binds_hash_and_rejects_labels(
         module._sources(source, module.sha256_file(source))
 
 
+def test_confirmation_source_accepts_frozen_1023_geometry(tmp_path: Path) -> None:
+    source = tmp_path / "source.jsonl"
+    _write_source(source, rows_count=1_023)
+    assert len(module._sources(source, module.sha256_file(source), 1_023)) == 1_023
+    assert (1_023, 16) in module.ALLOWED_GEOMETRIES
+
+
 def test_score_job_is_cpu_only_and_post_generation() -> None:
     root = Path(__file__).resolve().parents[1]
     wrapper = (
@@ -50,4 +59,6 @@ def test_score_job_is_cpu_only_and_post_generation() -> None:
     assert "--gres" not in wrapper
     assert "EXPECTED_ASSESSORS_SHA256" in wrapper
     assert "score_gpt_oss_120b_commit_confirmation.py" in wrapper
+    assert "for ((index=0; index<EXPECTED_SHARDS; index++))" in wrapper
+    assert '--expected-rows "$EXPECTED_ROWS"' in wrapper
     assert "SANDBOX_RECEIPT" not in wrapper

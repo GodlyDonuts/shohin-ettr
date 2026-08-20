@@ -24,13 +24,16 @@ ARMS = ("revision", "unchanged")
 ROWS = 256
 ASSESSOR_ROWS = 12_032
 SHARDS = 4
+ALLOWED_GEOMETRIES = ((256, 4), (1_023, 16))
 
 
 class ConfirmationScoreError(RuntimeError):
     """The prospective GPT-OSS confirmation scoring contract differed."""
 
 
-def _sources(path: Path, expected_sha256: str) -> dict[str, dict[str, Any]]:
+def _sources(
+    path: Path, expected_sha256: str, expected_rows: int = ROWS
+) -> dict[str, dict[str, Any]]:
     if path.is_symlink() or not path.is_file() or sha256_file(path) != expected_sha256:
         raise ConfirmationScoreError("confirmation source bytes differ")
     result: dict[str, dict[str, Any]] = {}
@@ -52,7 +55,7 @@ def _sources(path: Path, expected_sha256: str) -> dict[str, dict[str, Any]]:
         ):
             raise ConfirmationScoreError("confirmation source projection differs")
         result[identity] = row
-    if len(result) != ROWS:
+    if len(result) != expected_rows:
         raise ConfirmationScoreError("confirmation source coverage differs")
     return result
 
@@ -91,9 +94,12 @@ def _assessors(
 
 
 def _candidates(
-    arm: str, paths: list[Path], identities: set[str]
+    arm: str,
+    paths: list[Path],
+    identities: set[str],
+    expected_shards: int = SHARDS,
 ) -> dict[str, dict[str, Any]]:
-    if arm not in ARMS or len(paths) != SHARDS:
+    if arm not in ARMS or len(paths) != expected_shards:
         raise ConfirmationScoreError("confirmation candidate geometry differs")
     result: dict[str, dict[str, Any]] = {}
     for path in paths:
@@ -134,13 +140,24 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def score(args: argparse.Namespace) -> dict[str, Any]:
-    if args.output.exists() or args.output.is_symlink():
+    if (
+        args.output.exists()
+        or args.output.is_symlink()
+        or (args.expected_rows, args.expected_shards) not in ALLOWED_GEOMETRIES
+    ):
         raise ConfirmationScoreError("confirmation score settings differ")
-    sources = _sources(args.source, args.expected_source_sha256)
+    sources = _sources(
+        args.source, args.expected_source_sha256, expected_rows=args.expected_rows
+    )
     identities = set(sources)
     assessors = _assessors(args.assessors, args.expected_assessors_sha256, sources)
     paths = {arm: getattr(args, f"{arm}_candidates") for arm in ARMS}
-    candidates = {arm: _candidates(arm, paths[arm], identities) for arm in ARMS}
+    candidates = {
+        arm: _candidates(
+            arm, paths[arm], identities, expected_shards=args.expected_shards
+        )
+        for arm in ARMS
+    }
     outcomes: dict[str, dict[str, bool]] = {arm: {} for arm in ARMS}
     strata: dict[str, Counter[str]] = defaultdict(Counter)
     empty = Counter()
@@ -168,8 +185,8 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
         )
         arm_reports[arm] = {
             "correct": correct,
-            "total": ROWS,
-            "accuracy": correct / ROWS,
+            "total": args.expected_rows,
+            "accuracy": correct / args.expected_rows,
             "gain_over_unchanged_count": correct - unchanged_correct,
             "unchanged_correct_retained": retained,
             "unchanged_correct_retention": (
@@ -184,12 +201,12 @@ def score(args: argparse.Namespace) -> dict[str, Any]:
         "status": "complete",
         "host": "openai/gpt-oss-120b",
         "benchmark": TASK,
-        "rows": ROWS,
-        "shards_per_arm": SHARDS,
+        "rows": args.expected_rows,
+        "shards_per_arm": args.expected_shards,
         "source_sha256": args.expected_source_sha256,
         "assessors_sha256": args.expected_assessors_sha256,
         "assessor_universe_rows": ASSESSOR_ROWS,
-        "assessor_selected_rows": ROWS,
+        "assessor_selected_rows": args.expected_rows,
         "assessor_open_phase": "post_generation_cpu_score_only",
         "official_scoring": "MMLU-Pro terminal answer extraction",
         "arms": arm_reports,
@@ -220,6 +237,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-source-sha256", required=True)
     parser.add_argument("--assessors", type=Path, required=True)
     parser.add_argument("--expected-assessors-sha256", required=True)
+    parser.add_argument("--expected-rows", type=int, default=ROWS)
+    parser.add_argument("--expected-shards", type=int, default=SHARDS)
     for arm in ARMS:
         parser.add_argument(
             f"--{arm}-candidates", type=Path, action="append", required=True

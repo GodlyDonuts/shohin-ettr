@@ -29,6 +29,8 @@ def test_each_evaluation_is_an_independent_single_h100_request() -> None:
     assert "hf_gpt_oss_120b_evaluate.py" in source
     assert "--no-requeue" in source
     assert "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc50" in source
+    assert "1023:16" in source
+    assert "SHARD_COUNT" in source
 
 
 def test_controls_cannot_receive_the_revision_checkpoint() -> None:

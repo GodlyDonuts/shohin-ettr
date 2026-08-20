@@ -15,6 +15,8 @@ for variable in PYTHON RUNTIME RUNTIME_MANIFEST_SHA256 QUESTIONS EXCLUDED_QUESTI
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 prior_confirmation_spec=${PRIOR_CONFIRMATION_SOURCES:-${PRIOR_CONFIRMATION_SOURCE:-}}
+EXPECTED_ROWS=${EXPECTED_ROWS:-256}
+[[ "$EXPECTED_ROWS" == 256 || "$EXPECTED_ROWS" == 1023 ]] || { printf 'confirmation geometry differs\n' >&2; exit 2; }
 [[ -n "$prior_confirmation_spec" ]] || { printf 'PRIOR_CONFIRMATION_SOURCES is required\n' >&2; exit 2; }
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
@@ -39,6 +41,7 @@ done
   --prior-q36-source "$PRIOR_Q36_SOURCE" \
   "${prior_confirmation_args[@]}" \
   --selection-seed "$SELECTION_SEED" \
+  --rows "$EXPECTED_ROWS" \
   --source-output "$OUTPUT_ROOT/source.jsonl" \
   --receipt "$OUTPUT_ROOT/receipt.json"
 test -f "$OUTPUT_ROOT/source.jsonl" && test -f "$OUTPUT_ROOT/receipt.json"

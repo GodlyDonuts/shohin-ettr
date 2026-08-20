@@ -96,6 +96,13 @@ def test_analysis_replays_only_frozen_arm_outcomes(tmp_path: Path) -> None:
     assert report["selection_had_score_or_assessor_access"] is False
 
 
+def test_analyzer_registers_1023_row_gpt_confirmation() -> None:
+    assert module.HOSTS["gpt_oss_120b_confirmation_1023"] == {
+        "rows": 1_023,
+        "score_schema": "shohin-gpt-oss-120b-commit-confirmation-score-v1",
+    }
+
+
 def test_analysis_rejects_selection_score_identity_tamper(tmp_path: Path) -> None:
     args = _fixture(tmp_path)
     payload = json.loads(args.score.read_text())

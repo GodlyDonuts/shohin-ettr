@@ -22,7 +22,13 @@ for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 [[ "$ARM" == unchanged || "$ARM" == self_refinement || "$ARM" == revision ]]
-[[ "$SHARD_INDEX" =~ ^[0-3]$ ]]
+EXPECTED_ROWS=${EXPECTED_ROWS:-256}
+SHARD_COUNT=${SHARD_COUNT:-4}
+case "$EXPECTED_ROWS:$SHARD_COUNT" in
+  256:4) [[ "$SHARD_INDEX" =~ ^[0-3]$ ]] ;;
+  1023:16) [[ "$SHARD_INDEX" =~ ^([0-9]|1[0-5])$ ]] ;;
+  *) false ;;
+esac || { printf 'GPT-OSS evaluation geometry differs\n' >&2; exit 2; }
 [[ "${SLURM_GPUS_ON_NODE:-}" == "1" ]]
 [[ -x "$PYTHON" ]]
 for path in "$RUNTIME" "$MODEL_ROOT" "$OVERLAY_ROOT"; do
@@ -50,7 +56,7 @@ if [[ "$ARM" == unchanged ]]; then
   [[ "$DRAFT_CANDIDATES" == none ]]
 else
   IFS=: read -r -a draft_paths <<< "$DRAFT_CANDIDATES"
-  [[ ${#draft_paths[@]} -eq 4 ]]
+  [[ ${#draft_paths[@]} -eq $SHARD_COUNT ]]
   for path in "${draft_paths[@]}"; do
     [[ -f "$path" && ! -L "$path" ]]
     draft_args+=(--draft-candidates "$path")
@@ -103,7 +109,9 @@ nvidia-smi
   "${draft_args[@]}" \
   --candidates-output "$candidates" \
   --report "$report" \
-  --shard-index "$SHARD_INDEX"
+  --expected-rows "$EXPECTED_ROWS" \
+  --shard-index "$SHARD_INDEX" \
+  --shard-count "$SHARD_COUNT"
 
 [[ -f "$candidates" && ! -L "$candidates" ]]
 [[ -f "$report" && ! -L "$report" ]]

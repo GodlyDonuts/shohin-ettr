@@ -54,7 +54,7 @@ for value in sys.argv[4:7]:
 PY
 case "$HOST" in
   gpt_oss_120b_screen|gpt_oss_120b_confirmation) expected_shards=4 ;;
-  mixtral_8x22b_validation) expected_shards=16 ;;
+  gpt_oss_120b_confirmation_1023|mixtral_8x22b_validation) expected_shards=16 ;;
   *) q36_die "cross-host identity differs" ;;
 esac
 IFS=: read -r -a revision_paths <<< "$REVISION_CANDIDATES"

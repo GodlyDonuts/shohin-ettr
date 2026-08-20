@@ -116,6 +116,8 @@ def test_cross_host_job_is_one_h100_and_excludes_failed_node() -> None:
     assert "#SBATCH --no-requeue" in wrapper
     assert "evc50" in wrapper
     assert "--batch-identities 2" in wrapper
+    assert module.HOSTS["gpt_oss_120b_confirmation_1023"]["rows"] == 1_023
+    assert module.HOSTS["gpt_oss_120b_confirmation_1023"]["shards"] == 16
 
 
 def test_conservative_margin_threshold_is_semantic_and_order_consistent() -> None:

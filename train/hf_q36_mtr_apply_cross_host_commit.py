@@ -48,6 +48,13 @@ HOSTS: dict[str, dict[str, Any]] = {
         "source_schema": "shohin-q36-mtr-external-validation-source-v1",
         "source_split": "external_validation",
     },
+    "gpt_oss_120b_confirmation_1023": {
+        "rows": 1_023,
+        "shards": 16,
+        "candidate_schema": "shohin-gpt-oss-120b-fixed-draft-candidate-v1",
+        "source_schema": "shohin-q36-mtr-external-validation-source-v1",
+        "source_split": "external_validation",
+    },
     "mixtral_8x22b_validation": {
         "rows": 1_023,
         "shards": 16,

@@ -60,6 +60,7 @@ ARMS = ("unchanged", "self_refinement", "revision")
 SOURCE_SHA256 = "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9"
 ROWS = 256
 SHARDS = 4
+CONFIRMATION_GEOMETRIES = ((256, 4), (1_023, 16))
 SEED = 2026080816
 MAX_NEW_TOKENS = 768
 
@@ -193,10 +194,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if (
         args.arm not in ARMS
         or args.seed != SEED
-        or args.expected_rows != ROWS
-        or args.shard_count != SHARDS
+        or (
+            (args.expected_rows, args.shard_count)
+            not in (
+                CONFIRMATION_GEOMETRIES
+                if args.confirmation_mmlu_pro
+                else ((ROWS, SHARDS),)
+            )
+        )
         or args.batch_size != 1
-        or not 0 <= args.shard_index < SHARDS
+        or not 0 <= args.shard_index < args.shard_count
         or args.candidates_output.exists()
         or args.report.exists()
         or sha256_file(args.source) != args.expected_source_sha256
@@ -237,13 +244,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     sources = load_sources(
         args.source,
-        ROWS,
+        args.expected_rows,
         MMLU_CONFIRMATION_TASKS if args.confirmation_mmlu_pro else TASKS,
     )
     drafts = (
         load_drafts(args.draft_candidates, sources) if args.arm != "unchanged" else None
     )
-    start, end = shard_bounds(ROWS, args.shard_index, SHARDS, args.batch_size)
+    start, end = shard_bounds(
+        args.expected_rows, args.shard_index, args.shard_count, args.batch_size
+    )
     rows = sources[start:end]
     tokenizer = AutoTokenizer.from_pretrained(
         model_root, local_files_only=True, trust_remote_code=False
@@ -360,7 +369,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "shard_count": args.shard_count,
         "row_start": start,
         "row_end": end,
-        "full_row_count": ROWS,
+        "full_row_count": args.expected_rows,
         "candidates_output": str(args.candidates_output.resolve()),
         "candidates_sha256": candidates_sha256,
         "counters": dict(sorted(counters.items())),

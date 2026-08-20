@@ -137,6 +137,21 @@ def test_preparation_excludes_multiple_prior_confirmations(tmp_path: Path) -> No
     assert len(receipt["prior_confirmation_source_sha256s"]) == 2
 
 
+def test_preparation_freezes_1023_rows_without_prior_overlap(tmp_path: Path) -> None:
+    args = _fixture(tmp_path)
+    args.rows = 1_023
+    receipt = module.prepare(args)
+    rows = [json.loads(line) for line in args.source_output.read_text().splitlines()]
+    prior = {
+        json.loads(line)["identity_sha256"]
+        for path in args.prior_confirmation_source
+        for line in path.read_text().splitlines()
+    }
+    assert len(rows) == 1_023
+    assert receipt["rows"] == 1_023
+    assert not {row["identity_sha256"] for row in rows} & prior
+
+
 def test_preparation_rejects_label_bearing_question(tmp_path: Path) -> None:
     args = _fixture(tmp_path)
     rows = [json.loads(line) for line in args.questions.read_text().splitlines()]
@@ -158,7 +173,7 @@ def test_question_reader_preserves_unicode_line_separator_inside_json(
     assert module._questions(path) == [row]
 
 
-def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> None:
+def test_confirmation_launcher_parameterizes_independent_single_h100_jobs() -> None:
     root = Path(__file__).resolve().parents[1]
     launcher = (
         root / "train/jobs/submit_gpt_oss_120b_commit_confirmation.sh"
@@ -166,7 +181,8 @@ def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> N
     evaluator = (root / "train/jobs/gpt_oss_120b_evaluate.sbatch").read_text()
     selector = (root / "train/jobs/q36_mtr_cross_host_commit.sbatch").read_text()
     assert "for arm in unchanged revision" in launcher
-    assert "for shard in 0 1 2 3" in launcher
+    assert "for ((shard=0; shard<SHARD_COUNT; shard++))" in launcher
+    assert "1023:16:gpt_oss_120b_confirmation_1023" in launcher
     assert '--dependency="afterok:$eval_dependency"' in launcher
     assert "independent_single_h100_jobs" in launcher
     assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in evaluator
@@ -179,6 +195,8 @@ def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> N
     assert "shohin-q36-cross-host-model-owned-commit-contract-v1" in launcher
     assert "REVISION_RELIABILITY_VETO" in launcher
     assert "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" in launcher
+    assert "EXPECTED_ROWS=$CONFIRMATION_ROWS" in launcher
+    assert "EXPECTED_SHARDS=$SHARD_COUNT" in launcher
 
 
 def test_preparation_job_accepts_preexisting_shared_logs_directory() -> None:
@@ -190,4 +208,5 @@ def test_preparation_job_accepts_preexisting_shared_logs_directory() -> None:
     assert "mkdir -p logs\n" in wrapper
     assert 'mkdir -m 700 "$OUTPUT_ROOT" logs' not in wrapper
     assert "PRIOR_CONFIRMATION_SOURCES" in wrapper
+    assert '--rows "$EXPECTED_ROWS"' in wrapper
     assert 'prior_confirmation_args+=(--prior-confirmation-source "$path")' in wrapper

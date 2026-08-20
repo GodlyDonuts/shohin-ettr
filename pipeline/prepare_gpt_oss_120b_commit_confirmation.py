@@ -15,6 +15,7 @@ SOURCE_SCHEMA = "shohin-q36-mtr-external-validation-source-v1"
 RECEIPT_SCHEMA = "shohin-gpt-oss-120b-commit-confirmation-inputs-v1"
 BENCHMARK = "mmlu_pro"
 ROWS = 256
+ALLOWED_ROWS = (256, 1_023)
 DEFAULT_SELECTION_SEED = 2026082001
 
 
@@ -116,12 +117,15 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
     prior_q36_ids = {row.get("identity_sha256") for row in prior_q36}
     prior_confirmation_ids = {row.get("identity_sha256") for row in prior_confirmation}
     selection_seed = getattr(args, "selection_seed", DEFAULT_SELECTION_SEED)
+    expected_rows = getattr(args, "rows", ROWS)
     if (
         len(questions) != 12_032
         or len(excluded) != 256
         or len(prior_q36_ids) != 1_279
-        or any(len(group) != ROWS for group in prior_confirmation_groups)
-        or len(prior_confirmation_ids) != ROWS * len(prior_confirmation_groups)
+        or expected_rows not in ALLOWED_ROWS
+        or any(len(group) not in ALLOWED_ROWS for group in prior_confirmation_groups)
+        or len(prior_confirmation_ids)
+        != sum(len(group) for group in prior_confirmation_groups)
         or isinstance(selection_seed, bool)
         or not isinstance(selection_seed, int)
         or selection_seed <= 0
@@ -147,11 +151,11 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
     eligible = [row for row in questions if row["id"] not in ineligible_ids]
     selected = sorted(
         eligible, key=lambda row: (_rank(row["id"], selection_seed), row["id"])
-    )[:ROWS]
+    )[:expected_rows]
     selected.sort(key=lambda row: row["id"])
     selected_ids = {row["id"] for row in selected}
     if (
-        len(selected_ids) != ROWS
+        len(selected_ids) != expected_rows
         or selected_ids & excluded_ids
         or selected_ids & prior_q36_ids
         or selected_ids & prior_confirmation_ids
@@ -179,7 +183,7 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
         "benchmark": BENCHMARK,
         "selection_seed": selection_seed,
         "selection_rule": "lowest_sha256_seeded_rank_excluding_all_prior_source_identities",
-        "rows": ROWS,
+        "rows": expected_rows,
         "question_universe_rows": len(questions),
         "excluded_public_screen_rows": len(excluded),
         "questions_sha256": sha256_file(args.questions),
@@ -211,6 +215,7 @@ def parse_args() -> argparse.Namespace:
         "--prior-confirmation-source", type=Path, action="append", default=[]
     )
     parser.add_argument("--selection-seed", type=int, default=DEFAULT_SELECTION_SEED)
+    parser.add_argument("--rows", type=int, choices=ALLOWED_ROWS, default=ROWS)
     parser.add_argument("--source-output", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
     return parser.parse_args()

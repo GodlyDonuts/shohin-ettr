@@ -23,6 +23,10 @@ HOSTS = {
         "rows": 256,
         "score_schema": "shohin-gpt-oss-120b-commit-confirmation-score-v1",
     },
+    "gpt_oss_120b_confirmation_1023": {
+        "rows": 1_023,
+        "score_schema": "shohin-gpt-oss-120b-commit-confirmation-score-v1",
+    },
     "mixtral_8x22b_validation": {
         "rows": 1_023,
         "score_schema": "shohin-mixtral-8x22b-selective-commit-validation-score-v1",
