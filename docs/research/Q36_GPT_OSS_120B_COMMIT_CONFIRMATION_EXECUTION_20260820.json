@@ -1,0 +1,118 @@
+{
+  "schema": "shohin-gpt-oss-120b-commit-confirmation-execution-v1",
+  "status": "submitted_running",
+  "date": "2026-08-20",
+  "source_commit": "7aa8609241e05bcd3810a790b17421c44950d65c",
+  "private_branches": [
+    "codex/q36-mechanics-generation-prepare",
+    "codex/q36-moe-temporal-revision"
+  ],
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_commit_confirmation_7aa86092_r1",
+    "manifest_sha256": "0b29fef950b967c0b89b0d54c0b543353fe878ff3e9a871dca759f3f3aacea4e",
+    "runtime_receipt_sha256": "9dd913c1eaae9d5d7eab6b62208211409f481f8924cbc4de0494947313f65730",
+    "regular_files": 245,
+    "full_manifest_verification": "pass",
+    "links_or_special_members": 0,
+    "writable_members": 0
+  },
+  "contract": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/gpt_oss_120b_commit_confirmation_contract_238143bd_r1.json",
+    "sha256": "f08020d8f054b99d3deefac5cfad8148f42c6db50daee147e0ad43fb928ce391",
+    "revision_margin_threshold": 0.703125,
+    "frozen_before_candidate_generation": true
+  },
+  "preparation": {
+    "job": 766368,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 2,
+    "restarts": 0,
+    "receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_commit_confirmation_inputs_7aa86092_r1/receipt.json",
+    "receipt_sha256": "3b4891fd372f5c4b08238eeeaad7be4239ef3933cc13c78297f80c9a5959999c",
+    "source_sha256": "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+    "selected_identity_sha256": "c5393c15d36a441b6a43b8e2eee0db90a11199e16434db06704a7dbd7b9954e4",
+    "rows": 256,
+    "unique_identities": 256,
+    "public_screen_overlap": 0,
+    "prior_q36_external_overlap": 0,
+    "assessor_access_count": 0,
+    "label_or_correctness_field_access_count": 0
+  },
+  "preparation_infrastructure_repairs": [
+    {
+      "job": 766366,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "restarts": 0,
+      "classification": "wrapper attempted to create the pre-existing shared logs directory",
+      "scientific_rows_emitted": 0,
+      "assessor_access": 0
+    },
+    {
+      "job": 766367,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "restarts": 0,
+      "classification": "valid Unicode line separator was incorrectly treated as a JSONL record boundary",
+      "scientific_rows_emitted": 0,
+      "assessor_access": 0
+    }
+  ],
+  "environment": {
+    "capture_job": 766369,
+    "capture_state": "COMPLETED",
+    "capture_exit_code": "0:0",
+    "capture_elapsed_seconds": 171,
+    "capture_restarts": 0,
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_cross_host_commit_environment_7aa86092_r1.json",
+    "sha256": "5be8387bfc7f1a2d3678d4ac2ca430467766406139ef8d90e1a0fe01501ab2bf",
+    "tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c",
+    "runtime_binding": "0b29fef950b967c0b89b0d54c0b543353fe878ff3e9a871dca759f3f3aacea4e",
+    "scientific_rows_read": 0
+  },
+  "scientific_inputs": {
+    "gpt_oss_model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "mxfp4_overlay_manifest_sha256": "50637a890f5149402e3f769b56a97081551b71a0d4102fe1ebba7056a3fb88d8",
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "gpt_revision_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "qwen_model_manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "qwen_aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "qwen_commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "mmlu_pro_assessor_sha256": "66831e5a644b8c94f058630f9a13d19df326a18e04a2e0a15cde7a74591d1a4f"
+  },
+  "dispatch": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_commit_confirmation_7aa86092_r1",
+    "receipt_sha256": "16cf9f2b9f37cab291b561a152566e43d6a13f4b404f372433cf1f963ff144ae",
+    "qwen_fixed_draft_jobs": [766370, 766371, 766372, 766373],
+    "gpt_unchanged_jobs": [766374, 766375, 766376, 766377],
+    "gpt_revision_jobs": [766378, 766379, 766380, 766381],
+    "selector_job": 766382,
+    "score_job": 766383,
+    "analysis_job": 766384,
+    "independent_single_h100_jobs": 13,
+    "gpu_arrays": 0,
+    "gpus_per_job": 1,
+    "requeue": false,
+    "duplicate_scientific_jobs": 0,
+    "assessor_access_phase": "dependent_cpu_score_after_generation"
+  },
+  "initial_admission_snapshot": {
+    "timestamp": "2026-08-20T01:32:42-04:00",
+    "running_h100_jobs": [766370, 766371, 766372, 766373, 766374, 766375],
+    "allocated_h100s": 6,
+    "nodes": ["evc33", "evc35", "evc36", "evc48"],
+    "all_restarts_zero": true,
+    "all_stderr_empty": true,
+    "excluded_bad_node_evc50": true
+  },
+  "quota_at_launch": {
+    "used_kib": 978592800,
+    "hard_limit_kib": 1059061760,
+    "hard_headroom_kib": 80468960,
+    "used_inodes": 581446,
+    "hard_inode_limit": 1010000,
+    "hard_inode_headroom": 428554
+  },
+  "result": null
+}
