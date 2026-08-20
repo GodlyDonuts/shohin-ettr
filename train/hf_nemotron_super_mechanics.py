@@ -40,6 +40,8 @@ from q36_upward_moe_host import (
 
 SCHEMA = "shohin-nemotron-super-two-h100-mechanics-v1"
 SEED = 2026081521
+TRAINING_GRADIENT_ACCUMULATION = 8
+TRAINING_LEARNING_RATE = 2e-5
 OVERLAY_MANIFEST_SHA256 = (
     "cde0fa5b91d50d1509872cbc577cf016d0a6c6697bfb066d607f420c1b568e84"
 )
@@ -115,6 +117,39 @@ def _canonical_sha256(payload: Any) -> str:
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def training_objective_receipt_is_exact(payload: Any) -> bool:
+    """Validate that mechanics exercised the frozen trainer's actual objective."""
+
+    if not isinstance(payload, dict) or set(payload) != {
+        "objective",
+        "prompt_tokens",
+        "response_tokens",
+        "ignore_index",
+        "gradient_accumulation_scale",
+        "learning_rate",
+        "autocast_dtype",
+    }:
+        return False
+    prompt_tokens = payload.get("prompt_tokens")
+    response_tokens = payload.get("response_tokens")
+    return bool(
+        payload.get("objective") == "response_only_next_token_cross_entropy"
+        and isinstance(prompt_tokens, int)
+        and not isinstance(prompt_tokens, bool)
+        and prompt_tokens > 0
+        and isinstance(response_tokens, int)
+        and not isinstance(response_tokens, bool)
+        and response_tokens > 0
+        and payload.get("ignore_index") == -100
+        and not isinstance(payload.get("ignore_index"), bool)
+        and payload.get("gradient_accumulation_scale") == TRAINING_GRADIENT_ACCUMULATION
+        and not isinstance(payload.get("gradient_accumulation_scale"), bool)
+        and payload.get("learning_rate") == TRAINING_LEARNING_RATE
+        and not isinstance(payload.get("learning_rate"), bool)
+        and payload.get("autocast_dtype") == "torch.bfloat16"
+    )
 
 
 def _modelopt_fp8_quantization_config(
@@ -1146,19 +1181,24 @@ def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
 
 
 def _mechanics_next_token_loss(
-    logits: torch.Tensor, input_ids: torch.Tensor
+    logits: torch.Tensor, labels: torch.Tensor
 ) -> torch.Tensor:
     if (
         logits.ndim != 3
-        or input_ids.ndim != 2
-        or logits.shape[:2] != input_ids.shape
-        or input_ids.shape[1] < 2
+        or labels.ndim != 2
+        or logits.shape[:2] != labels.shape
+        or labels.shape[1] < 2
+        or labels.dtype != torch.long
     ):
         raise NemotronSuperMechanicsError("mechanics loss geometry differs")
-    labels = input_ids[:, 1:].to(logits.device)
+    shifted_labels = labels[:, 1:].to(logits.device)
+    supervised_tokens = int((shifted_labels != -100).sum().detach().cpu())
+    if supervised_tokens < 1:
+        raise NemotronSuperMechanicsError("mechanics supervised tokens differ")
     loss = F.cross_entropy(
-        logits[:, :-1].float().reshape(-1, logits.shape[-1]),
-        labels.reshape(-1),
+        logits[:, :-1].reshape(-1, logits.shape[-1]),
+        shifted_labels.reshape(-1),
+        ignore_index=-100,
     )
     if not bool(torch.isfinite(loss)):
         raise NemotronSuperMechanicsError("mechanics loss is nonfinite")
@@ -1240,28 +1280,44 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     initial_state = model.trainable_state()
     initial_sha256 = _state_sha256(initial_state)
 
-    token_ids = tokenizer.encode("Shohin mechanics only.", add_special_tokens=False)
-    if len(token_ids) < 2 or len(token_ids) > 16:
+    prompt_ids = tokenizer.encode("Shohin mechanics:", add_special_tokens=False)
+    response_ids = tokenizer.encode(" verified.", add_special_tokens=False)
+    token_ids = prompt_ids + response_ids
+    label_ids = [-100] * len(prompt_ids) + response_ids
+    if not prompt_ids or not response_ids or len(token_ids) < 2 or len(token_ids) > 16:
         raise NemotronSuperMechanicsError("synthetic mechanics tokenization differs")
     input_device = backbone.model.embeddings.weight.device
     input_ids = torch.tensor([token_ids], device=input_device, dtype=torch.long)
     attention_mask = torch.ones_like(input_ids)
+    labels = torch.tensor([label_ids], device=input_device, dtype=torch.long)
+    if hasattr(backbone, "gradient_checkpointing_enable"):
+        backbone.gradient_checkpointing_enable(
+            gradient_checkpointing_kwargs={"use_reentrant": False}
+        )
+    if hasattr(backbone, "enable_input_require_grads"):
+        backbone.enable_input_require_grads()
     model.train()
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
-        lr=1e-4,
+        lr=TRAINING_LEARNING_RATE,
+        betas=(0.9, 0.95),
+        weight_decay=0.01,
+        foreach=False,
+        fused=False,
     )
-    output_payload = model(
-        input_ids=input_ids,
-        attention_mask=attention_mask,
-        use_cache=False,
-        return_dict=True,
-    )
-    logits = output_payload.logits
-    if logits.ndim != 3 or logits.shape[:2] != input_ids.shape:
-        raise NemotronSuperMechanicsError("full-model forward geometry differs")
-    loss = _mechanics_next_token_loss(logits, input_ids)
-    loss.backward()
+    with torch.autocast("cuda", dtype=torch.bfloat16):
+        output_payload = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            use_cache=False,
+            return_dict=True,
+        )
+        logits = output_payload.logits
+        if logits.ndim != 3 or logits.shape[:2] != input_ids.shape:
+            raise NemotronSuperMechanicsError("full-model forward geometry differs")
+        loss = _mechanics_next_token_loss(logits, labels)
+        scaled_loss = loss / TRAINING_GRADIENT_ACCUMULATION
+    scaled_loss.backward()
     gradients = _gradient_receipt(model)
     optimizer.step()
     optimizer.zero_grad(set_to_none=True)
@@ -1328,6 +1384,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "initial_trainable_state_sha256": initial_sha256,
         "updated_trainable_state_sha256": updated_sha256,
         "gradient_receipt": gradients,
+        "training_objective_receipt": {
+            "objective": "response_only_next_token_cross_entropy",
+            "prompt_tokens": len(prompt_ids),
+            "response_tokens": len(response_ids),
+            "ignore_index": -100,
+            "gradient_accumulation_scale": TRAINING_GRADIENT_ACCUMULATION,
+            "learning_rate": TRAINING_LEARNING_RATE,
+            "autocast_dtype": "torch.bfloat16",
+        },
         "checkpoint": str(checkpoint),
         "checkpoint_sha256": checkpoint_sha256,
         "serialization_restore_exact": True,

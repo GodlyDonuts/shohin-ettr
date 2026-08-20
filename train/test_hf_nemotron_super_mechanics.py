@@ -881,13 +881,22 @@ def test_mechanics_loss_matches_next_token_training_objective() -> None:
             ]
         ]
     )
-    input_ids = torch.tensor([[0, 1, 2]])
+    labels = torch.tensor([[-100, -100, 2]])
     expected = torch.nn.functional.cross_entropy(
         logits[:, :-1].reshape(-1, logits.shape[-1]),
-        input_ids[:, 1:].reshape(-1),
+        labels[:, 1:].reshape(-1),
+        ignore_index=-100,
     )
-    assert torch.equal(
-        mechanics._mechanics_next_token_loss(logits, input_ids), expected
-    )
+    assert torch.equal(mechanics._mechanics_next_token_loss(logits, labels), expected)
     with pytest.raises(NemotronSuperMechanicsError, match="geometry"):
-        mechanics._mechanics_next_token_loss(logits[:, :1], input_ids[:, :1])
+        mechanics._mechanics_next_token_loss(logits[:, :1], labels[:, :1])
+    with pytest.raises(NemotronSuperMechanicsError, match="supervised tokens"):
+        mechanics._mechanics_next_token_loss(logits, torch.full_like(labels, -100))
+
+
+def test_mechanics_training_objective_constants_match_frozen_trainer() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+    import hf_nemotron_super_train_revision as trainer
+
+    assert mechanics.TRAINING_GRADIENT_ACCUMULATION == trainer.GRADIENT_ACCUMULATION
+    assert mechanics.TRAINING_LEARNING_RATE == trainer.LEARNING_RATE

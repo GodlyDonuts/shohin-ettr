@@ -22,6 +22,7 @@ from hf_nemotron_super_mechanics import (
     install_triton_allocator_compatibility,
     load_modelopt_fp8_backbone,
     modelopt_fp8_receipt_is_exact,
+    training_objective_receipt_is_exact,
 )
 from hf_nemotron_super_train_revision import (
     CHECKPOINT_SCHEMA,
@@ -117,6 +118,9 @@ def validate_mechanics_report(path: Path) -> dict[str, Any]:
         or payload.get("serialization_restore_exact") is not True
         or len(payload.get("devices", [])) != 2
         or not modelopt_fp8_receipt_is_exact(payload.get("modelopt_fp8"))
+        or not training_objective_receipt_is_exact(
+            payload.get("training_objective_receipt")
+        )
     ):
         raise NemotronSuperEvaluationError("mechanics authorization differs")
     return payload

@@ -122,6 +122,15 @@ def _mechanics() -> dict[str, object]:
         "native_router_expert_trainables": 0,
         "serialization_restore_exact": True,
         "devices": [{"index": 0}, {"index": 1}],
+        "training_objective_receipt": {
+            "objective": "response_only_next_token_cross_entropy",
+            "prompt_tokens": 3,
+            "response_tokens": 2,
+            "ignore_index": -100,
+            "gradient_accumulation_scale": mechanics.TRAINING_GRADIENT_ACCUMULATION,
+            "learning_rate": mechanics.TRAINING_LEARNING_RATE,
+            "autocast_dtype": "torch.bfloat16",
+        },
         "modelopt_fp8": _modelopt_fp8(),
     }
 
@@ -132,6 +141,31 @@ def test_mechanics_report_is_score_free_and_exact(tmp_path: Path) -> None:
     assert evaluation.validate_mechanics_report(path)["status"] == "pass"
     payload = _mechanics()
     payload["benchmark_rows_read"] = 1
+    path.write_text(json.dumps(payload))
+    with pytest.raises(evaluation.NemotronSuperEvaluationError):
+        evaluation.validate_mechanics_report(path)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("objective", "next_token_cross_entropy"),
+        ("prompt_tokens", 0),
+        ("response_tokens", True),
+        ("ignore_index", 0),
+        ("gradient_accumulation_scale", 1),
+        ("learning_rate", 1e-5),
+        ("autocast_dtype", "torch.float32"),
+    ],
+)
+def test_mechanics_report_binds_training_objective(
+    tmp_path: Path, field: str, value: object
+) -> None:
+    payload = _mechanics()
+    receipt = payload["training_objective_receipt"]
+    assert isinstance(receipt, dict)
+    receipt[field] = value
+    path = tmp_path / "mechanics.json"
     path.write_text(json.dumps(payload))
     with pytest.raises(evaluation.NemotronSuperEvaluationError):
         evaluation.validate_mechanics_report(path)

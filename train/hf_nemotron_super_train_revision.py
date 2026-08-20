@@ -26,6 +26,7 @@ from hf_nemotron_super_mechanics import (
     install_triton_allocator_compatibility,
     load_modelopt_fp8_backbone,
     modelopt_fp8_receipt_is_exact,
+    training_objective_receipt_is_exact,
     verify_manifest,
 )
 from hf_product_reasoning_train import PRODUCT_SYSTEM_PROMPT, render_reasoning_messages
@@ -177,6 +178,25 @@ def _package_versions() -> dict[str, str | None]:
     }
 
 
+def validate_mechanics_authorization(mechanics: Any) -> None:
+    if (
+        not isinstance(mechanics, dict)
+        or mechanics.get("schema") != "shohin-nemotron-super-two-h100-mechanics-v1"
+        or mechanics.get("status") != "pass"
+        or mechanics.get("score_rows_read") != 0
+        or mechanics.get("benchmark_rows_read") != 0
+        or mechanics.get("model_revision") != MODEL_REVISION
+        or mechanics.get("trainable_parameters") != TRAINABLE_PARAMETERS_PER_ROLE
+        or mechanics.get("native_router_expert_trainables") != 0
+        or mechanics.get("serialization_restore_exact") is not True
+        or not modelopt_fp8_receipt_is_exact(mechanics.get("modelopt_fp8"))
+        or not training_objective_receipt_is_exact(
+            mechanics.get("training_objective_receipt")
+        )
+    ):
+        raise NemotronSuperTrainingError("mechanics authorization differs")
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     install_triton_allocator_compatibility()
     from transformers import AutoTokenizer
@@ -187,18 +207,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.mechanics_report.is_symlink() or not args.mechanics_report.is_file():
         raise NemotronSuperTrainingError("mechanics report is absent")
     mechanics = json.loads(args.mechanics_report.read_text(encoding="utf-8"))
-    if (
-        mechanics.get("schema") != "shohin-nemotron-super-two-h100-mechanics-v1"
-        or mechanics.get("status") != "pass"
-        or mechanics.get("score_rows_read") != 0
-        or mechanics.get("benchmark_rows_read") != 0
-        or mechanics.get("model_revision") != MODEL_REVISION
-        or mechanics.get("trainable_parameters") != TRAINABLE_PARAMETERS_PER_ROLE
-        or mechanics.get("native_router_expert_trainables") != 0
-        or mechanics.get("serialization_restore_exact") is not True
-        or not modelopt_fp8_receipt_is_exact(mechanics.get("modelopt_fp8"))
-    ):
-        raise NemotronSuperTrainingError("mechanics authorization differs")
+    validate_mechanics_authorization(mechanics)
 
     model_root = args.model_root.resolve(strict=True)
     overlay_root = args.overlay_root.resolve(strict=True)
