@@ -128,7 +128,7 @@
     "duplicate_scientific_outputs": 0
   },
   "frozen_science": {
-    "revision_train_sha256": "802c8566d8b00a3b9b141be862962fe02cc362f69664086319ee77fbe18bfeff",
+    "revision_train_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
     "screen_sources_sha256": "f0b7830817053654712969a9a770f34fcbd377e0918164cfd2107f874cf8efa9",
     "screen_assessors_sha256": "ac665433e61d4e166b6e7d7f119506130c5999839e5a4fb213e98af018b07351",
     "qwen_point_sha256": "d5b5a594176043c6c539c3ffc80076148d983ac55d39eabfc62c63c7f1773a45",
