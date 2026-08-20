@@ -351,23 +351,18 @@ def _prepare_fp8_scale_buffers(
     for module in quantized_linears.values():
         weight_quantizer = module.weight_quantizer
         input_quantizer = module.input_quantizer
-        weight_amax = getattr(weight_quantizer, "_amax", None)
-        if (
-            not isinstance(weight_amax, torch.Tensor)
-            or not weight_amax.is_meta
-            or weight_amax.dtype != torch.float32
-            or weight_amax.shape != torch.Size([])
+        for quantizer, kind in (
+            (weight_quantizer, "weight"),
+            (input_quantizer, "input"),
         ):
-            raise NemotronSuperMechanicsError(
-                "ModelOpt weight amax placeholder differs"
+            if hasattr(quantizer, "_amax"):
+                raise NemotronSuperMechanicsError(
+                    f"ModelOpt {kind} amax pre-state differs"
+                )
+            quantizer.register_buffer(
+                "_amax", torch.empty((), dtype=torch.float32, device="meta")
             )
-        counts["weight_amax_placeholders"] += 1
-        if hasattr(input_quantizer, "_amax"):
-            raise NemotronSuperMechanicsError("ModelOpt input amax pre-state differs")
-        input_quantizer.register_buffer(
-            "_amax", torch.empty((), dtype=torch.float32, device="meta")
-        )
-        counts["input_amax_placeholders"] += 1
+            counts[f"{kind}_amax_placeholders"] += 1
 
 
 def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:

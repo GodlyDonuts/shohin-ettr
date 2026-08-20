@@ -322,9 +322,6 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
                 torch.empty((1, 1), dtype=torch.float32, device="meta")
             )
             self.weight_quantizer = Quantizer()
-            self.weight_quantizer.register_buffer(
-                "_amax", torch.empty((), dtype=torch.float32, device="meta")
-            )
             self.input_quantizer = Quantizer()
 
     model = torch.nn.Module()
