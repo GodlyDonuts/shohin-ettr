@@ -30,7 +30,7 @@ def _fixture(tmp_path: Path):
     ]
     points = [
         _write(tmp_path / f"point-{index}.json", f"point-{index}\n".encode())
-        for index in range(3)
+        for index in range(4)
     ]
     publication_value = {
         "schema": "shohin-upward-moe-publication-evidence-v1",
@@ -76,7 +76,7 @@ def test_mirrors_exact_publication_and_replays_membership(tmp_path: Path) -> Non
         source_points=points,
     )
     assert result["status"] == "complete"
-    assert result["artifact_count"] == 10
+    assert result["artifact_count"] == 11
     replay = verify_evidence_snapshot(output / "manifest.json", result)
     assert replay["exact_membership"] is True
     assert not any(path.stat().st_mode & 0o222 for path in output.rglob("*"))
@@ -94,6 +94,20 @@ def test_refuses_tampered_point_or_escaping_output(tmp_path: Path) -> None:
             figure_root=figure,
             accounting=accounting,
             source_points=points,
+        )
+
+
+def test_refuses_incomplete_four_point_set(tmp_path: Path) -> None:
+    authorized, publication, analysis, figure, accounting, points = _fixture(tmp_path)
+    with pytest.raises(UpwardMoEMirrorError, match="geometry"):
+        mirror(
+            authorized_root=authorized.resolve(),
+            output_root=(authorized / "incomplete").resolve(),
+            publication_receipt=publication,
+            analysis=analysis,
+            figure_root=figure,
+            accounting=accounting,
+            source_points=points[:-1],
         )
     with pytest.raises(UpwardMoEMirrorError, match="escapes"):
         mirror(
@@ -115,3 +129,4 @@ def test_job_is_cpu_only_runtime_bound_and_nonrequeueing() -> None:
     assert "#SBATCH --no-requeue" in source
     assert "q36_verify_runtime" in source
     assert '[[ "$OUTPUT_ROOT" == "$AUTHORIZED_ROOT"/*' in source
+    assert "${#point_paths[@]} -ge 3" in source
