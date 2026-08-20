@@ -8,6 +8,7 @@ from analyze_revision_training_targets import (
     REPORT_SCHEMA,
     RevisionTrainingTargetError,
     analyze,
+    analyze_loss_geometry,
 )
 
 TRAIN_SCHEMA = "test-revision-train-v1"
@@ -101,7 +102,39 @@ def test_analyze_rejects_model_visibility_drift(tmp_path: Path) -> None:
 
 
 def test_report_schema_is_frozen() -> None:
-    assert REPORT_SCHEMA == "shohin-revision-training-target-horizon-analysis-v1"
+    assert REPORT_SCHEMA == "shohin-revision-training-target-horizon-analysis-v2"
+
+
+def test_loss_geometry_replays_selection_and_eos_density(tmp_path: Path) -> None:
+    path, digest = _fixture(tmp_path)
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    report = analyze_loss_geometry(
+        rows,
+        encoded_response_length=len,
+        data_seed=7,
+        microsteps=2,
+        expected_charged_tokens=sum(len(row["response"]) + 1 for row in rows),
+    )
+    assert report["microsteps"] == 2
+    assert report["charged_tokens"] == sum(len(row["response"]) + 1 for row in rows)
+    assert report["by_target_kind"]["source_verified_repair"]["rows"] == 1
+    assert (
+        report["by_target_kind"]["source_verified_repair"]["terminal_eos_tokens"] == 1
+    )
+    assert report["source_repair_to_verified_candidate_eos_density_ratio"] > 1
+
+
+def test_loss_geometry_rejects_charged_token_drift(tmp_path: Path) -> None:
+    path, _ = _fixture(tmp_path)
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    with pytest.raises(RevisionTrainingTargetError, match="charged response-token"):
+        analyze_loss_geometry(
+            rows,
+            encoded_response_length=len,
+            data_seed=7,
+            microsteps=2,
+            expected_charged_tokens=1,
+        )
 
 
 def test_frozen_qwen9_report_matches_newton_execution() -> None:
@@ -109,7 +142,7 @@ def test_frozen_qwen9_report_matches_newton_execution() -> None:
         ROOT / "docs/research/SHOHIN_QWEN9_IDR1_TRAINING_TARGET_HORIZON_20260820.json"
     )
     assert hashlib.sha256(path.read_bytes()).hexdigest() == (
-        "364b1f32f672bbb578504e3949c4760770d203fea3de9726ce6fd7e97c2640b7"
+        "866e0904199b28e6f121d3d711f1fb93e3872904896a0a8ad56ddfff2e2d37e7"
     )
     report = json.loads(path.read_text())
     assert report["input"]["rows"] == 9655
@@ -128,3 +161,16 @@ def test_frozen_qwen9_report_matches_newton_execution() -> None:
     assert full["rows"] == 5108
     assert full["response_characters"]["median"] == 706.0
     assert full["internal_draft_characters"]["median"] == 1897.0
+    loss = report["training_loss_geometry"]
+    assert loss["microsteps"] == 2048
+    assert loss["charged_tokens"] == 365028
+    assert loss["by_target_kind"]["source_verified_repair"]["rows"] == 702
+    assert (
+        loss["by_target_kind"]["source_verified_repair"][
+            "response_tokens_including_terminal_eos"
+        ]["total"]
+        == 7008
+    )
+    assert loss["source_repair_to_verified_candidate_eos_density_ratio"] == (
+        17.086010618453614
+    )

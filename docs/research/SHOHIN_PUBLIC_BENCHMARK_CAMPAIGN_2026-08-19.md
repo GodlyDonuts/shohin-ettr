@@ -187,7 +187,7 @@ curriculum rather than inferred from checkpoint behavior alone.  A standalone
 auditor replayed all `9,655` training presentations from input SHA-256
 `6df3204573ce807db1b5057bce709189366b6674e38e5224ee3d17a3e6f0ac6c`.
 The resulting owner-nonwritable Newton report has SHA-256
-`364b1f32f672bbb578504e3949c4760770d203fea3de9726ce6fd7e97c2640b7`;
+`866e0904199b28e6f121d3d711f1fb93e3872904896a0a8ad56ddfff2e2d37e7`;
 its exact repository mirror is
 `SHOHIN_QWEN9_IDR1_TRAINING_TARGET_HORIZON_20260820.json`.
 
@@ -211,6 +211,29 @@ and 11 (ratio `0.006103`).  CorrectBench shows the same direction at 863 versus
 12 characters.  This alignment remains curriculum-plus-behavior evidence, not
 an intervention result, but it materially narrows the mechanism to learned
 draft-relative early termination.
+
+The auditor also replays the exact executed optimizer population, rather than
+summarizing rows the run never reached.  The frozen revision report has
+batch size one, eight-microstep accumulation, 256 updates, data seed
+`2026080814`, and exactly `365,028` charged response tokens.  Replaying its
+2,048 selected microsteps with tokenizer SHA-256
+`5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42`
+reproduces that charged-token total exactly.  Of those microsteps, `702`
+(`34.2773%`) are answer-only source repairs, despite contributing only `7,008`
+tokens (`1.91985%`).  Because standard batch-one cross entropy averages within
+each response before equal gradient-accumulation scaling, terminal EOS occupies
+`13.0906%` of an average source-repair row loss versus `0.7662%` for a
+verified-candidate row: a `17.086×` denser stop target.
+
+This identifies a minimal prospective intervention.  Preserve every existing
+answer token and the matched source-plus-draft prompt, but mask terminal EOS
+loss only on the answer-only both-wrong repair presentations.  The control must
+retain the original EOS labels under identical initialization, selected row
+order, optimizer, updates, charged non-EOS tokens, and source-disjoint boards.
+This is an EOS-debiased correction objective, not another teacher, synthetic
+fault source, natural-draft retry, or selector.  It remains code/data
+preparation until an independently frozen matched development gate authorizes
+execution.
 
 The evidence supports a narrower successor than a generic “reason longer” or
 another selector.  It must alter the answer-only both-wrong target/EOS geometry

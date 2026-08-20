@@ -10,11 +10,12 @@ import json
 import math
 import os
 from pathlib import Path
+import random
 import re
 import statistics
-from typing import Any
+from typing import Any, Callable
 
-REPORT_SCHEMA = "shohin-revision-training-target-horizon-analysis-v1"
+REPORT_SCHEMA = "shohin-revision-training-target-horizon-analysis-v2"
 HEX64 = re.compile(r"[0-9a-f]{64}")
 EXACT_BOXED = re.compile(r"\\boxed\{.*\}", re.DOTALL)
 LENGTH_THRESHOLDS = (20, 80, 100, 256)
@@ -196,6 +197,145 @@ def analyze(path: Path, expected_sha256: str, expected_schema: str) -> dict[str,
     }
 
 
+def analyze_loss_geometry(
+    rows: list[dict[str, Any]],
+    *,
+    encoded_response_length: Callable[[str], int],
+    data_seed: int,
+    microsteps: int,
+    expected_charged_tokens: int,
+) -> dict[str, Any]:
+    if microsteps <= 0 or microsteps > len(rows):
+        raise RevisionTrainingTargetError("training microstep geometry differs")
+    selected = list(rows)
+    random.Random(data_seed).shuffle(selected)
+    selected = selected[:microsteps]
+    lengths = [encoded_response_length(row["response"]) + 1 for row in selected]
+    if any(length < 2 for length in lengths) or sum(lengths) != expected_charged_tokens:
+        raise RevisionTrainingTargetError("charged response-token geometry differs")
+
+    def summarize(group: list[tuple[dict[str, Any], int]]) -> dict[str, Any]:
+        group_lengths = [length for _, length in group]
+        return {
+            "rows": len(group),
+            "row_fraction": len(group) / len(selected),
+            "unique_source_identity_sha256": len(
+                {row["source_identity_sha256"] for row, _ in group}
+            ),
+            "response_tokens_including_terminal_eos": {
+                "total": sum(group_lengths),
+                "fraction_of_charged_tokens": sum(group_lengths) / sum(lengths),
+                "mean": math.fsum(group_lengths) / len(group_lengths),
+                "median": float(statistics.median(group_lengths)),
+                "minimum": min(group_lengths),
+                "maximum": max(group_lengths),
+            },
+            "terminal_eos_tokens": len(group),
+            "mean_terminal_eos_fraction_of_row_loss": math.fsum(
+                1.0 / length for length in group_lengths
+            )
+            / len(group_lengths),
+        }
+
+    paired = list(zip(selected, lengths, strict=True))
+    by_target: dict[str, list[tuple[dict[str, Any], int]]] = defaultdict(list)
+    by_outcome: dict[str, list[tuple[dict[str, Any], int]]] = defaultdict(list)
+    for row, length in paired:
+        by_target[row["target_kind"]].append((row, length))
+        by_outcome[row["outcome_class"]].append((row, length))
+    result = {
+        "data_seed": data_seed,
+        "microsteps": microsteps,
+        "charged_tokens": sum(lengths),
+        "terminal_eos_tokens": microsteps,
+        "mean_terminal_eos_fraction_of_row_loss": math.fsum(
+            1.0 / length for length in lengths
+        )
+        / len(lengths),
+        "loss_reduction": "batch_one_mean_over_response_tokens_including_terminal_eos_then_equal_gradient_accumulation_scaling",
+        "by_target_kind": {
+            name: summarize(group) for name, group in sorted(by_target.items())
+        },
+        "by_outcome_class": {
+            name: summarize(group) for name, group in sorted(by_outcome.items())
+        },
+    }
+    short_eos = result["by_target_kind"]["source_verified_repair"][
+        "mean_terminal_eos_fraction_of_row_loss"
+    ]
+    full_eos = result["by_target_kind"]["verified_candidate"][
+        "mean_terminal_eos_fraction_of_row_loss"
+    ]
+    result["source_repair_to_verified_candidate_eos_density_ratio"] = (
+        short_eos / full_eos
+    )
+    return result
+
+
+def _training_loss_geometry(
+    args: argparse.Namespace, rows: list[dict[str, Any]]
+) -> dict[str, Any]:
+    paths = (args.tokenizer_json, args.tokenizer_config, args.training_report)
+    hashes = (
+        args.expected_tokenizer_sha256,
+        args.expected_tokenizer_config_sha256,
+        args.expected_training_report_sha256,
+    )
+    if any(value is None for value in (*paths, *hashes)):
+        raise RevisionTrainingTargetError("loss-geometry inputs are incomplete")
+    for path, expected in zip(paths, hashes, strict=True):
+        if sha256_file(path) != expected:
+            raise RevisionTrainingTargetError("loss-geometry input SHA-256 differs")
+    training = json.loads(args.training_report.read_text(encoding="utf-8"))
+    if (
+        training.get("schema") != "shohin-hf-product-reasoning-training-v1"
+        or training.get("status") != "complete"
+        or training.get("data_sha256") != args.expected_sha256
+        or training.get("selected_rows") != len(rows)
+        or training.get("batch_size") != 1
+        or not isinstance(training.get("updates"), int)
+        or not isinstance(training.get("gradient_accumulation"), int)
+        or not isinstance(training.get("charged_tokens"), int)
+        or not isinstance(training.get("data_seed"), int)
+    ):
+        raise RevisionTrainingTargetError("training report geometry differs")
+    tokenizer_config = json.loads(args.tokenizer_config.read_text(encoding="utf-8"))
+    from tokenizers import Tokenizer
+
+    tokenizer = Tokenizer.from_file(str(args.tokenizer_json))
+    eos_token = tokenizer_config.get("eos_token")
+    eos_token_id = (
+        tokenizer.token_to_id(eos_token) if isinstance(eos_token, str) else None
+    )
+    if eos_token_id != args.expected_eos_token_id:
+        raise RevisionTrainingTargetError("terminal EOS identity differs")
+    geometry = analyze_loss_geometry(
+        rows,
+        encoded_response_length=lambda response: len(
+            tokenizer.encode(response, add_special_tokens=False).ids
+        ),
+        data_seed=training["data_seed"],
+        microsteps=training["updates"] * training["gradient_accumulation"],
+        expected_charged_tokens=training["charged_tokens"],
+    )
+    geometry.update(
+        {
+            "training_report": str(args.training_report.resolve()),
+            "training_report_sha256": args.expected_training_report_sha256,
+            "updates": training["updates"],
+            "batch_size": training["batch_size"],
+            "gradient_accumulation": training["gradient_accumulation"],
+            "tokenizer_json": str(args.tokenizer_json.resolve()),
+            "tokenizer_sha256": args.expected_tokenizer_sha256,
+            "tokenizer_config": str(args.tokenizer_config.resolve()),
+            "tokenizer_config_sha256": args.expected_tokenizer_config_sha256,
+            "terminal_eos_token": eos_token,
+            "terminal_eos_token_id": eos_token_id,
+        }
+    )
+    return geometry
+
+
 def atomic_json(path: Path, payload: dict[str, Any]) -> None:
     if path.exists() or path.is_symlink():
         raise RevisionTrainingTargetError("refusing to replace target analysis")
@@ -214,6 +354,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--expected-sha256", required=True)
     parser.add_argument("--expected-schema", required=True)
+    parser.add_argument("--tokenizer-json", type=Path, required=True)
+    parser.add_argument("--expected-tokenizer-sha256", required=True)
+    parser.add_argument("--tokenizer-config", type=Path, required=True)
+    parser.add_argument("--expected-tokenizer-config-sha256", required=True)
+    parser.add_argument("--expected-eos-token-id", type=int, required=True)
+    parser.add_argument("--training-report", type=Path, required=True)
+    parser.add_argument("--expected-training-report-sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 
@@ -221,6 +368,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     report = analyze(args.input, args.expected_sha256, args.expected_schema)
+    rows = _load_rows(args.input, args.expected_schema)
+    report["training_loss_geometry"] = _training_loss_geometry(args, rows)
     atomic_json(args.output, report)
     print(json.dumps(report, sort_keys=True))
     return 0

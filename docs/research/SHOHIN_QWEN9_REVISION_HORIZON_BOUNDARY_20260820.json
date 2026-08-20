@@ -25,9 +25,9 @@
     "input_sha256": "6df3204573ce807db1b5057bce709189366b6674e38e5224ee3d17a3e6f0ac6c",
     "input_rows": 9655,
     "unique_source_identities": 5824,
-    "report_path": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/training_target_horizon_37d26364_r2/report.json",
-    "report_sha256": "364b1f32f672bbb578504e3949c4760770d203fea3de9726ce6fd7e97c2640b7",
-    "analyzer_source_sha256": "a5eb8f5e65ccc094a279a7e5c29489985ab178c4c9a197600d64aecf2d1aaff3",
+    "report_path": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/training_target_horizon_9bb78d4a_r4/report.json",
+    "report_sha256": "866e0904199b28e6f121d3d711f1fb93e3872904896a0a8ad56ddfff2e2d37e7",
+    "analyzer_source_sha256": "06afeffe1f03daa9eab07623bb0a3a767748dc4483ef0ad6e8cd04405c790855",
     "source_verified_repair": {
       "rows": 3294,
       "outcome_class": "both_wrong",
@@ -51,6 +51,22 @@
       "median_response_to_internal_draft_character_ratio": 0.40248594258656406,
       "unique_source_identities": 1277,
       "presentations_per_source": 4
+    },
+    "executed_training_loss_geometry": {
+      "training_report_sha256": "457eccd13a4998510d774cf3e84f347b30480e017a6ad5e0eff4a24b368101c2",
+      "updates": 256,
+      "batch_size": 1,
+      "gradient_accumulation": 8,
+      "microsteps": 2048,
+      "charged_tokens": 365028,
+      "source_verified_repair_microsteps": 702,
+      "source_verified_repair_row_fraction": 0.3427734375,
+      "source_verified_repair_charged_token_fraction": 0.019198527236266808,
+      "source_verified_repair_mean_terminal_eos_fraction_of_row_loss": 0.13090556279393378,
+      "verified_candidate_mean_terminal_eos_fraction_of_row_loss": 0.0076615639377251845,
+      "source_repair_to_verified_candidate_eos_density_ratio": 17.086010618453614,
+      "terminal_eos_token": "<|im_end|>",
+      "terminal_eos_token_id": 248046
     },
     "evidence_scope": "direct curriculum provenance aligned with matched-prompt output behavior; an intervention is still required to establish causal improvement"
   },
@@ -200,14 +216,14 @@
   },
   "prospective_architecture_hypothesis": {
     "name": "draft_relative_reasoning_horizon_preservation",
-    "description": "Retain the learned revision residual while removing the answer-only both-wrong target policy and adding a task-agnostic draft-relative identity prior that prevents early-EOS collapse when a model-owned draft contains a long reasoning trajectory. Preserve ordinary shortening when the draft itself is concise.",
+    "description": "Retain the learned revision residual while removing terminal-EOS supervision from answer-only both-wrong repair targets and adding a task-agnostic draft-relative identity prior that prevents early-EOS collapse when a model-owned draft contains a long reasoning trajectory. Preserve answer-token supervision and ordinary shortening when the draft itself is concise.",
     "training_boundary": "model-visible draft trajectory only; no benchmark name, task label, assessor, or correctness signal",
     "historical_lane_differentiation": {
       "VFR1": "does not retry fault-first teacher traces; its 128-row pilot missed both parse and correctness floors",
       "CFR1": "does not retry synthetic appended faults; aligned training lost 144 answers and caused overlong draft trust",
       "NDR1": "does not retry natural aligned-draft full-answer CE; aligned lost 37 answers to its shuffled control",
       "TCS1": "does not add another post-hoc selector; semantic selection lost to the shape control",
-      "new_intervention": "change the target/EOS geometry directly while retaining the source-disjoint broad matched-control evaluation"
+      "new_intervention": "de-bias terminal EOS on the existing answer-only repair targets rather than removing their correction tokens, while retaining the source-disjoint broad matched-control evaluation"
     },
     "required_controls": [
       "unchanged continuation",
