@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date, datetime
 import hashlib
 import json
 import os
@@ -16,6 +17,15 @@ QUESTION_SCHEMA = "shohin-dense-public-benchmark-question-v1"
 ASSESSOR_SCHEMA = "shohin-dense-public-benchmark-assessor-v1"
 REPORT_SCHEMA = "shohin-dense-public-site-data-v1"
 LONGBENCH_ADMITTED_LENGTHS = {"8k", "16k", "32k", "64k"}
+LIVEBENCH_RELEASE = "2024-11-25"
+LIVEBENCH_REVISIONS = {
+    "coding": "a958549fdd8aa57be0a3fafe7b205ffc160ed5f4",
+    "data_analysis": "31b9661ff678df9958e2f7fa228427f4c858c1a1",
+    "instruction_following": "0868379c4b5cf62aeacaf8be4f08fced815c81bb",
+    "math": "bb66571c8ccf32d3df9e6f48b920d3770ff4aacb",
+    "reasoning": "6fc6498a5dfba553f69f4413feabade1f1a2d384",
+    "language": "3ada32a2e53d5e04e57fa503384cb85ce9116c40",
+}
 
 
 class SiteBenchmarkDataError(RuntimeError):
@@ -148,6 +158,48 @@ def load_longbench(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def json_safe(value: Any) -> Any:
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {str(key): json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [json_safe(item) for item in value]
+    return value
+
+
+def load_livebench() -> list[dict[str, Any]]:
+    from datasets import load_dataset
+
+    rows = []
+    for category, revision in LIVEBENCH_REVISIONS.items():
+        source = load_dataset(
+            f"livebench/{category}", split="test", revision=revision
+        )
+        for raw in source:
+            row = json_safe(dict(raw))
+            released = str(row["livebench_release_date"])[:10]
+            removed = str(row.get("livebench_removal_date", ""))[:10]
+            if released > LIVEBENCH_RELEASE or (removed and removed <= LIVEBENCH_RELEASE):
+                continue
+            turns = row.get("turns")
+            if not isinstance(turns, list) or len(turns) != 1 or not str(turns[0]).strip():
+                raise SiteBenchmarkDataError("LiveBench 2024-11-25 turn geometry differs")
+            rows.append(
+                make_row(
+                    "livebench",
+                    str(row["question_id"]),
+                    str(turns[0]),
+                    "code" if category == "coding" else "general",
+                    category,
+                    row,
+                )
+            )
+    if len(rows) != 1000:
+        raise SiteBenchmarkDataError("LiveBench 2024-11-25 cardinality differs")
+    return rows
+
+
 def make_row(
     benchmark: str,
     upstream_id: str,
@@ -244,6 +296,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "humaneval_plus": load_humaneval(args.humaneval_parquet),
         "mbpp_plus": load_mbpp(args.mbpp_parquet),
         "correctbench": load_correctbench(args.correctbench_parquet),
+        "livebench": load_livebench(),
         "livecodebench": load_livecodebench(args.livecodebench_jsonl),
         "longbench_pro": load_longbench(args.longbench_json),
     }
@@ -266,6 +319,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ]
         ],
         "longbench_scope": "official_nonthinking_8k_to_64k_subset_not_full_8k_to_256k",
+        "livebench_release": LIVEBENCH_RELEASE,
+        "livebench_dataset_revisions": LIVEBENCH_REVISIONS,
         "assessors_visible_to_model": False,
     }
     atomic_json(args.output_root / "report.json", report)
