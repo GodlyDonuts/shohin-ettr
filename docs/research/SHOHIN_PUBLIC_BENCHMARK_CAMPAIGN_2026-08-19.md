@@ -106,26 +106,28 @@ No official score or aggregate result exists yet.
 
 Independent CPU scoring was released only for generation reports that already
 had complete four-arm row coverage.  It did not regenerate model output or use
-another GPU.  Three ordinary exact-match scorers and the official EvalPlus
-HumanEval+ scorer have now completed:
+another GPU.  Three ordinary exact-match scorers and both official EvalPlus
+scorers have now completed:
 
 | Benchmark | Rows | Direct base | Unchanged | Trained revision | Revision − unchanged | Revision − direct | Wins / losses | Baseline-correct retention | Report SHA-256 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | IFEval | 541 | 81.8854 | 72.2736 | 75.0462 | **+2.7726** | -6.8392 | 27 / 12 | 96.9309% | `ebfa8fb9053dc8bc20f9abfae65685b5b2f759e8942a3196f652388e39619e99` |
 | HumanEval+ | 164 | 68.9024 | 70.7317 | 73.1707 | **+2.4390** | **+4.2683** | 5 / 1 | 99.1379% | `b3ec70ace2b4441efa31c3a1c6a2e0ab97f84d5f2bee07d0703598e359258139` |
+| MBPP+ | 378 | 5.5556 | 5.8201 | 6.0847 | **+0.2646** | **+0.5291** | 1 / 0 | 100.0000% | `3e37ef792dbbada48dad34b7d5540277031837f38b09c6e0d960e0fc6ecd3d4e` |
 | MuSR | 756 | 78.0423 | 68.3862 | 44.8413 | -23.5450 | -33.2011 | 38 / 216 | 58.2205% | `50ca5f1bcb79fd7d2144f17345e1727959ee37fdd9be8a5e8768c2fb40a73e5d` |
 | CorrectBench | 739 | 35.7240 | 32.3410 | 14.8850 | -17.4560 | -20.8390 | 0 / 129 | 46.0251% | `bc01e307e202494539470aafd2897ac87213debd1b283dc06eab125fb7dd5247` |
 
 Every score report has exact outcome coverage and unique identities equal to
 the stated row count.  IFEval's matched 27-versus-12 improvement has a
 two-sided sign-test p-value of `0.0237027`; HumanEval+'s 5-versus-1 direction
-has p-value `0.21875`.  The positive IFEval and HumanEval+ results therefore do
-not erase the large MuSR and CorrectBench regressions.  They establish a
-measured capability-specific gain, not a broad benchmark win.
+has p-value `0.21875`, and MBPP+'s single discordant win has p-value `1.0`.
+The three positive results therefore do not erase the large MuSR and
+CorrectBench regressions.  They establish measured capability-specific gains,
+not a broad benchmark win.
 
-The scoring jobs were `767645` (IFEval), `767650` (HumanEval+), `767639`
-(MuSR), and `767640` (CorrectBench), all zero-restart CPU allocations.  IFEval
-required one isolated dependency repair before replay: sealed
+The scoring jobs were `767645` (IFEval), `767650` (HumanEval+), `767655`
+(MBPP+), `767639` (MuSR), and `767640` (CorrectBench), all zero-restart CPU
+allocations.  IFEval required one isolated dependency repair before replay: sealed
 `absl-py==2.5.0`, wheel SHA-256
 `0f17b89f2a4eaaedc4f28c622998aa690564b3012a396a4ffad0821007fe03ba`,
 55-entry manifest SHA-256
@@ -136,9 +138,18 @@ and receipt SHA-256
 Two additional pre-score defects were found without producing scientific
 reports: the Bubblewrap virtual-environment projection omitted the absolute
 base interpreter, and MBPP assessor IDs lacked EvalPlus' canonical `Mbpp/`
-namespace.  The fixes are pushed at commits `266546e5` and `1b5e86d3` with 15
-focused tests passing.  Fixed MBPP+ scorer job `767655` is active against a
-fresh work root; no prior MBPP+ score artifact is being reused.
+namespace.  The fixes are pushed at commits `266546e5` and `1b5e86d3`; the
+combined public-benchmark regression suite has 81 tests passing.  MBPP+ job
+`767655` replayed from a fresh work root and completed in 232 seconds.  Its
+three official score ledgers contain exactly 378 unique identities each; no
+artifact from either pre-score failure was reused.
+
+All five reports and their 15 identity ledgers are owner-nonwritable and bound
+by Newton evidence receipt
+`/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/early_official_scores_20260820_r1/receipt.json`,
+SHA-256 `a9b64c5cbb51533fea3fe10f505fa9ba9bb1ec73bd295a686f88fabf786a2bf3`.
+It covers 3,564,211 bytes and binds the zero-restart Slurm accounting snapshot
+at SHA-256 `7405c1369cd84990bcae5bdc1afc74e37ed6cb25aed3c7378a5c096aca214287`.
 
 ## Cross-family expansion staged — 2026-08-20 17:34 EDT
 
