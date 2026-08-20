@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from hf_dense_public_benchmark_campaign import (
+    batch_can_accept,
+    batch_token_cost,
     DenseBenchmarkGenerationError,
     LEDGER_SCHEMA,
     MANIFEST_SCHEMA,
@@ -90,3 +92,14 @@ def test_second_pass_prompt_is_bound_to_its_own_draft() -> None:
 def test_direct_base_and_draft_use_the_identical_source_prompt() -> None:
     row = {"id": "a" * 64, "question": "Original", "response_mode": "general"}
     assert stage_prompt("direct_base", row, {}) == stage_prompt("draft", row, {})
+
+
+def test_padded_batch_token_cost_uses_longest_prompt() -> None:
+    assert batch_token_cost([100, 200, 150], 50) == 750
+
+
+def test_long_context_batch_budget_shrinks_without_dropping_first_row() -> None:
+    assert batch_can_accept([], 120_000, 1024, 65_536)
+    assert not batch_can_accept([20_000], 50_000, 1024, 65_536)
+    assert not batch_can_accept([20_000], 32_000, 1024, 65_536)
+    assert batch_can_accept([1_000], 1_100, 1024, 65_536)

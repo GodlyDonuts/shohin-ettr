@@ -139,6 +139,28 @@ def append_ledger(path: Path, row: dict[str, Any]) -> None:
         os.fsync(handle.fileno())
 
 
+def batch_token_cost(prompt_tokens: list[int], max_new_tokens: int) -> int:
+    """Conservative padded-token footprint for one generation batch."""
+    if not prompt_tokens:
+        return 0
+    return len(prompt_tokens) * (max(prompt_tokens) + max_new_tokens)
+
+
+def batch_can_accept(
+    prompt_tokens: list[int],
+    candidate_tokens: int,
+    max_new_tokens: int,
+    max_batch_tokens: int,
+) -> bool:
+    """Permit a candidate while always allowing a single valid long prompt."""
+    proposed = [*prompt_tokens, candidate_tokens]
+    return (
+        not prompt_tokens
+        or max_batch_tokens <= 0
+        or batch_token_cost(proposed, max_new_tokens) <= max_batch_tokens
+    )
+
+
 def stage_prompt(
     stage: str, row: dict[str, Any], drafts: dict[str, dict[str, Any]]
 ) -> str:
@@ -162,6 +184,7 @@ def run_stage(
     tokenizer: Any,
     seed: int,
     batch_size: int,
+    max_batch_tokens: int,
 ) -> dict[str, Any]:
     import torch
 
@@ -181,19 +204,29 @@ def run_stage(
     cursor = len(completed)
     while cursor < len(rows):
         maximum = rows[cursor]["max_new_tokens"]
-        batch_rows = []
+        batch_rows: list[dict[str, Any]] = []
+        prompts: list[str] = []
+        rendered: list[str] = []
+        prompt_tokens: list[int] = []
         while (
             cursor + len(batch_rows) < len(rows)
             and len(batch_rows) < batch_size
             and rows[cursor + len(batch_rows)]["max_new_tokens"] == maximum
         ):
-            batch_rows.append(rows[cursor + len(batch_rows)])
-        prompts = [stage_prompt(stage, row, drafts) for row in batch_rows]
-        rendered = [matched_render_prompt(tokenizer, prompt) for prompt in prompts]
-        prompt_tokens = [
-            len(tokenizer(text, add_special_tokens=True)["input_ids"])
-            for text in rendered
-        ]
+            candidate = rows[cursor + len(batch_rows)]
+            candidate_prompt = stage_prompt(stage, candidate, drafts)
+            candidate_rendered = matched_render_prompt(tokenizer, candidate_prompt)
+            candidate_tokens = len(
+                tokenizer(candidate_rendered, add_special_tokens=True)["input_ids"]
+            )
+            if not batch_can_accept(
+                prompt_tokens, candidate_tokens, maximum, max_batch_tokens
+            ):
+                break
+            batch_rows.append(candidate)
+            prompts.append(candidate_prompt)
+            rendered.append(candidate_rendered)
+            prompt_tokens.append(candidate_tokens)
         for row, tokens in zip(batch_rows, prompt_tokens, strict=True):
             if tokens + maximum > context_limit:
                 raise DenseBenchmarkGenerationError(
@@ -311,6 +344,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             tokenizer=tokenizer,
             seed=args.seed + offset,
             batch_size=args.batch_size,
+            max_batch_tokens=args.max_batch_tokens,
         )
         if stage == "draft":
             drafts = load_ledger(
@@ -367,9 +401,20 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=2026081901)
     parser.add_argument("--batch-size", type=int, default=4)
+    parser.add_argument(
+        "--max-batch-tokens",
+        type=int,
+        default=0,
+        help=(
+            "Maximum padded prompt-plus-generation tokens per batch; zero disables "
+            "the token budget. A single context-valid row is always admitted."
+        ),
+    )
     args = parser.parse_args(argv)
     if args.batch_size <= 0:
         parser.error("--batch-size must be positive")
+    if args.max_batch_tokens < 0:
+        parser.error("--max-batch-tokens cannot be negative")
     return args
 
 
