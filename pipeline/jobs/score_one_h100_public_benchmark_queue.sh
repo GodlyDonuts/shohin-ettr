@@ -22,6 +22,29 @@ for path in "$RUNTIME_ROOT" "$ARTIFACT_ROOT" "$BOARD_ROOT" "$SCORING_DEPS" \
   }
 done
 
+# The qualified virtual environment uses an absolute interpreter symlink into
+# its pinned Miniforge root.  Project only that root at its original path so
+# the symlink resolves inside Bubblewrap without exposing the surrounding
+# Shohin filesystem.
+BASE_PYTHON_ROOT=$(dirname "$(dirname "$(realpath "$BASE_ENV_ROOT/bin/python3.13")")")
+[ -d "$BASE_PYTHON_ROOT" ] && [ ! -L "$BASE_PYTHON_ROOT" ] || {
+  echo "qualified base Python root differs" >&2
+  exit 2
+}
+declare -a BWRAP_BASE_PYTHON_PROJECTION=()
+declare -a base_python_parents=()
+parent=$(dirname "$BASE_PYTHON_ROOT")
+while [ "$parent" != / ]; do
+  base_python_parents=("$parent" "${base_python_parents[@]}")
+  parent=$(dirname "$parent")
+done
+for parent in "${base_python_parents[@]}"; do
+  BWRAP_BASE_PYTHON_PROJECTION+=(--dir "$parent")
+done
+BWRAP_BASE_PYTHON_PROJECTION+=(
+  --ro-bind "$BASE_PYTHON_ROOT" "$BASE_PYTHON_ROOT"
+)
+
 while [ ! -s "$FINAL_GENERATION_REPORT" ]; do
   if ! squeue -h -j "$ALLOCATION_JOB_ID" -t RUNNING | grep -q .; then
     echo "allocation ended before full generation completed" >&2
@@ -110,6 +133,7 @@ run_evalplus() {
   for stage in direct_base unchanged_continuation trained_revision; do
     bwrap \
       --ro-bind /usr /usr --ro-bind /lib64 /lib64 --ro-bind /lib /lib --ro-bind /etc /etc \
+      "${BWRAP_BASE_PYTHON_PROJECTION[@]}" \
       --ro-bind "$BASE_ENV_ROOT" /env \
       --ro-bind "$SCORING_DEPS" /deps \
       --ro-bind "$BOARD_ROOT/site_sources/evalplus-full" /scorer \
@@ -143,6 +167,7 @@ if [ ! -s "$REPORT_ROOT/livecodebench.json" ]; then
   mkdir -p "$SCORE_ROOT"
   bwrap \
     --ro-bind /usr /usr --ro-bind /lib64 /lib64 --ro-bind /lib /lib --ro-bind /etc /etc \
+    "${BWRAP_BASE_PYTHON_PROJECTION[@]}" \
     --ro-bind "$BASE_ENV_ROOT" /env --ro-bind "$SCORING_DEPS" /deps \
     --ro-bind "$RUNTIME_ROOT" /runtime \
     --ro-bind "$BOARD_ROOT/site_sources/livecodebench-full" /scorer \
@@ -166,6 +191,7 @@ if [ ! -s "$REPORT_ROOT/livebench.json" ]; then
   mkdir -p "$ARTIFACT_ROOT/livebench_work"
   bwrap \
     --ro-bind /usr /usr --ro-bind /lib64 /lib64 --ro-bind /lib /lib --ro-bind /etc /etc \
+    "${BWRAP_BASE_PYTHON_PROJECTION[@]}" \
     --ro-bind "$BASE_ENV_ROOT" /env --ro-bind "$SCORING_DEPS" /deps \
     --ro-bind "$RUNTIME_ROOT" /runtime \
     --ro-bind "$BOARD_ROOT/site_sources/livebench-src" /scorer \

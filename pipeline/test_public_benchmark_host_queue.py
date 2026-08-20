@@ -80,3 +80,14 @@ def test_official_scorer_reads_shared_board_and_writes_host_artifacts() -> None:
     assert '--ro-bind "$BOARD_ROOT/site_data_core" /assessors' in source
     assert '--ro-bind "$BOARD_ROOT/site_sources/livebench-src" /scorer' in source
     assert '--score-root "$SCORE_ROOT"' in source
+
+
+def test_official_scorer_projects_only_the_pinned_base_python_root() -> None:
+    source = SCORER.read_text()
+    assert (
+        'BASE_PYTHON_ROOT=$(dirname "$(dirname "$(realpath '
+        '"$BASE_ENV_ROOT/bin/python3.13")")")'
+    ) in source
+    assert '--ro-bind "$BASE_PYTHON_ROOT" "$BASE_PYTHON_ROOT"' in source
+    assert source.count('"${BWRAP_BASE_PYTHON_PROJECTION[@]}"') == 3
+    assert '--ro-bind "$BOARD_ROOT"' not in source
