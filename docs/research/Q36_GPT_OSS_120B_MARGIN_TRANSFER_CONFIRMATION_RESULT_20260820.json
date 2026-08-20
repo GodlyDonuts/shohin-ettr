@@ -1,0 +1,130 @@
+{
+  "schema": "shohin-gpt-oss-120b-margin-transfer-confirmation-result-v1",
+  "status": "complete_strict_confirmation_pass",
+  "date": "2026-08-20",
+  "scientific_claim": "A prospectively frozen Qwen3.6-35B-A3B model-owned selector with a 0.25 revision margin and incomplete-generation veto improves GPT-OSS-120B MMLU-Pro accuracy on a third source-disjoint 256-row confirmation set while retaining at least 95 percent of unchanged-correct rows.",
+  "claim_boundary": "The observed +5/256 improvement passes the predeclared capability and retention gate but is not individually statistically significant at alpha 0.05 (exact paired p=0.2265625).",
+  "source_commit": "bb94560d4c87e9b459c077020e8d013e7c21f968",
+  "recovery_commit": "5e91b37d02e09f60646e75342b4472a60b32bb55",
+  "frozen_contract_sha256": "a4c38f602d0e2dac949908d66bfa9cf22902208253d46c3337db78606c9fee8c",
+  "authorization_projection_sha256": "c6026aed3dcd45b7b11d08e58cb820e5e032df9cd33ecc0c421ee559fc524841",
+  "source": {
+    "rows": 256,
+    "unique_identities": 256,
+    "source_sha256": "d521979beaf1051bfa2d897d1c972719b36612436aa45c6ccd7b823f3f0fcc4d",
+    "selected_identity_sha256": "9637328f4139596a984ec8edc7e499c7f5c26598e002ee57bc525b7120b43357",
+    "selection_seed": 2026082003,
+    "public_screen_overlap": 0,
+    "prior_q36_overlap": 0,
+    "first_confirmation_overlap": 0,
+    "second_confirmation_overlap": 0,
+    "pre_score_assessor_access_count": 0,
+    "pre_score_label_access_count": 0
+  },
+  "policy": {
+    "selector": "Qwen3.6-35B-A3B model-owned semantic commit",
+    "revision_margin_threshold": 0.25,
+    "revision_reliability_veto": "empty_or_exhausted",
+    "semantic_revision_choices_before_veto": 50,
+    "final_revision_choices": 44,
+    "final_unchanged_choices": 212,
+    "reliability_veto_rows": 6,
+    "reliability_veto_score_effect": 3,
+    "order_consistent_rows": 256,
+    "prompt_truncated_rows": 0,
+    "selection_had_score_or_assessor_access": false
+  },
+  "accuracy": {
+    "unchanged_correct": 191,
+    "unchanged_accuracy": 0.74609375,
+    "raw_revision_correct": 131,
+    "raw_revision_accuracy": 0.51171875,
+    "selected_correct": 196,
+    "selected_accuracy": 0.765625,
+    "selected_gain_over_unchanged": 5,
+    "selected_gain_percentage_points": 1.953125,
+    "selected_only_correct": 8,
+    "unchanged_only_correct": 3,
+    "mcnemar_exact_two_sided_p": 0.2265625,
+    "unchanged_correct_retained": 188,
+    "unchanged_correct_retention": 0.9842931937172775
+  },
+  "predeclared_gate": {
+    "selected_strictly_greater_than_unchanged": true,
+    "retention_at_least_95_percent": true,
+    "mmlu_pro_nonnegative": true,
+    "strict_confirmation_pass": true
+  },
+  "category_deltas_selected_minus_unchanged": {
+    "biology": 0,
+    "business": 1,
+    "chemistry": 0,
+    "computer science": 0,
+    "economics": -1,
+    "engineering": 0,
+    "health": 3,
+    "history": 0,
+    "law": 1,
+    "math": 0,
+    "other": 0,
+    "philosophy": 1,
+    "physics": 0,
+    "psychology": 0
+  },
+  "generation_telemetry": {
+    "qwen_fixed_draft_empty": 0,
+    "qwen_fixed_draft_exhausted": 2,
+    "gpt_unchanged_empty": 4,
+    "gpt_unchanged_exhausted": 11,
+    "gpt_revision_empty": 27,
+    "gpt_revision_exhausted": 75
+  },
+  "artifacts": {
+    "score_sha256": "25accdcbc26d4ba49c7394392309f415333aa0d03c6c637ab37965902f249842",
+    "selection_candidates_sha256": "032837fcd3a3e4bd98d6d2cff97920783399f56b760eb1d87b250cd6be9911f2",
+    "selections_sha256": "5ce580f68d67dd658357cf9b5f9f33c76e164d80225cc7510997cb05dc6ab5fe",
+    "application_sha256": "6ef8181b3adf4cb73f09b1498d023768c57c2526bdb3f3978f8d8f3c9d641baf",
+    "result_sha256": "356693c71cf082c1f23305424c7d36cfb6aba5baf7a8e7a2d7611f610c2d02bc",
+    "run_root_regular_files": 30,
+    "run_root_writable_files": 0,
+    "run_root_links_or_special_members": 0,
+    "temporary_files": 0
+  },
+  "jobs": {
+    "preparation": 766427,
+    "environment": 766428,
+    "qwen_fixed_draft": [766429, 766430, 766431, 766432],
+    "gpt_unchanged": [766433, 766434, 766435, 766436],
+    "gpt_revision": [766437, 766438, 766439, 766440],
+    "failed_static_authorization_selector": 766441,
+    "official_score": 766442,
+    "cancelled_zero_runtime_analysis": 766443,
+    "effective_selector": 766447,
+    "effective_analysis": 766449,
+    "all_successful_restarts_zero": true
+  },
+  "accounting": {
+    "successful_scientific_h100_seconds": 21719,
+    "successful_scientific_h100_hours": 6.033055555555555,
+    "failed_static_authorization_h100_seconds": 97,
+    "total_h100_hours": 6.06
+  },
+  "descriptive_three_set_transfer": {
+    "classification": "development-plus-prospective-confirmation descriptive aggregate; the first two sets selected the threshold and are not independent confirmations of it",
+    "rows": 768,
+    "unchanged_correct": 555,
+    "threshold_0_25_plus_veto_correct": 565,
+    "net_gain": 10,
+    "selected_only_correct": 19,
+    "unchanged_only_correct": 9,
+    "mcnemar_exact_two_sided_p": 0.08715855330228806,
+    "unchanged_correct_retained": 546,
+    "unchanged_correct_retention": 0.9837837837837838,
+    "per_set_gains": [3, 2, 5]
+  },
+  "interpretation": {
+    "demonstrated": "The same frozen selector-margin policy transferred positively on a third untouched GPT-OSS-120B set and improved the unchanged baseline by five correct answers.",
+    "not_demonstrated": "This single 256-row confirmation does not establish a statistically significant effect, universal category non-regression, or a general MoE scaling law.",
+    "next_evidence": "A larger source-disjoint confirmation or a matched additional MoE family/size is needed to narrow uncertainty and establish scaling behavior."
+  }
+}
