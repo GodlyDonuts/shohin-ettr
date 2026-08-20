@@ -79,8 +79,11 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def load_source(path: Path, contract: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def load_source(
+    path: Path, contract: dict[str, Any], identities: set[str] | None = None
+) -> dict[str, dict[str, Any]]:
     result: dict[str, dict[str, Any]] = {}
+    observed: set[str] = set()
     for row in _jsonl(path):
         identity = row.get("identity_sha256")
         if (
@@ -88,15 +91,19 @@ def load_source(path: Path, contract: dict[str, Any]) -> dict[str, dict[str, Any
             or row.get("split") != contract["source_split"]
             or not isinstance(identity, str)
             or len(identity) != 64
-            or identity in result
+            or identity in observed
             or row.get("task") not in TASKS
             or not isinstance(row.get("source_prompt"), str)
             or not row["source_prompt"].strip()
             or any(field in row for field in ("assessor", "answer", "gold", "correct"))
         ):
             raise CrossHostCommitError("cross-host source projection differs")
-        result[identity] = row
-    if len(result) != contract["rows"]:
+        observed.add(identity)
+        if identities is None or identity in identities:
+            result[identity] = row
+    if len(result) != contract["rows"] or (
+        identities is not None and set(result) != identities
+    ):
         raise CrossHostCommitError("cross-host source coverage differs")
     return result
 
@@ -118,7 +125,6 @@ def load_candidates(
                 or identity in result
                 or row.get("task") not in TASKS
                 or not isinstance(row.get("completion"), str)
-                or not row["completion"].strip()
                 or isinstance(row.get("generated_tokens"), bool)
                 or not isinstance(row.get("generated_tokens"), int)
                 or row["generated_tokens"] < 0
@@ -187,14 +193,14 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise CrossHostCommitError("cross-host pinned settings differ")
     _validate_environment(args)
-    source = load_source(args.source, contract)
     owners = {
         "revision": load_candidates(args.revision_candidates, "revision", contract),
         "unchanged": load_candidates(args.unchanged_candidates, "unchanged", contract),
     }
-    identities = set(source)
+    identities = set(owners["revision"])
     if any(set(owner) != identities for owner in owners.values()):
         raise CrossHostCommitError("cross-host identities differ")
+    source = load_source(args.source, contract, identities)
     for identity in identities:
         if (
             len(

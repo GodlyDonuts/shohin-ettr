@@ -65,6 +65,50 @@ def test_cross_host_loaders_bind_source_arm_and_identity(tmp_path: Path) -> None
         module.load_candidates([revision], "revision", contract)
 
 
+def test_source_superset_is_filtered_and_empty_completion_is_valid(
+    tmp_path: Path,
+) -> None:
+    contract = {
+        "rows": 1,
+        "shards": 1,
+        "candidate_schema": "candidate-v1",
+        "source_schema": "source-v1",
+        "source_split": "external_validation",
+    }
+    wanted, extra = "a" * 64, "b" * 64
+    source = tmp_path / "source.jsonl"
+    candidate = tmp_path / "candidate.jsonl"
+    _write(
+        source,
+        [
+            {
+                "schema": "source-v1",
+                "split": "external_validation",
+                "identity_sha256": identity,
+                "task": "math500",
+                "source_prompt": "question",
+            }
+            for identity in (wanted, extra)
+        ],
+    )
+    _write(
+        candidate,
+        [
+            {
+                "schema": "candidate-v1",
+                "arm": "revision",
+                "identity_sha256": wanted,
+                "task": "math500",
+                "completion": "",
+                "generated_tokens": 768,
+                "max_token_exhausted": True,
+            }
+        ],
+    )
+    assert set(module.load_source(source, contract, {wanted})) == {wanted}
+    assert set(module.load_candidates([candidate], "revision", contract)) == {wanted}
+
+
 def test_cross_host_job_is_one_h100_and_excludes_failed_node() -> None:
     root = Path(__file__).resolve().parents[1]
     wrapper = (root / "train/jobs/q36_mtr_cross_host_commit.sbatch").read_text()
