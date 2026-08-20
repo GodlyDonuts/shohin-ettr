@@ -81,6 +81,24 @@ def _modelopt_fp8() -> dict[str, object]:
             "parameter_devices": {"cuda:0": 1, "cuda:1": 1},
             "buffer_devices": {"cuda:0": 1},
         },
+        "fp8_per_tensor_backend": {
+            "mode": "modelopt-fp8-per-tensor-scaled-mm",
+            "source_sha256": mechanics.MODELOPT_FP8_BACKEND_SHA256,
+            "registration_count": 1,
+            "gemm_function": "Fp8PerTensorLinear.apply",
+            "availability_check": "_fp8_availability_check",
+        },
+        "frozen_empty_expert_compatibility": {
+            "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
+            "moe_layers": len(mechanics.MOE_LAYER_INDICES),
+            "experts_per_layer": mechanics.ROUTED_EXPERTS_PER_LAYER,
+            "expert_modules": len(mechanics.MOE_LAYER_INDICES)
+            * mechanics.ROUTED_EXPERTS_PER_LAYER,
+            "mixer_names_sha256": mechanics.MOE_MIXER_NAMES_SHA256,
+            "expert_biases": False,
+            "active_expert_path": "unchanged",
+            "native_router_expert_trainables": 0,
+        },
         "mamba_output_projection_compatibility": {
             "mode": "quant-aware-projection-after-fused-ssm",
             "mamba_layers": len(mechanics.MAMBA_LAYER_INDICES),

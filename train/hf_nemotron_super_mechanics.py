@@ -17,6 +17,7 @@ from pathlib import Path
 import stat
 import sys
 import time
+from types import MethodType
 from typing import Any
 
 import torch
@@ -83,6 +84,9 @@ REMOTE_CONFIGURATION_SHA256 = (
 REMOTE_MODELING_SHA256 = (
     "e1cb5fc02e887983f0a445bf4c1a2604453b2cb2db4624c7004dcf663bbb1b6e"
 )
+MODELOPT_FP8_BACKEND_SHA256 = (
+    "4a68f8dfd2df4ec3ff472b701816c8a2d32a71fa1ee0e8691e8804fe28780cb2"
+)
 MAMBA_LAYER_INDICES = tuple(
     index for index, layer_type in enumerate(LAYER_TYPES) if layer_type == "mamba"
 )
@@ -92,6 +96,14 @@ MAMBA_OUTPUT_PROJECTION_NAMES = tuple(
 MAMBA_OUTPUT_PROJECTION_NAMES_SHA256 = hashlib.sha256(
     json.dumps(list(MAMBA_OUTPUT_PROJECTION_NAMES), separators=(",", ":")).encode()
 ).hexdigest()
+MOE_LAYER_INDICES = tuple(
+    index for index, layer_type in enumerate(LAYER_TYPES) if layer_type == "moe"
+)
+MOE_MIXER_NAMES = tuple(f"model.layers.{index}.mixer" for index in MOE_LAYER_INDICES)
+MOE_MIXER_NAMES_SHA256 = hashlib.sha256(
+    json.dumps(list(MOE_MIXER_NAMES), separators=(",", ":")).encode()
+).hexdigest()
+ROUTED_EXPERTS_PER_LAYER = 512
 
 
 class NemotronSuperMechanicsError(RuntimeError):
@@ -586,12 +598,16 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
     checkpoint_translation = payload.get("checkpoint_translation")
     remote_model = payload.get("remote_model")
     runtime = payload.get("runtime")
+    fp8_backend = payload.get("fp8_per_tensor_backend")
+    empty_experts = payload.get("frozen_empty_expert_compatibility")
     mamba_projection = payload.get("mamba_output_projection_compatibility")
     return bool(
         isinstance(export, dict)
         and isinstance(checkpoint_translation, dict)
         and isinstance(remote_model, dict)
         and isinstance(runtime, dict)
+        and isinstance(fp8_backend, dict)
+        and isinstance(empty_experts, dict)
         and isinstance(mamba_projection, dict)
         and export.get("hf_quant_config_sha256") == HF_QUANT_CONFIG_SHA256
         and export.get("model_index_sha256") == MODEL_INDEX_SHA256
@@ -659,6 +675,21 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and runtime.get("meta_tensors") == 0
         and set(runtime.get("parameter_devices", {})) == {"cuda:0", "cuda:1"}
         and set(runtime.get("buffer_devices", {})) <= {"cuda:0", "cuda:1"}
+        and fp8_backend.get("mode") == "modelopt-fp8-per-tensor-scaled-mm"
+        and fp8_backend.get("source_sha256") == MODELOPT_FP8_BACKEND_SHA256
+        and fp8_backend.get("registration_count") == 1
+        and fp8_backend.get("gemm_function") == "Fp8PerTensorLinear.apply"
+        and fp8_backend.get("availability_check") == "_fp8_availability_check"
+        and empty_experts.get("mode")
+        == "skip-mathematically-zero-frozen-empty-expert-compute"
+        and empty_experts.get("moe_layers") == len(MOE_LAYER_INDICES)
+        and empty_experts.get("experts_per_layer") == ROUTED_EXPERTS_PER_LAYER
+        and empty_experts.get("expert_modules")
+        == len(MOE_LAYER_INDICES) * ROUTED_EXPERTS_PER_LAYER
+        and empty_experts.get("mixer_names_sha256") == MOE_MIXER_NAMES_SHA256
+        and empty_experts.get("expert_biases") is False
+        and empty_experts.get("active_expert_path") == "unchanged"
+        and empty_experts.get("native_router_expert_trainables") == 0
         and mamba_projection.get("mode") == "quant-aware-projection-after-fused-ssm"
         and mamba_projection.get("mamba_layers") == len(MAMBA_LAYER_INDICES)
         and mamba_projection.get("projection_names_sha256")
@@ -670,6 +701,119 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and mamba_projection.get("fused_outproj_bias") is None
         and mamba_projection.get("final_states_preserved") is True
     )
+
+
+def install_modelopt_fp8_per_tensor_backend() -> dict[str, Any]:
+    """Register the pinned FP8 scaled-matmul backend omitted by ModelOpt's package init."""
+
+    from modelopt.torch.quantization.backends.gemm_registry import gemm_registry
+    from modelopt.torch.quantization.backends import fp8_per_tensor_gemm as backend
+
+    source = Path(inspect.getfile(backend)).resolve(strict=True)
+    registrations = [
+        entry
+        for entry in getattr(gemm_registry, "_registry", ())
+        if getattr(entry.get("gemm_func"), "__self__", None)
+        is backend.Fp8PerTensorLinear
+    ]
+    if (
+        sha256_file(source) != MODELOPT_FP8_BACKEND_SHA256
+        or not str(source).endswith(
+            "/modelopt/torch/quantization/backends/fp8_per_tensor_gemm.py"
+        )
+        or len(registrations) != 1
+        or registrations[0].get("availability_check")
+        is not backend._fp8_availability_check
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt FP8 GEMM backend differs")
+    return {
+        "mode": "modelopt-fp8-per-tensor-scaled-mm",
+        "source_sha256": MODELOPT_FP8_BACKEND_SHA256,
+        "registration_count": 1,
+        "gemm_function": "Fp8PerTensorLinear.apply",
+        "availability_check": "_fp8_availability_check",
+    }
+
+
+def install_frozen_empty_expert_compatibility(backbone: Any) -> dict[str, Any]:
+    """Skip only the pinned remote model's mathematically zero empty-expert calls.
+
+    The upstream single-process forward calls every unselected expert on an all-zero
+    tensor solely to mark distributed parameters as used.  Shohin freezes every
+    native router/expert parameter, so those calls have exactly zero value and zero
+    relevant gradient while forcing unsupported FP8 fallback GEMMs.
+    """
+
+    layers = getattr(getattr(backbone, "model", None), "layers", None)
+    if not isinstance(layers, (list, tuple)) and type(layers).__name__ != "ModuleList":
+        raise NemotronSuperMechanicsError("MoE empty-expert layer surface differs")
+
+    observed_names: list[str] = []
+    expert_modules = 0
+    for index in MOE_LAYER_INDICES:
+        mixer = getattr(layers[index], "mixer", None)
+        experts = getattr(mixer, "experts", None)
+        original = getattr(mixer, "moe", None)
+        if (
+            type(mixer).__name__ != "QuantNemotronHMoE"
+            or not callable(original)
+            or getattr(original, "_shohin_frozen_empty_expert_compatibility", False)
+            or type(experts).__name__ != "ModuleList"
+            or len(experts) != ROUTED_EXPERTS_PER_LAYER
+        ):
+            raise NemotronSuperMechanicsError("MoE empty-expert geometry differs")
+        for expert in experts:
+            if (
+                type(expert).__name__ != "NemotronHMLP"
+                or getattr(getattr(expert, "up_proj", None), "bias", object())
+                is not None
+                or getattr(getattr(expert, "down_proj", None), "bias", object())
+                is not None
+            ):
+                raise NemotronSuperMechanicsError("MoE empty-expert surface differs")
+        observed_names.append(f"model.layers.{index}.mixer")
+        expert_modules += len(experts)
+
+        def _moe_without_empty_expert_compute(
+            self: Any,
+            hidden_states: torch.Tensor,
+            topk_indices: torch.Tensor,
+            topk_weights: torch.Tensor,
+        ) -> torch.Tensor:
+            final_hidden_states = torch.zeros_like(
+                hidden_states, dtype=topk_weights.dtype
+            )
+            expert_mask = torch.nn.functional.one_hot(
+                topk_indices, num_classes=len(self.experts)
+            ).permute(2, 0, 1)
+            for expert_idx, expert in enumerate(self.experts):
+                token_indices, weight_indices = torch.where(expert_mask[expert_idx])
+                if token_indices.numel() == 0:
+                    continue
+                expert_weights = topk_weights[token_indices, weight_indices]
+                expert_input = hidden_states[token_indices]
+                expert_output = expert(expert_input)
+                weighted_output = expert_output * expert_weights.unsqueeze(-1)
+                final_hidden_states.index_add_(0, token_indices, weighted_output)
+            return final_hidden_states.type(hidden_states.dtype)
+
+        _moe_without_empty_expert_compute._shohin_frozen_empty_expert_compatibility = (  # type: ignore[attr-defined]
+            True
+        )
+        mixer.moe = MethodType(_moe_without_empty_expert_compute, mixer)
+
+    if tuple(observed_names) != MOE_MIXER_NAMES:
+        raise NemotronSuperMechanicsError("MoE empty-expert identities differ")
+    return {
+        "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
+        "moe_layers": len(MOE_LAYER_INDICES),
+        "experts_per_layer": ROUTED_EXPERTS_PER_LAYER,
+        "expert_modules": expert_modules,
+        "mixer_names_sha256": MOE_MIXER_NAMES_SHA256,
+        "expert_biases": False,
+        "active_expert_path": "unchanged",
+        "native_router_expert_trainables": 0,
+    }
 
 
 def install_modelopt_mamba_output_projection_compatibility(
@@ -755,6 +899,7 @@ def install_modelopt_mamba_output_projection_compatibility(
 def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     """Load the immutable ModelOpt FP8 export across exactly two local H100s."""
 
+    fp8_backend_receipt = install_modelopt_fp8_per_tensor_backend()
     quant_cfg, export_receipt = _modelopt_fp8_quantization_config(model_root)
     expected_fp8_modules = _expected_fp8_module_names(model_root)
     expected_kv_cache_amax = _expected_kv_cache_amax_names(model_root)
@@ -808,6 +953,7 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     runtime_receipt = _modelopt_fp8_runtime_receipt(
         backbone, expected_fp8_modules, expected_kv_cache_amax
     )
+    empty_expert_receipt = install_frozen_empty_expert_compatibility(backbone)
     mamba_projection_receipt = install_modelopt_mamba_output_projection_compatibility(
         backbone
     )
@@ -820,6 +966,8 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
             "model_class": f"{model_class.__module__}.{model_class.__name__}",
         },
         "runtime": runtime_receipt,
+        "fp8_per_tensor_backend": fp8_backend_receipt,
+        "frozen_empty_expert_compatibility": empty_expert_receipt,
         "mamba_output_projection_compatibility": mamba_projection_receipt,
     }
 

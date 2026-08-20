@@ -19,6 +19,8 @@ from hf_nemotron_super_mechanics import (
     _modelopt_fp8_quantization_config,
     _state_sha256,
     _translate_export_checkpoint_keys,
+    install_frozen_empty_expert_compatibility,
+    install_modelopt_fp8_per_tensor_backend,
     install_modelopt_mamba_output_projection_compatibility,
     install_triton_allocator_compatibility,
     load_modelopt_fp8_backbone,
@@ -322,6 +324,24 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "parameter_devices": {"cuda:0": 10, "cuda:1": 10},
             "buffer_devices": {"cuda:0": 2, "cuda:1": 2},
         },
+        "fp8_per_tensor_backend": {
+            "mode": "modelopt-fp8-per-tensor-scaled-mm",
+            "source_sha256": mechanics.MODELOPT_FP8_BACKEND_SHA256,
+            "registration_count": 1,
+            "gemm_function": "Fp8PerTensorLinear.apply",
+            "availability_check": "_fp8_availability_check",
+        },
+        "frozen_empty_expert_compatibility": {
+            "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
+            "moe_layers": len(mechanics.MOE_LAYER_INDICES),
+            "experts_per_layer": mechanics.ROUTED_EXPERTS_PER_LAYER,
+            "expert_modules": len(mechanics.MOE_LAYER_INDICES)
+            * mechanics.ROUTED_EXPERTS_PER_LAYER,
+            "mixer_names_sha256": mechanics.MOE_MIXER_NAMES_SHA256,
+            "expert_biases": False,
+            "active_expert_path": "unchanged",
+            "native_router_expert_trainables": 0,
+        },
         "mamba_output_projection_compatibility": {
             "mode": "quant-aware-projection-after-fused-ssm",
             "mamba_layers": len(mechanics.MAMBA_LAYER_INDICES),
@@ -541,6 +561,16 @@ def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
     )
     monkeypatch.setattr(
         mechanics,
+        "install_modelopt_fp8_per_tensor_backend",
+        lambda: {"backend": "exact"},
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "install_frozen_empty_expert_compatibility",
+        lambda model: {"empty_experts": "exact"},
+    )
+    monkeypatch.setattr(
+        mechanics,
         "install_modelopt_mamba_output_projection_compatibility",
         lambda model: {"mamba": "exact"},
     )
@@ -622,6 +652,8 @@ def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
     assert events[3][0] == "load"
     assert events[3][2]["config"].torch_dtype == torch.bfloat16
     assert receipt["remote_model"]["model_class"].endswith(".RemoteModel")
+    assert receipt["fp8_per_tensor_backend"] == {"backend": "exact"}
+    assert receipt["frozen_empty_expert_compatibility"] == {"empty_experts": "exact"}
     assert receipt["mamba_output_projection_compatibility"] == {"mamba": "exact"}
 
 
@@ -678,3 +710,133 @@ def test_modelopt_mamba_projection_runs_after_fused_ssm(
         }
     ]
     assert receipt["mode"] == "quant-aware-projection-after-fused-ssm"
+
+
+def test_fp8_per_tensor_backend_registration_is_exact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    source = (
+        tmp_path
+        / "modelopt"
+        / "torch"
+        / "quantization"
+        / "backends"
+        / "fp8_per_tensor_gemm.py"
+    )
+    source.parent.mkdir(parents=True)
+    source.write_text("pinned fp8 backend\n")
+
+    class Fp8PerTensorLinear:
+        @classmethod
+        def apply(cls, *args):
+            return args
+
+    def availability_check(*args):
+        return True
+
+    backend = ModuleType("modelopt.torch.quantization.backends.fp8_per_tensor_gemm")
+    backend.Fp8PerTensorLinear = Fp8PerTensorLinear
+    backend._fp8_availability_check = availability_check
+    registry = type(
+        "Registry",
+        (),
+        {
+            "_registry": [
+                {
+                    "gemm_func": Fp8PerTensorLinear.apply,
+                    "availability_check": availability_check,
+                }
+            ]
+        },
+    )()
+    registry_module = ModuleType("modelopt.torch.quantization.backends.gemm_registry")
+    registry_module.gemm_registry = registry
+    backends = ModuleType("modelopt.torch.quantization.backends")
+    backends.fp8_per_tensor_gemm = backend
+    for name in ("modelopt", "modelopt.torch", "modelopt.torch.quantization"):
+        monkeypatch.setitem(sys.modules, name, ModuleType(name))
+    monkeypatch.setitem(sys.modules, "modelopt.torch.quantization.backends", backends)
+    monkeypatch.setitem(
+        sys.modules,
+        "modelopt.torch.quantization.backends.gemm_registry",
+        registry_module,
+    )
+    monkeypatch.setattr(mechanics.inspect, "getfile", lambda value: str(source))
+    monkeypatch.setattr(mechanics, "MODELOPT_FP8_BACKEND_SHA256", _sha256(source))
+
+    assert install_modelopt_fp8_per_tensor_backend() == {
+        "mode": "modelopt-fp8-per-tensor-scaled-mm",
+        "source_sha256": _sha256(source),
+        "registration_count": 1,
+        "gemm_function": "Fp8PerTensorLinear.apply",
+        "availability_check": "_fp8_availability_check",
+    }
+    registry._registry.append(registry._registry[0])
+    with pytest.raises(NemotronSuperMechanicsError, match="backend"):
+        install_modelopt_fp8_per_tensor_backend()
+
+
+def test_frozen_empty_experts_skip_only_zero_distributed_noops(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    calls = [0, 0, 0]
+
+    class NemotronHMLP(torch.nn.Module):
+        def __init__(self, index: int) -> None:
+            super().__init__()
+            self.index = index
+            self.up_proj = torch.nn.Linear(2, 2, bias=False)
+            self.down_proj = torch.nn.Linear(2, 2, bias=False)
+            with torch.no_grad():
+                self.up_proj.weight.copy_(torch.eye(2))
+                self.down_proj.weight.copy_(torch.eye(2))
+
+        def forward(self, value: torch.Tensor) -> torch.Tensor:
+            calls[self.index] += 1
+            return self.down_proj(self.up_proj(value))
+
+    class QuantNemotronHMoE(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.experts = torch.nn.ModuleList(
+                [NemotronHMLP(index) for index in range(3)]
+            )
+
+        def moe(self, *args):
+            raise AssertionError("unpatched method must not run")
+
+    mixer = QuantNemotronHMoE()
+    backbone = type("Backbone", (), {})()
+    backbone.model = type("Model", (), {})()
+    backbone.model.layers = [type("Layer", (), {"mixer": mixer})()]
+    monkeypatch.setattr(mechanics, "MOE_LAYER_INDICES", (0,))
+    monkeypatch.setattr(mechanics, "MOE_MIXER_NAMES", ("model.layers.0.mixer",))
+    monkeypatch.setattr(mechanics, "MOE_MIXER_NAMES_SHA256", "b" * 64)
+    monkeypatch.setattr(mechanics, "ROUTED_EXPERTS_PER_LAYER", 3)
+
+    receipt = install_frozen_empty_expert_compatibility(backbone)
+    hidden = torch.tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)
+    indices = torch.tensor([[1], [1]], dtype=torch.long)
+    weights = torch.tensor([[0.5], [0.25]])
+    result = mixer.moe(hidden, indices, weights)
+    expected = hidden * weights
+    assert torch.equal(result, expected)
+    result.sum().backward()
+    assert torch.equal(hidden.grad, weights.expand_as(hidden))
+    assert calls == [0, 1, 0]
+    assert receipt == {
+        "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
+        "moe_layers": 1,
+        "experts_per_layer": 3,
+        "expert_modules": 3,
+        "mixer_names_sha256": "b" * 64,
+        "expert_biases": False,
+        "active_expert_path": "unchanged",
+        "native_router_expert_trainables": 0,
+    }
+    with pytest.raises(NemotronSuperMechanicsError, match="geometry"):
+        install_frozen_empty_expert_compatibility(backbone)
