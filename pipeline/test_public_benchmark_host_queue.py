@@ -12,6 +12,17 @@ def test_host_queue_is_single_claimed_and_host_parameterized() -> None:
     assert '--model-loader "$MODEL_LOADER"' in source
     assert 'manifest="$BOARD_ROOT/manifests/$benchmark.json"' in source
     assert '--jobid="$ALLOCATION_JOB_ID"' in source
+    for field in (
+        '"allocation_job_id"',
+        '"artifact_root"',
+        '"board_root"',
+        '"host"',
+        '"model_revision"',
+        '"draft_checkpoint_sha256"',
+        '"revision_checkpoint_sha256"',
+        '"benchmark_order"',
+    ):
+        assert field in source
 
 
 def test_host_queue_preserves_matched_frozen_inputs() -> None:

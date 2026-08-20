@@ -41,16 +41,58 @@ if [ -e "$CLAIM" ] || [ -L "$CLAIM" ]; then
   echo "host-queue controller already claimed" >&2
   exit 2
 fi
-"$PYTHON" - "$CLAIM" "$source_commit" <<'PY'
+"$PYTHON" - \
+  "$CLAIM" "$source_commit" "$ALLOCATION_JOB_ID" "$ARTIFACT_ROOT" \
+  "$BOARD_ROOT" "$SCREEN_MANIFEST" "$HOST" "$MODEL_LOADER" \
+  "$MODEL_ROOT" "$MODEL_RECEIPT" "$MODEL_REVISION" \
+  "$MODEL_CONFIG_SHA256" "$DRAFT_CHECKPOINT" \
+  "$DRAFT_CHECKPOINT_SHA256" "$REVISION_CHECKPOINT" \
+  "$REVISION_CHECKPOINT_SHA256" "$BATCH_SIZE" "$ORDER" <<'PY'
 import json
 import os
 import sys
 
-path, source_commit = sys.argv[1:]
+(
+    path,
+    source_commit,
+    allocation_job_id,
+    artifact_root,
+    board_root,
+    screen_manifest,
+    host,
+    model_loader,
+    model_root,
+    model_receipt,
+    model_revision,
+    model_config_sha256,
+    draft_checkpoint,
+    draft_checkpoint_sha256,
+    revision_checkpoint,
+    revision_checkpoint_sha256,
+    batch_size,
+    order,
+) = sys.argv[1:]
 payload = {
     "schema": "shohin-dense-public-host-generation-controller-v1",
     "status": "waiting_for_allocation_and_model",
     "source_commit": source_commit,
+    "allocation_job_id": int(allocation_job_id),
+    "artifact_root": artifact_root,
+    "board_root": board_root,
+    "screen_manifest": screen_manifest,
+    "host": host,
+    "model_loader": model_loader,
+    "model_root": model_root,
+    "model_receipt": model_receipt,
+    "model_revision": model_revision,
+    "model_config_sha256": model_config_sha256,
+    "draft_checkpoint": draft_checkpoint,
+    "draft_checkpoint_sha256": draft_checkpoint_sha256,
+    "revision_checkpoint": revision_checkpoint,
+    "revision_checkpoint_sha256": revision_checkpoint_sha256,
+    "batch_size": int(batch_size),
+    "benchmark_order": order.split(),
+    "controller_pid": os.getppid(),
     "duplicate_generation": False,
     "requeue": False,
 }
