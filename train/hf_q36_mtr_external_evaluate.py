@@ -49,6 +49,18 @@ class Q36MTRExternalEvaluationError(RuntimeError):
     """An external-validation model input or output differs."""
 
 
+def adapter_validation_arm(arm: str, confirmation_mmlu_pro: bool) -> str:
+    """Separate the source-only prompt arm from the frozen adapter role."""
+
+    if arm not in ROLE_ARM:
+        raise Q36MTRExternalEvaluationError("external adapter arm differs")
+    if confirmation_mmlu_pro:
+        if arm != "unchanged":
+            raise Q36MTRExternalEvaluationError("confirmation adapter arm differs")
+        return "revision"
+    return ROLE_ARM[arm]
+
+
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     try:
         rows = [json.loads(line) for line in path.read_text().splitlines() if line]
@@ -209,7 +221,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model, metadata, loader = load_q36_adapter_model(
         args.model_root, args.adapter_checkpoint
     )
-    trainable_receipt = validate_adapter(model, metadata, ROLE_ARM[args.arm])
+    validation_arm = adapter_validation_arm(args.arm, args.confirmation_mmlu_pro)
+    trainable_receipt = validate_adapter(model, metadata, validation_arm)
     stop_ids = _generation_stop_token_ids(tokenizer)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -264,6 +277,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "adapter_metadata_sha256": hashlib.sha256(
             json.dumps(metadata, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest(),
+        "adapter_validation_arm": validation_arm,
         **trainable_receipt,
         "source": str(args.source.resolve()),
         "source_sha256": args.source_sha256,

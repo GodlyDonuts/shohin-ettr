@@ -88,6 +88,16 @@ def test_mmlu_confirmation_source_is_explicit_and_label_free(tmp_path):
         module.load_sources(path, 3)
 
 
+def test_mmlu_fixed_draft_uses_aligned_adapter_with_source_only_prompt() -> None:
+    assert module.prompt_for("unchanged", _source(0, "mmlu_pro"), None) == "Problem 0"
+    assert module.adapter_validation_arm("unchanged", True) == "revision"
+    assert module.adapter_validation_arm("unchanged", False) == "unchanged"
+    with pytest.raises(
+        module.Q36MTRExternalEvaluationError, match="confirmation adapter arm"
+    ):
+        module.adapter_validation_arm("revision", True)
+
+
 def test_external_job_accepts_independent_shard_identity() -> None:
     from pathlib import Path
 
