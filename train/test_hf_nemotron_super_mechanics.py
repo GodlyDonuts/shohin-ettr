@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 import hashlib
 import json
 from pathlib import Path
@@ -17,6 +18,7 @@ from hf_nemotron_super_mechanics import (
     _modelopt_fp8_quantization_config,
     _state_sha256,
     install_triton_allocator_compatibility,
+    load_modelopt_fp8_backbone,
     modelopt_fp8_receipt_is_exact,
     verify_manifest,
 )
@@ -228,6 +230,11 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
             "quant_gemm": True,
         },
+        "remote_model": {
+            "configuration_sha256": mechanics.REMOTE_CONFIGURATION_SHA256,
+            "modeling_sha256": mechanics.REMOTE_MODELING_SHA256,
+            "model_class": "frozen.NemotronHForCausalLM",
+        },
         "runtime": {
             "real_quant_gemm_enabled": True,
             "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
@@ -244,3 +251,95 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
     payload["runtime"]["cpu_tensors"] = 0
     payload["runtime"]["real_fp8_linear_count"] -= 1
     assert not modelopt_fp8_receipt_is_exact(payload)
+
+
+def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    quantization = {"quant_method": "modelopt"}
+    (tmp_path / "config.json").write_text(
+        json.dumps({"quantization_config": quantization})
+    )
+    configuration = tmp_path / "configuration_nemotron_h.py"
+    modeling = tmp_path / "modeling_nemotron_h.py"
+    configuration.write_text("configuration")
+    modeling.write_text("modeling")
+    monkeypatch.setattr(
+        mechanics, "REMOTE_CONFIGURATION_SHA256", _sha256(configuration)
+    )
+    monkeypatch.setattr(mechanics, "REMOTE_MODELING_SHA256", _sha256(modeling))
+    monkeypatch.setattr(
+        mechanics,
+        "_modelopt_fp8_quantization_config",
+        lambda root: ({"loader": "fp8"}, {"source": "exact"}),
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "_modelopt_fp8_runtime_receipt",
+        lambda model: {"runtime": "exact"},
+    )
+
+    class RemoteConfig:
+        def __init__(self) -> None:
+            self.quantization_config = quantization
+            self.auto_map = {
+                "AutoModelForCausalLM": "modeling_nemotron_h.NemotronHForCausalLM"
+            }
+
+    class RemoteModel:
+        pass
+
+    sentinel = object()
+    events: list[object] = []
+
+    class AutoConfig:
+        @staticmethod
+        def from_pretrained(*args, **kwargs):
+            events.append(("config", args, kwargs))
+            return RemoteConfig()
+
+    class AutoModel:
+        @classmethod
+        def register(cls, config_class, model_class, *, exist_ok):
+            events.append(("register", config_class, model_class, exist_ok))
+
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            events.append(("load", args, kwargs))
+            return sentinel
+
+    @contextmanager
+    def init_quantized_weights(config, *, gpu_mem_percentage, quant_gemm):
+        events.append(("context", config, gpu_mem_percentage, quant_gemm))
+        yield
+
+    transformers = ModuleType("transformers")
+    transformers.AutoConfig = AutoConfig
+    transformers.AutoModelForCausalLM = AutoModel
+    dynamic = ModuleType("transformers.dynamic_module_utils")
+    dynamic.get_class_from_dynamic_module = lambda *args, **kwargs: RemoteModel
+    accelerate = ModuleType("modelopt.torch.quantization.plugins.accelerate")
+    accelerate.init_quantized_weights = init_quantized_weights
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+    monkeypatch.setitem(sys.modules, "transformers.dynamic_module_utils", dynamic)
+    for name in (
+        "modelopt",
+        "modelopt.torch",
+        "modelopt.torch.quantization",
+        "modelopt.torch.quantization.plugins",
+    ):
+        monkeypatch.setitem(sys.modules, name, ModuleType(name))
+    monkeypatch.setitem(
+        sys.modules, "modelopt.torch.quantization.plugins.accelerate", accelerate
+    )
+    monkeypatch.setattr(mechanics.inspect, "getfile", lambda value: str(modeling))
+
+    model, receipt = load_modelopt_fp8_backbone(tmp_path)
+    assert model is sentinel
+    assert events[1] == ("register", RemoteConfig, RemoteModel, True)
+    assert events[2] == ("context", {"loader": "fp8"}, 0.95, True)
+    assert events[3][0] == "load"
+    assert events[3][2]["config"].torch_dtype == torch.bfloat16
+    assert receipt["remote_model"]["model_class"].endswith(".RemoteModel")

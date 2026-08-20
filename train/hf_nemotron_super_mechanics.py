@@ -8,6 +8,7 @@ from collections import Counter
 import copy
 import hashlib
 import importlib.metadata
+import inspect
 import json
 import math
 import os
@@ -55,6 +56,12 @@ FP8_LINEAR_COUNT = 41_120
 MODEL_WEIGHT_MAP_ENTRIES = 124_941
 MODEL_WEIGHT_SHARDS = 26
 MODELOPT_IGNORE_PATTERNS = 130
+REMOTE_CONFIGURATION_SHA256 = (
+    "0fc818c10506c91bd02df5a605f49cb0704b5498954f46dbde2d63999ae36c3d"
+)
+REMOTE_MODELING_SHA256 = (
+    "e1cb5fc02e887983f0a445bf4c1a2604453b2cb2db4624c7004dcf663bbb1b6e"
+)
 
 
 class NemotronSuperMechanicsError(RuntimeError):
@@ -232,9 +239,11 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
     if not isinstance(payload, dict):
         return False
     export = payload.get("export")
+    remote_model = payload.get("remote_model")
     runtime = payload.get("runtime")
     return bool(
         isinstance(export, dict)
+        and isinstance(remote_model, dict)
         and isinstance(runtime, dict)
         and export.get("hf_quant_config_sha256") == HF_QUANT_CONFIG_SHA256
         and export.get("model_index_sha256") == MODEL_INDEX_SHA256
@@ -243,6 +252,9 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and export.get("weight_shards") == MODEL_WEIGHT_SHARDS
         and export.get("disabled_patterns") == MODELOPT_IGNORE_PATTERNS
         and export.get("quant_gemm") is True
+        and remote_model.get("configuration_sha256") == REMOTE_CONFIGURATION_SHA256
+        and remote_model.get("modeling_sha256") == REMOTE_MODELING_SHA256
+        and str(remote_model.get("model_class", "")).endswith(".NemotronHForCausalLM")
         and runtime.get("real_quant_gemm_enabled") is True
         and runtime.get("real_fp8_linear_count") == FP8_LINEAR_COUNT
         and runtime.get("cpu_tensors") == 0
@@ -259,6 +271,7 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     quant_cfg, export_receipt = _modelopt_fp8_quantization_config(model_root)
     from modelopt.torch.quantization.plugins.accelerate import init_quantized_weights
     from transformers import AutoConfig, AutoModelForCausalLM
+    from transformers.dynamic_module_utils import get_class_from_dynamic_module
 
     config = AutoConfig.from_pretrained(
         model_root,
@@ -271,6 +284,23 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     )["quantization_config"]
     if observed_quantization != expected_quantization:
         raise NemotronSuperMechanicsError("Transformers ModelOpt configuration differs")
+    if (
+        sha256_file(model_root / "configuration_nemotron_h.py")
+        != REMOTE_CONFIGURATION_SHA256
+        or sha256_file(model_root / "modeling_nemotron_h.py") != REMOTE_MODELING_SHA256
+        or config.auto_map.get("AutoModelForCausalLM")
+        != "modeling_nemotron_h.NemotronHForCausalLM"
+    ):
+        raise NemotronSuperMechanicsError("pinned remote model implementation differs")
+    model_class = get_class_from_dynamic_module(
+        config.auto_map["AutoModelForCausalLM"],
+        model_root,
+        local_files_only=True,
+    )
+    resolved_modeling = Path(inspect.getfile(model_class)).resolve(strict=True)
+    if sha256_file(resolved_modeling) != REMOTE_MODELING_SHA256:
+        raise NemotronSuperMechanicsError("loaded remote model implementation differs")
+    AutoModelForCausalLM.register(type(config), model_class, exist_ok=True)
     delattr(config, "quantization_config")
     config.torch_dtype = torch.bfloat16
     with init_quantized_weights(quant_cfg, gpu_mem_percentage=0.95, quant_gemm=True):
@@ -280,7 +310,15 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
             trust_remote_code=True,
         )
     runtime_receipt = _modelopt_fp8_runtime_receipt(backbone)
-    return backbone, {"export": export_receipt, "runtime": runtime_receipt}
+    return backbone, {
+        "export": export_receipt,
+        "remote_model": {
+            "configuration_sha256": REMOTE_CONFIGURATION_SHA256,
+            "modeling_sha256": REMOTE_MODELING_SHA256,
+            "model_class": f"{model_class.__module__}.{model_class.__name__}",
+        },
+        "runtime": runtime_receipt,
+    }
 
 
 def install_triton_allocator_compatibility() -> dict[str, Any]:
