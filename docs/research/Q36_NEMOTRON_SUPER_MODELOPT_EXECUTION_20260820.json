@@ -1,7 +1,7 @@
 {
   "schema": "shohin-q36-nemotron-super-modelopt-execution-v1",
   "status": "submitted_pending_two_h100_capacity",
-  "observed_at": "2026-08-20T16:38:44-04:00",
+  "observed_at": "2026-08-20T17:21:21-04:00",
   "scientific_result_available": false,
   "nemotron_score_available": false,
   "science": {
@@ -43,7 +43,9 @@
     "publication_receipt": 767389,
     "durable_evidence_mirror": 767390,
     "gpu_jobs": 14,
-    "cpu_jobs": 6,
+    "cpu_jobs_in_primary_branch": 6,
+    "conditional_cpu_recovery_jobs": 4,
+    "maximum_cpu_jobs_executed": 6,
     "requeue": false,
     "duplicate_scientific_jobs": 0,
     "mechanics_h100s_on_one_node": 2,
@@ -56,8 +58,9 @@
   "scheduler_snapshot": {
     "mechanics_state": "PENDING",
     "mechanics_reason": "Priority",
-    "scheduler_estimated_start": "2026-08-20T23:33:00-04:00",
+    "scheduler_estimated_start": "2026-08-20T21:32:37-04:00",
     "estimate_is_nonbinding": true,
+    "scheduled_node_if_estimate_holds": "evc39",
     "excluded_nodes": [
       "evc26",
       "evc29",
@@ -69,6 +72,29 @@
       "evc38",
       "evc50"
     ]
+  },
+  "conditional_analysis_recovery": {
+    "reason": "the original analyzer rejects structurally valid negative matched net_correct values before emitting the frozen terminal measured-transfer result",
+    "scientific_semantics_changed": false,
+    "scientific_jobs_submitted": 0,
+    "gpu_jobs_submitted": 0,
+    "source_commit": "a50554d3055ae19aae640515b6f396337ed3dd68",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/upward_moe_runtime_a50554d3_r1",
+    "runtime_manifest_sha256": "5be8e9e250ae516e445dc13f275a6b2d68eb91e66e3d30b0e8030da75ab2411e",
+    "runtime_files": 245,
+    "runtime_directories": 5,
+    "runtime_full_manifest_verified": true,
+    "runtime_writable_or_link_or_special_members": 0,
+    "trigger": "afterok:767366 AND afternotok:767375",
+    "analysis_job": 767427,
+    "figure_job": 767428,
+    "publication_job": 767429,
+    "mirror_job": 767430,
+    "existing_accounting_job_reused": 767381,
+    "duplicate_scoring": false,
+    "primary_and_recovery_analysis_can_both_execute": false,
+    "dispatch_path": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_gptoss120_mixtral141_nemotron120_2b6b9aff_r1/conditional_analysis_recovery_dispatch.json",
+    "dispatch_sha256": "03ebc91f532af517bdaec609425031504aff5f3ef0d0911acce05e2396cffb6e"
   },
   "matched_screen": {
     "rows": 256,
@@ -103,12 +129,12 @@
   },
   "storage_snapshot": {
     "filesystem": "/lustre/fs1",
-    "used_kib": 978851036,
+    "used_kib": 978861668,
     "hard_limit_kib": 1059061760,
-    "hard_headroom_kib": 80210724,
-    "used_inodes": 588664,
+    "hard_headroom_kib": 80200092,
+    "used_inodes": 589415,
     "hard_limit_inodes": 1010000,
-    "hard_headroom_inodes": 421336
+    "hard_headroom_inodes": 420585
   },
   "private_branches": [
     "codex/q36-mechanics-generation-prepare",
