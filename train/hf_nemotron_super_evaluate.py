@@ -258,7 +258,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     metadata = None
     revision_model = None
     if args.arm == "revision":
-        revision_model = NemotronSuperRevisionModel(backbone)
+        revision_model = NemotronSuperRevisionModel(backbone, modelopt_quantized=True)
         metadata = load_revision_checkpoint(args.revision_checkpoint, revision_model)
         revision_model.eval()
         revision_model.reset_receipt()

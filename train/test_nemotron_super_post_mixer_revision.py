@@ -45,8 +45,12 @@ class _NativeMixer(nn.Module):
         return hidden_states * self.weight
 
 
-def _moe_mixer() -> nn.Module:
-    mixer = type("NemotronHMoE", (_NativeMixer,), {})()
+def _moe_mixer(*, modelopt_quantized: bool = False) -> nn.Module:
+    mixer = type(
+        "QuantNemotronHMoE" if modelopt_quantized else "NemotronHMoE",
+        (_NativeMixer,),
+        {},
+    )()
     mixer.gate = _named(
         "NemotronHTopkRouter",
         top_k=ROUTER_TOP_K,
@@ -74,11 +78,11 @@ def _moe_mixer() -> nn.Module:
     return mixer
 
 
-def _backbone() -> nn.Module:
+def _backbone(*, modelopt_quantized: bool = False) -> nn.Module:
     layers = []
     for block_type in LAYER_TYPES:
         if block_type == "moe":
-            mixer = _moe_mixer()
+            mixer = _moe_mixer(modelopt_quantized=modelopt_quantized)
         elif block_type == "mamba":
             mixer = type("NemotronHMamba2Mixer", (_NativeMixer,), {})()
         else:
@@ -119,6 +123,15 @@ def test_exact_final_moe_surface_is_attached_and_trainable_only() -> None:
         for block in model.blocks
         for parameter in block.base.parameters()
     )
+
+
+def test_exact_modelopt_moe_surface_is_attached_only_when_declared() -> None:
+    backbone = _backbone(modelopt_quantized=True)
+    with pytest.raises(NemotronSuperRevisionError, match="layer differs"):
+        NemotronSuperRevisionModel(backbone)
+
+    model = NemotronSuperRevisionModel(backbone, modelopt_quantized=True)
+    assert model.trainable_parameter_count() == TRAINABLE_PARAMETERS_PER_ROLE
 
 
 def test_zero_initialized_residual_preserves_native_forward_then_updates() -> None:

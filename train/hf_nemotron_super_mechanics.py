@@ -932,7 +932,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     backbone, modelopt_fp8 = load_modelopt_fp8_backbone(model_root)
     device_map = getattr(backbone, "hf_device_map", None)
-    model = NemotronSuperRevisionModel(backbone)
+    model = NemotronSuperRevisionModel(backbone, modelopt_quantized=True)
     if model.trainable_parameter_count() != TRAINABLE_PARAMETERS_PER_ROLE:
         raise NemotronSuperMechanicsError("trainable surface differs")
     initial_state = model.trainable_state()

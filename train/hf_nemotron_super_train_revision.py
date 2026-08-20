@@ -248,7 +248,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     if hasattr(backbone, "enable_input_require_grads"):
         backbone.enable_input_require_grads()
-    model = NemotronSuperRevisionModel(backbone)
+    model = NemotronSuperRevisionModel(backbone, modelopt_quantized=True)
     initial_state_sha256 = model.trainable_state_sha256()
     trainables = [
         parameter for parameter in model.parameters() if parameter.requires_grad
