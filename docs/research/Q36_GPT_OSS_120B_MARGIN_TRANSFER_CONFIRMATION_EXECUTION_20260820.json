@@ -1,0 +1,109 @@
+{
+  "schema": "shohin-gpt-oss-120b-margin-transfer-confirmation-execution-v1",
+  "status": "launched_prospective_confirmation",
+  "date": "2026-08-20",
+  "source_commit": "bb94560d4c87e9b459c077020e8d013e7c21f968",
+  "private_branches": [
+    "codex/q36-mechanics-generation-prepare",
+    "codex/q36-moe-temporal-revision"
+  ],
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_margin_confirmation_bb94560d_r1",
+    "manifest_sha256": "fb6f241b5f8157957e30a2a972f9b0e5e969e075dfb7e984b35dad98bb0a73c7",
+    "runtime_json_sha256": "3e7c12851fdf868b030f5de4f0a4eedb9fcda424a234578e2268e54f0ec51d34",
+    "regular_files": 245,
+    "directories": 5,
+    "links_or_special_members": 0,
+    "writable_members": 0,
+    "full_manifest_verification": "pass"
+  },
+  "contract": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/gpt_oss_120b_margin_confirmation_contract_bb94560d_r1.json",
+    "sha256": "a4c38f602d0e2dac949908d66bfa9cf22902208253d46c3337db78606c9fee8c",
+    "revision_margin_threshold": 0.25,
+    "revision_reliability_veto": "empty_or_exhausted",
+    "selection_seed": 2026082003,
+    "frozen_before_source_selection": true,
+    "frozen_before_candidate_generation": true,
+    "development_derived_not_prior_confirmation": true
+  },
+  "preparation": {
+    "job": 766427,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 2,
+    "restarts": 0,
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_margin_confirmation_inputs_bb94560d_r1",
+    "receipt_sha256": "e47f465b05232660a9e53862ddab01b127c3f85a9a5bcc6e45a6386bbdf40fae",
+    "source_sha256": "d521979beaf1051bfa2d897d1c972719b36612436aa45c6ccd7b823f3f0fcc4d",
+    "selected_identity_sha256": "9637328f4139596a984ec8edc7e499c7f5c26598e002ee57bc525b7120b43357",
+    "rows": 256,
+    "unique_identities": 256,
+    "public_screen_overlap": 0,
+    "prior_q36_external_overlap": 0,
+    "prior_confirmation_source_count": 2,
+    "prior_confirmation_source_sha256s": [
+      "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+      "4b438906fe49e22d018bf6a3131732fcf2cd453f23aee68dfbf83d492c35adfd"
+    ],
+    "prior_confirmation_overlap": 0,
+    "assessor_access_count": 0,
+    "label_or_correctness_field_access_count": 0
+  },
+  "environment": {
+    "capture_job": 766428,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 107,
+    "restarts": 0,
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_cross_host_commit_environment_bb94560d_r1.json",
+    "sha256": "6277e90ea8f482e4aa198c7f0e3fb78e775a10ceb633c9ddcca2bdd97b9ec4ea",
+    "tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c",
+    "runtime_manifest_sha256": "fb6f241b5f8157957e30a2a972f9b0e5e969e075dfb7e984b35dad98bb0a73c7",
+    "offline_required": true,
+    "scientific_rows_read": 0
+  },
+  "scientific_inputs": {
+    "gpt_oss_model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "mxfp4_overlay_manifest_sha256": "50637a890f5149402e3f769b56a97081551b71a0d4102fe1ebba7056a3fb88d8",
+    "mxfp4_overlay_report_sha256": "f7d442408d2f3b6b2f0441cc70c0a9912b6b631763beef9aad4c5345188360a1",
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "gpt_revision_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "qwen_model_manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "qwen_aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "qwen_commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "mmlu_pro_assessor_sha256": "66831e5a644b8c94f058630f9a13d19df326a18e04a2e0a15cde7a74591d1a4f"
+  },
+  "dispatch": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_margin_confirmation_bb94560d_r1",
+    "receipt_sha256": "37914b57b800f36d5834d86064a320bbca6b56006a6023ec8a1ad0a7626d3c15",
+    "qwen_fixed_draft_jobs": [766429, 766430, 766431, 766432],
+    "gpt_unchanged_jobs": [766433, 766434, 766435, 766436],
+    "gpt_revision_jobs": [766437, 766438, 766439, 766440],
+    "selector_job": 766441,
+    "score_job": 766442,
+    "analysis_job": 766443,
+    "independent_single_h100_jobs": 13,
+    "gpu_arrays": 0,
+    "gpus_per_job": 1,
+    "requeue": false,
+    "duplicate_scientific_jobs": 0,
+    "excluded_nodes": ["evc26", "evc29", "evc31", "evc32", "evc38", "evc50"],
+    "assessor_access_phase": "dependent_cpu_score_after_generation"
+  },
+  "initial_admission_snapshot": {
+    "running_h100_jobs": [766429, 766430, 766431, 766432, 766433, 766434, 766435, 766436],
+    "allocated_h100s": 8,
+    "nodes": ["evc22", "evc23", "evc24", "evc33", "evc34", "evc35"],
+    "all_restarts_zero": true,
+    "revision_jobs_dependency_staged": true
+  },
+  "quota_at_launch": {
+    "used_kib": 978621016,
+    "hard_limit_kib": 1059061760,
+    "hard_headroom_kib": 80440744,
+    "used_inodes": 582690,
+    "hard_inode_limit": 1010000,
+    "hard_inode_headroom": 427310
+  }
+}
