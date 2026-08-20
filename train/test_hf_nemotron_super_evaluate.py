@@ -81,6 +81,15 @@ def _modelopt_fp8() -> dict[str, object]:
             "parameter_devices": {"cuda:0": 1, "cuda:1": 1},
             "buffer_devices": {"cuda:0": 1},
         },
+        "mamba_output_projection_compatibility": {
+            "mode": "quant-aware-projection-after-fused-ssm",
+            "mamba_layers": len(mechanics.MAMBA_LAYER_INDICES),
+            "projection_names_sha256": mechanics.MAMBA_OUTPUT_PROJECTION_NAMES_SHA256,
+            "remote_module": "frozen.modeling_nemotron_h",
+            "fused_outproj_weight": None,
+            "fused_outproj_bias": None,
+            "final_states_preserved": True,
+        },
     }
 
 

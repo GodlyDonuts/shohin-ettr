@@ -19,6 +19,7 @@ from hf_nemotron_super_mechanics import (
     _modelopt_fp8_quantization_config,
     _state_sha256,
     _translate_export_checkpoint_keys,
+    install_modelopt_mamba_output_projection_compatibility,
     install_triton_allocator_compatibility,
     load_modelopt_fp8_backbone,
     modelopt_fp8_receipt_is_exact,
@@ -321,6 +322,15 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "parameter_devices": {"cuda:0": 10, "cuda:1": 10},
             "buffer_devices": {"cuda:0": 2, "cuda:1": 2},
         },
+        "mamba_output_projection_compatibility": {
+            "mode": "quant-aware-projection-after-fused-ssm",
+            "mamba_layers": len(mechanics.MAMBA_LAYER_INDICES),
+            "projection_names_sha256": mechanics.MAMBA_OUTPUT_PROJECTION_NAMES_SHA256,
+            "remote_module": "frozen.modeling_nemotron_h",
+            "fused_outproj_weight": None,
+            "fused_outproj_bias": None,
+            "final_states_preserved": True,
+        },
     }
     assert modelopt_fp8_receipt_is_exact(payload)
     payload["runtime"]["cpu_tensors"] = 1
@@ -529,6 +539,11 @@ def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
         "_modelopt_fp8_runtime_receipt",
         lambda model, expected, kv_expected: {"runtime": "exact"},
     )
+    monkeypatch.setattr(
+        mechanics,
+        "install_modelopt_mamba_output_projection_compatibility",
+        lambda model: {"mamba": "exact"},
+    )
 
     @contextmanager
     def fake_translation(expected, kv_expected):
@@ -607,3 +622,59 @@ def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
     assert events[3][0] == "load"
     assert events[3][2]["config"].torch_dtype == torch.bfloat16
     assert receipt["remote_model"]["model_class"].endswith(".RemoteModel")
+    assert receipt["mamba_output_projection_compatibility"] == {"mamba": "exact"}
+
+
+def test_modelopt_mamba_projection_runs_after_fused_ssm(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    module_name = "frozen_test_modeling_nemotron_h"
+    remote_module = ModuleType(module_name)
+    calls: list[dict[str, object]] = []
+
+    def fused(value: torch.Tensor, **kwargs):
+        calls.append(kwargs)
+        return value * 2, "state"
+
+    remote_module.mamba_split_conv1d_scan_combined = fused
+    monkeypatch.setitem(sys.modules, module_name, remote_module)
+    mixer_type = type("NemotronHMamba2Mixer", (), {"__module__": module_name})
+    mixer = mixer_type()
+    mixer.out_proj = torch.nn.Linear(2, 2, bias=False)
+    with torch.no_grad():
+        mixer.out_proj.weight.copy_(torch.eye(2))
+    mixer.out_proj.weight.requires_grad_(False)
+    backbone = type("Backbone", (), {})()
+    backbone.model = type("Model", (), {})()
+    backbone.model.layers = [type("Layer", (), {"mixer": mixer})()]
+    monkeypatch.setattr(mechanics, "MAMBA_LAYER_INDICES", (0,))
+    monkeypatch.setattr(
+        mechanics,
+        "MAMBA_OUTPUT_PROJECTION_NAMES",
+        ("model.layers.0.mixer.out_proj",),
+    )
+    monkeypatch.setattr(mechanics, "MAMBA_OUTPUT_PROJECTION_NAMES_SHA256", "a" * 64)
+
+    receipt = install_modelopt_mamba_output_projection_compatibility(backbone)
+    value = torch.tensor([[1.0, 3.0]], requires_grad=True)
+    result, state = remote_module.mamba_split_conv1d_scan_combined(
+        value,
+        outproj_weight=mixer.out_proj.weight,
+        outproj_bias=None,
+        return_final_states=True,
+    )
+    assert torch.equal(result, value * 2)
+    assert state == "state"
+    result.sum().backward()
+    assert torch.equal(value.grad, torch.full_like(value, 2.0))
+    assert mixer.out_proj.weight.grad is None
+    assert calls == [
+        {
+            "outproj_weight": None,
+            "outproj_bias": None,
+            "return_final_states": True,
+        }
+    ]
+    assert receipt["mode"] == "quant-aware-projection-after-fused-ssm"

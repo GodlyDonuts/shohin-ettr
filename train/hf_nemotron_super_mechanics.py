@@ -26,6 +26,7 @@ from nemotron_super_post_mixer_revision import (
     NemotronSuperRevisionModel,
 )
 from q36_upward_moe_host import (
+    LAYER_TYPES,
     MODEL_CONFIG_SHA256,
     MODEL_MANIFEST_SHA256,
     MODEL_REVISION,
@@ -82,6 +83,15 @@ REMOTE_CONFIGURATION_SHA256 = (
 REMOTE_MODELING_SHA256 = (
     "e1cb5fc02e887983f0a445bf4c1a2604453b2cb2db4624c7004dcf663bbb1b6e"
 )
+MAMBA_LAYER_INDICES = tuple(
+    index for index, layer_type in enumerate(LAYER_TYPES) if layer_type == "mamba"
+)
+MAMBA_OUTPUT_PROJECTION_NAMES = tuple(
+    f"model.layers.{index}.mixer.out_proj" for index in MAMBA_LAYER_INDICES
+)
+MAMBA_OUTPUT_PROJECTION_NAMES_SHA256 = hashlib.sha256(
+    json.dumps(list(MAMBA_OUTPUT_PROJECTION_NAMES), separators=(",", ":")).encode()
+).hexdigest()
 
 
 class NemotronSuperMechanicsError(RuntimeError):
@@ -576,11 +586,13 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
     checkpoint_translation = payload.get("checkpoint_translation")
     remote_model = payload.get("remote_model")
     runtime = payload.get("runtime")
+    mamba_projection = payload.get("mamba_output_projection_compatibility")
     return bool(
         isinstance(export, dict)
         and isinstance(checkpoint_translation, dict)
         and isinstance(remote_model, dict)
         and isinstance(runtime, dict)
+        and isinstance(mamba_projection, dict)
         and export.get("hf_quant_config_sha256") == HF_QUANT_CONFIG_SHA256
         and export.get("model_index_sha256") == MODEL_INDEX_SHA256
         and export.get("fp8_linear_count") == FP8_LINEAR_COUNT
@@ -647,7 +659,97 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and runtime.get("meta_tensors") == 0
         and set(runtime.get("parameter_devices", {})) == {"cuda:0", "cuda:1"}
         and set(runtime.get("buffer_devices", {})) <= {"cuda:0", "cuda:1"}
+        and mamba_projection.get("mode") == "quant-aware-projection-after-fused-ssm"
+        and mamba_projection.get("mamba_layers") == len(MAMBA_LAYER_INDICES)
+        and mamba_projection.get("projection_names_sha256")
+        == MAMBA_OUTPUT_PROJECTION_NAMES_SHA256
+        and str(mamba_projection.get("remote_module", "")).endswith(
+            ".modeling_nemotron_h"
+        )
+        and mamba_projection.get("fused_outproj_weight") is None
+        and mamba_projection.get("fused_outproj_bias") is None
+        and mamba_projection.get("final_states_preserved") is True
     )
+
+
+def install_modelopt_mamba_output_projection_compatibility(
+    backbone: Any,
+) -> dict[str, Any]:
+    """Keep fused SSM execution while routing FP8 out-projections through ModelOpt."""
+
+    layers = getattr(getattr(backbone, "model", None), "layers", None)
+    if not isinstance(layers, (list, tuple)) and type(layers).__name__ != "ModuleList":
+        raise NemotronSuperMechanicsError("Mamba projection layer surface differs")
+    projections: dict[int, Any] = {}
+    module_names: set[str] = set()
+    observed_names: list[str] = []
+    for index in MAMBA_LAYER_INDICES:
+        layer = layers[index]
+        mixer = getattr(layer, "mixer", None)
+        projection = getattr(mixer, "out_proj", None)
+        weight = getattr(projection, "weight", None)
+        if (
+            type(mixer).__name__ != "NemotronHMamba2Mixer"
+            or not callable(projection)
+            or not isinstance(weight, torch.Tensor)
+            or id(weight) in projections
+        ):
+            raise NemotronSuperMechanicsError("Mamba output projection differs")
+        projections[id(weight)] = projection
+        module_names.add(type(mixer).__module__)
+        observed_names.append(f"model.layers.{index}.mixer.out_proj")
+    if (
+        tuple(observed_names) != MAMBA_OUTPUT_PROJECTION_NAMES
+        or len(projections) != len(MAMBA_LAYER_INDICES)
+        or len(module_names) != 1
+    ):
+        raise NemotronSuperMechanicsError("Mamba output projection geometry differs")
+    remote_module = sys.modules.get(next(iter(module_names)))
+    original = getattr(remote_module, "mamba_split_conv1d_scan_combined", None)
+    if (
+        remote_module is None
+        or not callable(original)
+        or getattr(original, "_shohin_modelopt_projection_compatibility", False)
+    ):
+        raise NemotronSuperMechanicsError("Mamba fused SSM implementation differs")
+
+    def _compatible_fused_ssm(*args: Any, **kwargs: Any) -> Any:
+        weight = kwargs.get("outproj_weight")
+        projection = projections.get(id(weight))
+        if projection is None:
+            return original(*args, **kwargs)
+        if (
+            "outproj_weight" not in kwargs
+            or "outproj_bias" not in kwargs
+            or kwargs["outproj_bias"] is not getattr(projection, "bias", None)
+            or kwargs.get("return_final_states") is not True
+        ):
+            raise NemotronSuperMechanicsError(
+                "Mamba fused output projection call differs"
+            )
+        fused_kwargs = dict(kwargs)
+        fused_kwargs["outproj_weight"] = None
+        fused_kwargs["outproj_bias"] = None
+        result = original(*args, **fused_kwargs)
+        if (
+            not isinstance(result, tuple)
+            or len(result) != 2
+            or not isinstance(result[0], torch.Tensor)
+        ):
+            raise NemotronSuperMechanicsError("Mamba fused SSM result differs")
+        return projection(result[0]), result[1]
+
+    _compatible_fused_ssm._shohin_modelopt_projection_compatibility = True  # type: ignore[attr-defined]
+    remote_module.mamba_split_conv1d_scan_combined = _compatible_fused_ssm
+    return {
+        "mode": "quant-aware-projection-after-fused-ssm",
+        "mamba_layers": len(MAMBA_LAYER_INDICES),
+        "projection_names_sha256": MAMBA_OUTPUT_PROJECTION_NAMES_SHA256,
+        "remote_module": next(iter(module_names)),
+        "fused_outproj_weight": None,
+        "fused_outproj_bias": None,
+        "final_states_preserved": True,
+    }
 
 
 def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
@@ -706,6 +808,9 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     runtime_receipt = _modelopt_fp8_runtime_receipt(
         backbone, expected_fp8_modules, expected_kv_cache_amax
     )
+    mamba_projection_receipt = install_modelopt_mamba_output_projection_compatibility(
+        backbone
+    )
     return backbone, {
         "export": export_receipt,
         "checkpoint_translation": translation_receipt,
@@ -715,6 +820,7 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
             "model_class": f"{model_class.__module__}.{model_class.__name__}",
         },
         "runtime": runtime_receipt,
+        "mamba_output_projection_compatibility": mamba_projection_receipt,
     }
 
 
