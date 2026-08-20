@@ -1,0 +1,87 @@
+{
+  "schema": "shohin-q36-cross-host-model-owned-commit-contract-v1",
+  "status": "frozen_before_execution",
+  "date": "2026-08-19",
+  "purpose": "Test whether a previously trained Qwen3.6 model-owned semantic commit policy transfers without retraining to retention control on GPT-OSS-120B and Mixtral-8x22B trajectories.",
+  "scientific_classification": "prospective exploratory cross-host transfer; selection model and weights predate both target-host outcome analyses",
+  "selector": {
+    "backbone": "Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.6-35b-a3b-995ad96e",
+    "aligned_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_salvage/roles/aligned/checkpoint_0000256.pt",
+    "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "commit_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_semantic_commit/model/commit.pt",
+    "commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "training_rows": 5824,
+    "training_updates": 128,
+    "training_pair_presentations": 1024,
+    "training_completed_before_target_host_results": true,
+    "model_visible_fields": [
+      "question",
+      "candidate_a.completion",
+      "candidate_b.completion"
+    ],
+    "model_visible_task_correctness_host_or_assessor_fields": false,
+    "environment_receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_prepare_d9ff7f7_r1/environment.json",
+    "environment_receipt_sha256": "b5a7a4a209948958e0e4df532fd062244f6530903b41e76a004eb65da2938631",
+    "environment_tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c"
+  },
+  "hosts": {
+    "gpt_oss_120b_screen": {
+      "rows": 256,
+      "source": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/external_validation_b453c451_r1/screen_sources.jsonl",
+      "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+      "revision_candidate_shards": 4,
+      "unchanged_candidate_shards": 4,
+      "candidate_manifest_sha256": "7c716a92b7eb34a38e21b7cfe2387b5f66a6569dd6f29f6a76d3954e6d76a726",
+      "frozen_score": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_fixed_draft_7ceb0400_r4/score.json",
+      "frozen_score_sha256": "906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59",
+      "known_reference_counts_not_visible_to_selector": {
+        "unchanged": 101,
+        "revision": 111
+      }
+    },
+    "mixtral_8x22b_validation": {
+      "rows": 1023,
+      "source": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/external_validation_b453c451_r1/external_sources.jsonl",
+      "source_sha256": "055972f31eb2c704569951bbb2c48493053ee93eb999978c8093812d8bc2eaf4",
+      "revision_candidate_shards": 16,
+      "unchanged_candidate_shards": 16,
+      "candidate_manifest_sha256": "97bdcfc641ffe57c7b59da99a93420c9f314f9ab15cf4101a6e9586c729b18ad",
+      "frozen_score": "/lustre/fs1/home/sa305415/shohin/artifacts/mixtral_8x22b_commit_validation_score_c52ca306_r1/score.json",
+      "frozen_score_sha256": "7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8",
+      "known_reference_counts_not_visible_to_selector": {
+        "unchanged": 147,
+        "revision": 448
+      }
+    }
+  },
+  "execution": {
+    "independent_single_h100_jobs": 2,
+    "gpus_per_job": 1,
+    "requeue": false,
+    "batch_identities": 2,
+    "max_sequence_length": 3072,
+    "selection_order": [
+      "revision",
+      "unchanged"
+    ],
+    "assessor_access_during_selection": 0,
+    "outcome_analysis": "CPU replay from pre-existing immutable per-arm outcomes after selection artifacts are sealed"
+  },
+  "predeclared_interpretation": {
+    "retention_success": "selected output retains at least 95 percent of unchanged-correct identities",
+    "capability_success": "selected correct count is strictly greater than unchanged",
+    "domain_success": "selected correct count is nonnegative versus unchanged in every domain",
+    "gain_capture_screen": "report selected share of the available revision-over-unchanged gain without imposing an additional pass threshold",
+    "confirmation_requirement": "any promising result must be confirmed on new untouched source-disjoint identities before it is called publication-grade"
+  },
+  "prohibitions": [
+    "no selector retraining",
+    "no target-host score or assessor access during selection",
+    "no task or host label in the model-visible projection",
+    "no candidate regeneration",
+    "no duplicate GPU job",
+    "no mutation of target-host candidates or scores"
+  ]
+}

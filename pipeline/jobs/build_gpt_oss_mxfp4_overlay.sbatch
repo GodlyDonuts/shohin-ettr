@@ -21,6 +21,14 @@ done
 [[ "$REPORT" == /lustre/fs1/home/sa305415/shohin/artifacts/runtimes/* ]]
 [[ ! -e "$OUTPUT_ROOT" && ! -L "$OUTPUT_ROOT" ]]
 [[ ! -e "$REPORT" && ! -L "$REPORT" ]]
+if [[ -n "${SOURCE_ROOT:-}" || -n "${SOURCE_REPORT:-}" ]]; then
+  [[ -n "${SOURCE_ROOT:-}" && -n "${SOURCE_REPORT:-}" ]]
+  [[ -d "$SOURCE_ROOT" && ! -L "$SOURCE_ROOT" ]]
+  [[ -f "$SOURCE_REPORT" && ! -L "$SOURCE_REPORT" ]]
+  source_overlay_args=(--source-root "$SOURCE_ROOT" --source-report "$SOURCE_REPORT")
+else
+  source_overlay_args=()
+fi
 
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
 q36_init_local_tmp
@@ -40,7 +48,8 @@ export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
   --python "$PYTHON" \
   --output-root "$OUTPUT_ROOT" \
   --report "$REPORT" \
-  --workers 8
+  --workers 8 \
+  "${source_overlay_args[@]}"
 
 [[ -d "$OUTPUT_ROOT" && ! -L "$OUTPUT_ROOT" ]]
 [[ -f "$OUTPUT_ROOT/SHA256SUMS" && ! -L "$OUTPUT_ROOT/SHA256SUMS" ]]

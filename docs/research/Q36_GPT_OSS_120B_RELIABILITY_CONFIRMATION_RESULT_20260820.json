@@ -1,0 +1,181 @@
+{
+  "schema": "shohin-gpt-oss-120b-reliability-confirmation-result-v1",
+  "status": "complete_gate_fail_no_improvement",
+  "date": "2026-08-20",
+  "scientific_classification": "prospective second source-disjoint MMLU-Pro confirmation; selector weights, margin, incomplete-generation veto, source-ranking seed, decoding, and success gate were frozen before source selection or scoring",
+  "host": {
+    "model": "openai/gpt-oss-120b",
+    "total_parameters": 117000000000,
+    "active_parameters": 5100000000,
+    "benchmark": "MMLU-Pro",
+    "rows": 256
+  },
+  "source_disjointness": {
+    "prepared_source_sha256": "4b438906fe49e22d018bf6a3131732fcf2cd453f23aee68dfbf83d492c35adfd",
+    "selected_identity_sha256": "ca5bddd33a2d2a54c8f6c7b440e52e3703561d5fe6c3dcd1446d1defac2bbc05",
+    "unique_identities": 256,
+    "prior_public_screen_overlap": 0,
+    "prior_q36_external_overlap": 0,
+    "prior_confirmation_overlap": 0,
+    "labels_or_correctness_visible_before_score": false
+  },
+  "frozen_policy": {
+    "contract_sha256": "5a07d3d16a5fd3f6257889edb181cb4351dd6540533ddb98ef04cb9d4a1ad06a",
+    "selector_backbone": "Qwen3.6-35B-A3B",
+    "selector_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "revision_margin_threshold": 0.703125,
+    "revision_reliability_veto": "empty_or_exhausted",
+    "model_visible_fields": [
+      "question",
+      "candidate_a.completion",
+      "candidate_b.completion"
+    ],
+    "deterministic_control_fields": [
+      "revision.completion_is_empty",
+      "revision.max_token_exhausted"
+    ],
+    "task_correctness_or_host_label_visible": false,
+    "assessor_access_count": 0,
+    "order_consistent_rows": 256,
+    "prompt_truncated_rows": 0
+  },
+  "candidate_custody": {
+    "qwen_fixed_draft_candidate_sha256s": [
+      "3c3221b10b2f71d761eb30e29bcc3aa04858f6514627b20822b0730f348bbd7e",
+      "1524472a54677c128c8440f439b99ba814725afd279b405acc985c42cb52fbb5",
+      "e5b30189f3a5c95e8a6571877aaaa1dcc23642392e38b56e0e9260a8c92893d5",
+      "83e15fca706e0f10359ce92002cf436967ffa35aff818ba42ab49cca11f9e585"
+    ],
+    "unchanged_candidate_sha256s": [
+      "525a793fe1406aeb9e4fef76b3414a5ab4a8e2b94aecd2ddf37b463d4fb7689d",
+      "464b693d22397a569e1028bc4d6ad407c47a803ab389d82bde7fbf2462350a0f",
+      "5d9b36ee0819e27c99d6312b462b7b0c1c07c6d3b939cfcd3d1984cff8f50847",
+      "40e666871bf998b30b7429031a257175fa080b70a369063e13f81cd41d4fa490"
+    ],
+    "revision_candidate_sha256s": [
+      "a27ffee34cab97dc201e22e8a7e1ce658a2ad55bbd87eb5e073e9dc9d8203db5",
+      "3086cfdedcb99f20bca7e2cbf863a39aed5fe8e1cf1ecadae295e8fab15b52e8",
+      "ab1d38331caa1269a80e0af9a180ab439465e388f46ba6c382ad476907d953ff",
+      "399f4e0d70ffb5c56da639e240dfe93c13e371543e4f7bae24ff7b935390534b"
+    ],
+    "unchanged_rows": 256,
+    "revision_rows": 256,
+    "each_arm_unique_ordered_identity_coverage": true,
+    "all_generation_assessor_access_counts": 0,
+    "all_generation_development_label_access_counts": 0
+  },
+  "generation_reliability": {
+    "unchanged": {
+      "empty_completions": 7,
+      "max_token_exhausted": 20
+    },
+    "revision": {
+      "empty_completions": 37,
+      "max_token_exhausted": 80
+    },
+    "prospective_veto_applications": 5,
+    "veto_correctness_effect": 0,
+    "veto_rows_both_candidates_incorrect": 5
+  },
+  "raw_arms": {
+    "unchanged": {
+      "correct": 177,
+      "total": 256,
+      "accuracy": 0.69140625
+    },
+    "trained_revision": {
+      "correct": 125,
+      "total": 256,
+      "accuracy": 0.48828125,
+      "gain_over_unchanged_count": -52,
+      "unchanged_correct_retained": 111,
+      "unchanged_correct_retention": 0.6271186440677966
+    },
+    "revision_vs_unchanged": {
+      "both_correct": 111,
+      "revision_only_correct": 14,
+      "unchanged_only_correct": 66,
+      "both_incorrect": 65,
+      "net_correct": -52
+    }
+  },
+  "model_owned_commit": {
+    "selected_correct": 177,
+    "total": 256,
+    "accuracy": 0.69140625,
+    "gain_over_unchanged_count": 0,
+    "gain_over_revision_count": 52,
+    "semantic_selection_counts_before_veto": {
+      "revision": 37,
+      "unchanged": 219
+    },
+    "final_selection_counts": {
+      "revision": 32,
+      "unchanged": 224
+    },
+    "unchanged_correct_retained": 174,
+    "unchanged_correct_retention": 0.9830508474576272,
+    "selected_only_correct_vs_unchanged": 3,
+    "unchanged_only_correct_vs_selected": 3,
+    "mcnemar_exact_two_sided_p_vs_unchanged": 1.0,
+    "selected_only_correct_vs_revision": 63,
+    "revision_only_correct_vs_selected": 11,
+    "mcnemar_exact_two_sided_p_vs_revision": 5.321301366667704e-10
+  },
+  "category_stratification_descriptive_not_gating": {
+    "law_net_selected_vs_unchanged": 1,
+    "math_net_selected_vs_unchanged": -1,
+    "other_net_selected_vs_unchanged": 0,
+    "psychology_net_selected_vs_unchanged": 0,
+    "all_other_categories_net_selected_vs_unchanged": 0
+  },
+  "gate": {
+    "improves_unchanged": false,
+    "retains_at_least_95_percent_unchanged_correct": true,
+    "mmlu_pro_nonnegative_vs_unchanged": true,
+    "strict_confirmation_pass": false
+  },
+  "two_confirmation_descriptive_summary_not_a_new_gate": {
+    "rows": 512,
+    "selected_correct": 364,
+    "unchanged_correct": 364,
+    "raw_revision_correct": 245,
+    "selected_gain_over_unchanged": 0,
+    "selected_gain_over_raw_revision": 119,
+    "selected_only_correct_vs_unchanged": 6,
+    "unchanged_only_correct_vs_selected": 6,
+    "unchanged_correct_retained": 358,
+    "unchanged_correct_retention": 0.9835164835164835
+  },
+  "interpretation": {
+    "demonstrated_result": "On a second untouched GPT-OSS-120B MMLU-Pro identity set, the frozen cross-family commit system prevented a severe raw-revision regression and retained 98.31 percent of baseline-correct rows.",
+    "falsified_claim": "The prospectively frozen incomplete-generation veto did not create a positive capability gain: selected tied unchanged at 177/256 with three gains and three losses. The strict confirmation gate failed.",
+    "publication_boundary": "Across two disjoint 256-row confirmations, selected tied unchanged in both and in the pooled descriptive view. This supports conservative fallback transfer and strong damage recovery, but it is not demonstrated GPT-OSS capability improvement."
+  },
+  "infrastructure_recovery": {
+    "failed_job": 766404,
+    "failure": "CUDA allocator fragmentation before any candidate or report publication",
+    "failed_attempt_h100_hours": 0.725,
+    "replacement_job": 766421,
+    "replacement_change": "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True only",
+    "scientific_bytes_changed": false,
+    "replacement_state": "COMPLETED",
+    "replacement_restarts": 0
+  },
+  "custody": {
+    "score_sha256": "436e8bafbfbd3f727d131e06d5a9754b909ac97e682153c13ed6d386019c3714",
+    "selection_candidates_sha256": "d89dbaaf0f99aba0de1e0b0bc01b6e39c61edd378ffadd9ada42ec9523287b52",
+    "selections_sha256": "4d9187ba31134249bbc4cb3c2a770179db43d2e16734c088935bdaa6751d90cf",
+    "application_sha256": "5592f31f6381db330c90b7c7a5a6220a44415a2bc8a217a93d1184c3aad46298",
+    "result_sha256": "88fcea2c278d5dd24c7302b61253935486fd0e3fe092c40f465097ffd1663bd8",
+    "independent_score_replay": "pass",
+    "independent_selection_replay": "pass",
+    "all_successful_scientific_job_restarts": 0,
+    "duplicate_healthy_scientific_jobs": 0
+  },
+  "accounting": {
+    "successful_scientific_h100_hours": 6.145,
+    "infrastructure_failure_h100_hours": 0.725,
+    "total_h100_hours": 6.87
+  }
+}

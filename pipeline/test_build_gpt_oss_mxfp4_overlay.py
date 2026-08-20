@@ -10,6 +10,7 @@ from build_gpt_oss_mxfp4_overlay import (
     PACKAGES,
     GptOssOverlayError,
     manifest_tree,
+    patched_kernel_bytes,
     pip_command,
 )
 
@@ -50,3 +51,29 @@ def test_manifest_rejects_symbolic_member(tmp_path: Path) -> None:
     (tmp_path / "alias").symlink_to("a")
     with pytest.raises(GptOssOverlayError, match="link or special"):
         manifest_tree(tmp_path)
+
+
+def test_kernel_compatibility_patch_is_exact_and_hash_bound() -> None:
+    source = (
+        b"before\n"
+        b"    smem_capacity = device_props.shared_memory_per_block_optin\n"
+        b"after\n"
+    )
+    expected = (
+        b"before\n"
+        b"    smem_capacity = triton.compiler.compiler.max_shared_mem(0)\n"
+        b"after\n"
+    )
+    assert (
+        patched_kernel_bytes(
+            source,
+            expected_source_sha256=hashlib.sha256(source).hexdigest(),
+            expected_patched_sha256=hashlib.sha256(expected).hexdigest(),
+        )
+        == expected
+    )
+
+
+def test_kernel_compatibility_patch_rejects_source_drift() -> None:
+    with pytest.raises(GptOssOverlayError, match="source hash"):
+        patched_kernel_bytes(b"not the pinned source")

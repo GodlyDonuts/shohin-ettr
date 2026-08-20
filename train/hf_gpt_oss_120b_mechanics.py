@@ -45,6 +45,14 @@ OVERLAY_MODULES = {
     "kernels-data": "kernels_data",
     "triton": "triton",
 }
+KERNEL_COMPATIBILITY_RELATIVE = Path(
+    "kernel-repo/build/torch-cuda/matmul_ogs_details/opt_flags_details/"
+    "opt_flags_nvidia.py"
+)
+KERNEL_COMPATIBILITY_PATCHED_SHA256 = (
+    "6cc30325a3df036fd56b535e0246a1a36150c7a7d66871df68a740d121bcd0ff"
+)
+EXPECTED_H100_MAX_SHARED_MEMORY = 232448
 
 
 class GptOssMechanicsError(RuntimeError):
@@ -274,6 +282,33 @@ def _package_receipt(overlay_root: Path) -> dict[str, Any]:
     return {"versions": versions, "overlay_module_origins": origins}
 
 
+def _kernel_compatibility_receipt(
+    overlay_root: Path,
+    max_shared_memory: int,
+    *,
+    torch_property_present: bool,
+) -> dict[str, Any]:
+    target = overlay_root / KERNEL_COMPATIBILITY_RELATIVE
+    mode = target.lstat().st_mode if target.exists() else 0
+    observed_sha256 = sha256_file(target) if stat.S_ISREG(mode) else None
+    if (
+        target.is_symlink()
+        or not stat.S_ISREG(mode)
+        or observed_sha256 != KERNEL_COMPATIBILITY_PATCHED_SHA256
+        or isinstance(max_shared_memory, bool)
+        or max_shared_memory != EXPECTED_H100_MAX_SHARED_MEMORY
+        or torch_property_present is not False
+    ):
+        raise GptOssMechanicsError("MXFP4 kernel compatibility receipt differs")
+    return {
+        "relative_path": KERNEL_COMPATIBILITY_RELATIVE.as_posix(),
+        "patched_sha256": observed_sha256,
+        "shared_memory_source": "triton.compiler.compiler.max_shared_mem(0)",
+        "max_shared_memory_bytes": max_shared_memory,
+        "torch_device_property_absent": True,
+    }
+
+
 def _is_cuda_zero(value: Any) -> bool:
     if isinstance(value, bool):
         return False
@@ -420,7 +455,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise GptOssMechanicsError("allocated device is not H100")
 
     from kernels import get_loaded_kernels
+    from triton.compiler.compiler import max_shared_mem
     from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    kernel_compatibility = _kernel_compatibility_receipt(
+        overlay_root,
+        int(max_shared_mem(0)),
+        torch_property_present=hasattr(device, "shared_memory_per_block_optin"),
+    )
 
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
@@ -535,6 +577,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "packages": packages,
         "model_receipt": model_receipt,
         "overlay_receipt": overlay_receipt,
+        "kernel_compatibility": kernel_compatibility,
         "native_quantization": "mxfp4",
         "native_load": native_load,
         "loaded_kernel_count": len(loaded_kernels),

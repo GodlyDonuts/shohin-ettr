@@ -1,0 +1,78 @@
+{
+  "schema": "shohin-gpt-oss-120b-kernel-compatibility-failure-v1",
+  "status": "terminal_pre_science_software_failure",
+  "recorded_at": "2026-08-19T21:31:00-04:00",
+  "purpose": "Preserve the second score-free GPT-OSS-120B mechanics stop and authorize only the exact pinned MXFP4 kernel compatibility repair before reusing the unchanged screen and scaling contracts.",
+  "jobs": {
+    "mechanics": {
+      "job_id": "766128",
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "node": "evc44",
+      "elapsed_seconds": 343,
+      "restarts": 0,
+      "started_at": "2026-08-19T21:14:36-04:00",
+      "ended_at": "2026-08-19T21:20:19-04:00",
+      "h100_count": 1,
+      "stdout_sha256": "9e3b66da94fa4bec8e207bdd0527ed9fd62c3468d193f08674816cec23fd991a",
+      "stderr_sha256": "c667ecf2dc38221616c198d201f24f455a47828acd1e965a3c7c98acec531e2f"
+    },
+    "screen_launcher": {
+      "job_id": "766131",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "restarts": 0,
+      "reason": "afterok dependency 766128 failed"
+    },
+    "scaling_launcher": {
+      "job_id": "766132",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "restarts": 0,
+      "reason": "afterok dependency chain stopped"
+    }
+  },
+  "failure": {
+    "classification": "pinned_kernel_pytorch_api_compatibility",
+    "scientific_rows_generated": 0,
+    "assessor_or_score_data_accessed": false,
+    "weights_loaded": "615/615",
+    "last_completed_boundary": "native model load, CUDA residency, and loaded-kernel-count validation",
+    "failing_boundary": "first synthetic score-free full-model forward",
+    "exception": "AttributeError: 'torch._C._CudaDeviceProperties' object has no attribute 'shared_memory_per_block_optin'",
+    "source_relative": "kernel-repo/build/torch-cuda/matmul_ogs_details/opt_flags_details/opt_flags_nvidia.py",
+    "source_sha256": "31d8e422bd0ca00d67d45dc2d2cc20ad685df624f1ebadb872002de837f642e1",
+    "source_line": 81,
+    "not_slurm_node_cuda_oom_or_timeout": true
+  },
+  "compatibility_probe": {
+    "job_id": "766136",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 14,
+    "restarts": 0,
+    "node": "evc24",
+    "gpu": "NVIDIA H100 PCIe",
+    "torch": "2.6.0+cu124",
+    "triton": "3.4.0",
+    "torch_shared_memory_attributes": [],
+    "triton_max_shared_memory_bytes": 232448,
+    "triton_interface": "triton.compiler.compiler.max_shared_mem(0)"
+  },
+  "repair_boundary": {
+    "source_overlay_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_mxfp4_overlay_fb759d28_r1",
+    "source_overlay_manifest_sha256": "b30e527f324e018aacd17bb3fdfb3275ef01f9fca4f13043fa44681f6b26244c",
+    "replacement_source": "    smem_capacity = triton.compiler.compiler.max_shared_mem(0)",
+    "patched_source_sha256": "6cc30325a3df036fd56b535e0246a1a36150c7a7d66871df68a740d121bcd0ff",
+    "scientific_host_data_arms_prompts_seeds_thresholds_and_identity_partitions_unchanged": true,
+    "fresh_overlay_runtime_mechanics_output_screen_root_and_scaling_root_required": true,
+    "blind_retry_authorized": false
+  },
+  "terminal_outputs": {
+    "mechanics_report_absent": true,
+    "mechanics_checkpoint_absent": true,
+    "screen_dispatch_absent": true,
+    "screen_score_absent": true,
+    "scaling_output_root_absent": true
+  }
+}

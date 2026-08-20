@@ -1,0 +1,114 @@
+{
+  "schema": "shohin-q36-cross-host-model-owned-commit-contract-v1",
+  "status": "frozen_before_execution",
+  "date": "2026-08-20",
+  "purpose": "Prospectively test whether a deterministic incomplete-generation fallback converts conservative Qwen3.6 model-owned commit transfer into a positive GPT-OSS-120B result on a second untouched MMLU-Pro identity set.",
+  "scientific_classification": "new-source prospective reliability confirmation; selector weights, semantic margin, reliability veto, source-ranking seed, decoding, and success criteria frozen before source selection, candidate generation, or scoring",
+  "development_evidence": {
+    "exploratory_cross_domain": {
+      "result_sha256": "416f8f27c31a8369e80736e0f8c5a9522095ea6a8e05ca5a242b5b8dc590ee7f",
+      "frozen_selected_correct": 114,
+      "unchanged_correct": 101,
+      "post_hoc_reliability_veto_correct": 113,
+      "post_hoc_reliability_veto_retention": 0.9702970297029703,
+      "selected_unreliable_revision_rows": 63,
+      "unreliable_revision_only_correct": 1,
+      "unreliable_unchanged_only_correct": 0
+    },
+    "first_source_disjoint_mmlu_pro": {
+      "result_sha256": "85447cedd9ce1b49eafcd7c75b60038191a4cd34fe231657db55ae9d0fcefade",
+      "score_sha256": "2ace56d9c400f0275b1acb826e2ba73b98f615307b80e03e63dd81eb37425d05",
+      "frozen_selected_correct": 187,
+      "unchanged_correct": 187,
+      "raw_revision_correct": 120,
+      "post_hoc_reliability_veto_correct": 189,
+      "post_hoc_reliability_veto_retention": 0.9946524064171123,
+      "selected_unreliable_revision_rows": 5,
+      "unreliable_revision_only_correct": 0,
+      "unreliable_unchanged_only_correct": 2
+    },
+    "post_hoc_boundary": "The reliability rule was chosen after the listed outcomes were available. Neither listed identity set can confirm it; both are development evidence only."
+  },
+  "selector": {
+    "backbone": "Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "model_manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "revision_margin_threshold": 0.703125,
+    "revision_reliability_veto": "empty_or_exhausted",
+    "reliability_rule": "If and only if the semantic selector chose revision and that revision completion is empty or max_token_exhausted is true, deterministically retain unchanged instead.",
+    "model_visible_fields": [
+      "question",
+      "candidate_a.completion",
+      "candidate_b.completion"
+    ],
+    "deterministic_control_fields": [
+      "revision.completion_is_empty",
+      "revision.max_token_exhausted"
+    ],
+    "model_visible_task_correctness_host_or_assessor_fields": false,
+    "retrained_for_confirmation": false
+  },
+  "hosts": {
+    "gpt_oss_120b_confirmation": {
+      "model": "openai/gpt-oss-120b",
+      "benchmark": "MMLU-Pro",
+      "official_repository_revision": "f418b116db00b065c2aea046518d8fcf74d39872",
+      "official_dataset_revision": "b189ec765aa7ed75c8acfea42df31fdae71f97be",
+      "prompt_contract": "official five-shot chain-of-thought",
+      "official_test_rows": 12032,
+      "rows": 256,
+      "question_universe_sha256": "b740068610b37fa8c431b51588af0c4c528ac61373a70b15bbd75d1c77f9be2c",
+      "excluded_public_screen_sha256": "02dffa5f3be972ddc7e97b964a08e08503aee0fe88fd8df10bb24f8eadeae17f",
+      "prior_q36_external_source_sha256": "055972f31eb2c704569951bbb2c48493053ee93eb999978c8093812d8bc2eaf4",
+      "prior_confirmation_source_sha256": "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+      "selection_seed": 2026082002,
+      "selection_rule": "lowest SHA256(seed NUL identity) ranks after excluding the public screen, every prior Q36 external identity, and the first source-disjoint confirmation",
+      "required_identity_overlap_with_all_prior_sources": 0,
+      "revision_candidate_shards": 4,
+      "unchanged_candidate_shards": 4,
+      "assessor_universe_sha256": "66831e5a644b8c94f058630f9a13d19df326a18e04a2e0a15cde7a74591d1a4f",
+      "official_scoring": "MMLU-Pro terminal answer extraction"
+    }
+  },
+  "generation": {
+    "fixed_draft_host": "Qwen3.6-35B-A3B",
+    "fixed_draft_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "gpt_oss_model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "mxfp4_overlay_manifest_sha256": "50637a890f5149402e3f769b56a97081551b71a0d4102fe1ebba7056a3fb88d8",
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "revision_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "decoding": "greedy",
+    "max_new_tokens": 768,
+    "seed": 2026080816,
+    "retrained_for_confirmation": false
+  },
+  "execution": {
+    "independent_single_h100_fixed_draft_jobs": 4,
+    "independent_single_h100_gpt_generation_jobs": 8,
+    "independent_single_h100_selector_jobs": 1,
+    "total_single_h100_jobs": 13,
+    "gpus_per_job": 1,
+    "arrays": 0,
+    "requeue": false,
+    "score_phase": "single dependent CPU job after all candidate generation",
+    "analysis_phase": "single dependent CPU job after sealed selections and score",
+    "assessor_access_before_score": 0
+  },
+  "predeclared_success": {
+    "capability": "selected correct count is strictly greater than unchanged",
+    "retention": "selected output retains at least 95 percent of unchanged-correct identities",
+    "benchmark_success": "selected correct count is nonnegative versus unchanged on MMLU-Pro",
+    "strict_confirmation_pass": "capability and retention and benchmark_success are all true"
+  },
+  "prohibitions": [
+    "no selector, GPT-OSS revision, or reliability-rule retraining after this freeze",
+    "no threshold, reliability rule, source-ranking seed, prompt, decoding, shard, or success-gate change",
+    "no assessor access during preparation, fixed-draft generation, GPT generation, or selection",
+    "no task, correctness, host, or assessor label in the model projection or deterministic veto",
+    "no duplicate generation or scoring job",
+    "no requeue",
+    "no mutation of prior candidate, score, selection, or result artifacts"
+  ]
+}

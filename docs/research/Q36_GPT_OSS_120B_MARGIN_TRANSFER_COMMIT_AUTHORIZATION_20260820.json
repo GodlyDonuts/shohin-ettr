@@ -1,0 +1,108 @@
+{
+  "schema": "shohin-q36-cross-host-model-owned-commit-contract-v1",
+  "status": "frozen_before_execution",
+  "date": "2026-08-20",
+  "purpose": "Execution-compatible authorization projection of the prospectively frozen GPT-OSS-120B margin-transfer confirmation policy.",
+  "scientific_classification": "control-plane projection only; threshold, reliability veto, source identities, candidates, scoring, and success criteria are unchanged from the pre-source freeze",
+  "frozen_scientific_contract": {
+    "path": "docs/research/Q36_GPT_OSS_120B_MARGIN_TRANSFER_CONFIRMATION_CONTRACT_20260820.json",
+    "sha256": "a4c38f602d0e2dac949908d66bfa9cf22902208253d46c3337db78606c9fee8c",
+    "status": "frozen_before_source_selection"
+  },
+  "projection_recovery": {
+    "failed_selector_job": 766441,
+    "failure": "cross-host authorization differs",
+    "failure_phase": "static authorization before model staging or semantic selection",
+    "failed_job_published_output": false,
+    "candidate_generation_repeated": false,
+    "official_scoring_repeated": false,
+    "scientific_policy_changed": false
+  },
+  "selector": {
+    "backbone": "Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "model_manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "revision_margin_threshold": 0.25,
+    "revision_reliability_veto": "empty_or_exhausted",
+    "reliability_rule": "If the semantic selector chooses revision and that revision is empty or max_token_exhausted, deterministically retain unchanged.",
+    "model_visible_fields": [
+      "question",
+      "candidate_a.completion",
+      "candidate_b.completion"
+    ],
+    "deterministic_control_fields": [
+      "revision.completion_is_empty",
+      "revision.max_token_exhausted"
+    ],
+    "model_visible_task_correctness_host_or_assessor_fields": false,
+    "retrained_for_confirmation": false
+  },
+  "hosts": {
+    "gpt_oss_120b_confirmation": {
+      "model": "openai/gpt-oss-120b",
+      "benchmark": "MMLU-Pro",
+      "official_repository_revision": "f418b116db00b065c2aea046518d8fcf74d39872",
+      "official_dataset_revision": "b189ec765aa7ed75c8acfea42df31fdae71f97be",
+      "prompt_contract": "official five-shot chain-of-thought",
+      "official_test_rows": 12032,
+      "rows": 256,
+      "source_sha256": "d521979beaf1051bfa2d897d1c972719b36612436aa45c6ccd7b823f3f0fcc4d",
+      "selected_identity_sha256": "9637328f4139596a984ec8edc7e499c7f5c26598e002ee57bc525b7120b43357",
+      "question_universe_sha256": "b740068610b37fa8c431b51588af0c4c528ac61373a70b15bbd75d1c77f9be2c",
+      "excluded_public_screen_sha256": "02dffa5f3be972ddc7e97b964a08e08503aee0fe88fd8df10bb24f8eadeae17f",
+      "prior_q36_external_source_sha256": "055972f31eb2c704569951bbb2c48493053ee93eb999978c8093812d8bc2eaf4",
+      "prior_confirmation_source_sha256s": [
+        "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+        "4b438906fe49e22d018bf6a3131732fcf2cd453f23aee68dfbf83d492c35adfd"
+      ],
+      "selection_seed": 2026082003,
+      "selection_rule": "lowest SHA256(seed NUL identity) after excluding the public screen, every prior Q36 external identity, and both prior source-disjoint confirmations",
+      "required_identity_overlap_with_all_prior_sources": 0,
+      "revision_candidate_shards": 4,
+      "unchanged_candidate_shards": 4,
+      "assessor_universe_sha256": "66831e5a644b8c94f058630f9a13d19df326a18e04a2e0a15cde7a74591d1a4f",
+      "official_scoring": "MMLU-Pro terminal answer extraction"
+    }
+  },
+  "generation": {
+    "fixed_draft_host": "Qwen3.6-35B-A3B",
+    "fixed_draft_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "gpt_oss_model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "mxfp4_overlay_manifest_sha256": "50637a890f5149402e3f769b56a97081551b71a0d4102fe1ebba7056a3fb88d8",
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "revision_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "decoding": "greedy",
+    "max_new_tokens": 768,
+    "seed": 2026080816,
+    "pytorch_cuda_alloc_conf": "expandable_segments:True",
+    "retrained_for_confirmation": false
+  },
+  "execution": {
+    "independent_single_h100_fixed_draft_jobs": 4,
+    "independent_single_h100_gpt_generation_jobs": 8,
+    "independent_single_h100_selector_jobs": 1,
+    "total_single_h100_jobs": 13,
+    "gpus_per_job": 1,
+    "arrays": 0,
+    "requeue": false,
+    "score_phase": "single dependent CPU job after all candidate generation",
+    "analysis_phase": "single dependent CPU job after sealed selections and score",
+    "assessor_access_before_score": 0
+  },
+  "predeclared_success": {
+    "capability": "selected correct count is strictly greater than unchanged",
+    "retention": "selected retains at least 95 percent of unchanged-correct identities",
+    "benchmark_success": "selected correct count is nonnegative versus unchanged on MMLU-Pro",
+    "strict_confirmation_pass": "capability and retention and benchmark_success are all true"
+  },
+  "prohibitions": [
+    "no threshold, reliability rule, source seed, prompt, decoding, shard, or success-gate change",
+    "no selector or GPT-OSS revision retraining",
+    "no assessor access during selection",
+    "no duplicate candidate generation or official scoring",
+    "no requeue",
+    "no mutation of candidate or score artifacts"
+  ]
+}

@@ -9,9 +9,15 @@ import pytest
 from capture_upward_moe_accounting import UpwardMoEAccountingError, capture
 
 
-def _runner(text: str):
+def _runner(text: str, node_gres: str = "gpu:nvidia_h100_pcie:2(S:0-1)"):
     def run(*args, **kwargs):
-        return subprocess.CompletedProcess(args[0], 0, stdout=text, stderr="")
+        command = args[0]
+        if command[:3] == ["scontrol", "show", "node"]:
+            node = command[-1]
+            output = f"NodeName={node} Gres={node_gres} State=IDLE\n"
+        else:
+            output = text
+        return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
 
     return run
 
@@ -113,6 +119,46 @@ def test_array_task_identity_uses_stable_job_id_not_internal_raw_id(
     record = result["stages"]["evaluation"][0]
     assert record["job_id"] == "760385_0"
     assert record["job_id_raw"] == "760900"
+
+
+def test_generic_gpu_tres_requires_exact_node_h100_inventory(tmp_path: Path) -> None:
+    row = _row("101", 60).replace(",gres/gpu:nvidia_h100_pcie=1", "")
+    result = capture(
+        host="openai/gpt-oss-120b",
+        source_commit="c" * 40,
+        allocations=["evaluation,101,1"],
+        output=tmp_path / "accounting.json",
+        runner=_runner(row),
+    )
+    record = result["stages"]["evaluation"][0]
+    assert record["gpu_types"] == {"nvidia_h100_pcie": 1}
+    assert record["gpu_type_source"] == "scontrol_node_gres"
+    assert (
+        record["node_gpu_type_receipt_sha256"]
+        == result["node_gpu_type_receipts"]["evc35"]["receipt_sha256"]
+    )
+
+
+@pytest.mark.parametrize(
+    "gres",
+    [
+        "gpu:a100:2(S:0-1)",
+        "gpu:nvidia_h100_pcie:0",
+        "gpu:nvidia_h100_pcie:2,gpu:a100:2",
+    ],
+)
+def test_generic_gpu_tres_rejects_nonexact_node_inventory(
+    tmp_path: Path, gres: str
+) -> None:
+    row = _row("101", 60).replace(",gres/gpu:nvidia_h100_pcie=1", "")
+    with pytest.raises(UpwardMoEAccountingError, match="GPU inventory"):
+        capture(
+            host="openai/gpt-oss-120b",
+            source_commit="c" * 40,
+            allocations=["evaluation,101,1"],
+            output=tmp_path / "accounting.json",
+            runner=_runner(row, node_gres=gres),
+        )
 
 
 def test_job_is_cpu_only_runtime_bound_and_nonrequeueing() -> None:

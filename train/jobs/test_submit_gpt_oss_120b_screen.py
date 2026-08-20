@@ -33,3 +33,10 @@ def test_score_waits_for_every_exact_evaluation_job() -> None:
     assert "dependency=$(IFS=:; printf '%s' \"${eval_jobs[*]}\")" in source
     assert '--dependency="afterok:$dependency"' in source
     assert "env -u SLURM_OVERLAP -u SLURM_WHOLE sbatch" in source
+
+
+def test_every_gpu_child_explicitly_excludes_known_bad_nodes() -> None:
+    source = SCRIPT.read_text()
+    assert "gpu_exclude=evc26,evc29,evc31,evc32,evc38,evc50" in source
+    assert source.count('--exclude="$gpu_exclude"') == 2
+    assert '"excluded_nodes": [' in source

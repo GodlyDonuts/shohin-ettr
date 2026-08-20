@@ -90,10 +90,14 @@ class PostMixerResidual(nn.Module):
 class NemotronSuperRevisionModel(nn.Module):
     """Freeze the 120B host and attach one residual to each final-16 MoE mixer."""
 
-    def __init__(self, backbone: nn.Module) -> None:
+    def __init__(
+        self, backbone: nn.Module, *, modelopt_quantized: bool = False
+    ) -> None:
         super().__init__()
         try:
-            native_surface = validate_loaded_surface(backbone)
+            native_surface = validate_loaded_surface(
+                backbone, modelopt_quantized=modelopt_quantized
+            )
         except Q36UpwardMoEHostError as error:
             raise NemotronSuperRevisionError(str(error)) from error
         if native_surface.get("attachment_surface") != ATTACHMENT_SURFACE:

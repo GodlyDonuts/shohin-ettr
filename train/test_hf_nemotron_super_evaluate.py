@@ -9,6 +9,79 @@ import pytest
 import torch
 
 import hf_nemotron_super_evaluate as evaluation
+import hf_nemotron_super_mechanics as mechanics
+
+
+def _modelopt_fp8() -> dict[str, object]:
+    return {
+        "export": {
+            "hf_quant_config_sha256": mechanics.HF_QUANT_CONFIG_SHA256,
+            "model_index_sha256": mechanics.MODEL_INDEX_SHA256,
+            "fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "kv_cache_scale_count": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "kv_cache_scheme": {
+                "dynamic": False,
+                "num_bits": 8,
+                "type": "float",
+            },
+            "weight_map_entries": mechanics.MODEL_WEIGHT_MAP_ENTRIES,
+            "weight_shards": mechanics.MODEL_WEIGHT_SHARDS,
+            "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
+            "renamed_disabled_patterns": mechanics.MODELOPT_BACKBONE_IGNORE_PATTERNS,
+            "disabled_pattern_source_prefix": "backbone.",
+            "disabled_pattern_target_prefix": "model.",
+            "source_disabled_pattern_sha256": mechanics.MODELOPT_SOURCE_IGNORE_SHA256,
+            "disabled_pattern_sha256": mechanics.MODELOPT_TARGET_IGNORE_SHA256,
+            "quant_gemm": True,
+        },
+        "remote_model": {
+            "configuration_sha256": mechanics.REMOTE_CONFIGURATION_SHA256,
+            "modeling_sha256": mechanics.REMOTE_MODELING_SHA256,
+            "model_class": "frozen.NemotronHForCausalLM",
+        },
+        "checkpoint_translation": {
+            "backbone_to_model": mechanics.BACKBONE_WEIGHT_MAP_ENTRIES,
+            "mtp_ignored": mechanics.MTP_WEIGHT_MAP_ENTRIES,
+            "lm_head_unchanged": mechanics.LM_HEAD_WEIGHT_MAP_ENTRIES,
+            "source_prefix": "backbone.",
+            "target_prefix": "model.",
+            "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+            "input_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "weight_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "input_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_identities": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "k_scale_to_amax": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            "v_scale_to_amax": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            "kv_cache_amax_placeholders": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_identities": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "weight_amax_pre_dtype": "torch.bfloat16",
+            "weight_amax_dtype": "torch.float32",
+            "weight_amax_shape": [],
+            "input_amax_shape": [],
+            "kv_cache_amax_shape": [],
+            "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
+        },
+        "runtime": {
+            "real_quant_gemm_enabled": True,
+            "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "kv_cache_amax_count": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "kv_cache_amax_devices": {
+                "cuda:0": mechanics.KV_CACHE_SCALE_COUNT // 2,
+                "cuda:1": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            },
+            "cpu_tensors": 0,
+            "disk_tensors": 0,
+            "meta_tensors": 0,
+            "parameter_devices": {"cuda:0": 1, "cuda:1": 1},
+            "buffer_devices": {"cuda:0": 1},
+        },
+    }
 
 
 def _mechanics() -> dict[str, object]:
@@ -22,6 +95,7 @@ def _mechanics() -> dict[str, object]:
         "native_router_expert_trainables": 0,
         "serialization_restore_exact": True,
         "devices": [{"index": 0}, {"index": 1}],
+        "modelopt_fp8": _modelopt_fp8(),
     }
 
 
@@ -75,6 +149,7 @@ def test_revision_checkpoint_restore_binds_schedule_and_state(
         "optimizer_state_serialized": False,
         "checkpoint_trainable_only": True,
         "final_trainable_state_sha256": evaluation._state_sha256(state),
+        "modelopt_fp8": _modelopt_fp8(),
     }
     path = tmp_path / "checkpoint.pt"
     torch.save(

@@ -20,9 +20,10 @@ for variable in "${required[@]}"; do
 done
 EXPECTED_ROWS=${EXPECTED_ROWS:-256}
 SHARD_COUNT=${SHARD_COUNT:-4}
+task_index=${SLURM_ARRAY_TASK_ID:-${SHARD_INDEX:-}}
 case "$EXPECTED_ROWS:$SHARD_COUNT" in
-  256:4) [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^[0-3]$ ]] ;;
-  1023:16|1279:16) [[ "${SLURM_ARRAY_TASK_ID:-}" =~ ^([0-9]|1[0-5])$ ]] ;;
+  256:4) [[ "$task_index" =~ ^[0-3]$ ]] ;;
+  1023:16|1279:16) [[ "$task_index" =~ ^([0-9]|1[0-5])$ ]] ;;
   *) false ;;
 esac || { printf 'external geometry differs\n' >&2; exit 2; }
 source "$RUNTIME/train/jobs/q36_mtr_common.sh"
@@ -44,7 +45,7 @@ if [[ "$ARM" != unchanged ]]; then
     draft_args+=(--draft-candidates "$path")
   done
 fi
-shard=$(printf '%02d' "$SLURM_ARRAY_TASK_ID")
+shard=$(printf '%02d' "$task_index")
 output=$OUTPUT_ROOT/$ARM/shard_$shard/candidates.jsonl
 report=$OUTPUT_ROOT/$ARM/shard_$shard/report.json
 [[ ! -e "$output" && ! -L "$output" && ! -e "$report" && ! -L "$report" ]] || q36_die "external output exists"
@@ -53,12 +54,19 @@ model=$(q36_stage_model)
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export TOKENIZERS_PARALLELISM=false PYTHONDONTWRITEBYTECODE=1
 q36_export_pythonpath
+confirmation_args=()
+if [[ "${CONFIRMATION_MMLU_PRO:-0}" == 1 ]]; then
+  [[ "$ARM" == unchanged ]]
+  [[ "$EXPECTED_ROWS:$SHARD_COUNT" == 256:4 || "$EXPECTED_ROWS:$SHARD_COUNT" == 1023:16 ]]
+  confirmation_args=(--confirmation-mmlu-pro)
+fi
 nvidia-smi
 "$PYTHON" "$EXTERNAL_SCRIPT" \
   --arm "$ARM" --model-root "$model" --model-revision "$MODEL_REVISION" \
   --adapter-checkpoint "$ADAPTER_CHECKPOINT" --source "$SOURCE" \
   --source-sha256 "$SOURCE_SHA256" "${draft_args[@]}" \
   --candidates-output "$output" --report "$report" --expected-rows "$EXPECTED_ROWS" \
-  --shard-index "$SLURM_ARRAY_TASK_ID" --shard-count "$SHARD_COUNT" --batch-size 2
+  --shard-index "$task_index" --shard-count "$SHARD_COUNT" --batch-size 2 \
+  "${confirmation_args[@]}"
 test -f "$output" && test -f "$report"
 chmod a-w "$output" "$report"

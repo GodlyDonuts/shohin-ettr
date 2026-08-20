@@ -1,0 +1,116 @@
+{
+  "schema": "shohin-gpt-oss-120b-margin-transfer-confirmation-contract-v1",
+  "status": "frozen_before_source_selection",
+  "date": "2026-08-20",
+  "purpose": "Prospectively test whether the selector-margin region that transferred positively in both prior disjoint GPT-OSS-120B development sets produces a strict gain on a third untouched MMLU-Pro identity set.",
+  "scientific_classification": "sequential prospective confirmation; both prior result sets are development evidence for this threshold and are excluded from the new source",
+  "development_evidence": {
+    "first_disjoint_set": {
+      "source_sha256": "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+      "score_sha256": "2ace56d9c400f0275b1acb826e2ba73b98f615307b80e03e63dd81eb37425d05",
+      "rows": 256,
+      "unchanged_correct": 187,
+      "raw_revision_correct": 120,
+      "threshold_0_25_plus_veto_correct": 190,
+      "threshold_0_25_plus_veto_gain": 3,
+      "threshold_0_25_plus_veto_revision_only": 5,
+      "threshold_0_25_plus_veto_unchanged_only": 2,
+      "threshold_0_25_plus_veto_revision_choices": 46
+    },
+    "second_disjoint_set": {
+      "source_sha256": "4b438906fe49e22d018bf6a3131732fcf2cd453f23aee68dfbf83d492c35adfd",
+      "score_sha256": "436e8bafbfbd3f727d131e06d5a9754b909ac97e682153c13ed6d386019c3714",
+      "rows": 256,
+      "unchanged_correct": 177,
+      "raw_revision_correct": 125,
+      "threshold_0_25_plus_veto_correct": 179,
+      "threshold_0_25_plus_veto_gain": 2,
+      "threshold_0_25_plus_veto_revision_only": 6,
+      "threshold_0_25_plus_veto_unchanged_only": 4,
+      "threshold_0_25_plus_veto_revision_choices": 54
+    },
+    "leave_one_set_out_margin_optima": {
+      "first_set_optimum": 0.21875,
+      "first_set_optimum_gain_on_first": 4,
+      "first_set_optimum_gain_on_second": 2,
+      "second_set_optimum": 0.28125,
+      "second_set_optimum_gain_on_second": 2,
+      "second_set_optimum_gain_on_first": 3,
+      "frozen_midpoint": 0.25
+    },
+    "development_only_boundary": "The 0.25 rule was chosen after both prior outcome files existed. Neither prior set confirms it."
+  },
+  "frozen_policy": {
+    "selector_backbone": "Qwen3.6-35B-A3B",
+    "selector_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "selector_model_manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "revision_margin_threshold": 0.25,
+    "revision_reliability_veto": "empty_or_exhausted",
+    "reliability_rule": "If the semantic selector chooses revision and that revision is empty or max_token_exhausted, deterministically retain unchanged.",
+    "model_visible_fields": [
+      "question",
+      "candidate_a.completion",
+      "candidate_b.completion"
+    ],
+    "deterministic_control_fields": [
+      "revision.completion_is_empty",
+      "revision.max_token_exhausted"
+    ],
+    "task_correctness_host_or_assessor_visible": false,
+    "retrained_for_confirmation": false
+  },
+  "source": {
+    "benchmark": "MMLU-Pro",
+    "official_test_rows": 12032,
+    "rows": 256,
+    "selection_seed": 2026082003,
+    "selection_rule": "lowest SHA256(seed NUL identity) after excluding the public screen, every prior Q36 external identity, and both prior source-disjoint confirmations",
+    "excluded_public_screen_sha256": "02dffa5f3be972ddc7e97b964a08e08503aee0fe88fd8df10bb24f8eadeae17f",
+    "prior_q36_external_source_sha256": "055972f31eb2c704569951bbb2c48493053ee93eb999978c8093812d8bc2eaf4",
+    "prior_confirmation_source_sha256s": [
+      "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+      "4b438906fe49e22d018bf6a3131732fcf2cd453f23aee68dfbf83d492c35adfd"
+    ],
+    "required_overlap_with_every_prior_source": 0,
+    "assessor_access_before_dependent_cpu_score": 0
+  },
+  "generation": {
+    "fixed_draft_host": "Qwen3.6-35B-A3B",
+    "gpt_oss_model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "mxfp4_overlay_manifest_sha256": "50637a890f5149402e3f769b56a97081551b71a0d4102fe1ebba7056a3fb88d8",
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "revision_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "decoding": "greedy",
+    "max_new_tokens": 768,
+    "seed": 2026080816,
+    "pytorch_cuda_alloc_conf": "expandable_segments:True",
+    "retrained_for_confirmation": false
+  },
+  "execution": {
+    "independent_single_h100_fixed_draft_jobs": 4,
+    "independent_single_h100_gpt_generation_jobs": 8,
+    "independent_single_h100_selector_jobs": 1,
+    "total_single_h100_jobs": 13,
+    "gpus_per_job": 1,
+    "arrays": 0,
+    "requeue": false,
+    "score_phase": "single dependent CPU job after all candidate generation",
+    "analysis_phase": "single dependent CPU job after sealed selections and score"
+  },
+  "predeclared_success": {
+    "capability": "selected correct count is strictly greater than unchanged",
+    "retention": "selected retains at least 95 percent of unchanged-correct identities",
+    "benchmark_success": "selected correct count is nonnegative versus unchanged on MMLU-Pro",
+    "strict_confirmation_pass": "capability and retention and benchmark_success are all true"
+  },
+  "prohibitions": [
+    "no threshold, reliability rule, source seed, prompt, decoding, shard, or success-gate change after this freeze",
+    "no selector or GPT-OSS revision retraining for this confirmation",
+    "no assessor access during source preparation, draft generation, GPT generation, or selection",
+    "no duplicate healthy generation or score job",
+    "no requeue",
+    "no reuse of any identity from the public screen, prior Q36 source, or either prior confirmation"
+  ]
+}
