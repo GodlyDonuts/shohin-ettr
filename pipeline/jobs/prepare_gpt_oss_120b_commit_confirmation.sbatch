@@ -22,7 +22,8 @@ for path in "$QUESTIONS" "$EXCLUDED_QUESTIONS" "$PRIOR_Q36_SOURCE"; do
   [[ -f "$path" && ! -L "$path" ]] || q36_die "confirmation preparation input differs"
 done
 [[ ! -e "$OUTPUT_ROOT" && ! -L "$OUTPUT_ROOT" ]] || q36_die "confirmation preparation root exists"
-mkdir -m 700 "$OUTPUT_ROOT" logs
+mkdir -m 700 "$OUTPUT_ROOT"
+mkdir -p logs
 q36_export_pythonpath
 "$PYTHON" -P -s -B "$RUNTIME/pipeline/prepare_gpt_oss_120b_commit_confirmation.py" \
   --questions "$QUESTIONS" \

@@ -108,3 +108,13 @@ def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> N
     assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in selector
     assert "--array" not in launcher
     assert "0.703125" in launcher
+
+
+def test_preparation_job_accepts_preexisting_shared_logs_directory() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wrapper = (
+        root / "pipeline/jobs/prepare_gpt_oss_120b_commit_confirmation.sbatch"
+    ).read_text()
+    assert 'mkdir -m 700 "$OUTPUT_ROOT"\n' in wrapper
+    assert "mkdir -p logs\n" in wrapper
+    assert 'mkdir -m 700 "$OUTPUT_ROOT" logs' not in wrapper
