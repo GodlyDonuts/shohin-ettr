@@ -76,6 +76,7 @@ def test_supervision_in_source_fails(tmp_path):
 
 def test_external_screen_and_full_geometry_are_distinct():
     assert module.SHARD_COUNTS == {256: 4, 1_023: 16, 1_279: 16}
+    assert module.MMLU_CONFIRMATION_ROWS == (256, 1_023)
 
 
 def test_mmlu_confirmation_source_is_explicit_and_label_free(tmp_path):

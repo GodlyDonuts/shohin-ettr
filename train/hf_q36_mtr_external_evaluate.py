@@ -34,6 +34,7 @@ REPORT_SCHEMA = "shohin-q36-mtr-external-evaluation-v1"
 ARMS = ("unchanged", "self_refinement", "revision", "draft_hidden", "interpolation")
 TASKS = ("math500", "bbh_logic", "mbpp")
 MMLU_CONFIRMATION_TASKS = ("mmlu_pro",)
+MMLU_CONFIRMATION_ROWS = (256, 1_023)
 ROLE_ARM = {
     "unchanged": "unchanged",
     "self_refinement": "unchanged",
@@ -189,7 +190,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or not 0 <= args.shard_index < args.shard_count
         or (
             args.confirmation_mmlu_pro
-            and (args.arm != "unchanged" or args.expected_rows != 256)
+            and (
+                args.arm != "unchanged"
+                or args.expected_rows not in MMLU_CONFIRMATION_ROWS
+            )
         )
     ):
         raise Q36MTRExternalEvaluationError("external evaluation settings differ")
