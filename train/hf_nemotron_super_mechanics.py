@@ -21,6 +21,7 @@ from types import MethodType
 from typing import Any
 
 import torch
+import torch.nn.functional as F
 
 from nemotron_super_post_mixer_revision import (
     NemotronSuperRevisionError,
@@ -1144,6 +1145,26 @@ def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
     }
 
 
+def _mechanics_next_token_loss(
+    logits: torch.Tensor, input_ids: torch.Tensor
+) -> torch.Tensor:
+    if (
+        logits.ndim != 3
+        or input_ids.ndim != 2
+        or logits.shape[:2] != input_ids.shape
+        or input_ids.shape[1] < 2
+    ):
+        raise NemotronSuperMechanicsError("mechanics loss geometry differs")
+    labels = input_ids[:, 1:].to(logits.device)
+    loss = F.cross_entropy(
+        logits[:, :-1].float().reshape(-1, logits.shape[-1]),
+        labels.reshape(-1),
+    )
+    if not bool(torch.isfinite(loss)):
+        raise NemotronSuperMechanicsError("mechanics loss is nonfinite")
+    return loss
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     model_root = args.model_root.resolve(strict=True)
@@ -1220,7 +1241,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     initial_sha256 = _state_sha256(initial_state)
 
     token_ids = tokenizer.encode("Shohin mechanics only.", add_special_tokens=False)
-    if not token_ids or len(token_ids) > 16:
+    if len(token_ids) < 2 or len(token_ids) > 16:
         raise NemotronSuperMechanicsError("synthetic mechanics tokenization differs")
     input_device = backbone.model.embeddings.weight.device
     input_ids = torch.tensor([token_ids], device=input_device, dtype=torch.long)
@@ -1239,9 +1260,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     logits = output_payload.logits
     if logits.ndim != 3 or logits.shape[:2] != input_ids.shape:
         raise NemotronSuperMechanicsError("full-model forward geometry differs")
-    loss = logits[:, -1, :128].float().square().mean()
-    if not bool(torch.isfinite(loss)):
-        raise NemotronSuperMechanicsError("mechanics loss is nonfinite")
+    loss = _mechanics_next_token_loss(logits, input_ids)
     loss.backward()
     gradients = _gradient_receipt(model)
     optimizer.step()

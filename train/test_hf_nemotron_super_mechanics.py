@@ -867,3 +867,27 @@ def test_gradient_failure_emits_exact_diagnostics() -> None:
         match='"nan_values":1',
     ):
         mechanics._gradient_receipt(model)
+
+
+def test_mechanics_loss_matches_next_token_training_objective() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    logits = torch.tensor(
+        [
+            [
+                [0.0, 2.0, -1.0, 0.5],
+                [1.0, -2.0, 3.0, 0.0],
+                [4.0, 0.0, -1.0, 2.0],
+            ]
+        ]
+    )
+    input_ids = torch.tensor([[0, 1, 2]])
+    expected = torch.nn.functional.cross_entropy(
+        logits[:, :-1].reshape(-1, logits.shape[-1]),
+        input_ids[:, 1:].reshape(-1),
+    )
+    assert torch.equal(
+        mechanics._mechanics_next_token_loss(logits, input_ids), expected
+    )
+    with pytest.raises(NemotronSuperMechanicsError, match="geometry"):
+        mechanics._mechanics_next_token_loss(logits[:, :1], input_ids[:, :1])
