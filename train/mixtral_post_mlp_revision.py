@@ -103,7 +103,7 @@ class MixtralRevisionModel(nn.Module):
             digest.update(name.encode())
             digest.update(str(value.dtype).encode())
             digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
-            digest.update(value.numpy().tobytes())
+            digest.update(value.view(torch.uint8).numpy().tobytes())
         return digest.hexdigest()
 
     def reset_receipt(self) -> None:

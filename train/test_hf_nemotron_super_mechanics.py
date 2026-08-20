@@ -12,8 +12,31 @@ from hf_nemotron_super_mechanics import (
     NemotronSuperMechanicsError,
     _atomic_json,
     _state_sha256,
+    install_triton_allocator_compatibility,
     verify_manifest,
 )
+
+
+def test_triton_allocator_compatibility_is_exact_and_callable(monkeypatch) -> None:
+    import importlib.metadata
+    import sys
+    from types import ModuleType
+
+    triton = ModuleType("triton")
+    monkeypatch.setitem(sys.modules, "triton", triton)
+    original = importlib.metadata.version
+    monkeypatch.setattr(
+        importlib.metadata,
+        "version",
+        lambda name: "3.2.0" if name == "triton" else original(name),
+    )
+    receipt = install_triton_allocator_compatibility()
+    assert receipt == {
+        "triton_version": "3.2.0",
+        "mode": "triton-3.2-internal-descriptor",
+    }
+    assert callable(triton.set_allocator)
+    triton.set_allocator(lambda *_: None)
 
 
 def _sha256(path: Path) -> str:

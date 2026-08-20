@@ -23,6 +23,7 @@ from hf_nemotron_super_mechanics import (
     OVERLAY_MANIFEST_SHA256,
     OVERLAY_RECEIPT_SHA256,
     TORCH_VERSION,
+    install_triton_allocator_compatibility,
     verify_manifest,
 )
 from hf_product_reasoning_train import PRODUCT_SYSTEM_PROMPT, render_reasoning_messages
@@ -175,6 +176,7 @@ def _package_versions() -> dict[str, str | None]:
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    install_triton_allocator_compatibility()
     from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
     from transformers import AutoModelForCausalLM, AutoTokenizer
 

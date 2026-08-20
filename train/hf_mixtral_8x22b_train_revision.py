@@ -29,6 +29,7 @@ from q36_upward_moe_mixtral_host import (
     TRAINABLE_PARAMETERS_PER_ROLE,
     load_pinned_config,
     sha256_file,
+    two_h100_device_map,
 )
 
 SCHEMA = "shohin-mixtral-8x22b-fixed-draft-revision-training-v1"
@@ -71,7 +72,7 @@ def _state_sha256(state: dict[str, torch.Tensor]) -> str:
         digest.update(name.encode())
         digest.update(str(value.dtype).encode())
         digest.update(json.dumps(list(value.shape), separators=(",", ":")).encode())
-        digest.update(value.numpy().tobytes())
+        digest.update(value.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
 
 
@@ -233,7 +234,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         model_root,
         local_files_only=True,
         trust_remote_code=False,
-        device_map="balanced",
+        device_map=two_h100_device_map(),
         max_memory={0: "77GiB", 1: "77GiB", "cpu": "64GiB"},
         quantization_config=quantization,
         dtype=torch.bfloat16,

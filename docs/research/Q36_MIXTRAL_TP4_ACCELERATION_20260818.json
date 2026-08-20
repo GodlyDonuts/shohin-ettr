@@ -1,0 +1,50 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-acceleration-v1",
+  "date": "2026-08-18",
+  "status": "four_rank_mechanics_running_full_graph_dependency_staged",
+  "scientific_contract_changed": false,
+  "host": {
+    "model": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "model_manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7"
+  },
+  "closed_two_h100_attempt": {
+    "job": 763586,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 592,
+    "node": "evc46",
+    "restarts": 0,
+    "failure": "The explicit two-H100 NF4 map exhausted GPU 0 while materializing a final 192 MiB tensor; this is a verified host-memory infrastructure failure before scoring.",
+    "stdout_sha256": "739acdef4e5866210b29aec8c37c7fb7600fcad6792767993f59ebe4abd33558",
+    "stderr_sha256": "ae94699e691139e056f859cb2af58e034219233cc2794f456b6a4a31d1de968a"
+  },
+  "runtime": {
+    "source_commit": "3e53f83c42b6d77cb267db08e25e931fc6518c47",
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_tp4_runtime_3e53f83c_r1",
+    "sha256sums_sha256": "3596b10806eea75cdd7ed6c09149f5648115a9c9f673b4542a419b98d355d296",
+    "regular_files": 213,
+    "manifest_verification": "pass",
+    "symlinks": 0
+  },
+  "mechanics": {
+    "jobs": [763598, 763599, 763600, 763601],
+    "nodes": ["evc35", "evc23", "evc30", "evc46"],
+    "geometry": "four independent one-H100 Slurm allocations joined by native Transformers tensor parallelism over NCCL/InfiniBand",
+    "requeue": false,
+    "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/mixtral_8x22b_tp4_mechanics_3e53f83c_r1"
+  },
+  "dependency_staged_graph": {
+    "fit_jobs": [763602, 763603, 763604, 763605],
+    "evaluation_jobs": [763606, 763607, 763608, 763609],
+    "score_job": 763610,
+    "training_updates": 256,
+    "evaluation_rows": 256,
+    "evaluation_arms": ["unchanged", "self_refinement", "trained_revision"],
+    "generation_mode": "greedy",
+    "seed": 2026080816,
+    "source_disjoint": true,
+    "automatic_successor": false
+  },
+  "interpretation": "No Mixtral capability result is claimed by this receipt. It records the verified infrastructure transition from an insufficient two-H100 load to the already-prepared four-rank matched scientific graph."
+}

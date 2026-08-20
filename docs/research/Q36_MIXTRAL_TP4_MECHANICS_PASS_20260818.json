@@ -1,0 +1,56 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-mechanics-pass-v1",
+  "recorded_utc": "2026-08-18T07:54:00Z",
+  "status": "PASS",
+  "scientific_rows_opened": 0,
+  "benchmark_rows_opened": 0,
+  "source_commit": "648513663570cdd69ecbeb8cc693db76a3f27769",
+  "model": {
+    "name": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7",
+    "manifest_entries": 70,
+    "covered_bytes": 281263818779,
+    "exact_membership": true
+  },
+  "execution": {
+    "parallelism": "native-transformers-tensor-parallel",
+    "world_size": 4,
+    "weight_dtype": "bfloat16",
+    "quantization": "none",
+    "jobs": [
+      {"job_id": 763628, "rank": 0, "node": "evc35", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 931, "restarts": 0},
+      {"job_id": 763629, "rank": 1, "node": "evc23", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 931, "restarts": 0},
+      {"job_id": 763630, "rank": 2, "node": "evc30", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 931, "restarts": 0},
+      {"job_id": 763631, "rank": 3, "node": "evc43", "state": "COMPLETED", "exit_code": "0:0", "elapsed_seconds": 931, "restarts": 0}
+    ],
+    "device": "NVIDIA H100 PCIe",
+    "per_rank_peak_gpu_memory_bytes": 71544248320
+  },
+  "mechanics": {
+    "architecture": "shohin-mixtral-8x22b-shared-post-mlp-v1",
+    "attachment_surface": "post-mlp-residual",
+    "controlled_layer_indices": [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55],
+    "trainable_parameters": 3538944,
+    "native_router_expert_trainables": 0,
+    "native_router_unchanged": true,
+    "serialization_restore_exact": true,
+    "gradient_nonzero_parameters": 16,
+    "gradient_total_parameters": 32,
+    "gradient_receipt_sha256": "0f9e4d16d6afd99c23f05e22ab622e4480aea8f02828d6b3d79d311d492cef7c",
+    "router_before_sha256": "9ec94397dffa649b905de4229322ff851c7387f06aa8675503b7a8a65f3db1a8",
+    "router_after_sha256": "9ec94397dffa649b905de4229322ff851c7387f06aa8675503b7a8a65f3db1a8"
+  },
+  "artifacts": {
+    "mechanics_report_sha256": "58c259cee31f9a74d6d571442557e64cce7d8d7c694f8e65b893e22ffdd571e1",
+    "checkpoint_sha256": "39f8ba14cdd0475260c1719b7f90815bcb3fdb07f09787c07dfe8ca20059b118",
+    "checkpoint_bytes": 14165942,
+    "runtime_manifest_sha256": "b2c77871c0e04e0b109e782550e2218197b16fc7099325794e780cf84976f5c1"
+  },
+  "interpretation": "The four independent H100 ranks loaded the pinned 141B-parameter Mixtral host in native tensor parallel BF16, attached only the 3,538,944-parameter Shohin post-MLP residual path across layers 40-55, produced nonzero treatment gradients, preserved the native router byte-for-byte, and restored the checkpoint exactly. This is a mechanics result, not a capability result.",
+  "next_jobs": {
+    "fit": [763632, 763633, 763634, 763635],
+    "evaluation": [763636, 763637, 763638, 763639],
+    "score": 763640
+  }
+}

@@ -1,0 +1,49 @@
+from pathlib import Path
+
+from hf_mixtral_8x22b_multinode_tp_evaluate_matched import _shard_bounds
+
+SCRIPT = Path(__file__).with_name("mixtral_8x22b_multinode_tp_evaluate_matched.sbatch")
+SUBMITTER = Path(__file__).with_name("submit_mixtral_8x22b_tp4_validation_groups.sh")
+
+
+def test_postcondition_uses_two_digit_shard_names() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "seq -w" not in source
+    assert "printf -v shard '%02d'" in source
+    assert "shard_$shard/candidates.jsonl" in source
+    assert "shard_$shard/report.json" in source
+
+
+def test_validation_submitter_exports_only_each_groups_four_drafts() -> None:
+    source = SUBMITTER.read_text(encoding="utf-8")
+    assert "first_draft=$((group * 4))" in source
+    assert 'group_drafts=$(IFS=:; echo "${draft_paths[*]:first_draft:4}")' in source
+    assert "[[ ${#selected_drafts[@]} -eq 4 ]]" in source
+    assert (
+        '"${selected_drafts[$offset]}" == "${draft_paths[$((first_draft + offset))]}"'
+        in source
+    )
+    assert "DRAFT_CANDIDATES=$group_drafts" in source
+    assert "DRAFT_CANDIDATES=$DRAFT_CANDIDATES" not in source
+
+
+def test_worker_validates_drafts_against_only_its_group_sources() -> None:
+    worker = SCRIPT.parents[1] / "hf_mixtral_8x22b_multinode_tp_evaluate_matched.py"
+    source = worker.read_text(encoding="utf-8")
+    assert "drafts_per_group = (" in source
+    assert "len(args.draft_candidates) != drafts_per_group" in source
+    assert "group_sources = sources[group_start:group_end]" in source
+    assert "drafts = load_drafts(args.draft_candidates, group_sources)" in source
+    assert "drafts = load_drafts(args.draft_candidates, sources)" not in source
+
+
+def test_validation_worker_matches_frozen_64_row_prefix_geometry() -> None:
+    assert [_shard_bounds(1023, index, 16) for index in range(16)] == [
+        (index * 64, min(1023, (index + 1) * 64)) for index in range(16)
+    ]
+    assert [_shard_bounds(256, index, 4) for index in range(4)] == [
+        (0, 64),
+        (64, 128),
+        (128, 192),
+        (192, 256),
+    ]

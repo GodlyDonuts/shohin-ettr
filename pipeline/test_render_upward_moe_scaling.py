@@ -176,6 +176,16 @@ def test_renderer_extends_to_fourth_ultra_point(tmp_path: Path) -> None:
     assert len(rows) == 4
 
 
+def test_renderer_shortens_openai_gpt_oss_host(tmp_path: Path) -> None:
+    payload = _analysis()
+    payload["points"][1]["host"] = "openai/gpt-oss-120b"
+    output = tmp_path / "figure"
+    render(_write(tmp_path / "analysis.json", payload).resolve(), output.resolve())
+    svg = (output / "shohin-upward-moe-scaling.svg").read_text()
+    assert "gpt-oss-120b" in svg
+    assert "openai/gpt-oss-120b" not in svg
+
+
 @pytest.mark.parametrize("status", ["complete_insufficient_points", "pending", None])
 def test_renderer_refuses_incomplete_curve(tmp_path: Path, status: str | None) -> None:
     payload = _analysis()

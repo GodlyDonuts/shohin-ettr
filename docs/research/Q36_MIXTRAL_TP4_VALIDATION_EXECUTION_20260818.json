@@ -1,0 +1,267 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-validation-execution-v1",
+  "status": "complete",
+  "date": "2026-08-18",
+  "host": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+  "parameters": {
+    "total": 141000000000,
+    "active": 39000000000
+  },
+  "measured_screen": {
+    "rows": 256,
+    "unchanged_correct": 45,
+    "self_refinement_correct": 105,
+    "revision_correct": 114,
+    "revision_gain_over_unchanged_count": 69,
+    "revision_gain_over_unchanged_percentage_points": 26.953125,
+    "revision_gain_over_self_refinement_count": 9,
+    "revision_unchanged_correct_retention": 0.7555555555555555,
+    "revision_mbpp_correct": 0,
+    "screen_score_sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50"
+  },
+  "learned_commit": {
+    "model_sha256": "eb7512137a9d13224dbbb25d0866eeda6bcf3aa252b6a323b0902fa1d998dbc6",
+    "training_report_sha256": "43872a529d98cc74c2e6875b5c3f685dab04a8c574a8144a6b9925eceb777703",
+    "oof_selections_sha256": "280ea94ee0e566838aa6d48644e099f453fbc4d5e1b08c4b139bb76f95d24a76",
+    "screen_oof_correct": 80,
+    "screen_oof_unchanged_correct_retention": 0.9555555555555556,
+    "screen_oof_domain_correct": {
+      "bbh_logic": 65,
+      "math500": 8,
+      "mbpp": 7
+    },
+    "validation_labels_read": 0,
+    "task_label_used_as_feature": false
+  },
+  "validation": {
+    "rows": 1023,
+    "source_sha256": "98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778",
+    "assessor_sha256": "af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e",
+    "assessor_opened": true,
+    "assessor_open_phase": "after_all_four_arms_and_application_validated",
+    "shards": 16,
+    "groups": [
+      {"group": 0, "row_start": 0, "row_end": 256},
+      {"group": 1, "row_start": 256, "row_end": 512},
+      {"group": 2, "row_start": 512, "row_end": 768},
+      {"group": 3, "row_start": 768, "row_end": 1023}
+    ],
+    "generation_commit": "35facaefe9567285501fd963a4ba0b3fab82e40a",
+    "generation_runtime_manifest_sha256": "b19b025234fd8f1a4ad7ecbb2f0c2ce82b08ab44455c8f3ea39ea0c4c51c085b",
+    "generation_jobs": [
+      763707,
+      763708,
+      763709,
+      763710,
+      763711,
+      763712,
+      763713,
+      763714,
+      763715,
+      763716,
+      763717,
+      763718,
+      763719,
+      763720,
+      763721,
+      763722
+    ],
+    "required_generation_jobs": [
+      763707,
+      763708,
+      763709,
+      763710,
+      763711,
+      763712,
+      763713,
+      763714,
+      763715,
+      763716,
+      763717,
+      763718,
+      763726,
+      763727,
+      763728,
+      763729
+    ],
+    "replaced_group_3_jobs": [763719, 763720, 763721, 763722],
+    "apply_job": 763730,
+    "score_job": 763731,
+    "apply_and_score_commit": "c52ca30658b9467a6494be5d72e21a3cfd524407",
+    "apply_and_score_runtime_manifest_sha256": "73ba8a2a6c4c0d46ebd11c4dd78862882f4b6e9ff3200f85c1edc46adde13f57",
+    "score_contract": "score_three_distinct_matched_completions_once_and_derive_selective_commit_from_selected_arm",
+    "verified_generation_progress": {
+      "verified_at_utc": "2026-08-18T18:31:00Z",
+      "verified_rows": 1023,
+      "expected_rows": 1023,
+      "atomic_artifact_files": 96,
+      "assessor_opened": false,
+      "completed_groups": [
+        {
+          "group": 0,
+          "row_start": 0,
+          "row_end": 256,
+          "identities": 256,
+          "jobs": [763707, 763708, 763709, 763710],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "40cbe45a7d33094d33d8cc13f7da28df0cf00aacf0137c764c7a03e1db13d976",
+          "artifact_bytes": 899280,
+          "generated_tokens": {
+            "unchanged": 115405,
+            "self_refinement": 78702,
+            "revision": 2271
+          },
+          "max_token_exhausted": {
+            "unchanged": 44,
+            "self_refinement": 27,
+            "revision": 0
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
+        },
+        {
+          "group": 1,
+          "row_start": 256,
+          "row_end": 512,
+          "identities": 256,
+          "jobs": [763711, 763712, 763713, 763714],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "a56bd19cc76b832ef3265c401bad13e098a29893ba075a903901e544c5cff8ba",
+          "artifact_bytes": 861420,
+          "generated_tokens": {
+            "unchanged": 109943,
+            "self_refinement": 71991,
+            "revision": 2407
+          },
+          "max_token_exhausted": {
+            "unchanged": 42,
+            "self_refinement": 36,
+            "revision": 0
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
+        },
+        {
+          "group": 2,
+          "row_start": 512,
+          "row_end": 768,
+          "identities": 256,
+          "jobs": [763715, 763716, 763717, 763718],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "545a6bbd9c7f8fd6060ac55095b1d8a245b79410a686e2c2d35a9e3eda9755d7",
+          "artifact_bytes": 901273,
+          "generated_tokens": {
+            "unchanged": 110533,
+            "self_refinement": 77379,
+            "revision": 2410
+          },
+          "max_token_exhausted": {
+            "unchanged": 35,
+            "self_refinement": 31,
+            "revision": 0
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
+        },
+        {
+          "group": 3,
+          "row_start": 768,
+          "row_end": 1023,
+          "identities": 255,
+          "jobs": [763726, 763727, 763728, 763729],
+          "job_state": "COMPLETED",
+          "exit_code": "0:0",
+          "restarts": 0,
+          "artifact_files": 24,
+          "artifact_manifest_sha256": "ee03bfae9c7036238dc519ddbc038eb32a9f646e2f6bf94bc32f284fe2de3f7a",
+          "artifact_bytes": 881283,
+          "generated_tokens": {
+            "unchanged": 110285,
+            "self_refinement": 75598,
+            "revision": 3128
+          },
+          "max_token_exhausted": {
+            "unchanged": 42,
+            "self_refinement": 25,
+            "revision": 1
+          },
+          "empty_completions": 0,
+          "assessor_access_count": 0,
+          "ordered_identity_replay": "pass",
+          "hash_and_routing_replay": "pass"
+        }
+      ],
+      "remaining_groups": [],
+      "generation_artifact_manifest_sha256": "ee4313254fee03021b8767282986fc452cbafee57d4e15b8cb40a89aeccd62a3",
+      "generation_artifact_bytes": 3543256
+    },
+    "scheduler_acceleration": {
+      "changed_scientific_bytes": false,
+      "duplicate_jobs_created": 0,
+      "pending_jobs_retargeted": [763719, 763721],
+      "target_node": "evc46",
+      "target_independent_single_h100_allocations": 2,
+      "reason": "evc46 had two idle H100s while the unchanged rank-0 and rank-2 requests were pending only on disjoint original node pools",
+      "all_sixteen_ranks_admitted": true
+    },
+    "automatic_requeue": false
+  },
+  "infrastructure_attempts": [
+    {
+      "jobs": "763668-763683",
+      "status": "failed_before_model_load",
+      "elapsed_seconds_max": 1,
+      "cause": "launcher exported all sixteen fixed-draft shards to a four-shard group worker",
+      "scientific_outputs": 0
+    },
+    {
+      "jobs": "763689-763704",
+      "status": "failed_before_model_load",
+      "elapsed_seconds_range": [9, 43],
+      "cause": "Python worker retained full-dataset draft-count and floor-balanced source geometry after launcher partition repair",
+      "scientific_outputs": 0
+    },
+    {
+      "jobs": "763719-763722",
+      "status": "failed_before_model_load_and_generation",
+      "elapsed_seconds_range": [487, 968],
+      "cause": "two independent Slurm ranks were co-located on evc46; NCCL/NVML could not resolve the remapped PCI device across the four-rank process group",
+      "scientific_outputs": 0,
+      "replacement_jobs": [763726, 763727, 763728, 763729],
+      "replacement_constraint": "four distinct physical nodes",
+      "replacement_nodes": ["evc46", "evc28", "evc43", "evc48"],
+      "replacement_model_load": "507_of_507_tensors_on_all_four_ranks",
+      "replacement_nccl_broadcast": "pass"
+    }
+  ],
+  "final_result": {
+    "result": "FAIL_SELECTIVE_COMMIT_GATE",
+    "score_sha256": "7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8",
+    "application_report_sha256": "97eeb625792072c0a39d5e24ecd30ed61e71f7a1eebb8a5833c5f9698c4e3301",
+    "commit_candidates_sha256": "b5cf7ea41ff1b275247df36d46e5d01dc9bd0af7452e2b89b06d21c0d443dd3f",
+    "selections_sha256": "7b7430a7d9c7e9756ac0331b677a81715c3eb60b6f44096b7b03ec17dd01e943",
+    "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "trained_revision_correct": 448,
+    "unchanged_correct": 147,
+    "self_refinement_correct": 356,
+    "selective_commit_correct": 287,
+    "selective_commit_unchanged_correct_retention": 0.9319727891156463,
+    "stop_after_result": true
+  },
+  "next_action": "stop_and_preserve_result"
+}

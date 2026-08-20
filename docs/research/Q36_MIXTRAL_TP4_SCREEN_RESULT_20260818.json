@@ -1,0 +1,167 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-screen-result-v1",
+  "recorded_utc": "2026-08-18T13:16:06Z",
+  "status": "COMPLETE",
+  "verdict": "MIXED_AGGREGATE_IMPROVEMENT_NO_CONSERVATIVE_PROMOTION",
+  "demonstrated_result": "On the source-disjoint 256-row matched screen, the trained Shohin revision improves pinned Mixtral 8x22B aggregate accuracy from 45/256 to 114/256 (+69 correct, +26.953125 percentage points) and exceeds matched self-refinement by 9 correct (+3.515625 points). The revision does not satisfy conservative retention or per-domain non-regression: it retains 34/45 unchanged-correct rows (75.5556%) and scores 0/11 on MBPP versus 6/11 unchanged and 9/11 self-refinement.",
+  "runtime_source_commit": "648513663570cdd69ecbeb8cc693db76a3f27769",
+  "implementation_fix_commit": "db9a9bf19002bac12ebae059cad60d58d45d03d7",
+  "model": {
+    "name": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "revision": "cc88a6cc19fbd17d9f1c0ee0b0d70a748dce698d",
+    "manifest_sha256": "46b8475d98e2a49f9a81329287beb9d450dfd4d7a74886e8780708764a8f3fe7",
+    "total_parameters": 141000000000,
+    "active_parameters": 39000000000,
+    "parallelism": "native-transformers-tensor-parallel",
+    "world_size": 4,
+    "weight_dtype": "bfloat16",
+    "quantization": "none"
+  },
+  "treatment": {
+    "architecture": "shohin-mixtral-8x22b-shared-post-mlp-v1",
+    "attachment_surface": "post-mlp-residual",
+    "controlled_layer_indices": [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55],
+    "trainable_parameters": 3538944,
+    "native_router_expert_trainables": 0,
+    "updates": 256,
+    "checkpoint_sha256": "341d2c4a596a9d51a57698f7782fa5a64242db0b85923d47fc7a76a9e9415044",
+    "training_report_sha256": "014329c802c0d7a23a8e99f36de6f53493d267da68d4cd7a1ef03b52e496e8a9"
+  },
+  "screen": {
+    "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "seed": 2026080816,
+    "rows": 256,
+    "shards_per_arm": 4,
+    "arms": ["unchanged", "self_refinement", "revision"],
+    "identity_task_order_match": true,
+    "sealed_access": {"holdout": 0, "product": 0, "public": 0},
+    "assessor_access_during_generation": 0,
+    "development_label_access_during_generation": 0
+  },
+  "scores": {
+    "unchanged": {
+      "correct": 45,
+      "total": 256,
+      "accuracy": 0.17578125,
+      "domains": {
+        "bbh_logic": {"correct": 35, "total": 128},
+        "math500": {"correct": 4, "total": 117},
+        "mbpp": {"correct": 6, "total": 11}
+      },
+      "max_token_exhausted": 42,
+      "empty_completions": 0
+    },
+    "self_refinement": {
+      "correct": 105,
+      "total": 256,
+      "accuracy": 0.41015625,
+      "domains": {
+        "bbh_logic": {"correct": 75, "total": 128},
+        "math500": {"correct": 21, "total": 117},
+        "mbpp": {"correct": 9, "total": 11}
+      },
+      "gain_over_unchanged_correct": 60,
+      "gain_over_unchanged_percentage_points": 23.4375,
+      "unchanged_correct_retained": 36,
+      "unchanged_correct_retention": 0.8,
+      "max_token_exhausted": 28,
+      "empty_completions": 0
+    },
+    "revision": {
+      "correct": 114,
+      "total": 256,
+      "accuracy": 0.4453125,
+      "domains": {
+        "bbh_logic": {"correct": 81, "total": 128},
+        "math500": {"correct": 33, "total": 117},
+        "mbpp": {"correct": 0, "total": 11}
+      },
+      "gain_over_unchanged_correct": 69,
+      "gain_over_unchanged_percentage_points": 26.953125,
+      "gain_over_self_refinement_correct": 9,
+      "gain_over_self_refinement_percentage_points": 3.515625,
+      "unchanged_correct_retained": 34,
+      "unchanged_correct_retention": 0.7555555555555555,
+      "max_token_exhausted": 2,
+      "empty_completions": 0
+    }
+  },
+  "paired_evidence": {
+    "revision_vs_unchanged": {
+      "revision_only_correct": 80,
+      "unchanged_only_correct": 11,
+      "net_correct": 69,
+      "mcnemar_exact_two_sided_p": 4.412960319286537e-14
+    },
+    "revision_vs_self_refinement": {
+      "revision_only_correct": 22,
+      "self_refinement_only_correct": 13,
+      "net_correct": 9,
+      "mcnemar_exact_two_sided_p": 0.17546524899080396
+    },
+    "domain_correct_deltas_revision_vs_unchanged": {
+      "bbh_logic": 46,
+      "math500": 29,
+      "mbpp": -6
+    },
+    "domain_correct_deltas_revision_vs_self_refinement": {
+      "bbh_logic": 6,
+      "math500": 12,
+      "mbpp": -9
+    }
+  },
+  "decision": {
+    "revision_improves_unchanged": true,
+    "revision_improves_self_refinement": true,
+    "retains_at_least_95_percent_unchanged_correct": false,
+    "all_domains_nonnegative_vs_unchanged": false,
+    "promote_to_confirmation": false,
+    "reason": "The large, statistically decisive aggregate gain over unchanged is a demonstrated cross-family MoE capability effect, but the frozen conservative screen boundary rejects promotion because unchanged-correct retention is below 95% and executable-code performance regresses. No result-preserving claim may describe this treatment as a universal improvement."
+  },
+  "generation_accounting": {
+    "unchanged": {"prompt_tokens": 49957, "generated_tokens": 107399, "max_token_exhausted": 42, "empty_completions": 0},
+    "self_refinement": {"prompt_tokens": 187497, "generated_tokens": 73668, "max_token_exhausted": 28, "empty_completions": 0},
+    "revision": {"prompt_tokens": 234894, "generated_tokens": 4041, "max_token_exhausted": 2, "empty_completions": 0}
+  },
+  "artifacts": {
+    "candidate_report_members": 24,
+    "candidate_report_manifest_sha256": "005877e89510ef7b04c799f402204dbda42cb760f2a3544e36fc411088d75081",
+    "score_sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50",
+    "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "sandbox_probe_sha256": "43da238ea874ad7b15ae68091482c948c5c9b5a48a8ec23d3bf7a7add86ced09",
+    "mbpp_setup_qualification_count": 1,
+    "all_candidate_report_score_receipt_files_read_only": true
+  },
+  "jobs": {
+    "mechanics": [763628, 763629, 763630, 763631],
+    "fit": [763632, 763633, 763634, 763635],
+    "evaluation": [763636, 763637, 763638, 763639],
+    "dead_dependency_score": 763640,
+    "replacement_score": 763663,
+    "evaluation_scientific_outputs_complete": true,
+    "evaluation_rank_zero_scheduler_state": "FAILED_POST_OUTPUT_WRAPPER_CHECK",
+    "evaluation_rank_zero_failure_reason": "The completed rank-zero wrapper checked shard_0 instead of the emitted shard_00 after all 12 reports had been atomically published. Exact row/hash/custody validation passed before the candidate tree was made read-only and only the never-started dependent CPU scorer was replaced.",
+    "scientific_evaluation_rerun": false,
+    "score_duplicate": false,
+    "all_restarts": 0
+  },
+  "resources": {
+    "mechanics_gpu_seconds": 3724,
+    "fit_gpu_seconds": 14032,
+    "evaluation_gpu_seconds": 62252,
+    "total_gpu_seconds": 80008,
+    "total_gpu_hours": 22.224444444444444,
+    "score_elapsed_seconds": 48,
+    "maximum_evaluation_rank_peak_gpu_memory_bytes": 71345197056,
+    "quota_after_score": {
+      "used_kib": 866513236,
+      "hard_limit_kib": 1059061760,
+      "headroom_kib": 192548524,
+      "used_inodes": 539669,
+      "hard_limit_inodes": 1010000,
+      "headroom_inodes": 470331
+    }
+  },
+  "interpretation": "This is direct evidence that the Shohin trained temporal-revision mechanism transfers across model families into a large sparse MoE host and can substantially increase aggregate reasoning/math capability with only 3,538,944 trained parameters while leaving native Mixtral router/expert weights frozen. It is equally direct evidence that this particular shared post-MLP treatment is not conservative enough: it loses 11 previously correct rows and collapses the small executable-code slice. The correct result is therefore a strong architectural signal with a failed conservative promotion boundary, not a universal-win claim and not authorization to rerun or tune on this screen."
+}

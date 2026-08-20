@@ -220,6 +220,7 @@ def _short_host(value: str) -> str:
     substitutions = (
         ("NVIDIA-Nemotron-3-", "Nemotron "),
         ("mistralai/", ""),
+        ("openai/", ""),
         ("Qwen3.6-", "Qwen "),
         ("-Instruct-v0.1", ""),
         ("-FP8", ""),

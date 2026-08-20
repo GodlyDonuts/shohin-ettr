@@ -31,6 +31,18 @@ Before release, the following exact inputs were present and read-only:
 | Matched revision training data | `802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff` |
 | Shared 256-row screen source | `f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9` |
 
+Fresh pre-execution replay also verified the complete Nemotron Super input
+closure: model revision `7d7e5797b8a3c7abbab54033b6004e93e8b6bc91`, config SHA-256
+`ff5d6d643b288d4149b0bf820ecb5fe87dd9bbc08b6b811241c57840e11e30e3`,
+151/151 runtime members, and 3,802/3,802 GLIBC/FP8 overlay members. The
+training input has exactly 9,655 rows; the matched source and assessor inputs
+have exactly 256 rows each, with assessor SHA-256
+`ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351`.
+The custom `NemotronH` config exposes no native tensor-parallel plan, so its
+preserved two-local-H100 graph remains the executable semantics; the
+independent-node TP fallback is used only for Mixtral, whose native TP plan is
+qualified by mechanics.
+
 All mechanics reports, 256-update checkpoints, and score outputs were absent
 before release, proving that this is activation of the preserved graph rather
 than duplicate execution.
@@ -106,3 +118,243 @@ This makes the staged work an end-to-end architecture transfer rather than a
 plain host-baseline comparison: matched revision screens choose the stronger
 large family, and only then does that host receive the 35B-leading temporal
 causal architecture.
+
+## Independent-H100 tensor-parallel fallback
+
+The scheduler does not need to place every model shard on one node. A fresh
+fallback now accumulates independent one-H100 allocations and joins them with
+PyTorch native tensor parallelism over NCCL/InfiniBand. This path does not
+alter or cancel the frozen two-local-H100 graphs above and reads no benchmark
+rows during qualification.
+
+The first two-rank launch exposed two bounded infrastructure facts:
+
+- jobs `760731`/`760732` were admitted simultaneously on `evc31`/`evc48`,
+  proving separate one-H100 requests can form the distributed world; they
+  exited in two to three seconds because the pinned environment has no
+  `torchrun` console script. Runtime `6d08d7b9` repaired only the launcher to
+  use `python -m torch.distributed.run`;
+- jobs `760733`/`760734` then verified the full 281 GB model manifest,
+  initialized NCCL across the same two nodes, and loaded 317 of 507 weight
+  groups before both ranks reached 79.13 GiB. The exact traceback showed that
+  Transformers native TP had materialized BF16 shards rather than applying
+  BitsAndBytes NF4. Both failed after 601 seconds with zero restarts and before
+  model forward, training data, or benchmark access. Stderr hashes are
+  `779bf326c37556eb90f42198f5f1cfa4fab133bf9eeb8d0cafe60c8bda38c7c6`
+  and `69a16185ba1c7f667082aaa5e134fb16aa8bfa3b4476ab3e5c42a9f6ada40574`.
+
+The corrected geometry is explicit BF16 TP4: four independent one-H100 ranks,
+approximately 70.3 GB of immutable weight bytes per rank, identical controls
+and treatment precision, replicated Shohin trainables with gradient
+all-reduction, and native routers/experts frozen. Runtime manifest
+`931d64a5f6fcd0b874bba91449da8395cadde1c76281e048fe945dca93001a3f`
+binds source commit `ca994c07d6e1a89144ee185edd6059cabe991068`.
+Jobs `760739`--`760741` are currently admitted on `evc31`, `evc48`, and
+`evc49`; independent request `760742` is accumulating the fourth rank. The
+three admitted jobs wait inside a two-hour rendezvous bound and perform no
+model or benchmark access until all four ranks are present.
+
+The remainder of this independent-H100 graph is dependency-staged, with no
+idle reservation and no duplicate model load inside evaluation:
+
+- revision-training ranks `760743`--`760746` wait for all four mechanics
+  ranks and preserve the fixed 9,655-presentation, 2,048-consumption,
+  256-update geometry (`revision_train.jsonl` SHA-256
+  `802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff`);
+- matched-evaluation ranks `760747`--`760750` wait for all four training ranks
+  and evaluate unchanged, self-refinement, and trained revision in that fixed
+  order from one TP4 BF16 model load over the same source-disjoint 256-row
+  screen (`screen_sources.jsonl` SHA-256
+  `f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9`);
+- CPU score job `760751` waits for all four evaluation ranks and is the only
+  job bound to the 256-row assessor board (SHA-256
+  `ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351`).
+- CPU curve job `760752` waits for the new Mixtral score and preserved
+  Nemotron score, then combines those points with the immutable 35B Qwen
+  trained-revision screen (SHA-256
+  `dbf6caa1c4f0546c1d1d11d0490edfa5e74ae573613c2978577a7ea5ab1941bb`);
+  renderer `760753` waits for that analysis and emits the hash-manifested SVG
+  and point CSV under the separate TP4-BF16 publication root.
+
+The training runtime manifest is
+`716a6bd5bc6d79f498abe5b2812e13a37d6f97bd660d9b2ade78a6c71a8765b1`;
+the one-load matched-evaluation/scoring runtime manifest is
+`a89bc0f2ee55cc252b989a85cf03d0ff1a4931b235e5d4369f0b141c673e606e`.
+Every GPU stage is four independent single-H100 Slurm requests joined across
+nodes by NCCL/InfiniBand. Rank `760742` has a scheduler reservation for
+2026-08-16 06:24:30 EDT; its one-hour allocation still exceeds the measured
+post-rendezvous mechanics duration by more than threefold.
+
+## Unscheduled 1,023-row Mixtral confirmation preparation
+
+The future TP4 evaluator and scorer now admit a second, exact geometry without
+changing the immutable live runtime: 1,023 validation identities over sixteen
+output shards. The source SHA-256 is
+`98c25465916f6275c49ccf9cec67db1236cf0c795db67246a774ea392c0cb778`;
+the matching assessor SHA-256 is
+`af86c3e882c05cb336ed2231011feba4bfdeb93eb6fb8de5539abb71d04ec16e`.
+Sixteen already-generated Qwen3.6 unchanged candidate shards provide exactly
+1,023 fixed model-owned drafts (fifteen 64-row shards and one 63-row shard).
+Independent parsing verified unique, task-aligned, exact identity coverage:
+497 BBH-logic, 504 Math500, and 22 MBPP rows. Both the ordered source identity
+digest and sorted candidate identity-set digest are
+`1f3dcee9c65ad4c5692e5cf34688b10e086acea225f19af61829e250526e190a`;
+the ordered sixteen-shard draft manifest digest is
+`369ff24cc56084da3b1f71cba0a947499f453e9a7d273a3d22960d38f1bd94ed`.
+The installed runtime's exact production `load_sources`/`load_drafts` path
+then replayed all 1,023 rows successfully; its sorted identity boundary is
+`002403ac11e894455191f0ed96650f2ea680faf7d49d6c9fddf5d99082c577cf`
+through
+`ffce49e1a2e81670eb44ac61e27dcc58787d8895aa7aa01f2757f67ec2f9201c`.
+The evaluator accepts only `256:4` or `1023:16`, the validation scorer requires
+all sixteen shards for each matched arm, and all other geometries fail closed.
+
+This confirmation path is code-only preparation: no confirmation job has been
+submitted. Promotion remains conditional on the completed 256-row screen
+showing positive paired gain over unchanged and self-refinement, at least 95%
+unchanged-correct retention, and nonnegative correct-count delta in every
+domain.
+
+The clean commit `34b238f8bcb83f697179a6dfbf7c5591b547d1be` was packaged
+and installed read-only on Newton as
+`upward_moe_multinode_tp_validation_runtime_34b238f8_r1`. Its `SHA256SUMS`
+digest is `f6e58644b11606ae345357c98a3fbb9d1de875d115339c475a7b07f02fe51f2a`;
+all 206 manifest members replayed and the installed tree contains 207 regular
+files, zero symlinks, and zero writable members.
+
+## TP4 first-attempt infrastructure disposition
+
+The fourth mechanics rank was admitted at 2026-08-16 06:25 EDT, completing
+the four independent one-H100 allocation set. Jobs `760739`--`760742`
+then failed together during the first NCCL object broadcast, before model
+construction, training data, or benchmark access. Dynamic rendezvous assigned
+process ranks by arrival rather than the frozen `WORLD_RANK`: jobs
+`760739` and `760742` became ranks 1 and 0 on the same host, `evc31`.
+Both reported
+`nvmlDeviceGetHandleByPciBusId() failed: Not Found`; the remote ranks then
+reported connection closure. The jobs had zero restarts and produced no
+mechanics report or checkpoint. Their stderr SHA-256 values, in job order,
+are:
+
+- `d514f43a7c0fd2282b0bb2a5f94fc18e3882012f8d1f1c950cc6c4a9ebc3fef2`;
+- `3bcf053bc5118b75d1ea157baf5664a0c63b4e049ea6de23a1df44134e32b84a`;
+- `5747337279b4919923b046a1d36a22ce6078c2dffb63c17453c6677a7082ada5`;
+- `65c52cee3912d4653fae7977addb3f0faf35ee4c93bd90d610e422b6f3bd3d88`.
+
+The bounded infrastructure repair retains four separate one-H100 requests and
+InfiniBand/NCCL TP4. It replaces arrival-ordered elastic rendezvous with
+static `node_rank` plus `master_addr`/`master_port`, and assigns each
+rank a disjoint pool of eligible H100 nodes. This preserves opportunistic
+single-GPU admission while making same-host collision impossible. The same
+repair is applied to mechanics, revision training, and matched evaluation;
+scientific data, prompts, updates, controls, and scoring remain unchanged.
+
+The repair is packaged at source commit
+`1ec7390d8bdfd443d67993508c2cd939a19e1116` in immutable runtime
+`upward_moe_multinode_tp_runtime_1ec7390d_r1`, whose `SHA256SUMS`
+digest is
+`b12dec75887596318d779e8fa04b7a05228a04fa9b56e86002fb1c8a52034022`.
+Fresh mechanics jobs `760766`--`760769` use four mutually disjoint
+eligible-node pools. Dependency-staged training jobs are
+`760770`--`760773`; matched-evaluation jobs are
+`760774`--`760777`; score, scaling analysis, and renderer jobs are
+`760778`, `760779`, and `760780`. The eleven dead dependents of the
+failed attempt were cancelled after their terminal dependency state was
+recorded; no healthy job was cancelled.
+
+To prevent partial-world timeout while retaining separate allocations, the
+four pending mechanics jobs share one scheduler eligibility boundary and four
+exact distinct nodes. A fresh running-allocation replay on 2026-08-16 moved
+that boundary forward from 20:00 to 13:50 EDT on 2026-08-17 and selected
+`760766=evc39`, `760767=evc28`, `760768=evc47`, and `760769=evc42`.
+The final required GPU is scheduled to clear at 15:08:51 EDT; the first three
+ranks therefore remain inside their bounded two-hour rendezvous while the
+fourth admits, leaving more than 100 minutes of the three-hour mechanics
+allocation for native-TP load and checks. This is admission coordination only:
+each rank remains an independent one-H100 job and no GPU is reserved before it
+has bound TP4 mechanics work.
+
+A CPU-only independent-allocation canary then exercised the exact static
+four-node topology before the H100 window. Jobs `760781`--`760784` ran on
+`evc35`, `evc45`, `evc24`, and `evc42`, respectively. They formed
+fixed ranks 0--3, completed a cross-node Gloo all-gather in 2.22 seconds, and
+all exited `COMPLETED|0:0` after seven seconds with zero restarts. The
+collective digest is
+`f4ba4cf0c0bc054c9933e2cbdd386280b6751cdf564703852c93972140fa2b37`;
+the immutable result receipt SHA-256 is
+`f4010b080ca4369ee24787895c8f0deb3c2c3a423c8ee2333d0e347a9b1e4f98`.
+All eight stdout/stderr files are empty, the canary read zero scientific
+rows, and it requested no GPU. Static global-rank and hostname routing are
+therefore qualified independently; NCCL and native-TP model mechanics remain
+the live H100 qualification performed by `760766`--`760769`.
+
+Exact Slurm accounting is dependency-staged as CPU job `760785` behind the
+completed score. It binds all thirteen allocations: four mechanics ranks,
+four training ranks, four matched-evaluation ranks, and the CPU scorer. The
+receipt requires every H100 rank to be `COMPLETED|0:0` on typed
+`nvidia_h100_pcie`, with zero restarts and exact allocation coverage, before
+publishing per-stage elapsed time and charged H100-hours. Runtime
+`upward_moe_accounting_runtime_3ee78e90_r1` has manifest SHA-256
+`2d2d1a99953acfbb30fd15500a30de99c9b5fb0a7d68fae1c757de1225dee352`.
+Renderer `760780` now waits for both the scientific analysis and this
+accounting receipt, so the publication graph cannot close without measured
+compute evidence.
+
+Nemotron-Super now has the same measured-compute boundary. CPU job `760787`
+waits for score `760388` and requires exact accounting for mechanics
+`760382` (two H100s), training `760384` (two H100s), all twelve
+two-H100 evaluation array tasks `760385_0`--`760387_3`, and the CPU
+scorer. Renderer `760780` also waits for this receipt. Consequently, the
+cross-family figure requires complete scientific scores and exact
+zero-restart H100 accounting for both 120B Nemotron-Super and 141B Mixtral.
+The initially staged accounting job `760786` was cancelled before execution
+after a read-only Slurm replay proved that array-task `JobIDRaw` values are
+internal numeric allocations rather than stable `root_task` identities.
+Runtime `upward_moe_accounting_runtime_4a2a345e_r1` corrects the matcher to
+bind both stable `JobID` and numeric `JobIDRaw`; its manifest SHA-256 is
+`1837d89aac59444e461af6eded3b52f12e7c1291a264c84ce336d1b30dbfdba4`.
+No scientific or GPU job changed.
+
+Final CPU publication job `760788` waits for renderer `760780` and emits
+one immutable evidence manifest beside the figure. It independently reopens
+the normalized three-host analysis, verifies the SVG/CSV against the figure
+manifest, requires the two exact completed accounting receipts, and binds
+their source commits, allocation identities, charged H100-hours, hashes, and
+byte counts. It also requires every accounting host to be one of the analysis
+points and preserves the no-successor/no-score-mutation claims. Runtime
+`upward_moe_publication_runtime_019490b2_r1` has manifest SHA-256
+`50ce4c4cfeeb299953e1c4cf71208e0f1ad4f367aca85a3622fc435a6b296650`.
+
+Durable-evidence job `760789` waits for publication receipt `760788` and
+atomically mirrors the exact ten-artifact result set into the authorized
+`q36_mtr_evidence` root: three source score points, normalized analysis,
+SVG, CSV, figure manifest, two host accounting receipts, and final publication
+receipt. It then replays exact root membership and every mirrored hash through
+the independent evidence verifier before sealing the tree read-only. Runtime
+`upward_moe_mirror_runtime_556adcb0_r1` has manifest SHA-256
+`5b942213b95dfb26eb9e46751943e3406c91ad9ba5d74be792b69c488cb550d0`.
+Temporary evaluation shards remain referenced and are not scheduled for
+removal.
+
+## Live `evc33` requalification and accelerated boundary
+
+At 2026-08-16 10:39 EDT, the H100 inventory had exactly one nominally free
+device, on `evc33`; all other H100s were allocated. Because `evc33` had
+previously failed both dual- and single-device diagnostics, bounded no-model
+job `760810` requalified that exact free allocation before it could be admitted
+to the scientific graph. Slurm assigned one typed H100, but `nvidia-smi -L`
+returned `No devices found` and PyTorch reported `torch.cuda.device_count() ==
+0`. The job failed closed as `FAILED|124:0` after 137 seconds with zero
+restarts. Its stdout and stderr SHA-256 values are respectively
+`9a62266bcb92bcc0cf47f4cd1121133082d095f4af7a7438f377b80f863d7f5c`
+and
+`5d62c82f4f4d2a4ad5159f38210f8e834023dc41c70afe15857badd58f997e28`.
+It loaded no model and read no training or benchmark row. `evc33` therefore
+remains excluded.
+
+The same audit found that the four disjoint rank pools can safely accumulate
+on proven nodes beginning at 13:50 EDT, with the last rank available before
+the two-hour rendezvous bound. Jobs `760766`--`760769` were updated in place;
+no job was resubmitted, no scientific byte changed, and every downstream
+dependency remains intact. This advances the live TP4 mechanics boundary by
+six hours and ten minutes relative to the former 20:00 eligibility time.

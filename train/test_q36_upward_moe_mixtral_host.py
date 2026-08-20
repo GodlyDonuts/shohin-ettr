@@ -15,12 +15,27 @@ from q36_upward_moe_mixtral_host import (
     NUM_EXPERTS,
     Q36UpwardMoEMixtralHostError,
     ROUTER_TOP_K,
+    TWO_H100_LAYER_BOUNDARY,
     TRAINABLE_PARAMETERS_PER_ROLE,
     load_pinned_config,
     static_host_contract,
+    two_h100_device_map,
     validate_config_payload,
     validate_loaded_surface,
 )
+
+
+def test_two_h100_device_map_is_exact_balanced_and_has_no_offload() -> None:
+    mapping = two_h100_device_map()
+    assert mapping["model.embed_tokens"] == 0
+    assert mapping["model.norm"] == 1
+    assert mapping["lm_head"] == 1
+    assert mapping[f"model.layers.{TWO_H100_LAYER_BOUNDARY - 1}"] == 0
+    assert mapping[f"model.layers.{TWO_H100_LAYER_BOUNDARY}"] == 1
+    assert (
+        len([key for key in mapping if key.startswith("model.layers.")]) == MODEL_LAYERS
+    )
+    assert set(mapping.values()) == {0, 1}
 
 
 def _config_payload() -> dict:
@@ -46,7 +61,7 @@ def _named(name: str, **members: object) -> object:
     return value
 
 
-def _loaded_host() -> object:
+def _loaded_host(*, tensor_parallel_size: int = 1) -> object:
     layers = []
     for _ in range(MODEL_LAYERS):
         gate = _named(
@@ -61,10 +76,18 @@ def _loaded_host() -> object:
             hidden_dim=HIDDEN_SIZE,
             intermediate_dim=INTERMEDIATE_SIZE,
             gate_up_proj=SimpleNamespace(
-                shape=(NUM_EXPERTS, 2 * INTERMEDIATE_SIZE, HIDDEN_SIZE)
+                shape=(
+                    NUM_EXPERTS,
+                    2 * INTERMEDIATE_SIZE // tensor_parallel_size,
+                    HIDDEN_SIZE,
+                )
             ),
             down_proj=SimpleNamespace(
-                shape=(NUM_EXPERTS, HIDDEN_SIZE, INTERMEDIATE_SIZE)
+                shape=(
+                    NUM_EXPERTS,
+                    HIDDEN_SIZE,
+                    INTERMEDIATE_SIZE // tensor_parallel_size,
+                )
             ),
         )
         mlp = _named(
@@ -87,6 +110,7 @@ def _loaded_host() -> object:
         num_local_experts=NUM_EXPERTS,
         num_experts_per_tok=ROUTER_TOP_K,
         intermediate_size=INTERMEDIATE_SIZE,
+        distributed_config=SimpleNamespace(tp_size=tensor_parallel_size),
     )
     return _named(
         "MixtralForCausalLM", config=config, model=SimpleNamespace(layers=layers)
@@ -134,6 +158,13 @@ def test_loaded_surface_binds_all_native_experts_and_final_layers() -> None:
     assert receipt["controlled_layer_indices"] == list(CONTROLLED_LAYER_INDICES)
     assert len(receipt["native_topology_sha256"]) == 64
     assert receipt["attachment_surface"] == "post-mlp-residual"
+    assert receipt["tensor_parallel_size"] == 1
+
+
+def test_loaded_surface_binds_native_four_rank_tensor_parallel_shapes() -> None:
+    receipt = validate_loaded_surface(_loaded_host(tensor_parallel_size=4))
+    assert receipt["tensor_parallel_size"] == 4
+    assert len(receipt["native_topology_sha256"]) == 64
 
 
 def test_loaded_surface_rejects_expert_or_attachment_drift() -> None:

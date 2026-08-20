@@ -19,6 +19,7 @@ from hf_nemotron_super_mechanics import (
     MAMBA_VERSION,
     MODELOPT_VERSION,
     TORCH_VERSION,
+    install_triton_allocator_compatibility,
 )
 from hf_nemotron_super_train_revision import (
     CHECKPOINT_SCHEMA,
@@ -200,6 +201,7 @@ def _package_versions() -> dict[str, str | None]:
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    install_triton_allocator_compatibility()
     from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
     from transformers import AutoModelForCausalLM, AutoTokenizer
 

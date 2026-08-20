@@ -13,11 +13,13 @@ from typing import Any
 
 QWEN_SCHEMA = "shohin-q36-mtr-multi-trajectory-screen-result-v1"
 QWEN_REVISION_SCHEMA = "shohin-q36-mtr-external-screen-result-summary-v1"
+QWEN_EXTERNAL_SCORE_SCHEMA = "shohin-q36-mtr-external-score-v1"
 MATCHED_SCHEMAS = frozenset(
     {
         "shohin-nemotron-super-fixed-draft-screen-score-v1",
         "shohin-mixtral-8x22b-fixed-draft-screen-score-v1",
         "shohin-nemotron-ultra-fixed-draft-screen-score-v1",
+        "shohin-gpt-oss-120b-fixed-draft-screen-score-v1",
     }
 )
 REPORT_SCHEMA = "shohin-upward-moe-scaling-analysis-v1"
@@ -248,6 +250,114 @@ def _normalize_qwen_revision(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _normalize_qwen_external_score(payload: dict[str, Any]) -> dict[str, Any]:
+    rows = _integer(payload.get("rows"), "rows", 1)
+    if payload.get("status") != "complete" or rows != 256:
+        raise UpwardMoEScalingError("Qwen external score is not complete")
+    arms = payload.get("arms")
+    outcomes = payload.get("outcomes")
+    required = {"unchanged", "self_refinement", "revision"}
+    if (
+        not isinstance(arms, dict)
+        or not required.issubset(arms)
+        or not all(isinstance(arms[arm], dict) for arm in required)
+        or not isinstance(outcomes, list)
+        or len(outcomes) != rows
+    ):
+        raise UpwardMoEScalingError("Qwen external score arms differ")
+    identities: set[str] = set()
+    outcome_correct: dict[str, int] = {arm: 0 for arm in required}
+    retained = 0
+    wins = 0
+    losses = 0
+    outcome_domains = {arm: {domain: 0 for domain in DOMAINS} for arm in required}
+    domain_totals = {domain: 0 for domain in DOMAINS}
+    for row in outcomes:
+        if not isinstance(row, dict):
+            raise UpwardMoEScalingError("Qwen external outcome differs")
+        identity = row.get("identity_sha256")
+        task = row.get("task")
+        correct = row.get("correct")
+        if (
+            not isinstance(identity, str)
+            or len(identity) != 64
+            or any(value not in "0123456789abcdef" for value in identity)
+            or identity in identities
+            or task not in DOMAINS
+            or not isinstance(correct, dict)
+            or not all(isinstance(correct.get(arm), bool) for arm in required)
+        ):
+            raise UpwardMoEScalingError("Qwen external outcome differs")
+        identities.add(identity)
+        domain_totals[task] += 1
+        for arm in required:
+            if correct[arm]:
+                outcome_correct[arm] += 1
+                outcome_domains[arm][task] += 1
+        retained += int(correct["unchanged"] and correct["revision"])
+        wins += int(correct["revision"] and not correct["unchanged"])
+        losses += int(correct["unchanged"] and not correct["revision"])
+
+    arm_correct = {
+        arm: _integer(arms[arm].get("correct"), f"{arm}.correct") for arm in required
+    }
+    if arm_correct != outcome_correct:
+        raise UpwardMoEScalingError("Qwen external outcome totals differ")
+    for arm in required:
+        raw_domains = arms[arm].get("domains")
+        if not isinstance(raw_domains, dict) or set(raw_domains) != set(DOMAINS):
+            raise UpwardMoEScalingError("Qwen external domains differ")
+        for domain in DOMAINS:
+            value = raw_domains[domain]
+            if (
+                not isinstance(value, dict)
+                or _integer(value.get("correct"), f"{arm}.{domain}.correct")
+                != outcome_domains[arm][domain]
+                or _integer(value.get("total"), f"{arm}.{domain}.total", 1)
+                != domain_totals[domain]
+            ):
+                raise UpwardMoEScalingError("Qwen external domains differ")
+    revision_pair = arms["revision"].get("paired_vs_unchanged")
+    delta = arm_correct["revision"] - arm_correct["unchanged"]
+    if (
+        not isinstance(revision_pair, dict)
+        or _integer(revision_pair.get("arm_only_correct"), "paired wins") != wins
+        or _integer(revision_pair.get("unchanged_only_correct"), "paired losses")
+        != losses
+        or _integer(arms["revision"].get("gain_over_unchanged_count"), "gain") != delta
+        or wins - losses != delta
+        or arm_correct["unchanged"] == 0
+    ):
+        raise UpwardMoEScalingError("Qwen external paired delta differs")
+    domains = _domain_counts(
+        outcome_domains["revision"], outcome_domains["unchanged"], domain_totals
+    )
+    return {
+        "host": "Qwen3.6-35B-A3B",
+        "architecture_series": "trained_revision",
+        "total_parameters": 35_000_000_000,
+        "active_parameters": 3_000_000_000,
+        "rows": rows,
+        "treatment_arm": "revision",
+        "treatment_correct": arm_correct["revision"],
+        "unchanged_correct": arm_correct["unchanged"],
+        "self_refinement_correct": arm_correct["self_refinement"],
+        "gain_over_unchanged_count": delta,
+        "gain_over_unchanged_percentage_points": 100.0 * delta / rows,
+        "gain_over_self_refinement_count": (
+            arm_correct["revision"] - arm_correct["self_refinement"]
+        ),
+        "paired_wins": wins,
+        "paired_losses": losses,
+        "mcnemar_exact_two_sided_p": _finite(
+            revision_pair.get("mcnemar_exact_two_sided_p"), "p value"
+        ),
+        "unchanged_correct_retained": retained,
+        "unchanged_correct_retention": retained / arm_correct["unchanged"],
+        "domains": domains,
+    }
+
+
 def _normalize_matched(payload: dict[str, Any]) -> dict[str, Any]:
     if payload.get("status") != "complete":
         raise UpwardMoEScalingError("matched point is not complete")
@@ -363,6 +473,8 @@ def normalize_point(path: Path) -> dict[str, Any]:
         point = _normalize_qwen(payload)
     elif schema == QWEN_REVISION_SCHEMA:
         point = _normalize_qwen_revision(payload)
+    elif schema == QWEN_EXTERNAL_SCORE_SCHEMA:
+        point = _normalize_qwen_external_score(payload)
     elif schema in MATCHED_SCHEMAS:
         point = _normalize_matched(payload)
     else:

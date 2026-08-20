@@ -28,6 +28,7 @@ RANK = 18
 ALPHA = 18.0
 TRAINABLE_PARAMETERS_PER_ROLE = CONTROLLED_LAYERS * 2 * HIDDEN_SIZE * RANK
 ATTACHMENT_SURFACE = "post-mlp-residual"
+TWO_H100_LAYER_BOUNDARY = MODEL_LAYERS // 2
 
 
 class Q36UpwardMoEMixtralHostError(RuntimeError):
@@ -66,6 +67,20 @@ def static_host_contract() -> dict[str, Any]:
         "attachment_surface": ATTACHMENT_SURFACE,
         "native_router_expert_trainables": 0,
     }
+
+
+def two_h100_device_map() -> dict[str, int]:
+    """Return the exact no-offload NF4 placement for the two-H100 host."""
+
+    mapping = {"model.embed_tokens": 0}
+    mapping.update(
+        {
+            f"model.layers.{index}": (0 if index < TWO_H100_LAYER_BOUNDARY else 1)
+            for index in range(MODEL_LAYERS)
+        }
+    )
+    mapping.update({"model.norm": 1, "lm_head": 1})
+    return mapping
 
 
 def validate_config_payload(payload: Mapping[str, Any]) -> None:
@@ -132,8 +147,19 @@ def _shape(value: Any) -> tuple[int, ...] | None:
         return None
 
 
+def _tensor_parallel_size(config: Any) -> int:
+    distributed = getattr(config, "distributed_config", None)
+    value = getattr(distributed, "tp_size", 1) if distributed is not None else 1
+    if isinstance(value, bool) or not isinstance(value, int) or value not in (1, 4):
+        raise Q36UpwardMoEMixtralHostError(
+            "loaded Mixtral tensor-parallel geometry differs"
+        )
+    return value
+
+
 def validate_loaded_surface(backbone: Any) -> dict[str, Any]:
     config = getattr(backbone, "config", None)
+    tensor_parallel_size = _tensor_parallel_size(config)
     layers = _sequence(getattr(getattr(backbone, "model", None), "layers", None))
     if (
         type(backbone).__name__ != MODEL_CLASS
@@ -184,8 +210,16 @@ def validate_loaded_surface(backbone: Any) -> dict[str, Any]:
             "expert_count": NUM_EXPERTS,
             "expert_hidden": HIDDEN_SIZE,
             "expert_intermediate": INTERMEDIATE_SIZE,
-            "gate_up_shape": (NUM_EXPERTS, 2 * INTERMEDIATE_SIZE, HIDDEN_SIZE),
-            "down_shape": (NUM_EXPERTS, HIDDEN_SIZE, INTERMEDIATE_SIZE),
+            "gate_up_shape": (
+                NUM_EXPERTS,
+                2 * INTERMEDIATE_SIZE // tensor_parallel_size,
+                HIDDEN_SIZE,
+            ),
+            "down_shape": (
+                NUM_EXPERTS,
+                HIDDEN_SIZE,
+                INTERMEDIATE_SIZE // tensor_parallel_size,
+            ),
         }
         if row != expected:
             raise Q36UpwardMoEMixtralHostError(
@@ -199,6 +233,7 @@ def validate_loaded_surface(backbone: Any) -> dict[str, Any]:
     return {
         "model_layers": MODEL_LAYERS,
         "moe_layers": MODEL_LAYERS,
+        "tensor_parallel_size": tensor_parallel_size,
         "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
         "native_topology_sha256": hashlib.sha256(encoded).hexdigest(),
         "attachment_surface": ATTACHMENT_SURFACE,

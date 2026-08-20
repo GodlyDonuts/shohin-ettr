@@ -1,0 +1,41 @@
+{
+  "schema": "shohin-q36-mixtral-tp4-shard-geometry-repair-v1",
+  "date": "2026-08-18",
+  "status": "replacement_mechanics_running_full_graph_dependency_staged",
+  "closed_attempt": {
+    "jobs": [763598, 763599, 763600, 763601],
+    "nodes": ["evc35", "evc23", "evc30", "evc46"],
+    "states": ["FAILED", "FAILED", "FAILED", "FAILED"],
+    "restarts": [0, 0, 0, 0],
+    "failure_boundary": "post_load_topology_validation",
+    "weights_loaded_per_rank": "507/507",
+    "observed_gate_up_shape": [8, 8192, 6144],
+    "observed_down_shape": [8, 6144, 4096],
+    "incorrect_unsharded_gate_up_expectation": [8, 32768, 6144],
+    "incorrect_unsharded_down_expectation": [8, 6144, 16384],
+    "score_rows_read": 0,
+    "benchmark_rows_read": 0,
+    "stderr_sha256s": [
+      "418ff53a7d8ffbaf56ef0f3fa2e3cb146a477500efe5878277ec0e567687f2a3",
+      "1b9468f76ac4138b819ea815c5a3e724a19ffa3e5e27f0b13d181be365ee2042",
+      "de8bc65c79d15458a531e466b6bd41265c5ba607121e7b617613a82e3e5a51f6",
+      "aaab6aa128c90f7ddcfae618ef31e8e87aff74710e39de2526f8ec802c768ade"
+    ]
+  },
+  "repair": {
+    "source_commit": "51c8f6675ffe48422863d599d02385ce17b080dd",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_tp4_runtime_51c8f667_r1",
+    "runtime_sha256sums_sha256": "24f9ee6da66926fe669d8d8ff896ae0dd10b883dd702ee969fd1eb812e0c14d6",
+    "change": "Bind tp_size=4 and require the exact quarter-sharded expert tensor axes while retaining every unsharded config, router, expert-count, hidden-size, and attachment assertion.",
+    "scientific_contract_changed": false,
+    "focused_tests_passed": 33
+  },
+  "replacement_graph": {
+    "mechanics_jobs": [763615, 763616, 763617, 763618],
+    "fit_jobs": [763619, 763620, 763621, 763622],
+    "evaluation_jobs": [763623, 763624, 763625, 763626],
+    "score_job": 763627,
+    "requeue": false,
+    "duplicate_scientific_outputs": 0
+  }
+}

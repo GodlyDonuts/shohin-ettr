@@ -1,5 +1,5 @@
 #!/bin/bash
-# Submit two independent one-H100 requests for one tensor-parallel mechanics run.
+# Submit four independent one-H100 requests for one tensor-parallel mechanics run.
 
 set -euo pipefail
 
@@ -30,19 +30,28 @@ exports+=",MODEL_ROOT=$MODEL_ROOT,MODEL_MANIFEST=$MODEL_MANIFEST"
 exports+=",MODEL_MANIFEST_SHA256=$MODEL_MANIFEST_SHA256,RUN_ROOT=$RUN_ROOT"
 
 jobs=()
+# Disjoint pools keep the four independent one-H100 allocations on distinct
+# hosts while letting Slurm admit each rank opportunistically.
+rank_node_pools=(
+  "evc22,evc27,evc35,evc39,evc44"
+  "evc23,evc28,evc36,evc40,evc45"
+  "evc24,evc30,evc41,evc47,evc49"
+  "evc25,evc31,evc42,evc43,evc46,evc48"
+)
 cleanup_partial_submission() {
-  if (( ${#jobs[@]} > 0 && ${#jobs[@]} < 2 )); then
+  if (( ${#jobs[@]} > 0 && ${#jobs[@]} < 4 )); then
     scancel "${jobs[@]}" 2>/dev/null || true
   fi
 }
 trap cleanup_partial_submission EXIT
-for rank in 0 1; do
-  job=$(sbatch --parsable --export="$exports,WORLD_RANK=$rank" "$worker")
+for rank in 0 1 2 3; do
+  job=$(sbatch --parsable --nodelist="${rank_node_pools[$rank]}" \
+    --export="$exports,WORLD_RANK=$rank" "$worker")
   [[ "$job" =~ ^[0-9]+$ ]]
   jobs+=("$job")
 done
 trap - EXIT
 printf '%s\n' "${jobs[@]}" > "$RUN_ROOT/submitted_jobs.txt"
 chmod 400 "$RUN_ROOT/submitted_jobs.txt"
-printf 'mixtral_multinode_tp_mechanics jobs=%s,%s run_root=%s\n' \
-  "${jobs[0]}" "${jobs[1]}" "$RUN_ROOT"
+printf 'mixtral_multinode_tp_mechanics jobs=%s,%s,%s,%s run_root=%s\n' \
+  "${jobs[0]}" "${jobs[1]}" "${jobs[2]}" "${jobs[3]}" "$RUN_ROOT"

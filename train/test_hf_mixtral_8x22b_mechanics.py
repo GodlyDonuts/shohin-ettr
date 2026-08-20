@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+import torch
 
 from hf_mixtral_8x22b_mechanics import (
     MixtralMechanicsError,
+    _router_receipt,
+    _state_sha256,
     verify_model_manifest,
 )
 
@@ -53,6 +57,20 @@ def test_model_manifest_rejects_content_or_path_tamper(tmp_path: Path) -> None:
     manifest.write_text(f"{'0' * 64}  ../escape\n")
     with pytest.raises(MixtralMechanicsError, match="manifest row differs"):
         verify_model_manifest(root, manifest, _sha(manifest))
+
+
+def test_receipts_hash_exact_bfloat16_storage_bytes() -> None:
+    first = torch.tensor([1.0, 2.0], dtype=torch.bfloat16)
+    second = first.clone()
+    second[1] = 3.0
+    assert _state_sha256({"value": first}) != _state_sha256({"value": second})
+
+    model = SimpleNamespace(
+        blocks=[
+            SimpleNamespace(base=SimpleNamespace(gate=SimpleNamespace(weight=first)))
+        ]
+    )
+    assert len(_router_receipt(model)) == 64
 
 
 def test_mechanics_worker_is_score_free_and_two_h100_bound() -> None:

@@ -35,7 +35,7 @@ def trainable_state_sha256(state: dict[str, torch.Tensor]) -> str:
         digest.update(name.encode())
         digest.update(str(tensor.dtype).encode())
         digest.update(json.dumps(list(tensor.shape)).encode())
-        digest.update(tensor.numpy().tobytes())
+        digest.update(tensor.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
 
 

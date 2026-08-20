@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=mixtral-tp1-mechanics
 #SBATCH --partition=normal
-#SBATCH --exclude=evc26,evc29,evc32,evc33,evc34,evc37,evc38,evc43,evc46,evc50
+#SBATCH --exclude=evc26,evc29,evc32,evc33,evc34,evc37,evc38,evc50
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=192G
 #SBATCH --gres=gpu:nvidia_h100_pcie:1
-#SBATCH --time=01:15:00
+#SBATCH --time=03:00:00
 #SBATCH --no-requeue
 #SBATCH --output=logs/mixtral_8x22b_multinode_tp_mechanics_%j.out
 #SBATCH --error=logs/mixtral_8x22b_multinode_tp_mechanics_%j.err
@@ -21,7 +21,7 @@ required=(
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
-[[ "$WORLD_RANK" == 0 || "$WORLD_RANK" == 1 ]]
+[[ "$WORLD_RANK" =~ ^[0-3]$ ]]
 [[ -x "$PYTHON" ]]
 [[ -d "$RUNTIME" && ! -L "$RUNTIME" ]]
 [[ -d "$MODEL_ROOT" && ! -L "$MODEL_ROOT" ]]
@@ -55,25 +55,24 @@ printf 'rank=%s\njob=%s\nnode=%s\ngpu=%s\n' \
 chmod 400 "$temporary"
 mv "$temporary" "$admitted"
 
-for _ in $(seq 1 900); do
-  [[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" ]] && break
+for _ in $(seq 1 7200); do
+  [[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" \
+    && -s "$coord/rank-2.admitted" && -s "$coord/rank-3.admitted" ]] && break
   sleep 1
 done
-[[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" ]]
+[[ -s "$coord/rank-0.admitted" && -s "$coord/rank-1.admitted" \
+  && -s "$coord/rank-2.admitted" && -s "$coord/rank-3.admitted" ]]
 master_node=$(awk -F= '$1 == "node" {print $2}' "$coord/rank-0.admitted")
 master_job=$(awk -F= '$1 == "job" {print $2}' "$coord/rank-0.admitted")
 [[ "$master_node" == evc[0-9]* && "$master_job" =~ ^[0-9]+$ ]]
 master_port=$((30000 + master_job % 20000))
-rdzv_id="shohin-mixtral-tp-${master_job}"
-
 output="$RUN_ROOT/mechanics.json"
 "$PYTHON" -P -s -B -m torch.distributed.run \
-  --nnodes=2 \
+  --nnodes=4 \
   --nproc_per_node=1 \
   --node_rank="$WORLD_RANK" \
-  --rdzv_backend=c10d \
-  --rdzv_endpoint="$master_node:$master_port" \
-  --rdzv_id="$rdzv_id" \
+  --master_addr="$master_node" \
+  --master_port="$master_port" \
   "$RUNTIME/train/hf_mixtral_8x22b_multinode_tp_mechanics.py" \
   --model-root "$MODEL_ROOT" \
   --model-manifest "$MODEL_MANIFEST" \
@@ -87,10 +86,12 @@ printf 'rank=%s\njob=%s\nnode=%s\ncompleted=1\n' \
 chmod 400 "$completed"
 if [[ "$WORLD_RANK" == 0 ]]; then
   for _ in $(seq 1 300); do
-    [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" ]] && break
+    [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" \
+      && -s "$coord/rank-2.completed" && -s "$coord/rank-3.completed" ]] && break
     sleep 1
   done
-  [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" ]]
+  [[ -s "$coord/rank-0.completed" && -s "$coord/rank-1.completed" \
+    && -s "$coord/rank-2.completed" && -s "$coord/rank-3.completed" ]]
   checkpoint=${output%.json}.checkpoint.pt
   [[ -f "$output" && ! -L "$output" ]]
   [[ -f "$checkpoint" && ! -L "$checkpoint" ]]

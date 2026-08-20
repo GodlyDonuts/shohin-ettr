@@ -43,10 +43,30 @@ MODELOPT_VERSION = "0.43.0"
 CAUSAL_CONV_VERSION = "1.6.2.post1"
 TORCH_VERSION = "2.6.0+cu124"
 CUDA_VERSION = "12.4"
+TRITON_VERSION = "3.2.0"
 
 
 class NemotronSuperMechanicsError(RuntimeError):
     """The score-free upward-MoE mechanics contract failed."""
+
+
+def install_triton_allocator_compatibility() -> dict[str, Any]:
+    """Bridge Mamba-SSM allocator registration on the pinned Triton 3.2."""
+
+    import triton
+
+    observed = importlib.metadata.version("triton")
+    if observed != TRITON_VERSION:
+        raise NemotronSuperMechanicsError("Triton version differs")
+    if hasattr(triton, "set_allocator"):
+        return {"triton_version": observed, "mode": "native-set-allocator"}
+
+    def _set_allocator_compatibility(allocator: Any) -> None:
+        if not callable(allocator):
+            raise TypeError("allocator must be callable")
+
+    triton.set_allocator = _set_allocator_compatibility
+    return {"triton_version": observed, "mode": "triton-3.2-internal-descriptor"}
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -216,6 +236,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if package_versions != expected_versions:
         raise NemotronSuperMechanicsError("mechanics package versions differ")
 
+    triton_allocator = install_triton_allocator_compatibility()
     import mamba_ssm
     import modelopt
     from modelopt.torch.opt.plugins.huggingface import (
@@ -334,6 +355,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_receipt": model_receipt,
         "overlay_receipt": overlay_receipt,
         "package_versions": package_versions,
+        "triton_allocator_compatibility": triton_allocator,
         "module_origins": module_origins,
         "devices": [
             {
