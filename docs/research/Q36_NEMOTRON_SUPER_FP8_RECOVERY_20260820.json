@@ -1,7 +1,7 @@
 {
   "schema": "shohin-q36-nemotron-super-fp8-recovery-v1",
-  "status": "probe_pending_capacity_graph_prestaged",
-  "observed_at": "2026-08-20T18:47:19-04:00",
+  "status": "probe_pass_mechanics_pending_capacity",
+  "observed_at": "2026-08-20T18:48:59-04:00",
   "scientific_result_available": false,
   "benchmark_rows_scored": 0,
   "repair": {
@@ -107,6 +107,25 @@
       "evc50"
     ]
   },
+  "fp8_extension_probe_result": {
+    "job": 767485,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 144,
+    "restarts": 0,
+    "node": "evc45",
+    "receipt_sha256": "7ffb3fdcc34872498c19d16d6d3a092ddfbe6709ed7a5855d51615c5c9380f25",
+    "receipt_mode": "0400",
+    "extension_sha256": "8cf7814e87c51bd129d5f3308ff75b19934defa7d938805c031024a74c980cab",
+    "functional_values_sha256": "17d8341a0b3e0475b036c66ba5b37d401f657937b6d2f91298c3b582e341f454",
+    "torch": "2.6.0+cu124",
+    "torch_cuda": "12.4",
+    "modelopt": "0.43.0",
+    "scientific_rows_read": 0,
+    "assessor_accessed": false,
+    "stdout_sha256": "6706685b8e418cdee5c8647c2b5efe06313bfe5711bd32a02c36982fe5696fbf",
+    "stderr_sha256": "fac59fdebc322e285042a050a79a846060390249f39354e5584e19b2212946bb"
+  },
   "outputs": {
     "probe": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/nemotron_super_fp8_extension_probe_a0838e93_r1.json",
     "mechanics": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_mechanics_modelopt_a0838e93_r1.json",
@@ -116,9 +135,13 @@
     "durable_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/upward-moe-qwen-gptoss-mixtral-nemotron-a0838e93-r1"
   },
   "scheduler": {
-    "probe_state": "PENDING",
-    "probe_reason": "Priority",
-    "all_downstream_jobs_state": "PENDING_DEPENDENCY",
+    "probe_state": "COMPLETED",
+    "probe_reason": null,
+    "mechanics_state": "PENDING",
+    "mechanics_reason": "Priority",
+    "scheduler_estimated_mechanics_start": "2026-08-21T02:59:24-04:00",
+    "scheduler_estimate_is_nonbinding": true,
+    "remaining_downstream_jobs_state": "PENDING_DEPENDENCY",
     "no_idle_gpu_requests": true
   },
   "storage_snapshot": {
