@@ -1,6 +1,6 @@
 {
   "schema": "shohin-gpt-oss-120b-commit-confirmation-execution-v1",
-  "status": "revision_generation_running",
+  "status": "complete_gate_fail_no_improvement",
   "date": "2026-08-20",
   "source_commit": "7aa8609241e05bcd3810a790b17421c44950d65c",
   "private_branches": [
@@ -186,11 +186,110 @@
       "assessor_access_count": 0
     },
     "gpt_revision": {
-      "status": "running",
+      "status": "complete",
       "jobs": [766378, 766379, 766380, 766381],
+      "elapsed_seconds": [3201, 3225, 3328, 3067],
       "nodes": ["evc33", "evc33", "evc35", "evc36"],
-      "all_restarts_zero": true
+      "all_restarts_zero": true,
+      "candidate_sha256s": [
+        "43da129c94fdccf8c8513fce3e5bd87152bff98dda5e1102083d0672f1be71b8",
+        "09e34f370b20fad767529535c90af172c221d912cd45d2be7511da73c117cb1f",
+        "7757b71151b9264d09b87816318b5c2cd5e1b8222b3da9939755af7688f10f05",
+        "3fb92c20255409d51d753487f11269bc36f2129b52f824de61dd50552ad879be"
+      ],
+      "report_sha256s": [
+        "39a618ca2f8d567934e5b9f259137523ec9643350b1b57c8aa1e03e6fc8f410e",
+        "605a43b067fcef460e2887bec150e894c9c876e0d7d37d25fd84b1dfe83c1c81",
+        "9ea4b68c1c5e5483da820b5b7c99631a8e1406dd27d99edbeb54b603fe9fa5d7",
+        "0ceeadc3f118125775e44defe3a8ba633bb2760f3556ceb84204be63826205dc"
+      ],
+      "rows": 256,
+      "unique_identities": 256,
+      "source_identity_set_exact": true,
+      "empty_completions": 35,
+      "max_token_exhausted": 87,
+      "assessor_access_count": 0
     }
   },
-  "result": null
+  "result": {
+    "score_job": 766383,
+    "score_state": "COMPLETED",
+    "score_exit_code": "0:0",
+    "score_elapsed_seconds": 4,
+    "score_restarts": 0,
+    "score_sha256": "2ace56d9c400f0275b1acb826e2ba73b98f615307b80e03e63dd81eb37425d05",
+    "selector_job": 766382,
+    "selector_state": "COMPLETED",
+    "selector_exit_code": "0:0",
+    "selector_elapsed_seconds": 424,
+    "selector_restarts": 0,
+    "selector_node": "evc35",
+    "selection_candidates_sha256": "a010a348db6e4de2fd73abaabf4a9c0961fc423bd1f6e3c5fd219ae67348e84c",
+    "selections_sha256": "1efe54fbda696b8c4619c1a4914c390e3382e0cde6784d01c796b07d20b3cca6",
+    "application_sha256": "d6891f2b41d4d63f8ba5ddf2027dc5f7d3546b321e2a92a3598cbb7317e44fb6",
+    "analysis_job": 766384,
+    "analysis_state": "COMPLETED",
+    "analysis_exit_code": "0:0",
+    "analysis_elapsed_seconds": 1,
+    "analysis_restarts": 0,
+    "result_sha256": "85447cedd9ce1b49eafcd7c75b60038191a4cd34fe231657db55ae9d0fcefade",
+    "rows": 256,
+    "unchanged_correct": 187,
+    "unchanged_accuracy": 0.73046875,
+    "revision_correct": 120,
+    "revision_accuracy": 0.46875,
+    "raw_revision_gain_over_unchanged": -67,
+    "raw_revision_unchanged_correct_retention": 0.5828877005347594,
+    "selected_correct": 187,
+    "selected_accuracy": 0.73046875,
+    "selected_gain_over_unchanged": 0,
+    "selected_gain_over_revision": 67,
+    "selected_counts": {
+      "revision": 33,
+      "unchanged": 223
+    },
+    "unchanged_correct_retained": 184,
+    "unchanged_correct_retention": 0.983957219251337,
+    "selected_vs_unchanged": {
+      "selected_only_correct": 3,
+      "unchanged_only_correct": 3,
+      "net_correct": 0,
+      "mcnemar_exact_two_sided_p": 1.0
+    },
+    "selected_vs_revision": {
+      "selected_only_correct": 75,
+      "revision_only_correct": 8,
+      "net_correct": 67,
+      "mcnemar_exact_two_sided_p": 9.099722954884666e-15
+    },
+    "retention_at_least_95_percent": true,
+    "all_domains_nonnegative_vs_unchanged": true,
+    "selection_had_score_or_assessor_access": false,
+    "frozen_gate": {
+      "improves_unchanged": false,
+      "retains_at_least_95_percent_unchanged_correct": true,
+      "all_domains_nonnegative_vs_unchanged": true,
+      "pass": false
+    },
+    "independent_score_replay": "pass",
+    "independent_selection_replay": "pass",
+    "scientific_interpretation": "The source-disjoint MMLU-Pro confirmation falsified net capability improvement: the frozen selector exactly tied unchanged while preserving 98.40% of unchanged-correct rows and avoiding the raw revision's 67-answer collapse. This supports conservative fallback transfer but not a publication claim that the architecture improves GPT-OSS-120B on untouched MMLU-Pro identities."
+  },
+  "final_quota": {
+    "used_kib": 978606532,
+    "hard_limit_kib": 1059061760,
+    "hard_headroom_kib": 80455228,
+    "used_inodes": 582080,
+    "hard_inode_limit": 1010000,
+    "hard_inode_headroom": 427920
+  },
+  "accounting": {
+    "all_scientific_jobs_restarts_zero": true,
+    "successful_scientific_h100_seconds": 22821,
+    "successful_scientific_h100_hours": 6.339166666666666,
+    "infrastructure_failure_h100_seconds": 1072,
+    "total_h100_seconds": 23893,
+    "total_h100_hours": 6.6369444444444445,
+    "duplicate_healthy_scientific_jobs": 0
+  }
 }
