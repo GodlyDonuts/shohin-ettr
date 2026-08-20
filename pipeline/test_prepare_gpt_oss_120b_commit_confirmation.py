@@ -93,6 +93,18 @@ def test_preparation_rejects_label_bearing_question(tmp_path: Path) -> None:
         module.prepare(args)
 
 
+def test_question_reader_preserves_unicode_line_separator_inside_json(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "questions.jsonl"
+    row = _question(_identity("unicode-line-separator", 0))
+    row["question"] = "first paragraph\u2028second paragraph"
+    path.write_text(
+        json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    assert module._questions(path) == [row]
+
+
 def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> None:
     root = Path(__file__).resolve().parents[1]
     launcher = (

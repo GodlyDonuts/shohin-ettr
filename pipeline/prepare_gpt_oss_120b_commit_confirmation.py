@@ -34,8 +34,9 @@ def _jsonl(path: Path) -> list[dict[str, Any]]:
     if path.is_symlink() or not path.is_file():
         raise ConfirmationPreparationError(f"missing or linked input: {path}")
     try:
-        rows = [json.loads(line) for line in path.read_text().splitlines() if line]
-    except (OSError, json.JSONDecodeError) as error:
+        with path.open(encoding="utf-8") as handle:
+            rows = [json.loads(line) for line in handle if line.strip()]
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise ConfirmationPreparationError(f"unreadable input: {path}") from error
     if not rows or any(not isinstance(row, dict) for row in rows):
         raise ConfirmationPreparationError("confirmation JSONL differs")
