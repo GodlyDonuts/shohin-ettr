@@ -126,3 +126,28 @@ def test_conservative_margin_threshold_is_semantic_and_order_consistent() -> Non
         1,
         0,
     )
+
+
+def test_revision_reliability_veto_falls_back_only_on_selected_unreliable_revision() -> (
+    None
+):
+    reliable = {"completion": "answer", "max_token_exhausted": False}
+    empty = {"completion": "", "max_token_exhausted": False}
+    exhausted = {"completion": "answer", "max_token_exhausted": True}
+    assert module.apply_revision_reliability_veto(
+        0, 1, reliable, "empty_or_exhausted"
+    ) == (0, 1, False)
+    assert module.apply_revision_reliability_veto(
+        0, 1, empty, "empty_or_exhausted"
+    ) == (1, 0, True)
+    assert module.apply_revision_reliability_veto(
+        0, 1, exhausted, "empty_or_exhausted"
+    ) == (1, 0, True)
+    assert module.apply_revision_reliability_veto(
+        1, 0, exhausted, "empty_or_exhausted"
+    ) == (1, 0, False)
+    assert module.apply_revision_reliability_veto(0, 1, exhausted, "none") == (
+        0,
+        1,
+        False,
+    )

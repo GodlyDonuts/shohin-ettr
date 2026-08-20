@@ -50,14 +50,27 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
     question_path = tmp_path / "questions.jsonl"
     excluded_path = tmp_path / "excluded.jsonl"
     prior_path = tmp_path / "prior.jsonl"
+    prior_confirmation_path = tmp_path / "prior-confirmation.jsonl"
     _write(question_path, questions)
     _write(excluded_path, excluded)
     _write(prior_path, prior)
+    _write(
+        prior_confirmation_path,
+        [
+            {
+                **_prior(row["id"]),
+                "task": module.BENCHMARK,
+            }
+            for row in questions[256:512]
+        ],
+    )
     output = tmp_path / "output"
     return argparse.Namespace(
         questions=question_path,
         excluded_questions=excluded_path,
         prior_q36_source=prior_path,
+        prior_confirmation_source=prior_confirmation_path,
+        selection_seed=2026082002,
         source_output=output / "source.jsonl",
         receipt=output / "receipt.json",
     )
@@ -75,13 +88,21 @@ def test_preparation_is_deterministic_disjoint_and_label_free(tmp_path: Path) ->
         row["identity_sha256"]
         for row in map(json.loads, args.prior_q36_source.read_text().splitlines())
     }
+    prior_confirmation = {
+        row["identity_sha256"]
+        for row in map(
+            json.loads, args.prior_confirmation_source.read_text().splitlines()
+        )
+    }
     identities = {row["identity_sha256"] for row in rows}
     assert len(rows) == 256
     assert not identities & excluded
     assert not identities & prior
+    assert not identities & prior_confirmation
     assert {row["task"] for row in rows} == {"mmlu_pro"}
     assert receipt["assessor_access_count"] == 0
-    assert receipt["selection_seed"] == 2026082001
+    assert receipt["selection_seed"] == 2026082002
+    assert receipt["prior_confirmation_identity_overlap"] == 0
 
 
 def test_preparation_rejects_label_bearing_question(tmp_path: Path) -> None:
@@ -120,6 +141,7 @@ def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> N
     assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in selector
     assert "--array" not in launcher
     assert "0.703125" in launcher
+    assert "REVISION_RELIABILITY_VETO" in launcher
 
 
 def test_preparation_job_accepts_preexisting_shared_logs_directory() -> None:

@@ -57,7 +57,11 @@ def _json(path: Path) -> dict[str, Any]:
 
 
 def _selections(
-    path: Path, host: str, rows: int, revision_margin_threshold: float
+    path: Path,
+    host: str,
+    rows: int,
+    revision_margin_threshold: float,
+    revision_reliability_veto: str,
 ) -> dict[str, dict[str, Any]]:
     if path.is_symlink() or not path.is_file():
         raise CrossHostAnalysisError("cross-host selections are absent or linked")
@@ -88,6 +92,7 @@ def _selections(
             or not isinstance(threshold, (int, float))
             or not math.isfinite(float(threshold))
             or float(threshold) != revision_margin_threshold
+            or row.get("revision_reliability_veto", "none") != revision_reliability_veto
         ):
             raise CrossHostAnalysisError("cross-host selection differs")
         result[identity] = row
@@ -109,6 +114,9 @@ def mcnemar_exact(left_only: int, right_only: int) -> float:
 def analyze(args: argparse.Namespace) -> dict[str, Any]:
     contract = HOSTS[args.host]
     revision_margin_threshold = getattr(args, "expected_revision_margin_threshold", 0.0)
+    revision_reliability_veto = getattr(
+        args, "expected_revision_reliability_veto", "none"
+    )
     if args.output.exists() or args.output.is_symlink():
         raise CrossHostAnalysisError("cross-host result already exists")
     if not math.isfinite(revision_margin_threshold) or revision_margin_threshold < 0.0:
@@ -118,6 +126,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         args.host,
         contract["rows"],
         revision_margin_threshold,
+        revision_reliability_veto,
     )
     application = _json(args.application_report)
     score = _json(args.score)
@@ -135,6 +144,8 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         or not isinstance(application_threshold, (int, float))
         or not math.isfinite(float(application_threshold))
         or float(application_threshold) != revision_margin_threshold
+        or application.get("revision_reliability_veto", "none")
+        != revision_reliability_veto
         or score.get("schema") != contract["score_schema"]
         or score.get("status") != "complete"
         or score.get("rows") != contract["rows"]
@@ -231,6 +242,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "selection_had_score_or_assessor_access": False,
         "revision_margin_threshold": revision_margin_threshold,
+        "revision_reliability_veto": revision_reliability_veto,
         "application_report_sha256": sha256_file(args.application_report),
         "selections_sha256": sha256_file(args.selections),
         "score_sha256": sha256_file(args.score),
@@ -254,6 +266,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--score", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--expected-revision-margin-threshold", type=float, default=0.0)
+    parser.add_argument("--expected-revision-reliability-veto", default="none")
     return parser.parse_args()
 
 

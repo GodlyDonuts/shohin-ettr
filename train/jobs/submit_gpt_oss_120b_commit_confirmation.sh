@@ -8,6 +8,7 @@ required=(
   QWEN_MODEL_ROOT ALIGNED_CHECKPOINT COMMIT_CHECKPOINT
   ENVIRONMENT_RECEIPT ENVIRONMENT_RECEIPT_SHA256 ENVIRONMENT_TREE_SHA256
   CROSS_HOST_CONTRACT CROSS_HOST_CONTRACT_SHA256 RUN_ROOT
+  REVISION_RELIABILITY_VETO
 )
 for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
@@ -32,6 +33,7 @@ if (
     or payload.get("rows") != 256
     or payload.get("excluded_identity_overlap") != 0
     or payload.get("prior_q36_external_identity_overlap") != 0
+    or payload.get("prior_confirmation_identity_overlap") != 0
     or payload.get("assessor_access_count") != 0
 ):
     raise SystemExit("confirmation preparation receipt differs")
@@ -95,7 +97,7 @@ for shard in 00 01 02 03; do
 done
 revision_joined=$(IFS=:; printf '%s' "${revision_paths[*]}")
 unchanged_joined=$(IFS=:; printf '%s' "${unchanged_paths[*]}")
-selector_exports="RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,SOURCE_COMMIT=$SOURCE_COMMIT,PYTHON=$PYTHON,MODEL_ROOT=$QWEN_MODEL_ROOT,MODEL_MANIFEST=$QWEN_MODEL_ROOT/SHA256SUMS,MODEL_MANIFEST_SHA256=$Q36_MODEL_MANIFEST_SHA256,MODEL_REVISION=$Q36_MODEL_REVISION,MODEL_CONFIG_SHA256=$Q36_MODEL_CONFIG_SHA256,ALIGNED_CHECKPOINT=$ALIGNED_CHECKPOINT,COMMIT_CHECKPOINT=$COMMIT_CHECKPOINT,HOST=gpt_oss_120b_confirmation,SOURCE=$PREPARED_ROOT/source.jsonl,REVISION_CANDIDATES=$revision_joined,UNCHANGED_CANDIDATES=$unchanged_joined,OUTPUT=$selection_root/candidates.jsonl,SELECTIONS=$selection_root/selections.jsonl,REPORT=$selection_root/application.json,ENVIRONMENT_RECEIPT=$ENVIRONMENT_RECEIPT,ENVIRONMENT_RECEIPT_SHA256=$ENVIRONMENT_RECEIPT_SHA256,ENVIRONMENT_TREE_SHA256=$ENVIRONMENT_TREE_SHA256,CROSS_HOST_CONTRACT=$CROSS_HOST_CONTRACT,CROSS_HOST_CONTRACT_SHA256=$CROSS_HOST_CONTRACT_SHA256,RUN_ROOT=$RUN_ROOT,REVISION_MARGIN_THRESHOLD=0.703125"
+selector_exports="RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,SOURCE_COMMIT=$SOURCE_COMMIT,PYTHON=$PYTHON,MODEL_ROOT=$QWEN_MODEL_ROOT,MODEL_MANIFEST=$QWEN_MODEL_ROOT/SHA256SUMS,MODEL_MANIFEST_SHA256=$Q36_MODEL_MANIFEST_SHA256,MODEL_REVISION=$Q36_MODEL_REVISION,MODEL_CONFIG_SHA256=$Q36_MODEL_CONFIG_SHA256,ALIGNED_CHECKPOINT=$ALIGNED_CHECKPOINT,COMMIT_CHECKPOINT=$COMMIT_CHECKPOINT,HOST=gpt_oss_120b_confirmation,SOURCE=$PREPARED_ROOT/source.jsonl,REVISION_CANDIDATES=$revision_joined,UNCHANGED_CANDIDATES=$unchanged_joined,OUTPUT=$selection_root/candidates.jsonl,SELECTIONS=$selection_root/selections.jsonl,REPORT=$selection_root/application.json,ENVIRONMENT_RECEIPT=$ENVIRONMENT_RECEIPT,ENVIRONMENT_RECEIPT_SHA256=$ENVIRONMENT_RECEIPT_SHA256,ENVIRONMENT_TREE_SHA256=$ENVIRONMENT_TREE_SHA256,CROSS_HOST_CONTRACT=$CROSS_HOST_CONTRACT,CROSS_HOST_CONTRACT_SHA256=$CROSS_HOST_CONTRACT_SHA256,RUN_ROOT=$RUN_ROOT,REVISION_MARGIN_THRESHOLD=0.703125,REVISION_RELIABILITY_VETO=$REVISION_RELIABILITY_VETO"
 selector_job=$(env -u SLURM_OVERLAP -u SLURM_WHOLE sbatch --parsable \
   --chdir="$workdir" --exclude="$selector_exclude" --dependency="afterok:$eval_dependency" \
   --export="$selector_exports" "$RUNTIME/train/jobs/q36_mtr_cross_host_commit.sbatch")
@@ -103,7 +105,7 @@ score_exports="PYTHON=$PYTHON,RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_
 score_job=$(env -u SLURM_OVERLAP -u SLURM_WHOLE sbatch --parsable \
   --chdir="$workdir" --dependency="afterok:$eval_dependency" --export="$score_exports" \
   "$RUNTIME/pipeline/jobs/gpt_oss_120b_commit_confirmation_score.sbatch")
-analysis_exports="RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,SOURCE_COMMIT=$SOURCE_COMMIT,PYTHON=$PYTHON,HOST=gpt_oss_120b_confirmation,SELECTIONS=$selection_root/selections.jsonl,APPLICATION_REPORT=$selection_root/application.json,SCORE=$score,OUTPUT=$result,CROSS_HOST_CONTRACT=$CROSS_HOST_CONTRACT,CROSS_HOST_CONTRACT_SHA256=$CROSS_HOST_CONTRACT_SHA256,RUN_ROOT=$RUN_ROOT,REVISION_MARGIN_THRESHOLD=0.703125"
+analysis_exports="RUNTIME=$RUNTIME,RUNTIME_MANIFEST_SHA256=$RUNTIME_MANIFEST_SHA256,SOURCE_COMMIT=$SOURCE_COMMIT,PYTHON=$PYTHON,HOST=gpt_oss_120b_confirmation,SELECTIONS=$selection_root/selections.jsonl,APPLICATION_REPORT=$selection_root/application.json,SCORE=$score,OUTPUT=$result,CROSS_HOST_CONTRACT=$CROSS_HOST_CONTRACT,CROSS_HOST_CONTRACT_SHA256=$CROSS_HOST_CONTRACT_SHA256,RUN_ROOT=$RUN_ROOT,REVISION_MARGIN_THRESHOLD=0.703125,REVISION_RELIABILITY_VETO=$REVISION_RELIABILITY_VETO"
 analysis_job=$(env -u SLURM_OVERLAP -u SLURM_WHOLE sbatch --parsable \
   --chdir="$workdir" --dependency="afterok:$selector_job:$score_job" --export="$analysis_exports" \
   "$RUNTIME/train/jobs/q36_mtr_analyze_cross_host_commit.sbatch")
@@ -123,6 +125,7 @@ payload = {
     "evaluation_job_count": len(sys.argv[9:]),
     "independent_single_h100_jobs": len(sys.argv[5:]) + 1,
     "revision_margin_threshold": 0.703125,
+    "revision_reliability_veto": os.environ["REVISION_RELIABILITY_VETO"],
     "requeue": False,
     "duplicate_scientific_jobs": 0,
     "assessor_access_phase": "dependent_cpu_score_after_generation",

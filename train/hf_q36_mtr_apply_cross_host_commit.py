@@ -32,6 +32,7 @@ SELECTION_SCHEMA = "shohin-q36-cross-host-semantic-commit-selection-v1"
 REPORT_SCHEMA = "shohin-q36-cross-host-semantic-commit-application-v1"
 TASKS = ("math500", "bbh_logic", "mbpp", "mmlu_pro")
 LINEAGES = ("revision", "unchanged")
+REVISION_RELIABILITY_VETOES = ("none", "empty_or_exhausted")
 HOSTS: dict[str, dict[str, Any]] = {
     "gpt_oss_120b_screen": {
         "rows": 256,
@@ -206,6 +207,23 @@ def select_pair(
     )
 
 
+def apply_revision_reliability_veto(
+    chosen: int,
+    reversed_choice: int,
+    revision_candidate: dict[str, Any],
+    mode: str,
+) -> tuple[int, int, bool]:
+    """Fall back to unchanged when the revision failed to terminate reliably."""
+    if mode not in REVISION_RELIABILITY_VETOES:
+        raise CrossHostCommitError("cross-host revision reliability veto differs")
+    unreliable = (
+        not revision_candidate["completion"].strip()
+        or revision_candidate["max_token_exhausted"]
+    )
+    vetoed = mode == "empty_or_exhausted" and chosen == 0 and unreliable
+    return (1, 0, True) if vetoed else (chosen, reversed_choice, False)
+
+
 def apply(args: argparse.Namespace) -> dict[str, Any]:
     contract = HOSTS[args.host]
     if (
@@ -213,6 +231,7 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
         or args.max_sequence_length != MAX_SEQUENCE_LENGTH
         or not math.isfinite(args.revision_margin_threshold)
         or args.revision_margin_threshold < 0.0
+        or args.revision_reliability_veto not in REVISION_RELIABILITY_VETOES
         or args.batch_identities <= 0
         or any(
             path.exists() or path.is_symlink()
@@ -285,6 +304,7 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
     selected_rows: list[dict[str, Any]] = []
     selection_rows: list[dict[str, Any]] = []
     selected_counts: Counter[str] = Counter()
+    reliability_veto_counts: Counter[str] = Counter()
     prompt_truncated = 0
     maximum_swap_error = 0.0
     ordered = sorted(identities)
@@ -331,12 +351,23 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
                     pair["candidates"],
                     args.revision_margin_threshold,
                 )
+                semantic_chosen = chosen
+                chosen, reversed_choice, reliability_vetoed = (
+                    apply_revision_reliability_veto(
+                        chosen,
+                        reversed_choice,
+                        owners["revision"][identity],
+                        args.revision_reliability_veto,
+                    )
+                )
                 consistent = chosen == 1 - reversed_choice or (
                     pair["candidates"][0]["completion"]
                     == pair["candidates"][1]["completion"]
                 )
                 lineage = LINEAGES[chosen]
                 selected_counts[lineage] += 1
+                if reliability_vetoed:
+                    reliability_veto_counts["revision_to_unchanged"] += 1
                 selected_rows.append(owners[lineage][identity])
                 selection_rows.append(
                     {
@@ -346,8 +377,17 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
                         "task": source[identity]["task"],
                         "selected_index": chosen,
                         "selected_lineage": lineage,
+                        "semantic_selected_lineage": LINEAGES[semantic_chosen],
                         "margin": float(margin),
                         "revision_margin_threshold": args.revision_margin_threshold,
+                        "revision_reliability_veto": args.revision_reliability_veto,
+                        "reliability_veto_applied": reliability_vetoed,
+                        "revision_candidate_empty": not owners["revision"][identity][
+                            "completion"
+                        ].strip(),
+                        "revision_candidate_max_token_exhausted": owners["revision"][
+                            identity
+                        ]["max_token_exhausted"],
                         "order_consistent": consistent,
                     }
                 )
@@ -382,10 +422,16 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
         "maximum_swap_error": maximum_swap_error,
         "order_consistent": len(selection_rows),
         "revision_margin_threshold": args.revision_margin_threshold,
+        "revision_reliability_veto": args.revision_reliability_veto,
+        "reliability_veto_counts": dict(sorted(reliability_veto_counts.items())),
         "model_visible_fields": [
             "question",
             "candidate_a.completion",
             "candidate_b.completion",
+        ],
+        "deterministic_control_fields": [
+            "revision.completion_is_empty",
+            "revision.max_token_exhausted",
         ],
         "commit_projection_contract": COMMIT_PROJECTION_CONTRACT,
         "task_correctness_or_host_label_visible": False,
@@ -423,6 +469,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-sequence-length", type=int, default=MAX_SEQUENCE_LENGTH)
     parser.add_argument("--batch-identities", type=int, default=2)
     parser.add_argument("--revision-margin-threshold", type=float, default=0.0)
+    parser.add_argument(
+        "--revision-reliability-veto",
+        choices=REVISION_RELIABILITY_VETOES,
+        default="none",
+    )
     return parser.parse_args()
 
 

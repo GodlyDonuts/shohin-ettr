@@ -23,7 +23,7 @@ q36_verify_runtime
 q36_verify_model
 q36_verify_environment
 q36_verify_sha256 "$CROSS_HOST_CONTRACT" "$CROSS_HOST_CONTRACT_SHA256"
-"$PYTHON" - "$CROSS_HOST_CONTRACT" "$HOST" "$RUN_ROOT" "$OUTPUT" "$SELECTIONS" "$REPORT" "${REVISION_MARGIN_THRESHOLD:-0.0}" <<'PY'
+"$PYTHON" - "$CROSS_HOST_CONTRACT" "$HOST" "$RUN_ROOT" "$OUTPUT" "$SELECTIONS" "$REPORT" "${REVISION_MARGIN_THRESHOLD:-0.0}" "${REVISION_RELIABILITY_VETO:-none}" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -31,6 +31,7 @@ import sys
 contract = json.load(open(sys.argv[1], encoding="utf-8"))
 root = Path(sys.argv[3]).resolve(strict=False)
 threshold = float(sys.argv[7])
+reliability_veto = sys.argv[8]
 if (
     contract.get("schema") != "shohin-q36-cross-host-model-owned-commit-contract-v1"
     or contract.get("status") != "frozen_before_execution"
@@ -38,6 +39,8 @@ if (
     or root in {Path("/"), Path.home().resolve()}
     or threshold
     != float(contract.get("selector", {}).get("revision_margin_threshold", 0.0))
+    or reliability_veto
+    != contract.get("selector", {}).get("revision_reliability_veto", "none")
 ):
     raise SystemExit("cross-host authorization differs")
 for value in sys.argv[4:7]:
@@ -87,6 +90,7 @@ nvidia-smi
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
   --max-sequence-length 3072 --batch-identities 2 \
-  --revision-margin-threshold "${REVISION_MARGIN_THRESHOLD:-0.0}"
+  --revision-margin-threshold "${REVISION_MARGIN_THRESHOLD:-0.0}" \
+  --revision-reliability-veto "${REVISION_RELIABILITY_VETO:-none}"
 test -f "$OUTPUT" && test -f "$SELECTIONS" && test -f "$REPORT"
 chmod a-w "$OUTPUT" "$SELECTIONS" "$REPORT"

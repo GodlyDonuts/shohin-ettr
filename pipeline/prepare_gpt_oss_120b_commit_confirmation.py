@@ -15,7 +15,7 @@ SOURCE_SCHEMA = "shohin-q36-mtr-external-validation-source-v1"
 RECEIPT_SCHEMA = "shohin-gpt-oss-120b-commit-confirmation-inputs-v1"
 BENCHMARK = "mmlu_pro"
 ROWS = 256
-SELECTION_SEED = 2026082001
+DEFAULT_SELECTION_SEED = 2026082001
 
 
 class ConfirmationPreparationError(RuntimeError):
@@ -67,8 +67,8 @@ def _questions(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def _rank(identity: str) -> bytes:
-    return hashlib.sha256(f"{SELECTION_SEED}\0{identity}".encode()).digest()
+def _rank(identity: str, selection_seed: int) -> bytes:
+    return hashlib.sha256(f"{selection_seed}\0{identity}".encode()).digest()
 
 
 def _atomic_lines(path: Path, rows: list[dict[str, Any]]) -> str:
@@ -104,13 +104,23 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
     questions = _questions(args.questions)
     excluded = _questions(args.excluded_questions)
     prior_q36 = _jsonl(args.prior_q36_source)
+    prior_confirmation_path = getattr(args, "prior_confirmation_source", None)
+    prior_confirmation = (
+        _jsonl(prior_confirmation_path) if prior_confirmation_path is not None else []
+    )
     question_ids = {row["id"] for row in questions}
     excluded_ids = {row["id"] for row in excluded}
     prior_q36_ids = {row.get("identity_sha256") for row in prior_q36}
+    prior_confirmation_ids = {row.get("identity_sha256") for row in prior_confirmation}
+    selection_seed = getattr(args, "selection_seed", DEFAULT_SELECTION_SEED)
     if (
         len(questions) != 12_032
         or len(excluded) != 256
         or len(prior_q36_ids) != 1_279
+        or (prior_confirmation and len(prior_confirmation_ids) != ROWS)
+        or isinstance(selection_seed, bool)
+        or not isinstance(selection_seed, int)
+        or selection_seed <= 0
         or any(
             row.get("schema") != SOURCE_SCHEMA
             or row.get("split") != "external_validation"
@@ -118,17 +128,29 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
             or len(row["identity_sha256"]) != 64
             for row in prior_q36
         )
+        or any(
+            row.get("schema") != SOURCE_SCHEMA
+            or row.get("split") != "external_validation"
+            or row.get("task") != BENCHMARK
+            or not isinstance(row.get("identity_sha256"), str)
+            or len(row["identity_sha256"]) != 64
+            for row in prior_confirmation
+        )
         or not excluded_ids.issubset(question_ids)
     ):
         raise ConfirmationPreparationError("confirmation identity universe differs")
-    eligible = [row for row in questions if row["id"] not in excluded_ids]
-    selected = sorted(eligible, key=lambda row: (_rank(row["id"]), row["id"]))[:ROWS]
+    ineligible_ids = excluded_ids | prior_q36_ids | prior_confirmation_ids
+    eligible = [row for row in questions if row["id"] not in ineligible_ids]
+    selected = sorted(
+        eligible, key=lambda row: (_rank(row["id"], selection_seed), row["id"])
+    )[:ROWS]
     selected.sort(key=lambda row: row["id"])
     selected_ids = {row["id"] for row in selected}
     if (
         len(selected_ids) != ROWS
         or selected_ids & excluded_ids
         or selected_ids & prior_q36_ids
+        or selected_ids & prior_confirmation_ids
     ):
         raise ConfirmationPreparationError("confirmation selection differs")
     source_rows = [
@@ -151,19 +173,25 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
         "schema": RECEIPT_SCHEMA,
         "status": "complete",
         "benchmark": BENCHMARK,
-        "selection_seed": SELECTION_SEED,
-        "selection_rule": "lowest_sha256_seeded_rank_excluding_public_screen",
+        "selection_seed": selection_seed,
+        "selection_rule": "lowest_sha256_seeded_rank_excluding_all_prior_source_identities",
         "rows": ROWS,
         "question_universe_rows": len(questions),
         "excluded_public_screen_rows": len(excluded),
         "questions_sha256": sha256_file(args.questions),
         "excluded_questions_sha256": sha256_file(args.excluded_questions),
         "prior_q36_source_sha256": sha256_file(args.prior_q36_source),
+        "prior_confirmation_source_sha256": (
+            sha256_file(prior_confirmation_path)
+            if prior_confirmation_path is not None
+            else None
+        ),
         "source_output": str(args.source_output.resolve()),
         "source_output_sha256": source_sha256,
         "selected_identity_sha256": identity_digest,
         "excluded_identity_overlap": 0,
         "prior_q36_external_identity_overlap": 0,
+        "prior_confirmation_identity_overlap": 0,
         "assessor_access_count": 0,
         "label_or_correctness_field_access_count": 0,
     }
@@ -176,6 +204,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--questions", type=Path, required=True)
     parser.add_argument("--excluded-questions", type=Path, required=True)
     parser.add_argument("--prior-q36-source", type=Path, required=True)
+    parser.add_argument("--prior-confirmation-source", type=Path)
+    parser.add_argument("--selection-seed", type=int, default=DEFAULT_SELECTION_SEED)
     parser.add_argument("--source-output", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
     return parser.parse_args()

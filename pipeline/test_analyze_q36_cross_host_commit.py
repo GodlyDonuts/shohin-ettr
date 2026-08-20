@@ -129,3 +129,28 @@ def test_analysis_binds_prospective_revision_margin_threshold(tmp_path: Path) ->
     )
     with pytest.raises(module.CrossHostAnalysisError, match="selection differs"):
         module.analyze(args)
+
+
+def test_analysis_binds_revision_reliability_veto(tmp_path: Path) -> None:
+    args = _fixture(tmp_path)
+    args.expected_revision_reliability_veto = "empty_or_exhausted"
+    rows = [json.loads(line) for line in args.selections.read_text().splitlines()]
+    for row in rows:
+        row["revision_reliability_veto"] = "empty_or_exhausted"
+    args.selections.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    application = json.loads(args.application_report.read_text())
+    application["revision_reliability_veto"] = "empty_or_exhausted"
+    application["selections_sha256"] = module.sha256_file(args.selections)
+    _json(args.application_report, application)
+    assert module.analyze(args)["revision_reliability_veto"] == "empty_or_exhausted"
+
+    args.output.unlink()
+    application["revision_reliability_veto"] = "none"
+    _json(args.application_report, application)
+    with pytest.raises(
+        module.CrossHostAnalysisError, match="application or score differs"
+    ):
+        module.analyze(args)
