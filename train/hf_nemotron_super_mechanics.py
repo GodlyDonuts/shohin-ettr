@@ -1093,6 +1093,7 @@ def _restore_trainables(
 
 def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
     rows = []
+    diagnostics = []
     for name, parameter in model.named_parameters():
         if not parameter.requires_grad:
             continue
@@ -1100,12 +1101,38 @@ def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
         finite = bool(gradient is not None and torch.isfinite(gradient).all())
         norm = float(gradient.float().norm().detach().cpu()) if finite else None
         rows.append({"name": name, "finite": finite, "norm": norm})
+        diagnostics.append(
+            {
+                "name": name,
+                "present": gradient is not None,
+                "finite": finite,
+                "nan_values": (
+                    int(torch.isnan(gradient).sum().detach().cpu())
+                    if gradient is not None
+                    else None
+                ),
+                "positive_infinite_values": (
+                    int(torch.isposinf(gradient).sum().detach().cpu())
+                    if gradient is not None
+                    else None
+                ),
+                "negative_infinite_values": (
+                    int(torch.isneginf(gradient).sum().detach().cpu())
+                    if gradient is not None
+                    else None
+                ),
+                "norm": norm,
+            }
+        )
     if (
         len(rows) != 32
         or not all(row["finite"] for row in rows)
         or not any(float(row["norm"] or 0.0) > 0.0 for row in rows)
     ):
-        raise NemotronSuperMechanicsError("Shohin gradient receipt differs")
+        raise NemotronSuperMechanicsError(
+            "Shohin gradient receipt differs: "
+            + json.dumps(diagnostics, sort_keys=True, separators=(",", ":"))
+        )
     encoded = b"".join(
         (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
         for row in rows

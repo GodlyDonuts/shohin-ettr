@@ -840,3 +840,30 @@ def test_frozen_empty_experts_skip_only_zero_distributed_noops(
     }
     with pytest.raises(NemotronSuperMechanicsError, match="geometry"):
         install_frozen_empty_expert_compatibility(backbone)
+
+
+def test_gradient_failure_emits_exact_diagnostics() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    model = torch.nn.ModuleList([torch.nn.Linear(1, 1) for _ in range(16)])
+    for parameter in model.parameters():
+        parameter.grad = torch.zeros_like(parameter)
+    next(model.parameters()).grad = torch.ones_like(next(model.parameters()))
+    receipt = mechanics._gradient_receipt(model)
+    assert receipt["parameters"] == 32
+    assert receipt["nonzero_gradients"] == 1
+
+    missing = next(model.parameters())
+    missing.grad = None
+    with pytest.raises(
+        NemotronSuperMechanicsError,
+        match='"present":false',
+    ):
+        mechanics._gradient_receipt(model)
+
+    missing.grad = torch.full_like(missing, float("nan"))
+    with pytest.raises(
+        NemotronSuperMechanicsError,
+        match='"nan_values":1',
+    ):
+        mechanics._gradient_receipt(model)
