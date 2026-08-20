@@ -44,6 +44,26 @@ PY
 source_sha256=${prepared[0]}
 q36_verify_sha256 "$PREPARED_ROOT/source.jsonl" "$source_sha256"
 q36_verify_sha256 "$CROSS_HOST_CONTRACT" "$CROSS_HOST_CONTRACT_SHA256"
+"$PYTHON" -P -s -B - "$CROSS_HOST_CONTRACT" "$REVISION_MARGIN_THRESHOLD" "$REVISION_RELIABILITY_VETO" <<'PY'
+import json
+import math
+import pathlib
+import sys
+
+contract = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+threshold = float(sys.argv[2])
+if (
+    contract.get("schema") != "shohin-q36-cross-host-model-owned-commit-contract-v1"
+    or contract.get("status") != "frozen_before_execution"
+    or "gpt_oss_120b_confirmation" not in contract.get("hosts", {})
+    or not math.isfinite(threshold)
+    or threshold
+    != float(contract.get("selector", {}).get("revision_margin_threshold", -1.0))
+    or sys.argv[3]
+    != contract.get("selector", {}).get("revision_reliability_veto", "none")
+):
+    raise SystemExit("cross-host authorization differs before dispatch")
+PY
 
 mkdir -m 700 "$RUN_ROOT"
 workdir=/lustre/fs1/home/sa305415/shohin

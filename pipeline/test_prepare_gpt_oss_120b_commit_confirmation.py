@@ -175,6 +175,8 @@ def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> N
     assert "REVISION_MARGIN_THRESHOLD" in launcher
     assert "REVISION_MARGIN_THRESHOLD=$REVISION_MARGIN_THRESHOLD" in launcher
     assert 'float(os.environ["REVISION_MARGIN_THRESHOLD"])' in launcher
+    assert "cross-host authorization differs before dispatch" in launcher
+    assert "shohin-q36-cross-host-model-owned-commit-contract-v1" in launcher
     assert "REVISION_RELIABILITY_VETO" in launcher
     assert "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" in launcher
 
