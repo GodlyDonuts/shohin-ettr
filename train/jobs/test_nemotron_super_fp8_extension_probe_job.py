@@ -1,6 +1,9 @@
-"""Static checks for the score-free Nemotron FP8 extension admission probe."""
+"""Checks for the score-free Nemotron FP8 extension admission probe."""
 
+import hashlib
 from pathlib import Path
+import subprocess
+import sys
 
 SCRIPT = Path(__file__).with_name("nemotron_super_fp8_extension_probe.sbatch")
 COMMON = Path(__file__).with_name("q36_mtr_common.sh")
@@ -46,3 +49,67 @@ def test_common_helper_pins_newton_cuda_and_compiler_bytes() -> None:
         'mkdir -m 700 "$TORCH_EXTENSIONS_DIR"',
     ):
         assert fragment in source
+
+
+def test_overlay_verifier_accepts_authenticated_authoring_order(tmp_path: Path) -> None:
+    overlay = tmp_path / "overlay"
+    overlay.mkdir()
+    (overlay / "z.txt").write_bytes(b"z\n")
+    (overlay / "a.txt").write_bytes(b"a\n")
+    manifest = overlay / "SHA256SUMS"
+    manifest.write_text(
+        "".join(
+            f"{hashlib.sha256((overlay / name).read_bytes()).hexdigest()}  {name}\n"
+            for name in ("z.txt", "a.txt")
+        ),
+        encoding="utf-8",
+    )
+    manifest_sha256 = hashlib.sha256(manifest.read_bytes()).hexdigest()
+    command = 'PYTHON="$1"; source "$2"; ' 'q36_verify_overlay "$3" "$4"'
+    subprocess.run(
+        [
+            "bash",
+            "-c",
+            command,
+            "q36-overlay-test",
+            sys.executable,
+            str(COMMON.resolve()),
+            str(overlay),
+            manifest_sha256,
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_overlay_verifier_rejects_member_tamper(tmp_path: Path) -> None:
+    overlay = tmp_path / "overlay"
+    overlay.mkdir()
+    member = overlay / "member.txt"
+    member.write_bytes(b"qualified\n")
+    manifest = overlay / "SHA256SUMS"
+    manifest.write_text(
+        f"{hashlib.sha256(member.read_bytes()).hexdigest()}  member.txt\n",
+        encoding="utf-8",
+    )
+    manifest_sha256 = hashlib.sha256(manifest.read_bytes()).hexdigest()
+    member.write_bytes(b"tampered\n")
+    command = 'PYTHON="$1"; source "$2"; ' 'q36_verify_overlay "$3" "$4"'
+    result = subprocess.run(
+        [
+            "bash",
+            "-c",
+            command,
+            "q36-overlay-test",
+            sys.executable,
+            str(COMMON.resolve()),
+            str(overlay),
+            manifest_sha256,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "overlay member hash differs" in result.stderr

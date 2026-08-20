@@ -222,8 +222,10 @@ for line in manifest.read_text(encoding="utf-8").splitlines():
     if value.hexdigest() != digest:
         raise SystemExit("Q36-MTR overlay member hash differs")
     declared.append(relative)
-if declared != sorted(declared):
-    raise SystemExit("Q36-MTR overlay manifest order differs")
+# The externally qualified overlays predate this verifier and retain their
+# authoring order.  The exact SHA-256 of the manifest authenticates that order;
+# security comes from rejecting duplicates, replaying every member hash, and
+# requiring exact tree membership below, not from rewriting row order.
 actual = set()
 for path in root.rglob("*"):
     mode = path.lstat().st_mode
