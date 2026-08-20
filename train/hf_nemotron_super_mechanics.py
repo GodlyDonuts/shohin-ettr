@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+from contextlib import contextmanager
 import copy
 import hashlib
 import importlib.metadata
@@ -55,6 +56,9 @@ MODELOPT_EXPORT_VERSION = "0.41.0"
 FP8_LINEAR_COUNT = 41_120
 MODEL_WEIGHT_MAP_ENTRIES = 124_941
 MODEL_WEIGHT_SHARDS = 26
+BACKBONE_WEIGHT_MAP_ENTRIES = 123_898
+MTP_WEIGHT_MAP_ENTRIES = 1_042
+LM_HEAD_WEIGHT_MAP_ENTRIES = 1
 MODELOPT_IGNORE_PATTERNS = 130
 REMOTE_CONFIGURATION_SHA256 = (
     "0fc818c10506c91bd02df5a605f49cb0704b5498954f46dbde2d63999ae36c3d"
@@ -186,6 +190,71 @@ def _cuda_index(value: Any) -> int | None:
     return None
 
 
+@contextmanager
+def _translate_export_checkpoint_keys() -> Any:
+    """Translate the pinned Megatron export namespace during streamed loading.
+
+    The immutable checkpoint names the causal backbone ``backbone`` and also
+    carries a one-layer MTP head. The pinned remote Transformers class names
+    the same causal backbone ``model`` and intentionally has no MTP module.
+    Accelerate loads one safetensors shard at a time, so translate those keys
+    in memory without rewriting or duplicating the 120B checkpoint.
+    """
+
+    import accelerate.utils.modeling as accelerate_modeling
+
+    original = accelerate_modeling.load_state_dict
+    counts: Counter[str] = Counter()
+
+    def translated_load_state_dict(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        state = original(*args, **kwargs)
+        if not isinstance(state, dict):
+            raise NemotronSuperMechanicsError("checkpoint shard state differs")
+        translated: dict[str, Any] = {}
+        for name, value in state.items():
+            if name.startswith("backbone."):
+                translated_name = f"model.{name[len('backbone.'):]}"
+                counts["backbone_to_model"] += 1
+            elif name.startswith("mtp."):
+                counts["mtp_ignored"] += 1
+                continue
+            elif name == "lm_head.weight":
+                translated_name = name
+                counts["lm_head_unchanged"] += 1
+            else:
+                raise NemotronSuperMechanicsError("checkpoint export namespace differs")
+            if translated_name in translated:
+                raise NemotronSuperMechanicsError(
+                    "checkpoint export translation collides"
+                )
+            translated[translated_name] = value
+        return translated
+
+    accelerate_modeling.load_state_dict = translated_load_state_dict
+    try:
+        yield counts
+    finally:
+        accelerate_modeling.load_state_dict = original
+
+
+def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
+    expected = {
+        "backbone_to_model": BACKBONE_WEIGHT_MAP_ENTRIES,
+        "mtp_ignored": MTP_WEIGHT_MAP_ENTRIES,
+        "lm_head_unchanged": LM_HEAD_WEIGHT_MAP_ENTRIES,
+    }
+    observed = {name: counts.get(name, 0) for name in expected}
+    if observed != expected or sum(observed.values()) != MODEL_WEIGHT_MAP_ENTRIES:
+        raise NemotronSuperMechanicsError("checkpoint export translation differs")
+    return {
+        **observed,
+        "source_prefix": "backbone.",
+        "target_prefix": "model.",
+        "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+        "translation_sha256": _canonical_sha256(observed),
+    }
+
+
 def _modelopt_fp8_runtime_receipt(backbone: Any) -> dict[str, Any]:
     device_map = getattr(backbone, "hf_device_map", None)
     if not isinstance(device_map, dict) or not device_map:
@@ -239,10 +308,12 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
     if not isinstance(payload, dict):
         return False
     export = payload.get("export")
+    checkpoint_translation = payload.get("checkpoint_translation")
     remote_model = payload.get("remote_model")
     runtime = payload.get("runtime")
     return bool(
         isinstance(export, dict)
+        and isinstance(checkpoint_translation, dict)
         and isinstance(remote_model, dict)
         and isinstance(runtime, dict)
         and export.get("hf_quant_config_sha256") == HF_QUANT_CONFIG_SHA256
@@ -252,6 +323,15 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and export.get("weight_shards") == MODEL_WEIGHT_SHARDS
         and export.get("disabled_patterns") == MODELOPT_IGNORE_PATTERNS
         and export.get("quant_gemm") is True
+        and checkpoint_translation.get("backbone_to_model")
+        == BACKBONE_WEIGHT_MAP_ENTRIES
+        and checkpoint_translation.get("mtp_ignored") == MTP_WEIGHT_MAP_ENTRIES
+        and checkpoint_translation.get("lm_head_unchanged")
+        == LM_HEAD_WEIGHT_MAP_ENTRIES
+        and checkpoint_translation.get("source_prefix") == "backbone."
+        and checkpoint_translation.get("target_prefix") == "model."
+        and checkpoint_translation.get("mtp_policy")
+        == "ignored_not_implemented_by_remote_causal_lm"
         and remote_model.get("configuration_sha256") == REMOTE_CONFIGURATION_SHA256
         and remote_model.get("modeling_sha256") == REMOTE_MODELING_SHA256
         and str(remote_model.get("model_class", "")).endswith(".NemotronHForCausalLM")
@@ -303,15 +383,21 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     AutoModelForCausalLM.register(type(config), model_class, exist_ok=True)
     delattr(config, "quantization_config")
     config.torch_dtype = torch.bfloat16
-    with init_quantized_weights(quant_cfg, gpu_mem_percentage=0.95, quant_gemm=True):
-        backbone = AutoModelForCausalLM.from_pretrained(
-            model_root,
-            config=config,
-            trust_remote_code=True,
-        )
+    with _translate_export_checkpoint_keys() as translation_counts:
+        with init_quantized_weights(
+            quant_cfg, gpu_mem_percentage=0.95, quant_gemm=True
+        ):
+            backbone = AutoModelForCausalLM.from_pretrained(
+                model_root,
+                config=config,
+                trust_remote_code=True,
+                strict=True,
+            )
+    translation_receipt = _checkpoint_translation_receipt(translation_counts)
     runtime_receipt = _modelopt_fp8_runtime_receipt(backbone)
     return backbone, {
         "export": export_receipt,
+        "checkpoint_translation": translation_receipt,
         "remote_model": {
             "configuration_sha256": REMOTE_CONFIGURATION_SHA256,
             "modeling_sha256": REMOTE_MODELING_SHA256,

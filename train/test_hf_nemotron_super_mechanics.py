@@ -15,8 +15,10 @@ import torch
 from hf_nemotron_super_mechanics import (
     NemotronSuperMechanicsError,
     _atomic_json,
+    _checkpoint_translation_receipt,
     _modelopt_fp8_quantization_config,
     _state_sha256,
+    _translate_export_checkpoint_keys,
     install_triton_allocator_compatibility,
     load_modelopt_fp8_backbone,
     modelopt_fp8_receipt_is_exact,
@@ -235,6 +237,14 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "modeling_sha256": mechanics.REMOTE_MODELING_SHA256,
             "model_class": "frozen.NemotronHForCausalLM",
         },
+        "checkpoint_translation": {
+            "backbone_to_model": mechanics.BACKBONE_WEIGHT_MAP_ENTRIES,
+            "mtp_ignored": mechanics.MTP_WEIGHT_MAP_ENTRIES,
+            "lm_head_unchanged": mechanics.LM_HEAD_WEIGHT_MAP_ENTRIES,
+            "source_prefix": "backbone.",
+            "target_prefix": "model.",
+            "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+        },
         "runtime": {
             "real_quant_gemm_enabled": True,
             "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
@@ -251,6 +261,54 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
     payload["runtime"]["cpu_tensors"] = 0
     payload["runtime"]["real_fp8_linear_count"] -= 1
     assert not modelopt_fp8_receipt_is_exact(payload)
+
+
+def test_checkpoint_translation_is_streamed_exact_and_restored(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import accelerate.utils.modeling as accelerate_modeling
+    import hf_nemotron_super_mechanics as mechanics
+
+    sentinel = object()
+
+    def fake_load(*args, **kwargs):
+        return {
+            "backbone.layer.weight": sentinel,
+            "mtp.layer.weight": object(),
+            "lm_head.weight": sentinel,
+        }
+
+    monkeypatch.setattr(accelerate_modeling, "load_state_dict", fake_load)
+    monkeypatch.setattr(mechanics, "BACKBONE_WEIGHT_MAP_ENTRIES", 1)
+    monkeypatch.setattr(mechanics, "MTP_WEIGHT_MAP_ENTRIES", 1)
+    monkeypatch.setattr(mechanics, "LM_HEAD_WEIGHT_MAP_ENTRIES", 1)
+    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 3)
+    with _translate_export_checkpoint_keys() as counts:
+        translated = accelerate_modeling.load_state_dict("one.safetensors")
+        assert translated == {
+            "model.layer.weight": sentinel,
+            "lm_head.weight": sentinel,
+        }
+    assert accelerate_modeling.load_state_dict is fake_load
+    receipt = _checkpoint_translation_receipt(counts)
+    assert receipt["backbone_to_model"] == 1
+    assert receipt["mtp_ignored"] == 1
+    assert receipt["lm_head_unchanged"] == 1
+
+
+def test_checkpoint_translation_rejects_unknown_namespace(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import accelerate.utils.modeling as accelerate_modeling
+
+    monkeypatch.setattr(
+        accelerate_modeling,
+        "load_state_dict",
+        lambda *args, **kwargs: {"unexpected.weight": object()},
+    )
+    with _translate_export_checkpoint_keys():
+        with pytest.raises(NemotronSuperMechanicsError, match="namespace"):
+            accelerate_modeling.load_state_dict("one.safetensors")
 
 
 def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
@@ -279,6 +337,19 @@ def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
         mechanics,
         "_modelopt_fp8_runtime_receipt",
         lambda model: {"runtime": "exact"},
+    )
+
+    @contextmanager
+    def fake_translation():
+        yield mechanics.Counter()
+
+    monkeypatch.setattr(
+        mechanics, "_translate_export_checkpoint_keys", fake_translation
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "_checkpoint_translation_receipt",
+        lambda counts: {"translation": "exact"},
     )
 
     class RemoteConfig:

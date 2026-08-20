@@ -23,6 +23,19 @@ def _modelopt_fp8() -> dict[str, object]:
             "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
             "quant_gemm": True,
         },
+        "remote_model": {
+            "configuration_sha256": mechanics.REMOTE_CONFIGURATION_SHA256,
+            "modeling_sha256": mechanics.REMOTE_MODELING_SHA256,
+            "model_class": "frozen.NemotronHForCausalLM",
+        },
+        "checkpoint_translation": {
+            "backbone_to_model": mechanics.BACKBONE_WEIGHT_MAP_ENTRIES,
+            "mtp_ignored": mechanics.MTP_WEIGHT_MAP_ENTRIES,
+            "lm_head_unchanged": mechanics.LM_HEAD_WEIGHT_MAP_ENTRIES,
+            "source_prefix": "backbone.",
+            "target_prefix": "model.",
+            "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+        },
         "runtime": {
             "real_quant_gemm_enabled": True,
             "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
