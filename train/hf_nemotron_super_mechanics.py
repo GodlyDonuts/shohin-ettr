@@ -61,6 +61,9 @@ BACKBONE_WEIGHT_MAP_ENTRIES = 123_898
 MTP_WEIGHT_MAP_ENTRIES = 1_042
 LM_HEAD_WEIGHT_MAP_ENTRIES = 1
 FP8_SCALE_MULTIPLIER = 448.0
+FP8_MODULE_NAMES_SHA256 = (
+    "cd608a21448741388b00a63bfd25cf38040029f6196685e0e8838247de307912"
+)
 MODELOPT_IGNORE_PATTERNS = 130
 MODELOPT_BACKBONE_IGNORE_PATTERNS = 128
 MODELOPT_SOURCE_IGNORE_SHA256 = (
@@ -217,8 +220,30 @@ def _cuda_index(value: Any) -> int | None:
     return None
 
 
+def _expected_fp8_module_names(model_root: Path) -> frozenset[str]:
+    index = json.loads(
+        (model_root / "model.safetensors.index.json").read_text(encoding="utf-8")
+    )
+    weight_map = index.get("weight_map") if isinstance(index, dict) else None
+    if not isinstance(weight_map, dict):
+        raise NemotronSuperMechanicsError("ModelOpt weight index differs")
+    names = frozenset(
+        f"model.{name[len('backbone.') : -len('.weight_scale')]}"
+        for name in weight_map
+        if name.startswith("backbone.") and name.endswith(".weight_scale")
+    )
+    if (
+        len(names) != FP8_LINEAR_COUNT
+        or _canonical_sha256(sorted(names)) != FP8_MODULE_NAMES_SHA256
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt FP8 module identities differ")
+    return names
+
+
 @contextmanager
-def _translate_export_checkpoint_keys() -> Any:
+def _translate_export_checkpoint_keys(
+    expected_fp8_modules: frozenset[str],
+) -> Any:
     """Translate the pinned Megatron export namespace during streamed loading.
 
     The immutable checkpoint names the causal backbone ``backbone`` and also
@@ -281,7 +306,7 @@ def _translate_export_checkpoint_keys() -> Any:
     def prepared_load_checkpoint_and_dispatch(
         model: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        _prepare_fp8_scale_buffers(model, counts)
+        _prepare_fp8_scale_buffers(model, counts, expected_fp8_modules)
         return original_dispatch(model, *args, **kwargs)
 
     accelerate_modeling.load_state_dict = translated_load_state_dict
@@ -295,15 +320,37 @@ def _translate_export_checkpoint_keys() -> Any:
         modelopt_accelerate.load_checkpoint_and_dispatch = original_dispatch
 
 
-def _prepare_fp8_scale_buffers(model: Any, counts: Counter[str]) -> None:
-    quantized_linears = [
-        module
-        for module in model.modules()
-        if hasattr(module, "weight_quantizer") and hasattr(module, "input_quantizer")
-    ]
-    if len(quantized_linears) != FP8_LINEAR_COUNT:
+def _enabled_fp8_linears(model: Any) -> dict[str, Any]:
+    observed: dict[str, Any] = {}
+    for name, module in model.named_modules():
+        weight = getattr(module, "weight", None)
+        weight_quantizer = getattr(module, "weight_quantizer", None)
+        input_quantizer = getattr(module, "input_quantizer", None)
+        if (
+            not isinstance(weight, torch.Tensor)
+            or weight.dim() != 2
+            or weight_quantizer is None
+            or input_quantizer is None
+            or not callable(getattr(weight_quantizer, "is_enabled", None))
+            or not callable(getattr(input_quantizer, "is_enabled", None))
+            or not weight_quantizer.is_enabled()
+            or not input_quantizer.is_enabled()
+        ):
+            continue
+        observed[name] = module
+    return observed
+
+
+def _prepare_fp8_scale_buffers(
+    model: Any,
+    counts: Counter[str],
+    expected_fp8_modules: frozenset[str],
+) -> None:
+    quantized_linears = _enabled_fp8_linears(model)
+    if set(quantized_linears) != expected_fp8_modules:
         raise NemotronSuperMechanicsError("ModelOpt scale-buffer geometry differs")
-    for module in quantized_linears:
+    counts["enabled_fp8_module_identities"] = len(quantized_linears)
+    for module in quantized_linears.values():
         weight_quantizer = module.weight_quantizer
         input_quantizer = module.input_quantizer
         weight_amax = getattr(weight_quantizer, "_amax", None)
@@ -334,6 +381,7 @@ def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
         "weight_scale_to_amax": FP8_LINEAR_COUNT,
         "input_amax_placeholders": FP8_LINEAR_COUNT,
         "weight_amax_placeholders": FP8_LINEAR_COUNT,
+        "enabled_fp8_module_identities": FP8_LINEAR_COUNT,
     }
     observed = {name: counts.get(name, 0) for name in expected}
     namespace_total = sum(
@@ -348,11 +396,14 @@ def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
         "target_prefix": "model.",
         "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
         "scale_to_amax_multiplier": FP8_SCALE_MULTIPLIER,
+        "enabled_fp8_module_names_sha256": FP8_MODULE_NAMES_SHA256,
         "translation_sha256": _canonical_sha256(observed),
     }
 
 
-def _modelopt_fp8_runtime_receipt(backbone: Any) -> dict[str, Any]:
+def _modelopt_fp8_runtime_receipt(
+    backbone: Any, expected_fp8_modules: frozenset[str]
+) -> dict[str, Any]:
     device_map = getattr(backbone, "hf_device_map", None)
     if not isinstance(device_map, dict) or not device_map:
         raise NemotronSuperMechanicsError("ModelOpt device map differs")
@@ -374,17 +425,13 @@ def _modelopt_fp8_runtime_receipt(backbone: Any) -> dict[str, Any]:
         is_real_quant_gemm_enabled,
     )
 
-    quantized_linears = [
-        module
-        for module in backbone.modules()
-        if hasattr(module, "weight_quantizer") and hasattr(module, "input_quantizer")
-    ]
+    quantized_linears = _enabled_fp8_linears(backbone)
     if (
-        len(quantized_linears) != FP8_LINEAR_COUNT
+        set(quantized_linears) != expected_fp8_modules
         or not is_real_quant_gemm_enabled(backbone)
         or any(
             getattr(module.weight_quantizer, "fake_quant", True)
-            for module in quantized_linears
+            for module in quantized_linears.values()
         )
     ):
         raise NemotronSuperMechanicsError("ModelOpt real FP8 execution differs")
@@ -395,6 +442,7 @@ def _modelopt_fp8_runtime_receipt(backbone: Any) -> dict[str, Any]:
         "buffer_devices": dict(sorted(buffer_devices.items())),
         "real_quant_gemm_enabled": True,
         "real_fp8_linear_count": len(quantized_linears),
+        "enabled_fp8_module_names_sha256": _canonical_sha256(sorted(quantized_linears)),
         "cpu_tensors": 0,
         "disk_tensors": 0,
         "meta_tensors": 0,
@@ -439,6 +487,10 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and checkpoint_translation.get("weight_scale_to_amax") == FP8_LINEAR_COUNT
         and checkpoint_translation.get("input_amax_placeholders") == FP8_LINEAR_COUNT
         and checkpoint_translation.get("weight_amax_placeholders") == FP8_LINEAR_COUNT
+        and checkpoint_translation.get("enabled_fp8_module_identities")
+        == FP8_LINEAR_COUNT
+        and checkpoint_translation.get("enabled_fp8_module_names_sha256")
+        == FP8_MODULE_NAMES_SHA256
         and checkpoint_translation.get("scale_to_amax_multiplier")
         == FP8_SCALE_MULTIPLIER
         and remote_model.get("configuration_sha256") == REMOTE_CONFIGURATION_SHA256
@@ -446,6 +498,7 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and str(remote_model.get("model_class", "")).endswith(".NemotronHForCausalLM")
         and runtime.get("real_quant_gemm_enabled") is True
         and runtime.get("real_fp8_linear_count") == FP8_LINEAR_COUNT
+        and runtime.get("enabled_fp8_module_names_sha256") == FP8_MODULE_NAMES_SHA256
         and runtime.get("cpu_tensors") == 0
         and runtime.get("disk_tensors") == 0
         and runtime.get("meta_tensors") == 0
@@ -458,6 +511,7 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     """Load the immutable ModelOpt FP8 export across exactly two local H100s."""
 
     quant_cfg, export_receipt = _modelopt_fp8_quantization_config(model_root)
+    expected_fp8_modules = _expected_fp8_module_names(model_root)
     from modelopt.torch.quantization.plugins.accelerate import init_quantized_weights
     from transformers import AutoConfig, AutoModelForCausalLM
     from transformers.dynamic_module_utils import get_class_from_dynamic_module
@@ -492,7 +546,7 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     AutoModelForCausalLM.register(type(config), model_class, exist_ok=True)
     delattr(config, "quantization_config")
     config.torch_dtype = torch.bfloat16
-    with _translate_export_checkpoint_keys() as translation_counts:
+    with _translate_export_checkpoint_keys(expected_fp8_modules) as translation_counts:
         with init_quantized_weights(
             quant_cfg, gpu_mem_percentage=0.95, quant_gemm=True
         ):
@@ -503,7 +557,7 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
                 strict=True,
             )
     translation_receipt = _checkpoint_translation_receipt(translation_counts)
-    runtime_receipt = _modelopt_fp8_runtime_receipt(backbone)
+    runtime_receipt = _modelopt_fp8_runtime_receipt(backbone, expected_fp8_modules)
     return backbone, {
         "export": export_receipt,
         "checkpoint_translation": translation_receipt,

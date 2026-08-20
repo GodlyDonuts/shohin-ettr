@@ -259,11 +259,14 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "weight_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
             "input_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
             "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_identities": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
             "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
         },
         "runtime": {
             "real_quant_gemm_enabled": True,
             "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
             "cpu_tensors": 0,
             "disk_tensors": 0,
             "meta_tensors": 0,
@@ -306,11 +309,18 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
         }
 
     class Quantizer(torch.nn.Module):
-        pass
+        fake_quant = False
+
+        @staticmethod
+        def is_enabled() -> bool:
+            return True
 
     class QuantizedLinear(torch.nn.Module):
         def __init__(self) -> None:
             super().__init__()
+            self.weight = torch.nn.Parameter(
+                torch.empty((1, 1), dtype=torch.float32, device="meta")
+            )
             self.weight_quantizer = Quantizer()
             self.weight_quantizer.register_buffer(
                 "_amax", torch.empty((), dtype=torch.float32, device="meta")
@@ -318,7 +328,8 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
             self.input_quantizer = Quantizer()
 
     model = torch.nn.Module()
-    model.linear = QuantizedLinear()
+    model.model = torch.nn.Module()
+    model.model.layer = QuantizedLinear()
 
     monkeypatch.setattr(accelerate_modeling, "load_state_dict", fake_load)
     monkeypatch.setattr(mechanics, "BACKBONE_WEIGHT_MAP_ENTRIES", 3)
@@ -326,7 +337,7 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
     monkeypatch.setattr(mechanics, "LM_HEAD_WEIGHT_MAP_ENTRIES", 1)
     monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 5)
     monkeypatch.setattr(mechanics, "FP8_LINEAR_COUNT", 1)
-    with _translate_export_checkpoint_keys() as counts:
+    with _translate_export_checkpoint_keys(frozenset({"model.layer"})) as counts:
         assert modelopt_accelerate.load_checkpoint_and_dispatch(model) is model
         translated = accelerate_modeling.load_state_dict("one.safetensors")
         assert set(translated) == {
@@ -346,6 +357,32 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
     assert receipt["lm_head_unchanged"] == 1
     assert receipt["input_amax_placeholders"] == 1
     assert receipt["weight_amax_placeholders"] == 1
+
+
+def test_enabled_fp8_classifier_uses_linear_weight_and_enabled_quantizers() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    class Quantizer(torch.nn.Module):
+        def __init__(self, enabled: bool) -> None:
+            super().__init__()
+            self.enabled = enabled
+
+        def is_enabled(self) -> bool:
+            return self.enabled
+
+    class Candidate(torch.nn.Module):
+        def __init__(self, *, weight: bool, enabled: bool) -> None:
+            super().__init__()
+            if weight:
+                self.weight = torch.nn.Parameter(torch.zeros((1, 1)))
+            self.weight_quantizer = Quantizer(enabled)
+            self.input_quantizer = Quantizer(enabled)
+
+    model = torch.nn.Module()
+    model.enabled = Candidate(weight=True, enabled=True)
+    model.disabled = Candidate(weight=True, enabled=False)
+    model.container = Candidate(weight=False, enabled=True)
+    assert set(mechanics._enabled_fp8_linears(model)) == {"enabled"}
 
 
 def test_checkpoint_translation_rejects_unknown_namespace(
@@ -368,7 +405,7 @@ def test_checkpoint_translation_rejects_unknown_namespace(
         "load_state_dict",
         lambda *args, **kwargs: {"unexpected.weight": object()},
     )
-    with _translate_export_checkpoint_keys():
+    with _translate_export_checkpoint_keys(frozenset()):
         with pytest.raises(NemotronSuperMechanicsError, match="namespace"):
             accelerate_modeling.load_state_dict("one.safetensors")
 
@@ -397,12 +434,18 @@ def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
     )
     monkeypatch.setattr(
         mechanics,
+        "_expected_fp8_module_names",
+        lambda root: frozenset({"model.layer"}),
+    )
+    monkeypatch.setattr(
+        mechanics,
         "_modelopt_fp8_runtime_receipt",
-        lambda model: {"runtime": "exact"},
+        lambda model, expected: {"runtime": "exact"},
     )
 
     @contextmanager
-    def fake_translation():
+    def fake_translation(expected):
+        assert expected == frozenset({"model.layer"})
         yield mechanics.Counter()
 
     monkeypatch.setattr(
