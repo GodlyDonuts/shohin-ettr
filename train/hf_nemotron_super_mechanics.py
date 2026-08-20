@@ -294,7 +294,7 @@ def _translate_export_checkpoint_keys(
                     f"{translated_name[:-len('.weight_scale')]}"
                     ".weight_quantizer._amax"
                 )
-                value = value.to(dtype=torch.float32) * FP8_SCALE_MULTIPLIER
+                value = value.to(dtype=torch.float32).reshape(1) * FP8_SCALE_MULTIPLIER
                 counts["weight_scale_to_amax"] += 1
             if translated_name in translated:
                 raise NemotronSuperMechanicsError(
@@ -351,18 +351,21 @@ def _prepare_fp8_scale_buffers(
     for module in quantized_linears.values():
         weight_quantizer = module.weight_quantizer
         input_quantizer = module.input_quantizer
-        for quantizer, kind in (
-            (weight_quantizer, "weight"),
-            (input_quantizer, "input"),
+        weight_amax = getattr(weight_quantizer, "_amax", None)
+        if (
+            not isinstance(weight_amax, torch.Tensor)
+            or not weight_amax.is_meta
+            or weight_amax.dtype != torch.float32
+            or weight_amax.shape != torch.Size([1])
         ):
-            if hasattr(quantizer, "_amax"):
-                raise NemotronSuperMechanicsError(
-                    f"ModelOpt {kind} amax pre-state differs"
-                )
-            quantizer.register_buffer(
-                "_amax", torch.empty((), dtype=torch.float32, device="meta")
-            )
-            counts[f"{kind}_amax_placeholders"] += 1
+            raise NemotronSuperMechanicsError("ModelOpt weight amax pre-state differs")
+        counts["weight_amax_placeholders"] += 1
+        if hasattr(input_quantizer, "_amax"):
+            raise NemotronSuperMechanicsError("ModelOpt input amax pre-state differs")
+        input_quantizer.register_buffer(
+            "_amax", torch.empty((), dtype=torch.float32, device="meta")
+        )
+        counts["input_amax_placeholders"] += 1
 
 
 def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
@@ -390,6 +393,8 @@ def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
         "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
         "scale_to_amax_multiplier": FP8_SCALE_MULTIPLIER,
         "enabled_fp8_module_names_sha256": FP8_MODULE_NAMES_SHA256,
+        "weight_amax_shape": [1],
+        "input_amax_shape": [],
         "translation_sha256": _canonical_sha256(observed),
     }
 
@@ -484,6 +489,8 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         == FP8_LINEAR_COUNT
         and checkpoint_translation.get("enabled_fp8_module_names_sha256")
         == FP8_MODULE_NAMES_SHA256
+        and checkpoint_translation.get("weight_amax_shape") == [1]
+        and checkpoint_translation.get("input_amax_shape") == []
         and checkpoint_translation.get("scale_to_amax_multiplier")
         == FP8_SCALE_MULTIPLIER
         and remote_model.get("configuration_sha256") == REMOTE_CONFIGURATION_SHA256

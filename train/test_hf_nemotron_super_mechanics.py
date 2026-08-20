@@ -261,6 +261,8 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
             "enabled_fp8_module_identities": mechanics.FP8_LINEAR_COUNT,
             "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "weight_amax_shape": [1],
+            "input_amax_shape": [],
             "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
         },
         "runtime": {
@@ -322,6 +324,9 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
                 torch.empty((1, 1), dtype=torch.float32, device="meta")
             )
             self.weight_quantizer = Quantizer()
+            self.weight_quantizer.register_buffer(
+                "_amax", torch.empty((1,), dtype=torch.float32, device="meta")
+            )
             self.input_quantizer = Quantizer()
 
     model = torch.nn.Module()
@@ -345,7 +350,9 @@ def test_checkpoint_translation_is_streamed_exact_and_restored(
         }
         assert translated["model.layer.weight"] is sentinel
         assert translated["lm_head.weight"] is sentinel
+        assert translated["model.layer.input_quantizer._amax"].shape == ()
         assert translated["model.layer.input_quantizer._amax"].item() == 896.0
+        assert translated["model.layer.weight_quantizer._amax"].shape == (1,)
         assert translated["model.layer.weight_quantizer._amax"].item() == 1344.0
     assert accelerate_modeling.load_state_dict is fake_load
     receipt = _checkpoint_translation_receipt(counts)

@@ -46,6 +46,8 @@ def _modelopt_fp8() -> dict[str, object]:
             "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
             "enabled_fp8_module_identities": mechanics.FP8_LINEAR_COUNT,
             "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "weight_amax_shape": [1],
+            "input_amax_shape": [],
             "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
         },
         "runtime": {
