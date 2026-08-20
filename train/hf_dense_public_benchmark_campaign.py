@@ -161,6 +161,7 @@ def run_stage(
     model_loader: str,
     tokenizer: Any,
     seed: int,
+    batch_size: int,
 ) -> dict[str, Any]:
     import torch
 
@@ -173,51 +174,66 @@ def run_stage(
     context_limit = model_context_limit(model, tokenizer)
     started = time.monotonic()
     generated = 0
-    for index, row in enumerate(rows):
-        if row["id"] in completed:
-            expected = stage_prompt(stage, row, drafts)
-            if completed[row["id"]]["prompt_sha256"] != text_sha256(expected):
-                raise DenseBenchmarkGenerationError(f"{stage} resumed prompt differs")
-            continue
-        prompt = stage_prompt(stage, row, drafts)
-        rendered = matched_render_prompt(tokenizer, prompt)
-        prompt_tokens = len(tokenizer(rendered, add_special_tokens=True)["input_ids"])
-        maximum = row["max_new_tokens"]
-        if prompt_tokens + maximum > context_limit:
-            raise DenseBenchmarkGenerationError(
-                f"{row['benchmark']}:{row['id']} exceeds context contract "
-                f"({prompt_tokens}+{maximum}>{context_limit})"
-            )
-        row_seed = seed + index
-        torch.manual_seed(row_seed)
-        torch.cuda.manual_seed_all(row_seed)
+    for index, row in enumerate(rows[: len(completed)]):
+        expected = stage_prompt(stage, row, drafts)
+        if completed[row["id"]]["prompt_sha256"] != text_sha256(expected):
+            raise DenseBenchmarkGenerationError(f"{stage} resumed prompt differs")
+    cursor = len(completed)
+    while cursor < len(rows):
+        maximum = rows[cursor]["max_new_tokens"]
+        batch_rows = []
+        while (
+            cursor + len(batch_rows) < len(rows)
+            and len(batch_rows) < batch_size
+            and rows[cursor + len(batch_rows)]["max_new_tokens"] == maximum
+        ):
+            batch_rows.append(rows[cursor + len(batch_rows)])
+        prompts = [stage_prompt(stage, row, drafts) for row in batch_rows]
+        rendered = [matched_render_prompt(tokenizer, prompt) for prompt in prompts]
+        prompt_tokens = [
+            len(tokenizer(text, add_special_tokens=True)["input_ids"])
+            for text in rendered
+        ]
+        for row, tokens in zip(batch_rows, prompt_tokens, strict=True):
+            if tokens + maximum > context_limit:
+                raise DenseBenchmarkGenerationError(
+                    f"{row['benchmark']}:{row['id']} exceeds context contract "
+                    f"({tokens}+{maximum}>{context_limit})"
+                )
+        batch_seed = seed + cursor
+        torch.manual_seed(batch_seed)
+        torch.cuda.manual_seed_all(batch_seed)
         completions, usage = _generate_completions(
             model,
             tokenizer,
-            [rendered],
+            rendered,
             True,
             "greedy",
             maximum,
             stop_ids,
         )
-        tokens, exhausted = usage[0]
-        record = {
-            "schema": LEDGER_SCHEMA,
-            "stage": stage,
-            "id": row["id"],
-            "benchmark": row["benchmark"],
-            "prompt_sha256": text_sha256(prompt),
-            "completion": completions[0],
-            "prompt_tokens": prompt_tokens,
-            "generated_tokens": int(tokens),
-            "max_token_exhausted": bool(exhausted),
-            "seed": row_seed,
-        }
-        append_ledger(ledger_path, record)
-        completed[row["id"]] = record
-        if stage == "draft":
-            drafts[row["id"]] = record
-        generated += 1
+        for offset, (row, prompt, completion, token_count, token_usage) in enumerate(
+            zip(batch_rows, prompts, completions, prompt_tokens, usage, strict=True)
+        ):
+            tokens, exhausted = token_usage
+            record = {
+                "schema": LEDGER_SCHEMA,
+                "stage": stage,
+                "id": row["id"],
+                "benchmark": row["benchmark"],
+                "prompt_sha256": text_sha256(prompt),
+                "completion": completion,
+                "prompt_tokens": token_count,
+                "generated_tokens": int(tokens),
+                "max_token_exhausted": bool(exhausted),
+                "seed": batch_seed + offset,
+            }
+            append_ledger(ledger_path, record)
+            completed[row["id"]] = record
+            if stage == "draft":
+                drafts[row["id"]] = record
+            generated += 1
+        cursor += len(batch_rows)
     torch.cuda.synchronize()
     elapsed = time.monotonic() - started
     del model
@@ -293,6 +309,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             model_loader=args.model_loader,
             tokenizer=tokenizer,
             seed=args.seed + offset,
+            batch_size=args.batch_size,
         )
         if stage == "draft":
             drafts = load_ledger(
@@ -347,7 +364,11 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--revision-checkpoint-sha256", required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=2026081901)
-    return parser.parse_args(argv)
+    parser.add_argument("--batch-size", type=int, default=4)
+    args = parser.parse_args(argv)
+    if args.batch_size <= 0:
+        parser.error("--batch-size must be positive")
+    return args
 
 
 def main() -> int:
