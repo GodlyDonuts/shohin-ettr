@@ -18,6 +18,7 @@ from score_dense_public_benchmark import ifeval_scorer, mmlu_answer, musr_answer
 ASSESSOR_SCHEMA = "shohin-dense-public-benchmark-assessor-v1"
 LEDGER_SCHEMA = "shohin-dense-public-campaign-ledger-v1"
 REPORT_SCHEMA = "shohin-dense-public-campaign-score-v1"
+OFFICIAL_SCORE_SCHEMA = "shohin-dense-public-official-score-v1"
 
 
 class CampaignScoreError(RuntimeError):
@@ -35,6 +36,25 @@ def sha256_file(path: Path) -> str:
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     with path.open(encoding="utf-8") as handle:
         return [json.loads(line) for line in handle if line.strip()]
+
+
+def atomic_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
+    if path.exists():
+        raise CampaignScoreError(f"refusing to replace {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    digest = hashlib.sha256()
+    with temporary.open("wb") as handle:
+        for row in rows:
+            encoded = json.dumps(
+                row, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ).encode() + b"\n"
+            digest.update(encoded)
+            handle.write(encoded)
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
+    return digest.hexdigest()
 
 
 def correctbench_answer(text: str) -> str | None:
@@ -201,6 +221,37 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "direct_base_score": sum(row["metrics"]["direct_base_score"] for row in complete) / len(complete),
         },
     }
+    if args.official_score_root is not None:
+        official_hashes = {}
+        for name, benchmark in benchmarks.items():
+            if benchmark["status"] != "complete":
+                continue
+            official_hashes[name] = {}
+            outcomes = benchmark["outcomes"]
+            for stage in scored_stages:
+                rows = [
+                    {
+                        "schema": OFFICIAL_SCORE_SCHEMA,
+                        "stage": stage,
+                        "id": row["id"],
+                        "benchmark": name,
+                        "metric": (
+                            "official_strict_prompt_accuracy"
+                            if name == "ifeval"
+                            else "official_accuracy"
+                        ),
+                        "stratum": row["stratum"],
+                        "score": float(bool(row["arms"][stage]["correct"])),
+                    }
+                    for row in outcomes
+                ]
+                path = (
+                    args.official_score_root
+                    / name
+                    / f"{stage}.official-scores.jsonl"
+                )
+                official_hashes[name][stage] = atomic_jsonl(path, rows)
+        report["official_score_sha256"] = official_hashes
     report["standardized_overall"]["paired_delta_points"] = (
         report["standardized_overall"]["trained_revision_score"]
         - report["standardized_overall"]["unchanged_score"]
@@ -227,6 +278,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ifeval-root", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=2026081903)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--official-score-root", type=Path)
     return parser.parse_args()
 
 
