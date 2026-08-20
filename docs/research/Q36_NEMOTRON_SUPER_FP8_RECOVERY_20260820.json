@@ -1,0 +1,137 @@
+{
+  "schema": "shohin-q36-nemotron-super-fp8-recovery-v1",
+  "status": "probe_pending_capacity_graph_prestaged",
+  "observed_at": "2026-08-20T18:47:19-04:00",
+  "scientific_result_available": false,
+  "benchmark_rows_scored": 0,
+  "repair": {
+    "source_commit": "a0838e9344da9d8aae5e049eea4ad98f9caaca26",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/upward_moe_runtime_a0838e93_r1",
+    "runtime_manifest_sha256": "7958877a94d309ca62b89d1b0a959105a61cfd96c47e6782fcfd4912a31e0845",
+    "runtime_json_sha256": "b1d199635009cbd712e7512978b972e063792282c1d7dd7fbbe51d2ca83f54f6",
+    "runtime_files": 246,
+    "runtime_directories": 5,
+    "runtime_full_manifest_verified": true,
+    "runtime_writable_link_or_special_members": 0,
+    "mechanics_source_sha256": "47cc3d2147b045eb7e9ca94adaf534a1583e31572ce82506e2c64fdd9aea3c4e",
+    "common_source_sha256": "c82d050df3100b96cc96f3264e9a9d1c01c1136ce62a7e7671f09a8e4a31095d",
+    "probe_source_sha256": "ac7d319328efbdc1adac04bb5ff1e689f2f8addfe6cc7c8947e8cd6de320c4f4",
+    "focused_tests": {
+      "passed": 111,
+      "skipped": 1,
+      "black": "pass",
+      "ruff": "pass",
+      "bash_syntax": "pass",
+      "diff_check": "pass"
+    },
+    "cuda_home": "/apps/cuda/cuda-12.4.0",
+    "nvcc_sha256": "e701519f13153518f0143cc0c18c66f0226eabf73ddd6a7eca0d36b26ebc976b",
+    "gcc_root": "/apps/gcc/gcc-12.2.0",
+    "gcc_sha256": "b617db0d6e6fade76990baa29f1372255575d3178ee2e8f60ba19980db37100f",
+    "gxx_sha256": "6264680f3e8ee209ed3b2c22c4040282e9b63fb0d7ec17df71e81765e53db34d",
+    "ninja_path": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_overlay_glibc228_a14b1dff_r1/bin/ninja",
+    "ninja_version": "1.13.0.git.kitware.jobserver-pipe-1",
+    "ninja_sha256": "696f9628a79d9ce50314cf9556d7cd1a1d1ec52b8fd52828f6f9db1719565b67",
+    "scientific_prompts_data_arms_seeds_thresholds_changed": false
+  },
+  "failed_infrastructure_attempts": [
+    {
+      "job": 767352,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "elapsed_seconds": 1729,
+      "restarts": 0,
+      "node": "evc39",
+      "cause": "CUDA_HOME was absent when ModelOpt attempted to build its FP8 extension",
+      "stdout_sha256": "6420839d6c74eece210b1266ee70ff69ab00cf4f9bb179fe82469f08ff181ddc",
+      "stderr_sha256": "f8cc84f376bcb698cb4c649054d8fda34994babf59fb1d533bd9968b2e99f46e",
+      "mechanics_report_published": false,
+      "mechanics_checkpoint_published": false
+    },
+    {
+      "job": 767465,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "elapsed_seconds": 8,
+      "restarts": 0,
+      "node": "evc35",
+      "cause": "authenticated legacy overlay manifest authoring order was incorrectly required to be Python-lexicographically sorted",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7382c7480e8cddbf38021f9938fde8aaf009a0ede515cb71da325e73194722c6",
+      "probe_receipt_published": false
+    },
+    {
+      "job": 767476,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "elapsed_seconds": 324,
+      "restarts": 0,
+      "node": "evc35",
+      "cause": "the scrubbed job PATH omitted the overlay's hash-bound Ninja extension builder",
+      "stdout_sha256": "202d239d4bcad1f56221ff682700c525f48e4bbdeac5e8d512691f2c791dbbf3",
+      "stderr_sha256": "a6b84de64b0e9c25d55e325ddbb7473aa0ba94ae863455609dd150b755f1f001",
+      "probe_receipt_published": false
+    }
+  ],
+  "active_graph": {
+    "fp8_extension_probe": 767485,
+    "mechanics": 767488,
+    "fit": 767489,
+    "unchanged_shards": [767490, 767491, 767492, 767493],
+    "self_refinement_shards": [767494, 767495, 767496, 767497],
+    "revision_shards": [767498, 767499, 767500, 767501],
+    "score": 767502,
+    "four_point_analysis": 767504,
+    "accounting": 767505,
+    "figure": 767506,
+    "publication_receipt": 767507,
+    "durable_evidence_mirror": 767508,
+    "probe_h100s": 1,
+    "core_scientific_gpu_jobs": 14,
+    "core_scientific_h100_requests": 28,
+    "maximum_concurrent_scientific_jobs": 9,
+    "maximum_concurrent_h100s": 18,
+    "cpu_jobs": 6,
+    "requeue": false,
+    "duplicate_scoring": false,
+    "kill_on_invalid_dependency": true,
+    "known_bad_nodes_excluded": [
+      "evc26",
+      "evc29",
+      "evc31",
+      "evc32",
+      "evc33",
+      "evc34",
+      "evc37",
+      "evc38",
+      "evc50"
+    ]
+  },
+  "outputs": {
+    "probe": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/nemotron_super_fp8_extension_probe_a0838e93_r1.json",
+    "mechanics": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_mechanics_modelopt_a0838e93_r1.json",
+    "revision_root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_revision_a0838e93_r1",
+    "screen_root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a0838e93_r1",
+    "scaling_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_gptoss120_mixtral141_nemotron120_a0838e93_r1",
+    "durable_mirror": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/upward-moe-qwen-gptoss-mixtral-nemotron-a0838e93-r1"
+  },
+  "scheduler": {
+    "probe_state": "PENDING",
+    "probe_reason": "Priority",
+    "all_downstream_jobs_state": "PENDING_DEPENDENCY",
+    "no_idle_gpu_requests": true
+  },
+  "storage_snapshot": {
+    "filesystem": "/lustre/fs1",
+    "used_kib": 923246772,
+    "hard_limit_kib": 1059061760,
+    "hard_headroom_kib": 135814988,
+    "used_inodes": 603287,
+    "hard_limit_inodes": 1010000,
+    "hard_headroom_inodes": 406713
+  },
+  "private_branches": [
+    "codex/q36-mechanics-generation-prepare",
+    "codex/q36-moe-temporal-revision"
+  ]
+}
