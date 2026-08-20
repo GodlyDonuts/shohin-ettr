@@ -1,13 +1,13 @@
 {
   "schema": "shohin-q36-nemotron-super-trainer-matched-fallback-v1",
   "status": "prepared_not_scheduled",
-  "prepared_at": "2026-08-20T16:54:24-04:00",
+  "prepared_at": "2026-08-20T16:59:26-04:00",
   "purpose": "collision-safe recovery runtime only if the active Nemotron mechanics job fails",
   "scientific_contract_changed": false,
   "active_graph_changed": false,
   "scientific_jobs_submitted": 0,
   "source": {
-    "commit": "1b0dfdcc07a05a8507a3913cafb5abb1ddb0f693",
+    "commit": "f95ff713565a87ea6501b1974b07ec939a087d89",
     "private_branches": [
       "codex/q36-mechanics-generation-prepare",
       "codex/q36-moe-temporal-revision"
@@ -29,9 +29,9 @@
     "trainer_and_evaluator_require_exact_receipt": true
   },
   "runtime": {
-    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/nemotron_super_modelopt_1b0dfdcc_r1",
-    "manifest_sha256": "50688f0d9b09432786c69058e27fbc52409afc2c4b14c26d042aa879b37045c7",
-    "runtime_json_sha256": "016b05dddaaa65455b3116b14c8208b4841681dfaf3504479dd78891dde873cb",
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/nemotron_super_modelopt_f95ff713_r1",
+    "manifest_sha256": "fcc8d087c48ea4678746f844dc8583eea370262c02a9d56e6814711333a3ddd8",
+    "runtime_json_sha256": "7300f129000f8e9c227a604a5390b441c296baeaf6073a0e1704cd96408b58a1",
     "allowlist_sha256": "f8ed3f0e0f1787b06d0b77897591794b1c14879efc63eac6c3ad636a326fd5d8",
     "allowlisted_files": 243,
     "regular_files": 245,
@@ -40,13 +40,13 @@
     "writable_members": 0,
     "full_manifest_replay_passed": true,
     "source_files": {
-      "train/hf_nemotron_super_mechanics.py": "a668e873709fe36b578c221c12ebf18604c247522050a9f379e3cc54f73f0a88",
+      "train/hf_nemotron_super_mechanics.py": "db00cf8e7f6cf4d851e17fa1ce56983bac21eb28a4247830f197316212bce891",
       "train/hf_nemotron_super_train_revision.py": "c0699c6725634a52dccef3af64d6463e1541c918e76930bd959d3e595eb6a02b",
       "train/hf_nemotron_super_evaluate.py": "e319e5dbf6a9728b318fd5a70a4cbcc6979853689fa4a020f3a06a42491f0fd3"
     }
   },
   "verification": {
-    "focused_and_upward_moe_tests_passed": 86,
+    "focused_and_upward_moe_tests_passed": 90,
     "black": "pass",
     "ruff": "pass",
     "py_compile": "pass",
