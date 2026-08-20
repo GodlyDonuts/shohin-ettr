@@ -174,6 +174,8 @@ def test_live_surface_accepts_only_exact_modelopt_moe_wrapper_when_declared() ->
     for layer in host.model.layers:
         if layer.block_type == "moe":
             layer.mixer.__class__ = type("QuantNemotronHMoE", (), {})
+        elif layer.block_type == "attention":
+            layer.mixer.__class__ = type("QuantNemotronHAttention", (), {})
     receipt = validate_loaded_surface(host, modelopt_quantized=True)
     assert len(receipt["native_topology_sha256"]) == 64
 
@@ -183,6 +185,15 @@ def test_live_surface_accepts_only_exact_modelopt_moe_wrapper_when_declared() ->
     host.model.layers[CONTROLLED_LAYER_INDICES[0]].mixer.__class__ = type(
         "UnexpectedQuantNemotronHMoE", (), {}
     )
+    with pytest.raises(Q36UpwardMoEHostError, match="layer differs"):
+        validate_loaded_surface(host, modelopt_quantized=True)
+
+    host = _loaded_host()
+    for layer in host.model.layers:
+        if layer.block_type == "moe":
+            layer.mixer.__class__ = type("QuantNemotronHMoE", (), {})
+        elif layer.block_type == "attention":
+            layer.mixer.__class__ = type("UnexpectedQuantNemotronHAttention", (), {})
     with pytest.raises(Q36UpwardMoEHostError, match="layer differs"):
         validate_loaded_surface(host, modelopt_quantized=True)
 

@@ -86,7 +86,15 @@ def _backbone(*, modelopt_quantized: bool = False) -> nn.Module:
         elif block_type == "mamba":
             mixer = type("NemotronHMamba2Mixer", (_NativeMixer,), {})()
         else:
-            mixer = type("NemotronHAttention", (_NativeMixer,), {})()
+            mixer = type(
+                (
+                    "QuantNemotronHAttention"
+                    if modelopt_quantized
+                    else "NemotronHAttention"
+                ),
+                (_NativeMixer,),
+                {},
+            )()
         layers.append(SimpleNamespace(block_type=block_type, mixer=mixer))
 
     class _Backbone(nn.Module):

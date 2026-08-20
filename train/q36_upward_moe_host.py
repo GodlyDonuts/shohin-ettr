@@ -56,6 +56,8 @@ TRAINABLE_PARAMETERS_PER_ROLE = CONTROLLED_LAYERS * 2 * HIDDEN_SIZE * RANK
 ATTACHMENT_SURFACE = "post-mixer-residual"
 NATIVE_MOE_MIXER_CLASS = "NemotronHMoE"
 MODELOPT_MOE_MIXER_CLASS = "QuantNemotronHMoE"
+NATIVE_ATTENTION_MIXER_CLASS = "NemotronHAttention"
+MODELOPT_ATTENTION_MIXER_CLASS = "QuantNemotronHAttention"
 
 
 class Q36UpwardMoEHostError(RuntimeError):
@@ -203,6 +205,11 @@ def validate_loaded_surface(
     expected_moe_mixer_class = (
         MODELOPT_MOE_MIXER_CLASS if modelopt_quantized else NATIVE_MOE_MIXER_CLASS
     )
+    expected_attention_mixer_class = (
+        MODELOPT_ATTENTION_MIXER_CLASS
+        if modelopt_quantized
+        else NATIVE_ATTENTION_MIXER_CLASS
+    )
 
     config = getattr(backbone, "config", None)
     if (
@@ -287,7 +294,7 @@ def validate_loaded_surface(
                 "mixer_class": (
                     "NemotronHMamba2Mixer"
                     if expected_type == "mamba"
-                    else "NemotronHAttention"
+                    else expected_attention_mixer_class
                 ),
             }
         if row != expected_row:
