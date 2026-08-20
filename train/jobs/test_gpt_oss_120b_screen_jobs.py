@@ -1,8 +1,14 @@
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+MECHANICS = ROOT / "gpt_oss_120b_mechanics.sbatch"
 TRAIN = ROOT / "gpt_oss_120b_train_revision.sbatch"
 EVALUATE = ROOT / "gpt_oss_120b_evaluate.sbatch"
+
+
+def test_mechanics_excludes_every_known_bad_h100_node() -> None:
+    source = MECHANICS.read_text()
+    assert "#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc50" in source
 
 
 def test_fit_is_one_h100_native_mxfp4_and_nonrequeueing() -> None:
