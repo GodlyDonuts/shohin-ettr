@@ -38,7 +38,13 @@ from hf_gpt_oss_120b_train_revision import (
     validate_mechanics,
 )
 from hf_pcf1_evaluate import shard_bounds
-from hf_q36_mtr_external_evaluate import load_drafts, load_sources, prompt_for
+from hf_q36_mtr_external_evaluate import (
+    MMLU_CONFIRMATION_TASKS,
+    TASKS,
+    load_drafts,
+    load_sources,
+    prompt_for,
+)
 from q36_upward_moe_gpt_oss_host import (
     MODEL_CONFIG_SHA256,
     MODEL_MANIFEST_SHA256,
@@ -193,10 +199,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or not 0 <= args.shard_index < SHARDS
         or args.candidates_output.exists()
         or args.report.exists()
-        or sha256_file(args.source) != SOURCE_SHA256
+        or sha256_file(args.source) != args.expected_source_sha256
         or (args.arm == "revision") != (args.revision_checkpoint is not None)
         or (args.arm != "unchanged") != bool(args.draft_candidates)
         or args.expected_model_manifest_sha256 != MODEL_MANIFEST_SHA256
+        or (args.expected_source_sha256 != SOURCE_SHA256) != args.confirmation_mmlu_pro
     ):
         raise GptOssEvaluationError("evaluation settings differ")
     mechanics = validate_mechanics(
@@ -228,7 +235,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise GptOssEvaluationError("evaluation requires exactly one H100")
 
-    sources = load_sources(args.source, ROWS)
+    sources = load_sources(
+        args.source,
+        ROWS,
+        MMLU_CONFIRMATION_TASKS if args.confirmation_mmlu_pro else TASKS,
+    )
     drafts = (
         load_drafts(args.draft_candidates, sources) if args.arm != "unchanged" else None
     )
@@ -332,7 +343,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             else 0
         ),
         "native_router_expert_trainables": 0,
-        "source_sha256": SOURCE_SHA256,
+        "source_sha256": args.expected_source_sha256,
         "draft_candidate_sha256s": (
             [sha256_file(path) for path in args.draft_candidates]
             if args.arm != "unchanged"
@@ -361,6 +372,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "assessor_access_count": 0,
         "development_labels_read": 0,
         "sealed_access": {"holdout": 0, "product": 0, "public": 0},
+        "confirmation_mmlu_pro": args.confirmation_mmlu_pro,
         "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
         "slurm_node": os.environ.get("SLURMD_NODENAME"),
     }
@@ -382,6 +394,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mechanics-report", type=Path, required=True)
     parser.add_argument("--revision-checkpoint", type=Path)
     parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--expected-source-sha256", default=SOURCE_SHA256)
+    parser.add_argument("--confirmation-mmlu-pro", action="store_true")
     parser.add_argument("--draft-candidates", type=Path, action="append", default=[])
     parser.add_argument("--candidates-output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)

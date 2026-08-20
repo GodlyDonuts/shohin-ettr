@@ -103,3 +103,29 @@ def test_analysis_rejects_selection_score_identity_tamper(tmp_path: Path) -> Non
     _json(args.score, payload)
     with pytest.raises(module.CrossHostAnalysisError, match="identities differ"):
         module.analyze(args)
+
+
+def test_analysis_binds_prospective_revision_margin_threshold(tmp_path: Path) -> None:
+    args = _fixture(tmp_path)
+    args.expected_revision_margin_threshold = 0.703125
+    rows = [json.loads(line) for line in args.selections.read_text().splitlines()]
+    for row in rows:
+        row["revision_margin_threshold"] = 0.703125
+    args.selections.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    application = json.loads(args.application_report.read_text())
+    application["revision_margin_threshold"] = 0.703125
+    application["selections_sha256"] = module.sha256_file(args.selections)
+    _json(args.application_report, application)
+    assert module.analyze(args)["revision_margin_threshold"] == 0.703125
+
+    args.output.unlink()
+    rows[0]["revision_margin_threshold"] = 0.7
+    args.selections.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    with pytest.raises(module.CrossHostAnalysisError, match="selection differs"):
+        module.analyze(args)

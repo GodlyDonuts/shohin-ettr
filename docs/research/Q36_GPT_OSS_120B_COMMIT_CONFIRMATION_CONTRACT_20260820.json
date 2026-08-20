@@ -1,0 +1,109 @@
+{
+  "schema": "shohin-q36-cross-host-model-owned-commit-contract-v1",
+  "status": "frozen_before_execution",
+  "date": "2026-08-20",
+  "purpose": "Prospectively confirm the conservative Qwen3.6 model-owned commit policy on a new MMLU-Pro screen disjoint from every identity used to choose the policy threshold.",
+  "scientific_classification": "new-benchmark source-disjoint prospective confirmation; margin threshold and selector weights frozen before candidate generation or assessor scoring",
+  "development_evidence": {
+    "gpt_oss_exploratory_result_sha256": "416f8f27c31a8369e80736e0f8c5a9522095ea6a8e05ca5a242b5b8dc590ee7f",
+    "mixtral_exploratory_result_sha256": "ba51d1de9a93e908b95d8034dda5bffe588e08d57caaff0cff42d74495ee5492",
+    "development_tasks": [
+      "bbh_logic",
+      "math500",
+      "mbpp"
+    ],
+    "frozen_revision_margin_threshold": 0.703125,
+    "threshold_rule": "select revision only when the signed semantic revision margin is strictly greater than 0.703125; otherwise retain unchanged",
+    "post_hoc_development_boundary": "The threshold was chosen using only the already-scored exploratory GPT-OSS and Mixtral results. No MMLU-Pro identity or outcome was used."
+  },
+  "selector": {
+    "backbone": "Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "model_root": "/lustre/fs1/home/sa305415/shohin/artifacts/external/qwen3.6-35b-a3b-995ad96e",
+    "model_manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "aligned_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_71ac37c1_salvage/roles/aligned/checkpoint_0000256.pt",
+    "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "commit_checkpoint": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_d9ff7f7_r1/engineering_preview/owner_semantic_commit/model/commit.pt",
+    "commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "model_visible_fields": [
+      "question",
+      "candidate_a.completion",
+      "candidate_b.completion"
+    ],
+    "model_visible_task_correctness_host_or_assessor_fields": false,
+    "retrained_for_confirmation": false,
+    "revision_margin_threshold": 0.703125
+  },
+  "hosts": {
+    "gpt_oss_120b_confirmation": {
+      "benchmark": "MMLU-Pro",
+      "official_repository_revision": "f418b116db00b065c2aea046518d8fcf74d39872",
+      "official_dataset_revision": "b189ec765aa7ed75c8acfea42df31fdae71f97be",
+      "prompt_contract": "official five-shot chain-of-thought",
+      "official_test_rows": 12032,
+      "rows": 256,
+      "question_universe": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/data/mmlu_pro/full.questions.jsonl",
+      "question_universe_sha256": "b740068610b37fa8c431b51588af0c4c528ac61373a70b15bbd75d1c77f9be2c",
+      "excluded_public_screen": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/data/mmlu_pro/screen.questions.jsonl",
+      "excluded_public_screen_sha256": "02dffa5f3be972ddc7e97b964a08e08503aee0fe88fd8df10bb24f8eadeae17f",
+      "prior_q36_external_source_sha256": "055972f31eb2c704569951bbb2c48493053ee93eb999978c8093812d8bc2eaf4",
+      "selection_seed": 2026082001,
+      "selection_rule": "lowest SHA256(seed NUL identity) ranks after excluding the existing public screen",
+      "selected_identity_sha256": "c5393c15d36a441b6a43b8e2eee0db90a11199e16434db06704a7dbd7b9954e4",
+      "prepared_source_sha256": "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+      "identity_overlap_with_public_screen": 0,
+      "identity_overlap_with_prior_q36_external_development": 0,
+      "revision_candidate_shards": 4,
+      "unchanged_candidate_shards": 4,
+      "assessor_universe": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/data/mmlu_pro/full.assessors.jsonl",
+      "assessor_universe_sha256": "66831e5a644b8c94f058630f9a13d19df326a18e04a2e0a15cde7a74591d1a4f",
+      "official_scoring": "MMLU-Pro terminal answer extraction"
+    }
+  },
+  "fixed_draft": {
+    "host": "Qwen3.6-35B-A3B",
+    "checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "mode": "unchanged source-only greedy generation",
+    "shards": 4,
+    "generated_after_contract_freeze": true,
+    "assessor_access": 0
+  },
+  "gpt_oss_generation": {
+    "host": "openai/gpt-oss-120b",
+    "model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "overlay_manifest_sha256": "50637a890f5149402e3f769b56a97081551b71a0d4102fe1ebba7056a3fb88d8",
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "revision_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "decoding": "greedy",
+    "max_new_tokens": 768,
+    "seed": 2026080816,
+    "fit_retrained_for_confirmation": false
+  },
+  "execution": {
+    "independent_single_h100_fixed_draft_jobs": 4,
+    "independent_single_h100_gpt_generation_jobs": 8,
+    "independent_single_h100_selector_jobs": 1,
+    "total_single_h100_jobs": 13,
+    "gpus_per_job": 1,
+    "arrays": 0,
+    "requeue": false,
+    "score_phase": "single dependent CPU job after all GPT candidate generation",
+    "analysis_phase": "single dependent CPU job after sealed selections and score",
+    "assessor_access_before_score": 0
+  },
+  "predeclared_success": {
+    "capability": "selected correct count is strictly greater than unchanged",
+    "retention": "selected output retains at least 95 percent of unchanged-correct identities",
+    "benchmark_success": "selected correct count is nonnegative versus unchanged on MMLU-Pro",
+    "strict_confirmation_pass": "capability and retention and benchmark_success are all true"
+  },
+  "prohibitions": [
+    "no selector or GPT-OSS revision retraining",
+    "no MMLU-Pro assessor access during input preparation, fixed-draft generation, GPT generation, or selection",
+    "no task, correctness, host, or assessor label in the selector projection",
+    "no threshold change after confirmation generation begins",
+    "no duplicate generation or scoring job",
+    "no requeue",
+    "no mutation of exploratory artifacts"
+  ]
+}

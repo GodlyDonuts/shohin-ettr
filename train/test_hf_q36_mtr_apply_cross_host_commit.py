@@ -116,3 +116,13 @@ def test_cross_host_job_is_one_h100_and_excludes_failed_node() -> None:
     assert "#SBATCH --no-requeue" in wrapper
     assert "evc50" in wrapper
     assert "--batch-identities 2" in wrapper
+
+
+def test_conservative_margin_threshold_is_semantic_and_order_consistent() -> None:
+    candidates = [{"completion": "revision"}, {"completion": "unchanged"}]
+    assert module.select_pair(0.8, -0.8, candidates, 0.703125) == (0, 1)
+    assert module.select_pair(0.7, -0.7, candidates, 0.703125) == (1, 0)
+    assert module.select_pair(0.703125, -0.703125, candidates, 0.703125) == (
+        1,
+        0,
+    )

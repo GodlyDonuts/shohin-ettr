@@ -7,6 +7,7 @@ import argparse
 from collections import Counter
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 from typing import Any
@@ -29,10 +30,17 @@ from q36_mtr_roles import MODEL_REVISION, TRAINABLE_PARAMETERS
 
 SELECTION_SCHEMA = "shohin-q36-cross-host-semantic-commit-selection-v1"
 REPORT_SCHEMA = "shohin-q36-cross-host-semantic-commit-application-v1"
-TASKS = ("math500", "bbh_logic", "mbpp")
+TASKS = ("math500", "bbh_logic", "mbpp", "mmlu_pro")
 LINEAGES = ("revision", "unchanged")
 HOSTS: dict[str, dict[str, Any]] = {
     "gpt_oss_120b_screen": {
+        "rows": 256,
+        "shards": 4,
+        "candidate_schema": "shohin-gpt-oss-120b-fixed-draft-candidate-v1",
+        "source_schema": "shohin-q36-mtr-external-validation-source-v1",
+        "source_split": "external_validation",
+    },
+    "gpt_oss_120b_confirmation": {
         "rows": 256,
         "shards": 4,
         "candidate_schema": "shohin-gpt-oss-120b-fixed-draft-candidate-v1",
@@ -180,11 +188,31 @@ def _validate_environment(args: argparse.Namespace) -> None:
         raise CrossHostCommitError("cross-host environment contract differs")
 
 
+def select_pair(
+    margin: float,
+    reverse_margin: float,
+    candidates: list[dict[str, Any]],
+    revision_margin_threshold: float,
+) -> tuple[int, int]:
+    """Return direct/reversed choices under a semantic revision threshold."""
+    if revision_margin_threshold == 0.0:
+        return (
+            select_candidate(margin, candidates),
+            select_candidate(reverse_margin, list(reversed(candidates))),
+        )
+    return (
+        0 if margin > revision_margin_threshold else 1,
+        1 if -reverse_margin > revision_margin_threshold else 0,
+    )
+
+
 def apply(args: argparse.Namespace) -> dict[str, Any]:
     contract = HOSTS[args.host]
     if (
         args.model_revision != MODEL_REVISION
         or args.max_sequence_length != MAX_SEQUENCE_LENGTH
+        or not math.isfinite(args.revision_margin_threshold)
+        or args.revision_margin_threshold < 0.0
         or args.batch_identities <= 0
         or any(
             path.exists() or path.is_symlink()
@@ -297,9 +325,11 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
                 reverse.tolist(),
                 strict=True,
             ):
-                chosen = select_candidate(margin, pair["candidates"])
-                reversed_choice = select_candidate(
-                    reverse_margin, list(reversed(pair["candidates"]))
+                chosen, reversed_choice = select_pair(
+                    margin,
+                    reverse_margin,
+                    pair["candidates"],
+                    args.revision_margin_threshold,
                 )
                 consistent = chosen == 1 - reversed_choice or (
                     pair["candidates"][0]["completion"]
@@ -317,6 +347,7 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
                         "selected_index": chosen,
                         "selected_lineage": lineage,
                         "margin": float(margin),
+                        "revision_margin_threshold": args.revision_margin_threshold,
                         "order_consistent": consistent,
                     }
                 )
@@ -350,6 +381,7 @@ def apply(args: argparse.Namespace) -> dict[str, Any]:
         "prompt_truncated": prompt_truncated,
         "maximum_swap_error": maximum_swap_error,
         "order_consistent": len(selection_rows),
+        "revision_margin_threshold": args.revision_margin_threshold,
         "model_visible_fields": [
             "question",
             "candidate_a.completion",
@@ -390,6 +422,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--environment-tree-sha256", required=True)
     parser.add_argument("--max-sequence-length", type=int, default=MAX_SEQUENCE_LENGTH)
     parser.add_argument("--batch-identities", type=int, default=2)
+    parser.add_argument("--revision-margin-threshold", type=float, default=0.0)
     return parser.parse_args()
 
 

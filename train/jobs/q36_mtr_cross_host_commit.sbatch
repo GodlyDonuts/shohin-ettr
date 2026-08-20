@@ -23,21 +23,24 @@ q36_verify_runtime
 q36_verify_model
 q36_verify_environment
 q36_verify_sha256 "$CROSS_HOST_CONTRACT" "$CROSS_HOST_CONTRACT_SHA256"
-"$PYTHON" - "$CROSS_HOST_CONTRACT" "$HOST" "$RUN_ROOT" "$OUTPUT" "$SELECTIONS" "$REPORT" <<'PY'
+"$PYTHON" - "$CROSS_HOST_CONTRACT" "$HOST" "$RUN_ROOT" "$OUTPUT" "$SELECTIONS" "$REPORT" "${REVISION_MARGIN_THRESHOLD:-0.0}" <<'PY'
 import json
 from pathlib import Path
 import sys
 
 contract = json.load(open(sys.argv[1], encoding="utf-8"))
 root = Path(sys.argv[3]).resolve(strict=False)
+threshold = float(sys.argv[7])
 if (
     contract.get("schema") != "shohin-q36-cross-host-model-owned-commit-contract-v1"
     or contract.get("status") != "frozen_before_execution"
     or sys.argv[2] not in contract.get("hosts", {})
     or root in {Path("/"), Path.home().resolve()}
+    or threshold
+    != float(contract.get("selector", {}).get("revision_margin_threshold", 0.0))
 ):
     raise SystemExit("cross-host authorization differs")
-for value in sys.argv[4:]:
+for value in sys.argv[4:7]:
     target = Path(value).resolve(strict=False)
     try:
         relative = target.relative_to(root)
@@ -47,7 +50,7 @@ for value in sys.argv[4:]:
         raise SystemExit("cross-host output equals run root")
 PY
 case "$HOST" in
-  gpt_oss_120b_screen) expected_shards=4 ;;
+  gpt_oss_120b_screen|gpt_oss_120b_confirmation) expected_shards=4 ;;
   mixtral_8x22b_validation) expected_shards=16 ;;
   *) q36_die "cross-host identity differs" ;;
 esac
@@ -83,6 +86,7 @@ nvidia-smi
   --environment-receipt "$ENVIRONMENT_RECEIPT" \
   --environment-receipt-sha256 "$ENVIRONMENT_RECEIPT_SHA256" \
   --environment-tree-sha256 "$ENVIRONMENT_TREE_SHA256" \
-  --max-sequence-length 3072 --batch-identities 2
+  --max-sequence-length 3072 --batch-identities 2 \
+  --revision-margin-threshold "${REVISION_MARGIN_THRESHOLD:-0.0}"
 test -f "$OUTPUT" && test -f "$SELECTIONS" && test -f "$REPORT"
 chmod a-w "$OUTPUT" "$SELECTIONS" "$REPORT"

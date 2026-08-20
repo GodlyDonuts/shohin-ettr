@@ -19,7 +19,7 @@ q36_init_local_tmp
 trap q36_cleanup_local_tmp EXIT
 q36_verify_runtime
 q36_verify_sha256 "$CROSS_HOST_CONTRACT" "$CROSS_HOST_CONTRACT_SHA256"
-"$PYTHON" - "$CROSS_HOST_CONTRACT" "$HOST" "$RUN_ROOT" "$OUTPUT" <<'PY'
+"$PYTHON" - "$CROSS_HOST_CONTRACT" "$HOST" "$RUN_ROOT" "$OUTPUT" "${REVISION_MARGIN_THRESHOLD:-0.0}" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -27,11 +27,14 @@ import sys
 contract = json.load(open(sys.argv[1], encoding="utf-8"))
 root = Path(sys.argv[3]).resolve(strict=False)
 target = Path(sys.argv[4]).resolve(strict=False)
+threshold = float(sys.argv[5])
 if (
     contract.get("schema") != "shohin-q36-cross-host-model-owned-commit-contract-v1"
     or contract.get("status") != "frozen_before_execution"
     or sys.argv[2] not in contract.get("hosts", {})
     or root in {Path("/"), Path.home().resolve()}
+    or threshold
+    != float(contract.get("selector", {}).get("revision_margin_threshold", 0.0))
 ):
     raise SystemExit("cross-host authorization differs")
 try:
@@ -52,6 +55,7 @@ q36_export_pythonpath
   --selections "$SELECTIONS" \
   --application-report "$APPLICATION_REPORT" \
   --score "$SCORE" \
-  --output "$OUTPUT"
+  --output "$OUTPUT" \
+  --expected-revision-margin-threshold "${REVISION_MARGIN_THRESHOLD:-0.0}"
 test -f "$OUTPUT"
 chmod a-w "$OUTPUT"

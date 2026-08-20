@@ -19,12 +19,16 @@ HOSTS = {
         "rows": 256,
         "score_schema": "shohin-gpt-oss-120b-fixed-draft-screen-score-v1",
     },
+    "gpt_oss_120b_confirmation": {
+        "rows": 256,
+        "score_schema": "shohin-gpt-oss-120b-commit-confirmation-score-v1",
+    },
     "mixtral_8x22b_validation": {
         "rows": 1_023,
         "score_schema": "shohin-mixtral-8x22b-selective-commit-validation-score-v1",
     },
 }
-TASKS = ("math500", "bbh_logic", "mbpp")
+TASKS = ("math500", "bbh_logic", "mbpp", "mmlu_pro")
 LINEAGES = ("revision", "unchanged")
 
 
@@ -52,7 +56,9 @@ def _json(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _selections(path: Path, host: str, rows: int) -> dict[str, dict[str, Any]]:
+def _selections(
+    path: Path, host: str, rows: int, revision_margin_threshold: float
+) -> dict[str, dict[str, Any]]:
     if path.is_symlink() or not path.is_file():
         raise CrossHostAnalysisError("cross-host selections are absent or linked")
     result: dict[str, dict[str, Any]] = {}
@@ -61,6 +67,9 @@ def _selections(path: Path, host: str, rows: int) -> dict[str, dict[str, Any]]:
             continue
         row = json.loads(line)
         identity = row.get("identity_sha256") if isinstance(row, dict) else None
+        threshold = (
+            row.get("revision_margin_threshold", 0.0) if isinstance(row, dict) else None
+        )
         if (
             not isinstance(row, dict)
             or row.get("schema") != SELECTION_SCHEMA
@@ -75,6 +84,10 @@ def _selections(path: Path, host: str, rows: int) -> dict[str, dict[str, Any]]:
             or isinstance(row.get("margin"), bool)
             or not isinstance(row.get("margin"), (int, float))
             or not math.isfinite(float(row["margin"]))
+            or isinstance(threshold, bool)
+            or not isinstance(threshold, (int, float))
+            or not math.isfinite(float(threshold))
+            or float(threshold) != revision_margin_threshold
         ):
             raise CrossHostAnalysisError("cross-host selection differs")
         result[identity] = row
@@ -95,11 +108,20 @@ def mcnemar_exact(left_only: int, right_only: int) -> float:
 
 def analyze(args: argparse.Namespace) -> dict[str, Any]:
     contract = HOSTS[args.host]
+    revision_margin_threshold = getattr(args, "expected_revision_margin_threshold", 0.0)
     if args.output.exists() or args.output.is_symlink():
         raise CrossHostAnalysisError("cross-host result already exists")
-    selection_rows = _selections(args.selections, args.host, contract["rows"])
+    if not math.isfinite(revision_margin_threshold) or revision_margin_threshold < 0.0:
+        raise CrossHostAnalysisError("cross-host threshold differs")
+    selection_rows = _selections(
+        args.selections,
+        args.host,
+        contract["rows"],
+        revision_margin_threshold,
+    )
     application = _json(args.application_report)
     score = _json(args.score)
+    application_threshold = application.get("revision_margin_threshold", 0.0)
     if (
         application.get("schema")
         != "shohin-q36-cross-host-semantic-commit-application-v1"
@@ -109,6 +131,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         or application.get("selections_sha256") != sha256_file(args.selections)
         or application.get("task_correctness_or_host_label_visible") is not False
         or application.get("assessor_access_count") != 0
+        or isinstance(application_threshold, bool)
+        or not isinstance(application_threshold, (int, float))
+        or not math.isfinite(float(application_threshold))
+        or float(application_threshold) != revision_margin_threshold
         or score.get("schema") != contract["score_schema"]
         or score.get("status") != "complete"
         or score.get("rows") != contract["rows"]
@@ -204,6 +230,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
             for values in domain.values()
         ),
         "selection_had_score_or_assessor_access": False,
+        "revision_margin_threshold": revision_margin_threshold,
         "application_report_sha256": sha256_file(args.application_report),
         "selections_sha256": sha256_file(args.selections),
         "score_sha256": sha256_file(args.score),
@@ -226,6 +253,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--application-report", type=Path, required=True)
     parser.add_argument("--score", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--expected-revision-margin-threshold", type=float, default=0.0)
     return parser.parse_args()
 
 

@@ -56,6 +56,10 @@ else
     draft_args+=(--draft-candidates "$path")
   done
 fi
+confirmation_args=()
+if [[ "${CONFIRMATION_MMLU_PRO:-0}" == 1 ]]; then
+  confirmation_args=(--confirmation-mmlu-pro)
+fi
 
 shard=$(printf '%02d' "$SHARD_INDEX")
 output_dir="$OUTPUT_ROOT/$ARM/shard_$shard"
@@ -94,6 +98,8 @@ nvidia-smi
   --mechanics-report "$MECHANICS_REPORT" \
   "${checkpoint_args[@]}" \
   --source "$SOURCE" \
+  --expected-source-sha256 "${EXPECTED_SOURCE_SHA256:-f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9}" \
+  "${confirmation_args[@]}" \
   "${draft_args[@]}" \
   --candidates-output "$candidates" \
   --report "$report" \
