@@ -5,6 +5,15 @@
   "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
   "draft_checkpoint_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971",
   "revision_checkpoint_sha256": "df3c264d426941fef8ba9c10a90fe9fab304ec2864738209a4d79f9f81e0c473",
+  "newton_execution_evidence": {
+    "report_path": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/revision_horizon_89af615b_r1/report.json",
+    "report_sha256": "338ca55c0bd068a8ee3b57e28437d0d3b806f5f0001a87a2d976d0be98a82a93",
+    "execution_receipt_sha256": "576a2453c816a531b1b17f295a5db75f24d58d118f140229749f457eabbbde42",
+    "sacct_sha256": "e703e3c8b5a519f9431dc4d04bc598493f3e577aa0a3b7cdb842993724658ed7",
+    "completed_job": 767657,
+    "runtime_manifest_sha256": "cfd7d2fa4278914706cc7c0a4ddd8bc19f3878ad695d6517d4345728852844ca",
+    "runtime_json_sha256": "9064f39a92f38a0e33e738c5a3fa0426829dbaffc9466c0609a720b7c30b531e"
+  },
   "matched_prompt_contract": {
     "unchanged_and_revision_prompt_sha256_equal_on_every_row": true,
     "prompt_equal_rows": 2578,

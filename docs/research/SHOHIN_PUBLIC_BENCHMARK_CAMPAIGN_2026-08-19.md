@@ -170,6 +170,16 @@ model-owned draft contains a long reasoning trajectory.  This is preparation,
 not a new result or authorized launch; it requires a new source-disjoint broad
 development screen and untouched confirmation before any claim.
 
+Generic analyzer job `767657` independently replayed all 2,578 matched rows
+from immutable generation and official-score ledgers.  Its owner-nonwritable
+report has SHA-256
+`338ca55c0bd068a8ee3b57e28437d0d3b806f5f0001a87a2d976d0be98a82a93`;
+the execution receipt has SHA-256
+`576a2453c816a531b1b17f295a5db75f24d58d118f140229749f457eabbbde42`.
+The analyzer is pushed at `89af615b` with 87 public-campaign tests passing and
+is reusable without benchmark labels in model-visible data on every subsequent
+dense or MoE host.
+
 ## Cross-family expansion staged — 2026-08-20 17:34 EDT
 
 The second exact dense host is SmolLM3-3B at upstream revision
