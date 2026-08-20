@@ -122,6 +122,14 @@ def _mechanics() -> dict[str, object]:
         "native_router_expert_trainables": 0,
         "serialization_restore_exact": True,
         "devices": [{"index": 0}, {"index": 1}],
+        "gradient_receipt": {
+            "parameters": 32,
+            "nonzero_gradients": 16,
+            "adapter_a_zero_gradients": 16,
+            "adapter_b_nonzero_gradients": 16,
+            "nonzero_parameter_names_sha256": "a" * 64,
+            "receipt_sha256": "b" * 64,
+        },
         "training_objective_receipt": {
             "objective": "response_only_next_token_cross_entropy",
             "prompt_tokens": 3,
@@ -168,6 +176,17 @@ def test_mechanics_report_binds_training_objective(
     receipt = payload["training_objective_receipt"]
     assert isinstance(receipt, dict)
     receipt[field] = value
+    path = tmp_path / "mechanics.json"
+    path.write_text(json.dumps(payload))
+    with pytest.raises(evaluation.NemotronSuperEvaluationError):
+        evaluation.validate_mechanics_report(path)
+
+
+def test_mechanics_report_binds_all_controlled_gradient_paths(tmp_path: Path) -> None:
+    payload = _mechanics()
+    receipt = payload["gradient_receipt"]
+    assert isinstance(receipt, dict)
+    receipt["adapter_b_nonzero_gradients"] = 15
     path = tmp_path / "mechanics.json"
     path.write_text(json.dumps(payload))
     with pytest.raises(evaluation.NemotronSuperEvaluationError):

@@ -34,6 +34,14 @@ def _mechanics_authorization() -> dict[str, object]:
         "trainable_parameters": training.TRAINABLE_PARAMETERS_PER_ROLE,
         "native_router_expert_trainables": 0,
         "serialization_restore_exact": True,
+        "gradient_receipt": {
+            "parameters": 32,
+            "nonzero_gradients": 16,
+            "adapter_a_zero_gradients": 16,
+            "adapter_b_nonzero_gradients": 16,
+            "nonzero_parameter_names_sha256": "a" * 64,
+            "receipt_sha256": "b" * 64,
+        },
         "modelopt_fp8": {"valid": True},
         "training_objective_receipt": {
             "objective": "response_only_next_token_cross_entropy",
@@ -64,6 +72,12 @@ def test_training_authorization_binds_mechanics_objective(
         training.validate_mechanics_authorization(payload)
     payload = _mechanics_authorization()
     payload.pop("training_objective_receipt")
+    with pytest.raises(training.NemotronSuperTrainingError):
+        training.validate_mechanics_authorization(payload)
+    payload = _mechanics_authorization()
+    gradients = payload["gradient_receipt"]
+    assert isinstance(gradients, dict)
+    gradients["adapter_b_nonzero_gradients"] = 15
     with pytest.raises(training.NemotronSuperTrainingError):
         training.validate_mechanics_authorization(payload)
 

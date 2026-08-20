@@ -16,6 +16,7 @@ import torch
 
 from hf_nemotron_super_mechanics import (
     CUDA_VERSION,
+    gradient_receipt_is_exact,
     MAMBA_VERSION,
     MODELOPT_VERSION,
     TORCH_VERSION,
@@ -117,6 +118,7 @@ def validate_mechanics_report(path: Path) -> dict[str, Any]:
         or payload.get("native_router_expert_trainables") != 0
         or payload.get("serialization_restore_exact") is not True
         or len(payload.get("devices", [])) != 2
+        or not gradient_receipt_is_exact(payload.get("gradient_receipt"))
         or not modelopt_fp8_receipt_is_exact(payload.get("modelopt_fp8"))
         or not training_objective_receipt_is_exact(
             payload.get("training_objective_receipt")

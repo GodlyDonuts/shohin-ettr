@@ -28,6 +28,7 @@ from nemotron_super_post_mixer_revision import (
     NemotronSuperRevisionModel,
 )
 from q36_upward_moe_host import (
+    CONTROLLED_LAYER_INDICES,
     LAYER_TYPES,
     MODEL_CONFIG_SHA256,
     MODEL_MANIFEST_SHA256,
@@ -154,6 +155,40 @@ def training_objective_receipt_is_exact(payload: Any) -> bool:
         and isinstance(learning_rate, float)
         and learning_rate == TRAINING_LEARNING_RATE
         and payload.get("autocast_dtype") == "torch.bfloat16"
+    )
+
+
+def gradient_receipt_is_exact(payload: Any) -> bool:
+    """Validate full first-step gradient connectivity across controlled layers."""
+
+    expected_layers = len(CONTROLLED_LAYER_INDICES)
+    if not isinstance(payload, dict) or set(payload) != {
+        "parameters",
+        "nonzero_gradients",
+        "adapter_a_zero_gradients",
+        "adapter_b_nonzero_gradients",
+        "nonzero_parameter_names_sha256",
+        "receipt_sha256",
+    }:
+        return False
+    integers = {
+        "parameters": expected_layers * 2,
+        "nonzero_gradients": expected_layers,
+        "adapter_a_zero_gradients": expected_layers,
+        "adapter_b_nonzero_gradients": expected_layers,
+    }
+    if any(
+        not isinstance(payload.get(name), int)
+        or isinstance(payload.get(name), bool)
+        or payload.get(name) != expected
+        for name, expected in integers.items()
+    ):
+        return False
+    return all(
+        isinstance(payload.get(name), str)
+        and len(payload[name]) == 64
+        and all(character in "0123456789abcdef" for character in payload[name])
+        for name in ("nonzero_parameter_names_sha256", "receipt_sha256")
     )
 
 
@@ -1165,10 +1200,16 @@ def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
                 "norm": norm,
             }
         )
+    adapter_a = [row for row in rows if row["name"].endswith(".adapter_a.weight")]
+    adapter_b = [row for row in rows if row["name"].endswith(".adapter_b.weight")]
+    expected_layers = len(CONTROLLED_LAYER_INDICES)
     if (
-        len(rows) != 32
+        len(rows) != expected_layers * 2
+        or len(adapter_a) != expected_layers
+        or len(adapter_b) != expected_layers
         or not all(row["finite"] for row in rows)
-        or not any(float(row["norm"] or 0.0) > 0.0 for row in rows)
+        or any(float(row["norm"] or 0.0) != 0.0 for row in adapter_a)
+        or any(float(row["norm"] or 0.0) <= 0.0 for row in adapter_b)
     ):
         raise NemotronSuperMechanicsError(
             "Shohin gradient receipt differs: "
@@ -1181,6 +1222,15 @@ def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
     return {
         "parameters": len(rows),
         "nonzero_gradients": sum(float(row["norm"] or 0.0) > 0.0 for row in rows),
+        "adapter_a_zero_gradients": sum(
+            float(row["norm"] or 0.0) == 0.0 for row in adapter_a
+        ),
+        "adapter_b_nonzero_gradients": sum(
+            float(row["norm"] or 0.0) > 0.0 for row in adapter_b
+        ),
+        "nonzero_parameter_names_sha256": _canonical_sha256(
+            sorted(row["name"] for row in rows if float(row["norm"] or 0.0) > 0.0)
+        ),
         "receipt_sha256": hashlib.sha256(encoded).hexdigest(),
     }
 

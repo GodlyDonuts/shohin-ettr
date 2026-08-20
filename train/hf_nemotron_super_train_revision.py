@@ -18,6 +18,7 @@ import torch.nn.functional as F
 
 from hf_nemotron_super_mechanics import (
     CUDA_VERSION,
+    gradient_receipt_is_exact,
     MAMBA_VERSION,
     MODELOPT_VERSION,
     OVERLAY_MANIFEST_SHA256,
@@ -189,6 +190,7 @@ def validate_mechanics_authorization(mechanics: Any) -> None:
         or mechanics.get("trainable_parameters") != TRAINABLE_PARAMETERS_PER_ROLE
         or mechanics.get("native_router_expert_trainables") != 0
         or mechanics.get("serialization_restore_exact") is not True
+        or not gradient_receipt_is_exact(mechanics.get("gradient_receipt"))
         or not modelopt_fp8_receipt_is_exact(mechanics.get("modelopt_fp8"))
         or not training_objective_receipt_is_exact(
             mechanics.get("training_objective_receipt")

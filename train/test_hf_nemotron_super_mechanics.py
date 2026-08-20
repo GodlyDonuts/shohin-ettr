@@ -845,20 +845,42 @@ def test_frozen_empty_experts_skip_only_zero_distributed_noops(
 def test_gradient_failure_emits_exact_diagnostics() -> None:
     import hf_nemotron_super_mechanics as mechanics
 
-    model = torch.nn.ModuleList([torch.nn.Linear(1, 1) for _ in range(16)])
-    for parameter in model.parameters():
-        parameter.grad = torch.zeros_like(parameter)
-    next(model.parameters()).grad = torch.ones_like(next(model.parameters()))
+    class _Block(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.adapter_a = torch.nn.Linear(1, 1, bias=False)
+            self.adapter_b = torch.nn.Linear(1, 1, bias=False)
+
+    class _Model(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.blocks = torch.nn.ModuleList(
+                [_Block() for _ in mechanics.CONTROLLED_LAYER_INDICES]
+            )
+
+    model = _Model()
+    for name, parameter in model.named_parameters():
+        parameter.grad = (
+            torch.ones_like(parameter)
+            if name.endswith(".adapter_b.weight")
+            else torch.zeros_like(parameter)
+        )
     receipt = mechanics._gradient_receipt(model)
     assert receipt["parameters"] == 32
-    assert receipt["nonzero_gradients"] == 1
+    assert receipt["nonzero_gradients"] == 16
+    assert receipt["adapter_a_zero_gradients"] == 16
+    assert receipt["adapter_b_nonzero_gradients"] == 16
 
-    missing = next(model.parameters())
+    missing = model.blocks[0].adapter_b.weight
     missing.grad = None
     with pytest.raises(
         NemotronSuperMechanicsError,
         match='"present":false',
     ):
+        mechanics._gradient_receipt(model)
+
+    missing.grad = torch.zeros_like(missing)
+    with pytest.raises(NemotronSuperMechanicsError, match="gradient receipt differs"):
         mechanics._gradient_receipt(model)
 
     missing.grad = torch.full_like(missing, float("nan"))
