@@ -1,6 +1,6 @@
 {
-  "schema": "shohin-q36-gpt-oss-120b-mechanics-infrastructure-failure-v1",
-  "status": "terminal_pre_science_failure_repair_authorized",
+  "schema": "shohin-q36-gpt-oss-120b-mechanics-admission-failure-v1",
+  "status": "terminal_pre_science_admission_failure_repair_authorized",
   "recorded_date": "2026-08-19",
   "job": {
     "job_id": 764085,

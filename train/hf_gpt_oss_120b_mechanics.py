@@ -21,6 +21,7 @@ from gpt_oss_post_mlp_revision import GptOssRevisionModel
 from q36_upward_moe_gpt_oss_host import (
     CONTROLLED_LAYER_INDICES,
     MODEL_MANIFEST_SHA256,
+    MODEL_LAYERS,
     MODEL_REVISION,
     TRAINABLE_PARAMETERS_PER_ROLE,
     load_pinned_config,
@@ -285,12 +286,71 @@ def _is_cuda_zero(value: Any) -> bool:
     return False
 
 
+def _tensor_is_cuda_zero(value: Any) -> bool:
+    return isinstance(value, torch.Tensor) and _is_cuda_zero(value.device)
+
+
+def _cuda_residency_receipt(backbone: Any) -> dict[str, Any]:
+    parameters = list(backbone.named_parameters())
+    buffers = list(backbone.named_buffers())
+    layers = getattr(getattr(backbone, "model", None), "layers", None)
+    packed: list[torch.Tensor] = []
+    if layers is not None and len(layers) == MODEL_LAYERS:
+        for layer in layers:
+            experts = getattr(getattr(layer, "mlp", None), "experts", None)
+            for name in ("gate_up_proj", "down_proj"):
+                storage = getattr(getattr(experts, name, None), "storage", None)
+                data = getattr(storage, "data", None)
+                if isinstance(data, torch.Tensor):
+                    packed.append(data)
+    parameter_devices = sorted({str(value.device) for _, value in parameters})
+    buffer_devices = sorted({str(value.device) for _, value in buffers})
+    packed_devices = sorted({str(value.device) for value in packed})
+    receipt = {
+        "parameter_tensors": len(parameters),
+        "parameter_devices": parameter_devices,
+        "buffer_tensors": len(buffers),
+        "buffer_devices": buffer_devices,
+        "packed_expert_tensors": len(packed),
+        "packed_expert_devices": packed_devices,
+        "expected_packed_expert_tensors": 2 * MODEL_LAYERS,
+        "all_parameters_cuda_zero": bool(
+            parameters and all(_tensor_is_cuda_zero(value) for _, value in parameters)
+        ),
+        "all_buffers_cuda_zero": all(
+            _tensor_is_cuda_zero(value) for _, value in buffers
+        ),
+        "all_packed_experts_cuda_zero": bool(
+            len(packed) == 2 * MODEL_LAYERS
+            and all(_tensor_is_cuda_zero(value) for value in packed)
+        ),
+    }
+    if not all(
+        receipt[name] is True
+        for name in (
+            "all_parameters_cuda_zero",
+            "all_buffers_cuda_zero",
+            "all_packed_experts_cuda_zero",
+        )
+    ):
+        raise GptOssMechanicsError(
+            "native MXFP4 CUDA residency differs: "
+            + json.dumps(receipt, sort_keys=True, separators=(",", ":"))
+        )
+    return receipt
+
+
 def _native_mxfp4_load_receipt(backbone: Any) -> dict[str, Any]:
     """Normalize equivalent CUDA:0 spellings while rejecting offload/dequantize."""
 
     device_map = getattr(backbone, "hf_device_map", None)
     quantizer = getattr(backbone, "hf_quantizer", None)
     quantization_config = getattr(quantizer, "quantization_config", None)
+    explicit_device_map_cuda_zero = bool(
+        isinstance(device_map, dict)
+        and device_map
+        and all(_is_cuda_zero(value) for value in device_map.values())
+    )
     receipt = {
         "device_map_type": type(device_map).__name__,
         "device_map": (
@@ -298,17 +358,18 @@ def _native_mxfp4_load_receipt(backbone: Any) -> dict[str, Any]:
             if isinstance(device_map, dict)
             else None
         ),
-        "all_modules_cuda_zero": bool(
-            isinstance(device_map, dict)
-            and device_map
-            and all(_is_cuda_zero(value) for value in device_map.values())
+        "device_map_mode": (
+            "absent_single_device_load"
+            if device_map is None
+            else "explicit_cuda_zero" if explicit_device_map_cuda_zero else "invalid"
         ),
         "quantizer_class": type(quantizer).__name__,
         "quantization_config_class": type(quantization_config).__name__,
         "dequantize": getattr(quantization_config, "dequantize", None),
     }
     if (
-        receipt["all_modules_cuda_zero"] is not True
+        receipt["device_map_mode"]
+        not in {"absent_single_device_load", "explicit_cuda_zero"}
         or receipt["quantizer_class"] != "Mxfp4HfQuantizer"
         or receipt["quantization_config_class"] != "Mxfp4Config"
         or receipt["dequantize"] is not False
@@ -317,6 +378,7 @@ def _native_mxfp4_load_receipt(backbone: Any) -> dict[str, Any]:
             "native MXFP4 load differs: "
             + json.dumps(receipt, sort_keys=True, separators=(",", ":"))
         )
+    receipt["cuda_residency"] = _cuda_residency_receipt(backbone)
     return receipt
 
 

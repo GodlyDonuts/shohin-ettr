@@ -9,6 +9,7 @@ import torch.nn as nn
 
 from hf_gpt_oss_120b_mechanics import (
     GptOssMechanicsError,
+    _cuda_residency_receipt,
     _gradient_receipt,
     _native_mxfp4_load_receipt,
     verify_manifest,
@@ -38,10 +39,42 @@ class Mxfp4HfQuantizer:
         self.quantization_config = Mxfp4Config(dequantize)
 
 
-class _Backbone:
-    def __init__(self, device: object, dequantize: bool = False) -> None:
-        self.hf_device_map = {"": device}
+class _Projection:
+    pass
+
+
+class _Backbone(nn.Module):
+    def __init__(
+        self, device: object | None, dequantize: bool = False, resident: bool = True
+    ) -> None:
+        super().__init__()
+        if device is not None:
+            self.hf_device_map = {"": device}
         self.hf_quantizer = Mxfp4HfQuantizer(dequantize)
+        tensor_device = "meta" if not resident else "cpu"
+        self.anchor = nn.Parameter(torch.ones(1, device=tensor_device))
+        self.register_buffer("buffer", torch.ones(1, device=tensor_device))
+        layers = []
+        for _ in range(36):
+            experts = nn.Module()
+            for name in ("gate_up_proj", "down_proj"):
+                projection = _Projection()
+                projection.storage = _Projection()
+                projection.storage.data = torch.ones(1, device=tensor_device)
+                setattr(experts, name, projection)
+            mlp = nn.Module()
+            mlp.experts = experts
+            layer = nn.Module()
+            layer.mlp = mlp
+            layers.append(layer)
+        self.model = nn.Module()
+        self.model.layers = layers
+
+    def named_parameters(self):
+        return [("anchor", self.anchor)]
+
+    def named_buffers(self):
+        return [("buffer", self.buffer)]
 
 
 def test_gradient_receipt_requires_every_post_mxfp4_residual_path() -> None:
@@ -60,10 +93,27 @@ def test_gradient_receipt_requires_every_post_mxfp4_residual_path() -> None:
 
 
 @pytest.mark.parametrize("device", [0, "cuda", "cuda:0", torch.device("cuda:0")])
-def test_native_mxfp4_receipt_normalizes_cuda_zero(device: object) -> None:
+def test_native_mxfp4_receipt_normalizes_cuda_zero(
+    monkeypatch: pytest.MonkeyPatch, device: object
+) -> None:
+    monkeypatch.setattr(
+        "hf_gpt_oss_120b_mechanics._cuda_residency_receipt",
+        lambda _: {"all_parameters_cuda_zero": True},
+    )
     receipt = _native_mxfp4_load_receipt(_Backbone(device))
-    assert receipt["all_modules_cuda_zero"] is True
+    assert receipt["device_map_mode"] == "explicit_cuda_zero"
     assert receipt["dequantize"] is False
+
+
+def test_native_mxfp4_receipt_accepts_absent_map_with_residency_proof(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "hf_gpt_oss_120b_mechanics._cuda_residency_receipt",
+        lambda _: {"all_parameters_cuda_zero": True},
+    )
+    receipt = _native_mxfp4_load_receipt(_Backbone(None))
+    assert receipt["device_map_mode"] == "absent_single_device_load"
 
 
 @pytest.mark.parametrize(
@@ -71,10 +121,19 @@ def test_native_mxfp4_receipt_normalizes_cuda_zero(device: object) -> None:
     [("cpu", False), ("disk", False), (1, False), ("cuda:0", True)],
 )
 def test_native_mxfp4_receipt_rejects_offload_or_dequantize(
-    device: object, dequantize: bool
+    monkeypatch: pytest.MonkeyPatch, device: object, dequantize: bool
 ) -> None:
+    monkeypatch.setattr(
+        "hf_gpt_oss_120b_mechanics._cuda_residency_receipt",
+        lambda _: {"all_parameters_cuda_zero": True},
+    )
     with pytest.raises(GptOssMechanicsError, match="native MXFP4 load differs"):
         _native_mxfp4_load_receipt(_Backbone(device, dequantize))
+
+
+def test_cuda_residency_rejects_non_cuda_model() -> None:
+    with pytest.raises(GptOssMechanicsError, match="CUDA residency differs"):
+        _cuda_residency_receipt(_Backbone(None))
 
 
 def test_manifest_verifier_binds_hash_and_exact_membership(tmp_path: Path) -> None:
