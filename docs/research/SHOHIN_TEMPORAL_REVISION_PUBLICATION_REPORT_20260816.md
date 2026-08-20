@@ -144,9 +144,10 @@ the host. No selector target or auxiliary routing label is used in gate training
 
 ![Figure 1: Shohin temporal architecture](figures/shohin_temporal_revision_architecture.svg)
 
-**Figure 1 — Learned ownership across inference time.** (a) A model-owned
-draft feeds matched unchanged and trained-revision roles; the commit owner
-selects one whole candidate trajectory. (b) On Mixtral, a trained low-rank
+**Figure 1 — Learned ownership across inference time.** (a) In the dense
+lifecycle, a model-owned draft feeds matched unchanged and trained-revision
+roles; the commit owner selects one whole candidate trajectory. (b) On
+Mixtral, a trained low-rank
 post-MLP residual augments each of the final 16 frozen MoE blocks while native
 routers and experts remain unchanged. (c) On Qwen3.6-35B-A3B, a tokenwise
 causal gate interpolates two frozen temporal residual branches. Blue, orange,
