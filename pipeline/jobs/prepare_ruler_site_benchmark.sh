@@ -26,10 +26,24 @@ mkdir -m 700 -p "$stage"
 trap 'rm -rf -- "$stage"' EXIT
 
 json_root="$RULER_ROOT/scripts/data/synthetic/json"
+
+"$PYTHON" - <<'PY'
+import nltk
+import numpy
+import scipy
+import tenacity
+import transformers
+import wonderwords
+import yaml
+PY
 (
   cd "$json_root"
-  "$PYTHON" download_paulgraham_essay.py
-  bash download_qa_dataset.sh
+  if [ ! -s PaulGrahamEssays.json ]; then
+    "$PYTHON" download_paulgraham_essay.py
+  fi
+  if [ ! -s squad.json ] || [ ! -s hotpotqa.json ]; then
+    bash download_qa_dataset.sh
+  fi
 )
 
 export PATH="$(dirname "$PYTHON"):/usr/bin:/bin"
