@@ -200,6 +200,37 @@ def load_livebench() -> list[dict[str, Any]]:
     return rows
 
 
+def load_ruler(paths: list[Path]) -> list[dict[str, Any]]:
+    rows = []
+    seen_strata: set[str] = set()
+    for path in paths:
+        task = path.parent.name
+        length = path.parent.parent.name
+        stratum = f"{length}:{task}"
+        if stratum in seen_strata:
+            raise SiteBenchmarkDataError("RULER task/context stratum is duplicated")
+        seen_strata.add(stratum)
+        with path.open(encoding="utf-8") as handle:
+            source = [json.loads(line) for line in handle if line.strip()]
+        if not source:
+            raise SiteBenchmarkDataError("RULER source stratum is empty")
+        for row in source:
+            upstream_id = f"{stratum}:{row['index']}"
+            rows.append(
+                make_row(
+                    "ruler",
+                    upstream_id,
+                    str(row["input"]),
+                    "general",
+                    stratum,
+                    {"outputs": row["outputs"], "task": task, "context_length": length},
+                )
+            )
+    if len(seen_strata) % 13 != 0:
+        raise SiteBenchmarkDataError("RULER does not contain all 13 tasks per length")
+    return rows
+
+
 def make_row(
     benchmark: str,
     upstream_id: str,
@@ -300,6 +331,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "livecodebench": load_livecodebench(args.livecodebench_jsonl),
         "longbench_pro": load_longbench(args.longbench_json),
     }
+    if args.ruler_jsonl:
+        loaders["ruler"] = load_ruler(args.ruler_jsonl)
     outputs = {
         name: write_benchmark(args.output_root, name, rows)
         for name, rows in loaders.items()
@@ -316,6 +349,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 args.correctbench_parquet,
                 *args.livecodebench_jsonl,
                 args.longbench_json,
+                *args.ruler_jsonl,
             ]
         ],
         "longbench_scope": "official_nonthinking_8k_to_64k_subset_not_full_8k_to_256k",
@@ -334,6 +368,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--correctbench-parquet", type=Path, required=True)
     parser.add_argument("--livecodebench-jsonl", type=Path, action="append", required=True)
     parser.add_argument("--longbench-json", type=Path, required=True)
+    parser.add_argument("--ruler-jsonl", type=Path, action="append", default=[])
     parser.add_argument("--output-root", type=Path, required=True)
     return parser.parse_args()
 

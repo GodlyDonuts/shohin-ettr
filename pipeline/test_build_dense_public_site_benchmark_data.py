@@ -1,6 +1,16 @@
 from datetime import datetime
 
-from build_dense_public_site_benchmark_data import identity, json_safe, lcb_prompt
+from pathlib import Path
+
+import pytest
+
+from build_dense_public_site_benchmark_data import (
+    SiteBenchmarkDataError,
+    identity,
+    json_safe,
+    lcb_prompt,
+    load_ruler,
+)
 
 
 def test_livecodebench_prompt_uses_official_generic_shape() -> None:
@@ -21,3 +31,11 @@ def test_json_safe_normalizes_nested_livebench_dates() -> None:
         "at": "2024-11-25T00:00:00",
         "items": [[1, 2]],
     }
+
+
+def test_ruler_requires_all_thirteen_tasks_per_context(tmp_path: Path) -> None:
+    path = tmp_path / "4k" / "niah_single_1" / "validation.jsonl"
+    path.parent.mkdir(parents=True)
+    path.write_text('{"index":0,"input":"prompt","outputs":["answer"]}\n')
+    with pytest.raises(SiteBenchmarkDataError, match="all 13 tasks"):
+        load_ruler([path])
