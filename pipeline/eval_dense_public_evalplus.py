@@ -87,7 +87,9 @@ def export(args: argparse.Namespace) -> dict[str, Any]:
                     "shohin_identity": question["id"],
                 }
             )
-        path = args.work_root / args.benchmark / f"{stage}.samples.jsonl"
+        # EvalPlus derives `<stem>.eval_results.json` from the sample filename.
+        # Keep the stage as the entire stem so collection has one unambiguous path.
+        path = args.work_root / args.benchmark / f"{stage}.jsonl"
         hashes[stage] = atomic_jsonl(path, samples)
     report = {
         "schema": EXPORT_SCHEMA,
