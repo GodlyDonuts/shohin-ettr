@@ -1,6 +1,7 @@
 # Shohin public benchmark campaign — 2026-08-19
 
-Status: **running; no result or website placement is authorized yet.**
+Status: **running; early official scores exist, but no aggregate or website
+placement is authorized yet.**
 
 ## Purpose
 
@@ -100,6 +101,44 @@ for the terminal MMLU-Pro generation report and therefore cannot race or score
 partial ledgers.  Its source SHA-256 is
 `e441242d7248aab29251b66a820c8c0a361d5afcebd650c5809bc70ee80c54e9`.
 No official score or aggregate result exists yet.
+
+## Early official score receipts — 2026-08-20 19:02 EDT
+
+Independent CPU scoring was released only for generation reports that already
+had complete four-arm row coverage.  It did not regenerate model output or use
+another GPU.  Three ordinary exact-match scorers and the official EvalPlus
+HumanEval+ scorer have now completed:
+
+| Benchmark | Rows | Direct base | Unchanged | Trained revision | Revision − unchanged | Revision − direct | Wins / losses | Baseline-correct retention | Report SHA-256 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| IFEval | 541 | 81.8854 | 72.2736 | 75.0462 | **+2.7726** | -6.8392 | 27 / 12 | 96.9309% | `ebfa8fb9053dc8bc20f9abfae65685b5b2f759e8942a3196f652388e39619e99` |
+| HumanEval+ | 164 | 68.9024 | 70.7317 | 73.1707 | **+2.4390** | **+4.2683** | 5 / 1 | 99.1379% | `b3ec70ace2b4441efa31c3a1c6a2e0ab97f84d5f2bee07d0703598e359258139` |
+| MuSR | 756 | 78.0423 | 68.3862 | 44.8413 | -23.5450 | -33.2011 | 38 / 216 | 58.2205% | `50ca5f1bcb79fd7d2144f17345e1727959ee37fdd9be8a5e8768c2fb40a73e5d` |
+| CorrectBench | 739 | 35.7240 | 32.3410 | 14.8850 | -17.4560 | -20.8390 | 0 / 129 | 46.0251% | `bc01e307e202494539470aafd2897ac87213debd1b283dc06eab125fb7dd5247` |
+
+Every score report has exact outcome coverage and unique identities equal to
+the stated row count.  IFEval's matched 27-versus-12 improvement has a
+two-sided sign-test p-value of `0.0237027`; HumanEval+'s 5-versus-1 direction
+has p-value `0.21875`.  The positive IFEval and HumanEval+ results therefore do
+not erase the large MuSR and CorrectBench regressions.  They establish a
+measured capability-specific gain, not a broad benchmark win.
+
+The scoring jobs were `767645` (IFEval), `767650` (HumanEval+), `767639`
+(MuSR), and `767640` (CorrectBench), all zero-restart CPU allocations.  IFEval
+required one isolated dependency repair before replay: sealed
+`absl-py==2.5.0`, wheel SHA-256
+`0f17b89f2a4eaaedc4f28c622998aa690564b3012a396a4ffad0821007fe03ba`,
+55-entry manifest SHA-256
+`bffd39bba10e64bfeeee610c1f90d5bc66ed8b1271b6e8817ff52718299bb67e`,
+and receipt SHA-256
+`ae3dd6171a37a736c7c078d62befcd9cdc5a646a32dde44d72e5c8be18acd066`.
+
+Two additional pre-score defects were found without producing scientific
+reports: the Bubblewrap virtual-environment projection omitted the absolute
+base interpreter, and MBPP assessor IDs lacked EvalPlus' canonical `Mbpp/`
+namespace.  The fixes are pushed at commits `266546e5` and `1b5e86d3` with 15
+focused tests passing.  Fixed MBPP+ scorer job `767655` is active against a
+fresh work root; no prior MBPP+ score artifact is being reused.
 
 ## Cross-family expansion staged — 2026-08-20 17:34 EDT
 
