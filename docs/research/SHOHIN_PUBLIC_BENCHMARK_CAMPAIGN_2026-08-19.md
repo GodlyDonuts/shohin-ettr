@@ -65,7 +65,7 @@ Generated-code benchmarks run in a network-isolated Bubblewrap environment.
 The official score ledgers are identity-bound and feed one final unweighted
 macro-average of the ten completed primary percentages.
 
-## Immutable progress snapshot — 2026-08-20 17:23 EDT
+## Immutable progress snapshot — 2026-08-20 18:42 EDT
 
 The live allocation is still healthy on `evc32`: job `766196` is `RUNNING`,
 has zero restarts, and has retained its single H100.  The runtime checkout is
@@ -82,6 +82,9 @@ Five complete four-arm generation reports now have exact row coverage:
 | MBPP+ | 378 | `c1639761d7abc55fbf590f1827a8f36c715d151c28bc5f43313a35d001ca1975` |
 | MuSR | 756 | `afba4a5e68da08b55ec3abaab5dfb6c6f506c4c52491f5d73b2f80550b97aabd` |
 
+Together these reports contain 10,312 completed arm rows: 2,578 benchmark
+identities under each of the four matched generation arms.
+
 Every report binds Qwen revision
 `c202236235762e1c871ad0ccb60c8ee5ba337b9a`, model-tree SHA-256
 `37048cc496c8992ea778fc1395f10b3c1d2dcb434f5de066f9f5c4bbf832903a`,
@@ -91,7 +94,7 @@ and revision checkpoint SHA-256
 `df3c264d426941fef8ba9c10a90fe9fab304ec2864738209a4d79f9f81e0c473`.
 
 LiveBench has completed all 1,000 `direct_base` rows and is generating the
-matched draft arm; 121 rows were durable at this snapshot.  This is progress
+matched draft arm; 699 rows were durable at this snapshot.  This is progress
 evidence, not a score.  The isolated official-scoring queue is already waiting
 for the terminal MMLU-Pro generation report and therefore cannot race or score
 partial ledgers.  Its source SHA-256 is
@@ -120,10 +123,17 @@ manifest/config/revision receipt is
 SHA-256 `2de0df3ea5e2836f8c705be2e2ab19d66725ad0e855e99e626f641102c1b3623`.
 Settled quota usage fell from 978,864,880 to 915,117,868 KiB.
 
-CPU restore job `767443` is pending with zero retries.  It uses a conservative
-7-GiB upper bound, above the previously measured 6,167,617,536-byte model
-tree, and therefore retains the full reserve.  One-GPU allocation `767126`
-is already queued independently for this host.  The host-generic controller
+CPU restore job `767443` completed in 77 seconds on `evc1`, exit `0:0`, with
+zero restarts.  The sealed 12-file model root contains 6,167,865,576 bytes and
+has tree SHA-256
+`6badcd593aee3052e3d66afb315b979e2cc62c4a61f9cef31c07203912478a0f`.
+Its manifest and restoration-receipt SHA-256 values are respectively
+`e689bcce197b02c4d2e8b600696ec3137b1e1724104954cc1735d5d8848e6945`
+and `4672fc549809d89f0489a5e82045d54d3b5580718dcf40631a31807fd7415c85`.
+One-GPU allocation `767126` is already queued independently for this host;
+at this snapshot Slurm estimates admission at 2026-08-21 03:46 EDT, subject
+to the account CPU-minute limit and normal nonbinding scheduling changes.
+The host-generic controller
 claims its artifact root atomically, runs one resumable screen, then the same
 ten frozen benchmark manifests with identical greedy arm contracts.  It does
 not alter or duplicate the active Qwen campaign.
