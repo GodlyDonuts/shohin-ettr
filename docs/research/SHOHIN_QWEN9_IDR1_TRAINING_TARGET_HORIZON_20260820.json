@@ -4,6 +4,23 @@
       "contains_boxed_answer": 552,
       "contains_think_open_tag": 244,
       "exact_boxed_response": 0,
+      "internal_draft_characters": {
+        "below_threshold": {
+          "100": 36,
+          "20": 4,
+          "256": 104,
+          "80": 16
+        },
+        "maximum": 4606,
+        "mean": 1807.3126843657817,
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "median": 1641.0,
+        "minimum": 19,
+        "total": 2450716
+      },
+      "presentations_per_source_counts": {
+        "4": 339
+      },
       "response_characters": {
         "below_threshold": {
           "100": 56,
@@ -18,12 +35,36 @@
         "minimum": 28,
         "total": 1859444
       },
-      "rows": 1356
+      "response_to_internal_draft_character_ratio": {
+        "maximum": 41.68421052631579,
+        "mean": 1.318775165557248,
+        "median": 0.840389294403893,
+        "minimum": 0.016086793864571642
+      },
+      "rows": 1356,
+      "unique_source_identity_sha256": 339
     },
     "both_correct": {
       "contains_boxed_answer": 778,
       "contains_think_open_tag": 73,
       "exact_boxed_response": 0,
+      "internal_draft_characters": {
+        "below_threshold": {
+          "100": 45,
+          "20": 2,
+          "256": 79,
+          "80": 38
+        },
+        "maximum": 3963,
+        "mean": 2084.1971268954508,
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "median": 1958.0,
+        "minimum": 2,
+        "total": 2611499
+      },
+      "presentations_per_source_counts": {
+        "1": 1253
+      },
       "response_characters": {
         "below_threshold": {
           "100": 84,
@@ -38,12 +79,36 @@
         "minimum": 16,
         "total": 565991
       },
-      "rows": 1253
+      "response_to_internal_draft_character_ratio": {
+        "maximum": 70.0,
+        "mean": 0.4542127564867267,
+        "median": 0.2166199813258637,
+        "minimum": 0.004368004368004368
+      },
+      "rows": 1253,
+      "unique_source_identity_sha256": 1253
     },
     "both_wrong": {
       "contains_boxed_answer": 3245,
       "contains_think_open_tag": 0,
       "exact_boxed_response": 3245,
+      "internal_draft_characters": {
+        "below_threshold": {
+          "100": 87,
+          "20": 4,
+          "256": 204,
+          "80": 51
+        },
+        "maximum": 4606,
+        "mean": 1898.1092896174864,
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "median": 1776.0,
+        "minimum": 11,
+        "total": 6252372
+      },
+      "presentations_per_source_counts": {
+        "1": 3294
+      },
       "response_characters": {
         "below_threshold": {
           "100": 3233,
@@ -58,12 +123,36 @@
         "minimum": 9,
         "total": 57812
       },
-      "rows": 3294
+      "response_to_internal_draft_character_ratio": {
+        "maximum": 9.97872340425532,
+        "mean": 0.03270269900035089,
+        "median": 0.006103143687036305,
+        "minimum": 0.0021710811984368217
+      },
+      "rows": 3294,
+      "unique_source_identity_sha256": 3294
     },
     "expert_only": {
       "contains_boxed_answer": 2032,
       "contains_think_open_tag": 212,
       "exact_boxed_response": 0,
+      "internal_draft_characters": {
+        "below_threshold": {
+          "100": 116,
+          "20": 0,
+          "256": 228,
+          "80": 84
+        },
+        "maximum": 4016,
+        "mean": 2155.18763326226,
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "median": 2014.0,
+        "minimum": 38,
+        "total": 8086264
+      },
+      "presentations_per_source_counts": {
+        "4": 938
+      },
       "response_characters": {
         "below_threshold": {
           "100": 80,
@@ -78,7 +167,14 @@
         "minimum": 9,
         "total": 2496276
       },
-      "rows": 3752
+      "response_to_internal_draft_character_ratio": {
+        "maximum": 33.16279069767442,
+        "mean": 0.7293582988117411,
+        "median": 0.3072717461774809,
+        "minimum": 0.0048025613660619
+      },
+      "rows": 3752,
+      "unique_source_identity_sha256": 938
     }
   },
   "by_target_kind": {
@@ -86,6 +182,23 @@
       "contains_boxed_answer": 778,
       "contains_think_open_tag": 73,
       "exact_boxed_response": 0,
+      "internal_draft_characters": {
+        "below_threshold": {
+          "100": 45,
+          "20": 2,
+          "256": 79,
+          "80": 38
+        },
+        "maximum": 3963,
+        "mean": 2084.1971268954508,
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "median": 1958.0,
+        "minimum": 2,
+        "total": 2611499
+      },
+      "presentations_per_source_counts": {
+        "1": 1253
+      },
       "response_characters": {
         "below_threshold": {
           "100": 84,
@@ -100,12 +213,36 @@
         "minimum": 16,
         "total": 565991
       },
-      "rows": 1253
+      "response_to_internal_draft_character_ratio": {
+        "maximum": 70.0,
+        "mean": 0.4542127564867267,
+        "median": 0.2166199813258637,
+        "minimum": 0.004368004368004368
+      },
+      "rows": 1253,
+      "unique_source_identity_sha256": 1253
     },
     "source_verified_repair": {
       "contains_boxed_answer": 3245,
       "contains_think_open_tag": 0,
       "exact_boxed_response": 3245,
+      "internal_draft_characters": {
+        "below_threshold": {
+          "100": 87,
+          "20": 4,
+          "256": 204,
+          "80": 51
+        },
+        "maximum": 4606,
+        "mean": 1898.1092896174864,
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "median": 1776.0,
+        "minimum": 11,
+        "total": 6252372
+      },
+      "presentations_per_source_counts": {
+        "1": 3294
+      },
       "response_characters": {
         "below_threshold": {
           "100": 3233,
@@ -120,12 +257,36 @@
         "minimum": 9,
         "total": 57812
       },
-      "rows": 3294
+      "response_to_internal_draft_character_ratio": {
+        "maximum": 9.97872340425532,
+        "mean": 0.03270269900035089,
+        "median": 0.006103143687036305,
+        "minimum": 0.0021710811984368217
+      },
+      "rows": 3294,
+      "unique_source_identity_sha256": 3294
     },
     "verified_candidate": {
       "contains_boxed_answer": 2584,
       "contains_think_open_tag": 456,
       "exact_boxed_response": 0,
+      "internal_draft_characters": {
+        "below_threshold": {
+          "100": 152,
+          "20": 4,
+          "256": 332,
+          "80": 100
+        },
+        "maximum": 4606,
+        "mean": 2062.8386844166016,
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "median": 1897.0,
+        "minimum": 19,
+        "total": 10536980
+      },
+      "presentations_per_source_counts": {
+        "4": 1277
+      },
       "response_characters": {
         "below_threshold": {
           "100": 136,
@@ -140,7 +301,14 @@
         "minimum": 9,
         "total": 4355720
       },
-      "rows": 5108
+      "response_to_internal_draft_character_ratio": {
+        "maximum": 41.68421052631579,
+        "mean": 0.885828398910979,
+        "median": 0.40248594258656406,
+        "minimum": 0.0048025613660619
+      },
+      "rows": 5108,
+      "unique_source_identity_sha256": 1277
     }
   },
   "input": {
@@ -163,6 +331,24 @@
     "contains_boxed_answer": 6607,
     "contains_think_open_tag": 529,
     "exact_boxed_response": 3245,
+    "internal_draft_characters": {
+      "below_threshold": {
+        "100": 284,
+        "20": 10,
+        "256": 615,
+        "80": 189
+      },
+      "maximum": 4606,
+      "mean": 2009.4097358881409,
+      "measurement": "unicode_code_points_before_whitespace_stripping",
+      "median": 1843.0,
+      "minimum": 2,
+      "total": 19400851
+    },
+    "presentations_per_source_counts": {
+      "1": 4547,
+      "4": 1277
+    },
     "response_characters": {
       "below_threshold": {
         "100": 3453,
@@ -177,7 +363,14 @@
       "minimum": 9,
       "total": 4979523
     },
-    "rows": 9655
+    "response_to_internal_draft_character_ratio": {
+      "maximum": 70.0,
+      "mean": 0.5387532611105442,
+      "median": 0.16178038379530918,
+      "minimum": 0.0021710811984368217
+    },
+    "rows": 9655,
+    "unique_source_identity_sha256": 5824
   },
   "schema": "shohin-revision-training-target-horizon-analysis-v1",
   "status": "complete",

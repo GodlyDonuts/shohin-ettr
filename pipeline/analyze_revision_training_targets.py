@@ -18,6 +18,12 @@ REPORT_SCHEMA = "shohin-revision-training-target-horizon-analysis-v1"
 HEX64 = re.compile(r"[0-9a-f]{64}")
 EXACT_BOXED = re.compile(r"\\boxed\{.*\}", re.DOTALL)
 LENGTH_THRESHOLDS = (20, 80, 100, 256)
+DRAFT_MARKER = "Internal draft:\n"
+FINAL_PROBLEM_MARKER = "\n\nOriginal problem:"
+FORMAT_MARKERS = (
+    "\n\nFollow the original problem's requested output format.",
+    "\n\nReturn ",
+)
 
 
 class RevisionTrainingTargetError(RuntimeError):
@@ -81,22 +87,60 @@ def _load_rows(path: Path, expected_schema: str) -> list[dict[str, Any]]:
     return rows
 
 
+def _length_summary(lengths: list[int]) -> dict[str, Any]:
+    return {
+        "measurement": "unicode_code_points_before_whitespace_stripping",
+        "total": sum(lengths),
+        "minimum": min(lengths),
+        "maximum": max(lengths),
+        "mean": math.fsum(lengths) / len(lengths),
+        "median": float(statistics.median(lengths)),
+        "below_threshold": {
+            str(threshold): sum(length < threshold for length in lengths)
+            for threshold in LENGTH_THRESHOLDS
+        },
+    }
+
+
+def _internal_draft(question: str) -> str:
+    marker_start = question.find(DRAFT_MARKER)
+    if marker_start < 0:
+        raise RevisionTrainingTargetError("training prompt has no internal draft")
+    draft_start = marker_start + len(DRAFT_MARKER)
+    final_problem = question.rfind(FINAL_PROBLEM_MARKER)
+    if final_problem <= draft_start:
+        raise RevisionTrainingTargetError("training prompt lacks repeated problem")
+    draft_end = max(
+        question.rfind(marker, draft_start, final_problem) for marker in FORMAT_MARKERS
+    )
+    if draft_end <= draft_start:
+        raise RevisionTrainingTargetError("training prompt lacks format instruction")
+    return question[draft_start:draft_end]
+
+
 def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    lengths = [len(row["response"]) for row in rows]
+    response_lengths = [len(row["response"]) for row in rows]
+    draft_lengths = [len(_internal_draft(row["question"])) for row in rows]
+    ratios = [
+        response / max(1, draft)
+        for response, draft in zip(response_lengths, draft_lengths, strict=True)
+    ]
     responses = [row["response"].strip() for row in rows]
+    source_counts = Counter(row["source_identity_sha256"] for row in rows)
     return {
         "rows": len(rows),
-        "response_characters": {
-            "measurement": "unicode_code_points_before_whitespace_stripping",
-            "total": sum(lengths),
-            "minimum": min(lengths),
-            "maximum": max(lengths),
-            "mean": math.fsum(lengths) / len(lengths),
-            "median": float(statistics.median(lengths)),
-            "below_threshold": {
-                str(threshold): sum(length < threshold for length in lengths)
-                for threshold in LENGTH_THRESHOLDS
-            },
+        "unique_source_identity_sha256": len(source_counts),
+        "presentations_per_source_counts": {
+            str(presentations): count
+            for presentations, count in sorted(Counter(source_counts.values()).items())
+        },
+        "response_characters": _length_summary(response_lengths),
+        "internal_draft_characters": _length_summary(draft_lengths),
+        "response_to_internal_draft_character_ratio": {
+            "mean": math.fsum(ratios) / len(ratios),
+            "median": float(statistics.median(ratios)),
+            "minimum": min(ratios),
+            "maximum": max(ratios),
         },
         "contains_think_open_tag": sum("<think>" in response for response in responses),
         "contains_boxed_answer": sum("\\boxed{" in response for response in responses),

@@ -16,6 +16,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _fixture(tmp_path: Path) -> tuple[Path, str]:
     path = tmp_path / "train.jsonl"
+
+    def prompt(source: str, draft: str) -> str:
+        return (
+            "Revise the draft.\n\n"
+            f"Original problem:\n{source}\n\n"
+            f"Internal draft:\n{draft}\n\n"
+            "Return a complete answer.\n\n"
+            f"Original problem:\n{source}"
+        )
+
     rows = [
         {
             "schema": TRAIN_SCHEMA,
@@ -23,7 +33,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, str]:
             "source_identity_sha256": "a" * 64,
             "target_kind": "source_verified_repair",
             "outcome_class": "both_wrong",
-            "question": "source and draft",
+            "question": prompt("source", "draft with several characters"),
             "response": "\\boxed{7}",
             "presentation": 0,
             "internal_draft_visible": True,
@@ -35,7 +45,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, str]:
             "source_identity_sha256": "b" * 64,
             "target_kind": "verified_candidate",
             "outcome_class": "expert_only",
-            "question": "another source and draft",
+            "question": prompt("another source", "another long draft"),
             "response": "<think>reasoning</think>\\n\\boxed{8}",
             "presentation": 1,
             "internal_draft_visible": True,
@@ -54,6 +64,9 @@ def test_analyze_binds_target_horizon_and_cross_tab(tmp_path: Path) -> None:
     assert report["input"]["unique_source_identity_sha256"] == 2
     assert report["overall"]["exact_boxed_response"] == 1
     assert report["overall"]["contains_think_open_tag"] == 1
+    assert report["overall"]["unique_source_identity_sha256"] == 2
+    assert report["overall"]["internal_draft_characters"]["median"] == 23.5
+    assert report["overall"]["response_to_internal_draft_character_ratio"]["median"] > 0
     assert report["by_target_kind"]["source_verified_repair"]["rows"] == 1
     assert report["target_kind_by_outcome_class"] == {
         "source_verified_repair": {"both_wrong": 1},
@@ -96,7 +109,7 @@ def test_frozen_qwen9_report_matches_newton_execution() -> None:
         ROOT / "docs/research/SHOHIN_QWEN9_IDR1_TRAINING_TARGET_HORIZON_20260820.json"
     )
     assert hashlib.sha256(path.read_bytes()).hexdigest() == (
-        "7a868f2f83dc2486294adcbffbeba6ac89c2fe421ee71af6409cfabcf654f4a3"
+        "364b1f32f672bbb578504e3949c4760770d203fea3de9726ce6fd7e97c2640b7"
     )
     report = json.loads(path.read_text())
     assert report["input"]["rows"] == 9655
@@ -107,5 +120,11 @@ def test_frozen_qwen9_report_matches_newton_execution() -> None:
     assert short["response_characters"]["median"] == 11.0
     assert short["response_characters"]["below_threshold"]["20"] == 2969
     assert short["exact_boxed_response"] == 3245
+    assert short["internal_draft_characters"]["median"] == 1776.0
+    assert short["response_to_internal_draft_character_ratio"]["median"] == (
+        0.006103143687036305
+    )
+    assert short["unique_source_identity_sha256"] == 3294
     assert full["rows"] == 5108
     assert full["response_characters"]["median"] == 706.0
+    assert full["internal_draft_characters"]["median"] == 1897.0

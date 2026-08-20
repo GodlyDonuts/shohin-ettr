@@ -187,7 +187,7 @@ curriculum rather than inferred from checkpoint behavior alone.  A standalone
 auditor replayed all `9,655` training presentations from input SHA-256
 `6df3204573ce807db1b5057bce709189366b6674e38e5224ee3d17a3e6f0ac6c`.
 The resulting owner-nonwritable Newton report has SHA-256
-`7a868f2f83dc2486294adcbffbeba6ac89c2fe421ee71af6409cfabcf654f4a3`;
+`364b1f32f672bbb578504e3949c4760770d203fea3de9726ce6fd7e97c2640b7`;
 its exact repository mirror is
 `SHOHIN_QWEN9_IDR1_TRAINING_TARGET_HORIZON_20260820.json`.
 
@@ -195,9 +195,22 @@ The curriculum contains `3,294` `source_verified_repair` presentations, all
 from the `both_wrong` outcome class.  Their response median is only `11`
 characters, `2,969` are under 20 characters, `3,214` are under 80, and
 `3,245` are exactly a boxed-answer response.  None contains a `<think>` block.
-By contrast, the `5,108` `verified_candidate` presentations have a 706-character
-median and only 16 responses under 20 characters.  This is a direct target
-policy asymmetry, not a post-hoc label inferred from public benchmark scores.
+Those targets follow a median 1,776-character model-owned draft, producing a
+median response-to-draft character ratio of only `0.006103`.  By contrast, the
+`5,108` `verified_candidate` presentations have a 706-character response
+median, a 1,897-character draft median, and a `0.402486` median ratio; only 16
+responses are under 20 characters.  The short policy covers 3,294 unique
+sources once each, while 1,277 verified-candidate sources are each presented
+four times.  This is a direct target-policy asymmetry, not a post-hoc label
+inferred from public benchmark scores.
+
+The geometry closely predicts the public failure rather than merely sharing a
+qualitative label: MuSR's matched unchanged/revision medians are 1,885.5 and 26
+characters (ratio `0.012293`), while the both-wrong training medians are 1,776
+and 11 (ratio `0.006103`).  CorrectBench shows the same direction at 863 versus
+12 characters.  This alignment remains curriculum-plus-behavior evidence, not
+an intervention result, but it materially narrows the mechanism to learned
+draft-relative early termination.
 
 The evidence supports a narrower successor than a generic “reason longer” or
 another selector.  It must alter the answer-only both-wrong target/EOS geometry
