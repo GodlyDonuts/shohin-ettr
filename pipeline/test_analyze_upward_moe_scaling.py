@@ -300,6 +300,73 @@ def test_gpt_oss_point_completes_cross_family_curve(tmp_path: Path) -> None:
     )
 
 
+def _four_point_inputs(tmp_path: Path, *, nemotron_gain: int) -> list[Path]:
+    mixtral = _matched(
+        "shohin-mixtral-8x22b-fixed-draft-screen-score-v1",
+        "mistralai/Mixtral-8x22B-Instruct-v0.1",
+        141_000_000_000,
+        39_000_000_000,
+        20,
+    )
+    # Preserve a positive aggregate gain while reproducing the already-measured
+    # Mixtral executable-code regression that permanently falsifies the
+    # all-domain scaling conjunct.
+    mixtral["arms"]["revision"]["domains"] = {
+        "bbh_logic": {"correct": 98, "total": 128},
+        "math500": {"correct": 31, "total": 117},
+        "mbpp": {"correct": 3, "total": 11},
+    }
+    return [
+        _write(tmp_path / "qwen.json", _qwen_revision()),
+        _write(
+            tmp_path / "gpt_oss.json",
+            _matched(
+                "shohin-gpt-oss-120b-fixed-draft-screen-score-v1",
+                "openai/gpt-oss-120b",
+                117_000_000_000,
+                5_100_000_000,
+                10,
+            ),
+        ),
+        _write(
+            tmp_path / "nemotron.json",
+            _matched(
+                "shohin-nemotron-super-fixed-draft-screen-score-v1",
+                "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+                120_000_000_000,
+                12_000_000_000,
+                nemotron_gain,
+            ),
+        ),
+        _write(tmp_path / "mixtral.json", mixtral),
+    ]
+
+
+def test_positive_nemotron_cannot_erase_existing_scaling_failures(
+    tmp_path: Path,
+) -> None:
+    result = analyze(_four_point_inputs(tmp_path, nemotron_gain=20))
+    assert result["point_count"] == 4
+    assert result["all_points_positive_vs_unchanged"] is True
+    assert result["all_points_positive_vs_self_refinement"] is True
+    assert result["all_points_retention_at_least_95_percent"] is False
+    assert result["all_domains_nonnegative_at_every_point"] is False
+    assert result["capability_curve_claim"] == (
+        "positive_upward_moe_capability_scaling_not_supported"
+    )
+    assert result["claim"] == "moe_transfer_measured_without_positive_scaling_law"
+
+
+def test_negative_nemotron_remains_terminal_measured_transfer(
+    tmp_path: Path,
+) -> None:
+    result = analyze(_four_point_inputs(tmp_path, nemotron_gain=-1))
+    assert result["point_count"] == 4
+    assert result["all_points_positive_vs_unchanged"] is False
+    assert result["all_points_positive_vs_self_refinement"] is False
+    assert result["claim"] == "moe_transfer_measured_without_positive_scaling_law"
+
+
 def test_raw_qwen_external_score_normalizes_without_summary_copy(
     tmp_path: Path,
 ) -> None:
