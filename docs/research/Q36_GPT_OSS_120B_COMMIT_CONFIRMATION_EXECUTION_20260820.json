@@ -1,6 +1,6 @@
 {
   "schema": "shohin-gpt-oss-120b-commit-confirmation-execution-v1",
-  "status": "submitted_running",
+  "status": "running_after_qwen_draft_infrastructure_repair",
   "date": "2026-08-20",
   "source_commit": "7aa8609241e05bcd3810a790b17421c44950d65c",
   "private_branches": [
@@ -113,6 +113,27 @@
     "used_inodes": 581446,
     "hard_inode_limit": 1010000,
     "hard_inode_headroom": 428554
+  },
+  "qwen_draft_infrastructure_repair": {
+    "receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_commit_confirmation_7aa86092_r1/qwen_draft_infrastructure_repair.json",
+    "receipt_sha256": "38340bceba283782bcb2e838fa26332373aad4a0dd36f191317043fc2cc46e6a",
+    "failed_jobs": [766370, 766371, 766372, 766373],
+    "failed_job_exit_code": "1:0",
+    "failed_job_restarts": 0,
+    "failed_candidate_rows": 0,
+    "failure_classification": "source-only prompt arm was coupled to owner-checkpoint validation while the prospectively frozen fixed-draft checkpoint is aligned",
+    "repair_source_commit": "b667309e1881db6b60747c988025e86c32956631",
+    "repair_runtime_manifest_sha256": "3864beb9a82daf504f66c9a8b30bb46e31d0dd1f27f1452ef520ad067c9e2f8c",
+    "repair_environment_receipt_sha256": "45274b3bf99ef7d508c496cbd011e94b3b3ebf0201369d3dd7f74ffa9b23f843",
+    "replacement_jobs": [766387, 766388, 766389, 766390],
+    "retargeted_never_started_revision_jobs": [766378, 766379, 766380, 766381],
+    "healthy_unchanged_jobs_preserved": [766374, 766375, 766376, 766377],
+    "prompt_changed": false,
+    "checkpoint_changed": false,
+    "source_changed": false,
+    "threshold_changed": false,
+    "assessor_access_count": 0,
+    "duplicate_healthy_work": 0
   },
   "result": null
 }
