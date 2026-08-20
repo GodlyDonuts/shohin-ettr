@@ -294,7 +294,7 @@ def _translate_export_checkpoint_keys(
                     f"{translated_name[:-len('.weight_scale')]}"
                     ".weight_quantizer._amax"
                 )
-                value = value.to(dtype=torch.float32).reshape(1) * FP8_SCALE_MULTIPLIER
+                value = value.to(dtype=torch.float32) * FP8_SCALE_MULTIPLIER
                 counts["weight_scale_to_amax"] += 1
             if translated_name in translated:
                 raise NemotronSuperMechanicsError(
@@ -355,10 +355,11 @@ def _prepare_fp8_scale_buffers(
         if (
             not isinstance(weight_amax, torch.Tensor)
             or not weight_amax.is_meta
-            or weight_amax.dtype != torch.float32
-            or weight_amax.shape != torch.Size([1])
+            or weight_amax.dtype != torch.bfloat16
+            or weight_amax.shape != torch.Size([])
         ):
             raise NemotronSuperMechanicsError("ModelOpt weight amax pre-state differs")
+        weight_quantizer._buffers["_amax"] = weight_amax.to(dtype=torch.float32)
         counts["weight_amax_placeholders"] += 1
         if hasattr(input_quantizer, "_amax"):
             raise NemotronSuperMechanicsError("ModelOpt input amax pre-state differs")
@@ -393,7 +394,9 @@ def _checkpoint_translation_receipt(counts: Counter[str]) -> dict[str, Any]:
         "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
         "scale_to_amax_multiplier": FP8_SCALE_MULTIPLIER,
         "enabled_fp8_module_names_sha256": FP8_MODULE_NAMES_SHA256,
-        "weight_amax_shape": [1],
+        "weight_amax_pre_dtype": "torch.bfloat16",
+        "weight_amax_dtype": "torch.float32",
+        "weight_amax_shape": [],
         "input_amax_shape": [],
         "translation_sha256": _canonical_sha256(observed),
     }
@@ -489,7 +492,9 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         == FP8_LINEAR_COUNT
         and checkpoint_translation.get("enabled_fp8_module_names_sha256")
         == FP8_MODULE_NAMES_SHA256
-        and checkpoint_translation.get("weight_amax_shape") == [1]
+        and checkpoint_translation.get("weight_amax_pre_dtype") == "torch.bfloat16"
+        and checkpoint_translation.get("weight_amax_dtype") == "torch.float32"
+        and checkpoint_translation.get("weight_amax_shape") == []
         and checkpoint_translation.get("input_amax_shape") == []
         and checkpoint_translation.get("scale_to_amax_multiplier")
         == FP8_SCALE_MULTIPLIER
