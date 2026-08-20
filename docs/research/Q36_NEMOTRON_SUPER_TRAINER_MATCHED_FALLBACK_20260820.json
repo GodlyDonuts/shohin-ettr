@@ -1,0 +1,82 @@
+{
+  "schema": "shohin-q36-nemotron-super-trainer-matched-fallback-v1",
+  "status": "prepared_not_scheduled",
+  "prepared_at": "2026-08-20T16:54:24-04:00",
+  "purpose": "collision-safe recovery runtime only if the active Nemotron mechanics job fails",
+  "scientific_contract_changed": false,
+  "active_graph_changed": false,
+  "scientific_jobs_submitted": 0,
+  "source": {
+    "commit": "1b0dfdcc07a05a8507a3913cafb5abb1ddb0f693",
+    "private_branches": [
+      "codex/q36-mechanics-generation-prepare",
+      "codex/q36-moe-temporal-revision"
+    ],
+    "tracked_worktree_clean": true
+  },
+  "mechanics_alignment": {
+    "objective": "response_only_next_token_cross_entropy",
+    "ignore_index": -100,
+    "gradient_accumulation_scale": 8,
+    "learning_rate": 2e-05,
+    "autocast_dtype": "torch.bfloat16",
+    "optimizer": "AdamW",
+    "optimizer_betas": [
+      0.9,
+      0.95
+    ],
+    "optimizer_weight_decay": 0.01,
+    "trainer_and_evaluator_require_exact_receipt": true
+  },
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/nemotron_super_modelopt_1b0dfdcc_r1",
+    "manifest_sha256": "50688f0d9b09432786c69058e27fbc52409afc2c4b14c26d042aa879b37045c7",
+    "runtime_json_sha256": "016b05dddaaa65455b3116b14c8208b4841681dfaf3504479dd78891dde873cb",
+    "allowlist_sha256": "f8ed3f0e0f1787b06d0b77897591794b1c14879efc63eac6c3ad636a326fd5d8",
+    "allowlisted_files": 243,
+    "regular_files": 245,
+    "directories": 5,
+    "symlinks_or_special_files": 0,
+    "writable_members": 0,
+    "full_manifest_replay_passed": true,
+    "source_files": {
+      "train/hf_nemotron_super_mechanics.py": "a668e873709fe36b578c221c12ebf18604c247522050a9f379e3cc54f73f0a88",
+      "train/hf_nemotron_super_train_revision.py": "c0699c6725634a52dccef3af64d6463e1541c918e76930bd959d3e595eb6a02b",
+      "train/hf_nemotron_super_evaluate.py": "e319e5dbf6a9728b318fd5a70a4cbcc6979853689fa4a020f3a06a42491f0fd3"
+    }
+  },
+  "verification": {
+    "focused_and_upward_moe_tests_passed": 86,
+    "black": "pass",
+    "ruff": "pass",
+    "py_compile": "pass",
+    "git_diff_check": "pass"
+  },
+  "active_graph": {
+    "mechanics_job": 767352,
+    "fit_job": 767353,
+    "evaluation_jobs": [
+      "767354_0",
+      "767355_1",
+      "767356_2",
+      "767357_3",
+      "767358_0",
+      "767359_1",
+      "767360_2",
+      "767361_3",
+      "767362_0",
+      "767363_1",
+      "767364_2",
+      "767365_3"
+    ],
+    "score_job": 767366,
+    "analysis_job": 767375,
+    "accounting_job": 767381,
+    "figure_job": 767388,
+    "publication_job": 767389,
+    "mirror_job": 767390,
+    "mechanics_state_at_preparation": "PENDING_PRIORITY",
+    "active_runtime_unchanged": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/nemotron_super_modelopt_2b6b9aff_r1"
+  },
+  "admission_rule": "Do not use this fallback while job 767352 remains healthy; admit it only after a verified terminal failure of the active mechanics allocation."
+}
