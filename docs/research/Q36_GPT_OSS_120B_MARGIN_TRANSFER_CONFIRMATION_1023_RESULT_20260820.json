@@ -113,6 +113,23 @@
     "canonical_sacct_sha256": "6f4ab3b29683c7e43d653f8148f55b15bc4e5d8a8c9ebc6d7439972a6e513edf",
     "nonzero_restarts": 0
   },
+  "cumulative_prospective_confirmations": {
+    "classification": "Cumulative summary of the two source-disjoint GPT-OSS-120B confirmations executed after the selector threshold and reliability veto were frozen; threshold-selection development sets are excluded.",
+    "rows": 1279,
+    "unchanged_correct": 902,
+    "unchanged_accuracy": 0.7052384675527756,
+    "selected_correct": 910,
+    "selected_accuracy": 0.7114933541829555,
+    "net_gain": 8,
+    "gain_percentage_points": 0.6254886630179828,
+    "selected_only_correct": 27,
+    "unchanged_only_correct": 19,
+    "mcnemar_exact_two_sided_p": 0.3019956131896606,
+    "unchanged_correct_retained": 883,
+    "unchanged_correct_retention": 0.9789356984478935,
+    "per_set_gains": [5, 3],
+    "identity_overlap_between_confirmations": 0
+  },
   "interpretation": {
     "demonstrated": "The same frozen model-owned selector-margin policy produced a positive GPT-OSS-120B gain on a larger 1023-row source-disjoint confirmation and retained 97.75 percent of unchanged-correct answers.",
     "mechanism": "The raw revision arm was substantially worse than unchanged, but semantic selection plus the frozen incomplete-generation veto recovered 207 answers relative to raw revision and finished three answers above unchanged; the veto itself contributed ten correct answers.",
