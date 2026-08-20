@@ -1,0 +1,75 @@
+{
+  "schema": "shohin-q36-nemotron-super-predeclared-interpretation-v1",
+  "status": "frozen_before_nemotron_score",
+  "recorded_at": "2026-08-20T16:45:00-04:00",
+  "nemotron_score_available_when_recorded": false,
+  "frozen_analyzer": {
+    "source_commit": "2b6b9affa5ea57dae3a2a6a744bc8387a3060bfd",
+    "analysis_schema": "shohin-upward-moe-scaling-analysis-v1",
+    "existing_analysis_path": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_gptoss117_mixtral141_83ff494d_r4/analysis.json",
+    "existing_analysis_sha256": "6434ba95df6c35174fce536e96571d046e9e6fd97459100232120d1976c27550"
+  },
+  "fixed_existing_points": [
+    {
+      "host": "Qwen3.6-35B-A3B",
+      "source_sha256": "d5b5a59448c15ce00f48cf3a44b524688503e9f7ad00c877761ebcd859673a45",
+      "gain_over_unchanged_count": 30,
+      "gain_over_self_refinement_count": 20,
+      "unchanged_correct_retention": 0.9459459459459459,
+      "domain_deltas": {"bbh_logic": 14, "math500": 14, "mbpp": 2}
+    },
+    {
+      "host": "openai/gpt-oss-120b",
+      "source_sha256": "906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59",
+      "gain_over_unchanged_count": 10,
+      "gain_over_self_refinement_count": 8,
+      "unchanged_correct_retention": 0.9108910891089109,
+      "domain_deltas": {"bbh_logic": 4, "math500": 6, "mbpp": 0}
+    },
+    {
+      "host": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+      "source_sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50",
+      "gain_over_unchanged_count": 69,
+      "gain_over_self_refinement_count": 9,
+      "unchanged_correct_retention": 0.7555555555555555,
+      "domain_deltas": {"bbh_logic": 46, "math500": 29, "mbpp": -6}
+    }
+  ],
+  "predetermined_four_point_gate_state": {
+    "all_existing_points_positive_vs_unchanged": true,
+    "all_existing_points_positive_vs_self_refinement": true,
+    "all_points_retention_at_least_95_percent_can_become_true": false,
+    "all_domains_nonnegative_at_every_point_can_become_true": false,
+    "gain_monotonic_by_active_parameters_can_become_true": false,
+    "reason_retention_is_fixed_false": "each_existing_host_is_below_0.95",
+    "reason_domain_conjunction_is_fixed_false": "mixtral_mbpp_delta_is_minus_6",
+    "reason_monotonicity_is_fixed_false": "qwen_gain_30_precedes_gpt_oss_gain_10_by_active_parameter_scale",
+    "capability_curve_claim_after_nemotron": "positive_upward_moe_capability_scaling_not_supported",
+    "conservative_retention_curve_claim_after_nemotron": "conservative_retention_scaling_not_supported",
+    "overall_claim_after_nemotron": "moe_transfer_measured_without_positive_scaling_law"
+  },
+  "nemotron_result_interpretation": {
+    "positive_transfer_vs_unchanged": "revision_correct >= unchanged_correct + 1",
+    "positive_transfer_vs_self_refinement": "revision_correct >= self_refinement_correct + 1",
+    "conservative_retention": "revision_unchanged_correct_retained >= ceil(0.95 * unchanged_correct)",
+    "all_nemotron_domains_nonnegative": "revision_correct_in_each_domain >= unchanged_correct_in_that_domain",
+    "four_of_four_hosts_positive_overall": "both Nemotron positive-transfer inequalities are true",
+    "four_of_four_hosts_positive_overall_is_distinct_from_positive_scaling_law": true,
+    "nemotron_failure_does_not_retroactively_change_existing_point_scores": true
+  },
+  "curve_sensitivity_for_nemotron_gain_count": {
+    "nemotron_total_parameters": 120000000000,
+    "nemotron_active_parameters": 12000000000,
+    "total_parameter_ols_slope_positive_if_gain_count_at_least": -13,
+    "active_parameter_ols_slope_positive_if_gain_count_at_least": -226,
+    "curve_slopes_are_descriptive_not_sufficient_for_the_frozen_capability_claim": true,
+    "weighted_slope_intervals_require_observed_paired_wins_and_losses": true
+  },
+  "reporting_boundary": {
+    "permitted_if_nemotron_is_positive": "Shohin trained revision improves overall paired capability on four measured MoE hosts",
+    "not_permitted_from_this_screen": "positive upward MoE scaling law",
+    "not_permitted_from_this_screen_even_if_nemotron_retention_is_at_least_95_percent": "conservative retention scaling across all hosts",
+    "benchmark_rows_or_scores_changed_by_this_receipt": false,
+    "automatic_successor_authorized": false
+  }
+}
