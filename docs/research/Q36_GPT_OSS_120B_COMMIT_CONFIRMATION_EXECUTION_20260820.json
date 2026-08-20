@@ -1,6 +1,6 @@
 {
   "schema": "shohin-gpt-oss-120b-commit-confirmation-execution-v1",
-  "status": "running_after_qwen_draft_infrastructure_repair",
+  "status": "revision_generation_running",
   "date": "2026-08-20",
   "source_commit": "7aa8609241e05bcd3810a790b17421c44950d65c",
   "private_branches": [
@@ -134,6 +134,63 @@
     "threshold_changed": false,
     "assessor_access_count": 0,
     "duplicate_healthy_work": 0
+  },
+  "generation_progress": {
+    "timestamp": "2026-08-20T02:08:51-04:00",
+    "qwen_fixed_draft": {
+      "status": "complete",
+      "jobs": [766387, 766388, 766389, 766390],
+      "elapsed_seconds": [677, 765, 754, 651],
+      "candidate_sha256s": [
+        "9c2703ca5bcc644acb28972b85312287251747d14ff5da9ca2c6ae370480c778",
+        "4695c7d819a1b1eb59c0be8107f52b39a098d706ec8701dd45a4ccf7f902736d",
+        "de5b3c527e20666c12af28430e8753026b3958f557d4a331594e97316bc11cc5",
+        "29995face23d816ac6bb9b5ba607b2aba7494d7c7278585f1ddef0f9024c910f"
+      ],
+      "report_sha256s": [
+        "0fd869a365edc0a00e2a88168db6c9e440e3035c09aa3d8d776261ef1c43a34e",
+        "f9e90a6329665983ea62db94689153aca1e785cd756668e82b1f258c86c142ed",
+        "653c6416540792e3b1e7b095458528c9fdb7bc5340f3f30b3daa1cca350eccfc",
+        "c6f3362532b490f1d6d97132d6f4e42229180afa0eca956d937d934f0d338a06"
+      ],
+      "rows": 256,
+      "unique_identities": 256,
+      "source_identity_set_exact": true,
+      "empty_completions": 0,
+      "max_token_exhausted": 2,
+      "assessor_access_count": 0,
+      "role": "aligned",
+      "prompt_arm": "unchanged_source_only"
+    },
+    "gpt_unchanged": {
+      "status": "complete",
+      "jobs": [766374, 766375, 766376, 766377],
+      "elapsed_seconds": [1658, 1656, 1744, 1671],
+      "candidate_sha256s": [
+        "f117efbb62d52b44f5fbdd336aaf8f379ce800e786cb07bc55feda82712f9c8a",
+        "f166f8ede26d23531838c518e25ff0c2adbc541fe857fcfdf3e5b76442b0ed09",
+        "1a07b1a948444a9cb71a004da6ad40ca94111917907093c513deb934168ef31e",
+        "e2d681c3ce1cc4a8365b9b0ab751a0c0a891f145f0780b04153ff905ac6157a9"
+      ],
+      "report_sha256s": [
+        "aa90d3cc45ad21fd3a512391c3a862d9bdc10c6b3b077400d7454331727f8eee",
+        "d7caa563bcd710c11fe5b05d5f70fadd20346bf6015b28f44f3c085c3039efcc",
+        "c1cb8b0b57969efd9c284a3259d428d07341270da8bb5ede2cc1a6c08fc78b9b",
+        "17b4ef80580d0cf8a995d26d4a7013976fbc0e211f322ed1cc999faa3a945048"
+      ],
+      "rows": 256,
+      "unique_identities": 256,
+      "source_identity_set_exact": true,
+      "empty_completions": 5,
+      "max_token_exhausted": 20,
+      "assessor_access_count": 0
+    },
+    "gpt_revision": {
+      "status": "running",
+      "jobs": [766378, 766379, 766380, 766381],
+      "nodes": ["evc33", "evc33", "evc35", "evc36"],
+      "all_restarts_zero": true
+    }
   },
   "result": null
 }
