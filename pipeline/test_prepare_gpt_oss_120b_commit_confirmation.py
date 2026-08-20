@@ -69,7 +69,7 @@ def _fixture(tmp_path: Path) -> argparse.Namespace:
         questions=question_path,
         excluded_questions=excluded_path,
         prior_q36_source=prior_path,
-        prior_confirmation_source=prior_confirmation_path,
+        prior_confirmation_source=[prior_confirmation_path],
         selection_seed=2026082002,
         source_output=output / "source.jsonl",
         receipt=output / "receipt.json",
@@ -91,7 +91,7 @@ def test_preparation_is_deterministic_disjoint_and_label_free(tmp_path: Path) ->
     prior_confirmation = {
         row["identity_sha256"]
         for row in map(
-            json.loads, args.prior_confirmation_source.read_text().splitlines()
+            json.loads, args.prior_confirmation_source[0].read_text().splitlines()
         )
     }
     identities = {row["identity_sha256"] for row in rows}
@@ -103,6 +103,38 @@ def test_preparation_is_deterministic_disjoint_and_label_free(tmp_path: Path) ->
     assert receipt["assessor_access_count"] == 0
     assert receipt["selection_seed"] == 2026082002
     assert receipt["prior_confirmation_identity_overlap"] == 0
+    assert receipt["prior_confirmation_source_count"] == 1
+
+
+def test_preparation_excludes_multiple_prior_confirmations(tmp_path: Path) -> None:
+    args = _fixture(tmp_path)
+    questions = [json.loads(line) for line in args.questions.read_text().splitlines()]
+    second = tmp_path / "prior-confirmation-two.jsonl"
+    _write(
+        second,
+        [
+            {
+                **_prior(row["id"]),
+                "task": module.BENCHMARK,
+            }
+            for row in questions[512:768]
+        ],
+    )
+    args.prior_confirmation_source.append(second)
+    receipt = module.prepare(args)
+    selected = {
+        json.loads(line)["identity_sha256"]
+        for line in args.source_output.read_text().splitlines()
+    }
+    prior = {
+        json.loads(line)["identity_sha256"]
+        for path in args.prior_confirmation_source
+        for line in path.read_text().splitlines()
+    }
+    assert len(prior) == 512
+    assert not selected & prior
+    assert receipt["prior_confirmation_source_count"] == 2
+    assert len(receipt["prior_confirmation_source_sha256s"]) == 2
 
 
 def test_preparation_rejects_label_bearing_question(tmp_path: Path) -> None:
@@ -140,8 +172,11 @@ def test_confirmation_launcher_uses_thirteen_independent_single_h100_jobs() -> N
     assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in evaluator
     assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in selector
     assert "--array" not in launcher
-    assert "0.703125" in launcher
+    assert "REVISION_MARGIN_THRESHOLD" in launcher
+    assert "REVISION_MARGIN_THRESHOLD=$REVISION_MARGIN_THRESHOLD" in launcher
+    assert 'float(os.environ["REVISION_MARGIN_THRESHOLD"])' in launcher
     assert "REVISION_RELIABILITY_VETO" in launcher
+    assert "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" in launcher
 
 
 def test_preparation_job_accepts_preexisting_shared_logs_directory() -> None:
@@ -152,3 +187,5 @@ def test_preparation_job_accepts_preexisting_shared_logs_directory() -> None:
     assert 'mkdir -m 700 "$OUTPUT_ROOT"\n' in wrapper
     assert "mkdir -p logs\n" in wrapper
     assert 'mkdir -m 700 "$OUTPUT_ROOT" logs' not in wrapper
+    assert "PRIOR_CONFIRMATION_SOURCES" in wrapper
+    assert 'prior_confirmation_args+=(--prior-confirmation-source "$path")' in wrapper

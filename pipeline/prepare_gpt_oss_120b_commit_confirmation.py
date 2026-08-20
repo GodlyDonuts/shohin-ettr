@@ -104,10 +104,13 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
     questions = _questions(args.questions)
     excluded = _questions(args.excluded_questions)
     prior_q36 = _jsonl(args.prior_q36_source)
-    prior_confirmation_path = getattr(args, "prior_confirmation_source", None)
-    prior_confirmation = (
-        _jsonl(prior_confirmation_path) if prior_confirmation_path is not None else []
-    )
+    prior_confirmation_value = getattr(args, "prior_confirmation_source", [])
+    if isinstance(prior_confirmation_value, Path):
+        prior_confirmation_paths = [prior_confirmation_value]
+    else:
+        prior_confirmation_paths = list(prior_confirmation_value or [])
+    prior_confirmation_groups = [_jsonl(path) for path in prior_confirmation_paths]
+    prior_confirmation = [row for group in prior_confirmation_groups for row in group]
     question_ids = {row["id"] for row in questions}
     excluded_ids = {row["id"] for row in excluded}
     prior_q36_ids = {row.get("identity_sha256") for row in prior_q36}
@@ -117,7 +120,8 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
         len(questions) != 12_032
         or len(excluded) != 256
         or len(prior_q36_ids) != 1_279
-        or (prior_confirmation and len(prior_confirmation_ids) != ROWS)
+        or any(len(group) != ROWS for group in prior_confirmation_groups)
+        or len(prior_confirmation_ids) != ROWS * len(prior_confirmation_groups)
         or isinstance(selection_seed, bool)
         or not isinstance(selection_seed, int)
         or selection_seed <= 0
@@ -181,11 +185,10 @@ def prepare(args: argparse.Namespace) -> dict[str, Any]:
         "questions_sha256": sha256_file(args.questions),
         "excluded_questions_sha256": sha256_file(args.excluded_questions),
         "prior_q36_source_sha256": sha256_file(args.prior_q36_source),
-        "prior_confirmation_source_sha256": (
-            sha256_file(prior_confirmation_path)
-            if prior_confirmation_path is not None
-            else None
-        ),
+        "prior_confirmation_source_count": len(prior_confirmation_paths),
+        "prior_confirmation_source_sha256s": [
+            sha256_file(path) for path in prior_confirmation_paths
+        ],
         "source_output": str(args.source_output.resolve()),
         "source_output_sha256": source_sha256,
         "selected_identity_sha256": identity_digest,
@@ -204,7 +207,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--questions", type=Path, required=True)
     parser.add_argument("--excluded-questions", type=Path, required=True)
     parser.add_argument("--prior-q36-source", type=Path, required=True)
-    parser.add_argument("--prior-confirmation-source", type=Path)
+    parser.add_argument(
+        "--prior-confirmation-source", type=Path, action="append", default=[]
+    )
     parser.add_argument("--selection-seed", type=int, default=DEFAULT_SELECTION_SEED)
     parser.add_argument("--source-output", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
