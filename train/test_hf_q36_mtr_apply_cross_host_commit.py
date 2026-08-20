@@ -1,0 +1,74 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+import hf_q36_mtr_apply_cross_host_commit as module
+
+
+def _write(path: Path, rows: list[dict]) -> None:
+    path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+
+def test_cross_host_loaders_bind_source_arm_and_identity(tmp_path: Path) -> None:
+    contract = {
+        "rows": 2,
+        "shards": 1,
+        "candidate_schema": "candidate-v1",
+        "source_schema": "source-v1",
+        "source_split": "external_validation",
+    }
+    identities = ("0" * 64, "1" * 64)
+    source = tmp_path / "source.jsonl"
+    revision = tmp_path / "revision.jsonl"
+    _write(
+        source,
+        [
+            {
+                "schema": "source-v1",
+                "split": "external_validation",
+                "identity_sha256": identity,
+                "task": "math500",
+                "source_prompt": f"question {index}",
+            }
+            for index, identity in enumerate(identities)
+        ],
+    )
+    _write(
+        revision,
+        [
+            {
+                "schema": "candidate-v1",
+                "arm": "revision",
+                "identity_sha256": identity,
+                "task": "math500",
+                "completion": f"answer {index}",
+                "generated_tokens": 3,
+                "max_token_exhausted": False,
+            }
+            for index, identity in enumerate(identities)
+        ],
+    )
+    assert set(module.load_source(source, contract)) == set(identities)
+    assert set(module.load_candidates([revision], "revision", contract)) == set(
+        identities
+    )
+    rows = [json.loads(line) for line in revision.read_text().splitlines()]
+    rows[0]["arm"] = "unchanged"
+    _write(revision, rows)
+    with pytest.raises(module.CrossHostCommitError, match="candidate differs"):
+        module.load_candidates([revision], "revision", contract)
+
+
+def test_cross_host_job_is_one_h100_and_excludes_failed_node() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wrapper = (root / "train/jobs/q36_mtr_cross_host_commit.sbatch").read_text()
+    assert "#SBATCH --gres=gpu:nvidia_h100_pcie:1" in wrapper
+    assert "#SBATCH --no-requeue" in wrapper
+    assert "evc50" in wrapper
+    assert "--batch-identities 2" in wrapper

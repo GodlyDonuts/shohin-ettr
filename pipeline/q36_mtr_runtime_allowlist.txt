@@ -1,4 +1,5 @@
 # Deterministic Q36-MTR preparation/runtime closure. Sorted, one path per line.
+pipeline/analyze_q36_cross_host_commit.py
 pipeline/analyze_q36_mtr_external_outcomes.py
 pipeline/analyze_q36_mtr_token_gates.py
 pipeline/analyze_q36_mtr_trajectory_state_geometry.py
@@ -131,6 +132,7 @@ train/hf_pcf1_evaluate.py
 train/hf_pcf1_train_commit.py
 train/hf_product_reasoning_eval.py
 train/hf_product_reasoning_train.py
+train/hf_q36_mtr_apply_cross_host_commit.py
 train/hf_q36_mtr_apply_multi_owner_commit.py
 train/hf_q36_mtr_evaluate.py
 train/hf_q36_mtr_evaluate_temporal_gate.py
@@ -159,8 +161,10 @@ train/jobs/nemotron_super_train_revision.sbatch
 train/jobs/nemotron_ultra_evaluate.sbatch
 train/jobs/nemotron_ultra_mechanics.sbatch
 train/jobs/nemotron_ultra_train_revision.sbatch
+train/jobs/q36_mtr_analyze_cross_host_commit.sbatch
 train/jobs/q36_mtr_apply_multi_owner_commit.sbatch
 train/jobs/q36_mtr_common.sh
+train/jobs/q36_mtr_cross_host_commit.sbatch
 train/jobs/q36_mtr_evaluate.sbatch
 train/jobs/q36_mtr_evaluate_temporal_gate.sbatch
 train/jobs/q36_mtr_external_evaluate.sbatch
