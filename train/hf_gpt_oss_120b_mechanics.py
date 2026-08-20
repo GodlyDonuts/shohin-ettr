@@ -273,6 +273,53 @@ def _package_receipt(overlay_root: Path) -> dict[str, Any]:
     return {"versions": versions, "overlay_module_origins": origins}
 
 
+def _is_cuda_zero(value: Any) -> bool:
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, int):
+        return value == 0
+    if isinstance(value, str):
+        return value in {"cuda", "cuda:0"}
+    if isinstance(value, torch.device):
+        return value.type == "cuda" and value.index in {None, 0}
+    return False
+
+
+def _native_mxfp4_load_receipt(backbone: Any) -> dict[str, Any]:
+    """Normalize equivalent CUDA:0 spellings while rejecting offload/dequantize."""
+
+    device_map = getattr(backbone, "hf_device_map", None)
+    quantizer = getattr(backbone, "hf_quantizer", None)
+    quantization_config = getattr(quantizer, "quantization_config", None)
+    receipt = {
+        "device_map_type": type(device_map).__name__,
+        "device_map": (
+            {str(name): str(device) for name, device in sorted(device_map.items())}
+            if isinstance(device_map, dict)
+            else None
+        ),
+        "all_modules_cuda_zero": bool(
+            isinstance(device_map, dict)
+            and device_map
+            and all(_is_cuda_zero(value) for value in device_map.values())
+        ),
+        "quantizer_class": type(quantizer).__name__,
+        "quantization_config_class": type(quantization_config).__name__,
+        "dequantize": getattr(quantization_config, "dequantize", None),
+    }
+    if (
+        receipt["all_modules_cuda_zero"] is not True
+        or receipt["quantizer_class"] != "Mxfp4HfQuantizer"
+        or receipt["quantization_config_class"] != "Mxfp4Config"
+        or receipt["dequantize"] is not False
+    ):
+        raise GptOssMechanicsError(
+            "native MXFP4 load differs: "
+            + json.dumps(receipt, sort_keys=True, separators=(",", ":"))
+        )
+    return receipt
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     model_root = args.model_root.resolve(strict=True)
@@ -328,17 +375,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         low_cpu_mem_usage=True,
         attn_implementation="eager",
     )
-    device_map = getattr(backbone, "hf_device_map", None)
-    quantizer = getattr(backbone, "hf_quantizer", None)
-    quantization_config = getattr(quantizer, "quantization_config", None)
-    if (
-        not isinstance(device_map, dict)
-        or set(device_map.values()) != {0}
-        or any(value in {"cpu", "disk"} for value in device_map.values())
-        or type(quantizer).__name__ != "Mxfp4HfQuantizer"
-        or bool(getattr(quantization_config, "dequantize", True))
-    ):
-        raise GptOssMechanicsError("native MXFP4 load differs")
+    native_load = _native_mxfp4_load_receipt(backbone)
     loaded_kernels = get_loaded_kernels()
     if len(loaded_kernels) != 1:
         raise GptOssMechanicsError("loaded kernel count differs")
@@ -437,6 +474,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "model_receipt": model_receipt,
         "overlay_receipt": overlay_receipt,
         "native_quantization": "mxfp4",
+        "native_load": native_load,
         "loaded_kernel_count": len(loaded_kernels),
         "trainable_parameters": model.trainable_parameter_count(),
         "trainable_parameter_name_sha256": model.trainable_parameter_name_sha256(),

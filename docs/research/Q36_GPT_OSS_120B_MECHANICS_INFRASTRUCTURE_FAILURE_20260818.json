@@ -1,0 +1,84 @@
+{
+  "schema": "shohin-q36-gpt-oss-120b-mechanics-infrastructure-failure-v1",
+  "status": "terminal_pre_science_failure_repair_authorized",
+  "recorded_date": "2026-08-19",
+  "job": {
+    "job_id": 764085,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 1298,
+    "node": "evc46",
+    "restarts": 0,
+    "started_at": "2026-08-18T18:32:38-04:00",
+    "ended_at": "2026-08-18T18:54:16-04:00",
+    "allocated_h100s": 1,
+    "allocated_cpus": 16,
+    "allocated_memory": "128G"
+  },
+  "failure": {
+    "phase": "score_free_mechanics_admission_after_full_weight_load",
+    "weights_loaded": 615,
+    "weights_expected": 615,
+    "exception": "GptOssMechanicsError: native MXFP4 load differs",
+    "source": "train/hf_gpt_oss_120b_mechanics.py",
+    "classification": "over_strict_device_map_metadata_assertion",
+    "slurm_failure": false,
+    "node_failure": false,
+    "cuda_failure": false,
+    "out_of_memory": false,
+    "timeout": false
+  },
+  "evidence": {
+    "stderr_sha256": "bb3ea7b9d3961894b536f87d8d52d7d7ca2857c36927eae92f6a601303ed3059",
+    "stderr_bytes": 3338,
+    "stdout_sha256": "b5bc6a07dc62efbf09a824e26262e2e79afabb6af0891fa997c4599c14327ea0",
+    "stdout_bytes": 1689,
+    "gpu": "NVIDIA H100 PCIe",
+    "driver": "580.105.08",
+    "cuda": "13.0",
+    "mechanics_report_absent": true,
+    "mechanics_checkpoint_absent": true,
+    "screen_run_root_absent": true,
+    "scaling_root_absent": true
+  },
+  "cancelled_dependencies": [
+    {
+      "job_id": 764230,
+      "purpose": "matched_screen_launcher",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "restarts": 0
+    },
+    {
+      "job_id": 764255,
+      "purpose": "cross_family_scaling_launcher",
+      "state": "CANCELLED",
+      "elapsed_seconds": 0,
+      "restarts": 0
+    }
+  ],
+  "scientific_boundary": {
+    "synthetic_forward_reached": false,
+    "training_reached": false,
+    "candidate_generation_reached": false,
+    "assessor_or_score_access_reached": false,
+    "scientific_result": null,
+    "benchmark_rows_scored": 0
+  },
+  "repair": {
+    "authorized_scope": "normalize_semantically_equivalent_cuda_zero_device_map_spellings_and_emit_the_exact_native_load_receipt",
+    "must_still_reject": [
+      "cpu_offload",
+      "disk_offload",
+      "nonzero_cuda_device",
+      "missing_or_wrong_mxfp4_quantizer",
+      "dequantized_weights"
+    ],
+    "scientific_host_changed": false,
+    "scientific_data_changed": false,
+    "architecture_changed": false,
+    "training_or_decoding_changed": false,
+    "fresh_runtime_required": true,
+    "fresh_output_basename_required": true
+  }
+}

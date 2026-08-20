@@ -10,6 +10,7 @@ import torch.nn as nn
 from hf_gpt_oss_120b_mechanics import (
     GptOssMechanicsError,
     _gradient_receipt,
+    _native_mxfp4_load_receipt,
     verify_manifest,
 )
 
@@ -27,6 +28,22 @@ class _Model(nn.Module):
         self.blocks = nn.ModuleList([_Block() for _ in range(16)])
 
 
+class Mxfp4Config:
+    def __init__(self, dequantize: bool = False) -> None:
+        self.dequantize = dequantize
+
+
+class Mxfp4HfQuantizer:
+    def __init__(self, dequantize: bool = False) -> None:
+        self.quantization_config = Mxfp4Config(dequantize)
+
+
+class _Backbone:
+    def __init__(self, device: object, dequantize: bool = False) -> None:
+        self.hf_device_map = {"": device}
+        self.hf_quantizer = Mxfp4HfQuantizer(dequantize)
+
+
 def test_gradient_receipt_requires_every_post_mxfp4_residual_path() -> None:
     model = _Model()
     for block in model.blocks:
@@ -40,6 +57,24 @@ def test_gradient_receipt_requires_every_post_mxfp4_residual_path() -> None:
     model.blocks[0].adapter_b.weight.grad.zero_()
     with pytest.raises(GptOssMechanicsError, match="gradient receipt"):
         _gradient_receipt(model)
+
+
+@pytest.mark.parametrize("device", [0, "cuda", "cuda:0", torch.device("cuda:0")])
+def test_native_mxfp4_receipt_normalizes_cuda_zero(device: object) -> None:
+    receipt = _native_mxfp4_load_receipt(_Backbone(device))
+    assert receipt["all_modules_cuda_zero"] is True
+    assert receipt["dequantize"] is False
+
+
+@pytest.mark.parametrize(
+    ("device", "dequantize"),
+    [("cpu", False), ("disk", False), (1, False), ("cuda:0", True)],
+)
+def test_native_mxfp4_receipt_rejects_offload_or_dequantize(
+    device: object, dequantize: bool
+) -> None:
+    with pytest.raises(GptOssMechanicsError, match="native MXFP4 load differs"):
+        _native_mxfp4_load_receipt(_Backbone(device, dequantize))
 
 
 def test_manifest_verifier_binds_hash_and_exact_membership(tmp_path: Path) -> None:
