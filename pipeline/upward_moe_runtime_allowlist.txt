@@ -190,6 +190,7 @@ train/jobs/mixtral_8x22b_multinode_tp_mechanics.sbatch
 train/jobs/mixtral_8x22b_multinode_tp_train_revision.sbatch
 train/jobs/mixtral_8x22b_train_revision.sbatch
 train/jobs/nemotron_super_evaluate.sbatch
+train/jobs/nemotron_super_fp8_extension_probe.sbatch
 train/jobs/nemotron_super_mechanics.sbatch
 train/jobs/nemotron_super_train_revision.sbatch
 train/jobs/nemotron_ultra_evaluate.sbatch

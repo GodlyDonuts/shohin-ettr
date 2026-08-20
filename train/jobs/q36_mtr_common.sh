@@ -12,6 +12,11 @@ readonly Q36_BNB_ROOT=/lustre/fs1/home/sa305415/shohin/env_targets/bitsandbytes-
 readonly Q36_BNB_MANIFEST_SHA256=2201774754fb2e0fdd2208b78d34b803b910d8e34c79a43de49b29d7df3a8355
 readonly Q36_FAST_KERNEL_ROOT=/lustre/fs1/home/sa305415/shohin/env_targets/qwen36-fastkernels-0.4.2-r5
 readonly Q36_FAST_KERNEL_MANIFEST_SHA256=dde2adf539302a321afd7322ded3f2f729ac5f96368113a8af82f64efc0b9e8b
+readonly Q36_NEMOTRON_CUDA_HOME=/apps/cuda/cuda-12.4.0
+readonly Q36_NEMOTRON_GCC_ROOT=/apps/gcc/gcc-12.2.0
+readonly Q36_NEMOTRON_NVCC_SHA256=e701519f13153518f0143cc0c18c66f0226eabf73ddd6a7eca0d36b26ebc976b
+readonly Q36_NEMOTRON_GCC_SHA256=b617db0d6e6fade76990baa29f1372255575d3178ee2e8f60ba19980db37100f
+readonly Q36_NEMOTRON_GXX_SHA256=6264680f3e8ee209ed3b2c22c4040282e9b63fb0d7ec17df71e81765e53db34d
 
 q36_die() {
   printf 'q36-mtr: %s\n' "$*" >&2
@@ -58,6 +63,28 @@ q36_init_local_tmp() {
   else
     mkdir -m 700 "$SLURM_TMPDIR"
   fi
+}
+
+q36_export_nemotron_cuda_toolchain() {
+  [[ -d "$Q36_NEMOTRON_CUDA_HOME" && ! -L "$Q36_NEMOTRON_CUDA_HOME" ]] \
+    || q36_die "Nemotron CUDA root differs"
+  [[ -d "$Q36_NEMOTRON_GCC_ROOT" && ! -L "$Q36_NEMOTRON_GCC_ROOT" ]] \
+    || q36_die "Nemotron compiler root differs"
+  q36_verify_sha256 \
+    "$Q36_NEMOTRON_CUDA_HOME/bin/nvcc" "$Q36_NEMOTRON_NVCC_SHA256"
+  q36_verify_sha256 \
+    "$Q36_NEMOTRON_GCC_ROOT/bin/gcc" "$Q36_NEMOTRON_GCC_SHA256"
+  q36_verify_sha256 \
+    "$Q36_NEMOTRON_GCC_ROOT/bin/g++" "$Q36_NEMOTRON_GXX_SHA256"
+  export CUDA_HOME="$Q36_NEMOTRON_CUDA_HOME"
+  export CC="$Q36_NEMOTRON_GCC_ROOT/bin/gcc"
+  export CXX="$Q36_NEMOTRON_GCC_ROOT/bin/g++"
+  export PATH="$CUDA_HOME/bin:$Q36_NEMOTRON_GCC_ROOT/bin:/apps/slurm/current/bin:/usr/bin:/bin"
+  export LD_LIBRARY_PATH="$Q36_NEMOTRON_GCC_ROOT/lib64:$CUDA_HOME/lib64"
+  export TORCH_CUDA_ARCH_LIST=9.0
+  export TORCH_EXTENSIONS_DIR="$SLURM_TMPDIR/torch_extensions"
+  export MAX_JOBS=8
+  mkdir -m 700 "$TORCH_EXTENSIONS_DIR"
 }
 
 q36_cleanup_local_tmp() {

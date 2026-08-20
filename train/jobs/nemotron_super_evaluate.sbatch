@@ -70,6 +70,7 @@ export HF_HOME="$SLURM_TMPDIR/hf" XDG_CACHE_HOME="$SLURM_TMPDIR/cache"
 export TMPDIR="$SLURM_TMPDIR" TOKENIZERS_PARALLELISM=false
 export PYTHONDONTWRITEBYTECODE=1 CUDA_MODULE_LOADING=LAZY
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+q36_export_nemotron_cuda_toolchain
 
 "$PYTHON" -P -s -B "$RUNTIME/train/hf_nemotron_super_evaluate.py" \
   --arm "$ARM" \

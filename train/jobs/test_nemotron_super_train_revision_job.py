@@ -17,6 +17,7 @@ def test_super_revision_fit_is_two_h100_nonrequeueing_and_dependency_ready() -> 
     assert "--data" in source
     assert "TRANSFORMERS_OFFLINE=1" in source
     assert "q36_init_local_tmp" in source
+    assert "q36_export_nemotron_cuda_toolchain" in source
     assert "trap q36_cleanup_local_tmp EXIT" in source
 
 

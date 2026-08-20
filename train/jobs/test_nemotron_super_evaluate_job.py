@@ -15,6 +15,7 @@ def test_super_evaluation_is_two_h100_sharded_and_nonrequeueing() -> None:
     assert "--mechanics-report" in source
     assert "--shard-index" in source
     assert "q36_init_local_tmp" in source
+    assert "q36_export_nemotron_cuda_toolchain" in source
     assert "trap q36_cleanup_local_tmp EXIT" in source
 
 
