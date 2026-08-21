@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 from types import SimpleNamespace
 import tempfile
@@ -17,6 +18,7 @@ from hf_product_reasoning_train import (
     ProductReasoningModel,
     ProductReasoningTrainError,
     error_syndrome_residual_loss,
+    eos_debiased_revision_rows_with_sha256,
     install_lora,
     install_scoped_lora,
     load_trainable_checkpoint,
@@ -26,6 +28,7 @@ from hf_product_reasoning_train import (
     resolve_product_backbone_layout,
     reservoir_rows,
     reservoir_rows_with_sha256,
+    terminal_eos_supervision_for_batch,
     validate_warm_start_metadata,
 )
 
@@ -165,7 +168,11 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertIsNone(router.base.weight.grad)
         self.assertIsNotNone(router.lora_b.weight.grad)
         self.assertEqual(
-            [name for name, parameter in router.named_parameters() if parameter.requires_grad],
+            [
+                name
+                for name, parameter in router.named_parameters()
+                if parameter.requires_grad
+            ],
             ["lora_a.weight", "lora_b.weight"],
         )
 
@@ -258,7 +265,9 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertEqual(packed.shape, (2, 4, 6))
         self.assertEqual(attention.sum(dim=1).tolist(), [4, 4])
         self.assertEqual(labels[0].tolist(), [-100, -100, 4, 5])
-        self.assertTrue(torch.allclose(packed[0, :2], embedding(torch.tensor([1, 2])) + 1))
+        self.assertTrue(
+            torch.allclose(packed[0, :2], embedding(torch.tensor([1, 2])) + 1)
+        )
         self.assertEqual(charged, 5)
 
     def test_pack_preserves_geometry_while_masking_draft_keys(self) -> None:
@@ -275,6 +284,32 @@ class ProductReasoningTrainTests(unittest.TestCase):
         self.assertEqual(attention.tolist(), [[1, 0, 0, 1, 1, 1]])
         self.assertEqual(labels.tolist(), [[-100, -100, -100, -100, 5, 6]])
         self.assertEqual(charged, 2)
+
+    def test_pack_preserves_answer_tokens_while_masking_only_terminal_eos(self) -> None:
+        embedding = nn.Embedding(20, 6)
+        packed, attention, labels, charged = pack_training_embeddings(
+            embedding,
+            [[1, 2]],
+            [[3, 4, 5]],
+            None,
+            pad_token_id=0,
+            terminal_eos_supervision=[False],
+        )
+        self.assertEqual(packed.shape, (1, 5, 6))
+        self.assertEqual(attention.tolist(), [[1, 1, 1, 1, 1]])
+        self.assertEqual(labels.tolist(), [[-100, -100, 3, 4, -100]])
+        self.assertEqual(charged, 3)
+
+    def test_pack_rejects_terminal_eos_batch_drift(self) -> None:
+        with self.assertRaises(ProductReasoningTrainError):
+            pack_training_embeddings(
+                nn.Embedding(20, 6),
+                [[1]],
+                [[2, 3]],
+                None,
+                pad_token_id=0,
+                terminal_eos_supervision=[],
+            )
 
     def test_syndrome_loss_accepts_exact_verified_residual_direction(self) -> None:
         embedding = nn.Embedding(4, 2)
@@ -315,6 +350,76 @@ class ProductReasoningTrainTests(unittest.TestCase):
             self.assertEqual(reservoir_rows(path, 5, 31), reservoir_rows(path, 5, 31))
             _, digest = reservoir_rows_with_sha256(path, 5, 31)
             self.assertEqual(digest, hashlib.sha256(path.read_bytes()).hexdigest())
+
+    def test_eos_debiased_rows_bind_only_answer_only_both_wrong_targets(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "rows.jsonl"
+            rows = [
+                {
+                    "question": "q1",
+                    "response": "short answer",
+                    "target_kind": "source_verified_repair",
+                    "outcome_class": "both_wrong",
+                },
+                {
+                    "question": "q2",
+                    "response": "full reasoning",
+                    "target_kind": "verified_candidate",
+                    "outcome_class": "expert_only",
+                },
+            ]
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            selected, digest = eos_debiased_revision_rows_with_sha256(path, 2, 31)
+            self.assertEqual(digest, hashlib.sha256(path.read_bytes()).hexdigest())
+            by_kind = {row["target_kind"]: row for row in selected}
+            self.assertTrue(by_kind["source_verified_repair"]["suppress_terminal_eos"])
+            self.assertFalse(by_kind["verified_candidate"]["suppress_terminal_eos"])
+
+    def test_eos_debiased_rows_reject_target_outcome_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "rows.jsonl"
+            path.write_text(
+                json.dumps(
+                    {
+                        "question": "q",
+                        "response": "answer",
+                        "target_kind": "source_verified_repair",
+                        "outcome_class": "expert_only",
+                    }
+                )
+                + "\n"
+            )
+            with self.assertRaises(ProductReasoningTrainError):
+                eos_debiased_revision_rows_with_sha256(path, 1, 31)
+
+    def test_terminal_eos_supervision_binds_exact_tokenizer_boundary(self) -> None:
+        self.assertEqual(
+            terminal_eos_supervision_for_batch(
+                [
+                    {"suppress_terminal_eos": True},
+                    {"suppress_terminal_eos": False},
+                ],
+                [[10, 11, 99], [12, 99]],
+                99,
+            ),
+            [False, True],
+        )
+
+    def test_terminal_eos_supervision_rejects_missing_eos(self) -> None:
+        with self.assertRaises(ProductReasoningTrainError):
+            terminal_eos_supervision_for_batch(
+                [{"suppress_terminal_eos": True}],
+                [[10, 11]],
+                99,
+            )
+
+    def test_terminal_eos_supervision_rejects_untyped_policy(self) -> None:
+        with self.assertRaises(ProductReasoningTrainError):
+            terminal_eos_supervision_for_batch(
+                [{"suppress_terminal_eos": 1}],
+                [[10, 99]],
+                99,
+            )
 
     def test_pack_rejects_batch_mismatch(self) -> None:
         with self.assertRaises(ProductReasoningTrainError):
