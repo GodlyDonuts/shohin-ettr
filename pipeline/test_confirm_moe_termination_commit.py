@@ -19,7 +19,7 @@ def _candidate(path: Path, arm: str, exhausted: list[bool]) -> Path:
             handle.write(
                 json.dumps(
                     {
-                        "schema": "candidate-v1",
+                        "schema": "shohin-nemotron-super-fixed-draft-candidate-v1",
                         "arm": arm,
                         "identity_sha256": _identity(index),
                         "task": ("bbh_logic", "math500", "mbpp")[index - 1],
@@ -51,7 +51,7 @@ def _fixture(
     score.write_text(
         json.dumps(
             {
-                "schema": "score-v1",
+                "schema": "shohin-nemotron-super-fixed-draft-screen-score-v1",
                 "outcomes": [
                     {
                         "identity_sha256": _identity(1),
@@ -191,6 +191,21 @@ def test_confirmation_rejects_boolean_zero_row_claim(tmp_path: Path) -> None:
     payload["state_at_freeze"]["candidate_rows_available"] = False
     predeclaration.write_text(json.dumps(payload) + "\n")
     with pytest.raises(TerminationCommitError, match="predeclaration"):
+        confirm(
+            predeclaration=predeclaration,
+            host=host,
+            score=score,
+            candidate_paths=candidates,
+        )
+
+
+def test_confirmation_rejects_cross_host_candidate_schema(tmp_path: Path) -> None:
+    predeclaration, score, candidates, host = _fixture(tmp_path)
+    path = candidates["revision"][0]
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    rows[0]["schema"] = "different-host-candidate-v1"
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    with pytest.raises(TerminationCommitError, match="target candidate schema"):
         confirm(
             predeclaration=predeclaration,
             host=host,

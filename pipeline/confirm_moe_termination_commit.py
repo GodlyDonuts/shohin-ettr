@@ -21,6 +21,8 @@ PREDECLARATION_SCHEMA = "shohin-moe-termination-aware-commit-predeclaration-v1"
 CONFIRMATION_SCHEMA = "shohin-moe-termination-aware-commit-confirmation-v1"
 RULE_SOURCE_SHA256 = "eb3fea20006463555abc4df5e8fbdb490ed15d21e1a576d32d6418eede78c378"
 RULE_NAME = "select_revision_only_when_baseline_exhausted_and_revision_not_exhausted"
+TARGET_CANDIDATE_SCHEMA = "shohin-nemotron-super-fixed-draft-candidate-v1"
+TARGET_SCORE_SCHEMA = "shohin-nemotron-super-fixed-draft-screen-score-v1"
 
 
 def _load_predeclaration(path: Path) -> tuple[dict[str, Any], str]:
@@ -32,6 +34,23 @@ def _load_predeclaration(path: Path) -> tuple[dict[str, Any], str]:
     if not isinstance(payload, dict):
         raise TerminationCommitError("predeclaration differs")
     return payload, digest
+
+
+def _validate_target_candidate_schemas(
+    candidate_paths: dict[str, list[Path]],
+) -> None:
+    for arm in ARMS:
+        for path in candidate_paths[arm]:
+            with path.open(encoding="utf-8") as handle:
+                for line_number, line in enumerate(handle, start=1):
+                    try:
+                        row = json.loads(line)
+                    except json.JSONDecodeError as exc:
+                        raise TerminationCommitError(
+                            f"target candidate {path}:{line_number} is not JSON"
+                        ) from exc
+                    if row.get("schema") != TARGET_CANDIDATE_SCHEMA:
+                        raise TerminationCommitError("target candidate schema differs")
 
 
 def confirm(
@@ -112,12 +131,14 @@ def confirm(
         raise TerminationCommitError("predeclared candidate paths differ")
 
     report = replay(host=host, score=score, candidate_paths=candidate_paths)
+    _validate_target_candidate_schemas(candidate_paths)
     required_rows = contract.get("required_rows")
     required_tasks = contract.get("required_tasks")
     if (
         isinstance(required_rows, bool)
         or not isinstance(required_rows, int)
         or report.get("row_count") != required_rows
+        or report["evidence"].get("score_schema") != TARGET_SCORE_SCHEMA
         or required_tasks != ["bbh_logic", "math500", "mbpp"]
         or set(report["selectors"]) != {"unchanged", "self_refinement"}
     ):
