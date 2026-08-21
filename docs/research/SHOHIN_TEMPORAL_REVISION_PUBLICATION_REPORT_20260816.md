@@ -400,6 +400,34 @@ transfer, not a promotion or a scaling-law proof. Across Qwen3.6-35B-A3B,
 GPT-OSS-120B, and Mixtral-8x22B, revision gains over unchanged are `+11.719`,
 `+3.906`, and `+26.953` percentage points: all positive but nonmonotonic.
 
+## Termination-aware whole-trajectory commitment
+
+A retrospective cross-host analysis identifies a simpler conservative
+commitment rule: select revision only when the baseline exhausted its fixed
+generation limit and revision did not; otherwise retain the baseline. The
+rule reads no task label, correctness, assessor output, or completion text.
+It operates only on the two candidates' already-observed termination states.
+
+| Evidence set | Baseline | Baseline correct | Committed correct | Gain | Retained | Wins / losses |
+|---|---|---:|---:|---:|---:|---:|
+| Qwen3.6-35B-A3B screen | unchanged | 111 | 136 | +25 | 111/111 | 25 / 0 |
+| Qwen3.6-35B-A3B screen | self-refinement | 121 | 135 | +14 | 121/121 | 14 / 0 |
+| GPT-OSS-120B screen | unchanged | 101 | 106 | +5 | 101/101 | 5 / 0 |
+| GPT-OSS-120B screen | self-refinement | 103 | 110 | +7 | 103/103 | 7 / 0 |
+| Mixtral-8x22B screen | unchanged | 45 | 55 | +10 | 45/45 | 10 / 0 |
+| Mixtral-8x22B screen | self-refinement | 105 | 109 | +4 | 105/105 | 4 / 0 |
+| Mixtral-8x22B validation | unchanged | 147 | 201 | +54 | 147/147 | 54 / 0 |
+| Mixtral-8x22B validation | self-refinement | 356 | 377 | +21 | 356/356 | 21 / 0 |
+
+The 1,023-row Mixtral validation is independent of the 256-row Mixtral
+screen, and its self-refinement-guarded gain has an exact two-sided sign-test
+`p = 9.54e-7`. Nevertheless, all four entries are retrospective replays and
+therefore remain development evidence. The exact rule implementation was
+committed while Nemotron-Super mechanics was running but before mechanics
+completion, candidate generation, or scoring. Nemotron-Super is consequently
+the first prospective cross-family test, and its result must be reported in
+either direction without changing the rule.
+
 ## Scale boundary as of 2026-08-20
 
 | Host | Total / active parameters | Family | Status |
@@ -411,7 +439,7 @@ GPT-OSS-120B, and Mixtral-8x22B, revision gains over unchanged are `+11.719`,
 | Qwen3.5-9B | 9B dense | Qwen | completed protected publication result |
 | Qwen3.6-35B-A3B | 35B / 3B MoE | Qwen | completed source-disjoint causal screen |
 | GPT-OSS-120B | 117B / 5.1B MoE | OpenAI | completed positive screen; retention gate failure |
-| Nemotron Super-120B-A12B | 120B / 12B MoE | Nemotron | repaired FP8 path dependency-staged; no result claimed |
+| Nemotron Super-120B-A12B | 120B / 12B MoE | Nemotron | prospective matched graph running; no result claimed |
 | Mixtral-8x22B | 141B / 39B MoE | Mistral | completed screen and 1,023-row validation; large aggregate gain, conservative gate failure |
 | Nemotron Ultra-550B-A55B | 550B / 55B MoE | Nemotron | prepared only; no result claimed |
 
@@ -419,7 +447,7 @@ The completed evidence supports cross-size dense transfer, cross-family dense
 transfer, a causal Qwen sparse-host result, and positive learned-revision
 screens on two much larger non-Qwen sparse hosts. It does **not** support a
 monotonic MoE scaling law or conservative transfer at every scale. Nemotron
-Super is the already-staged fourth family point; Nemotron Ultra remains a
+Super is the running fourth-family point; Nemotron Ultra remains a
 future high-GPU measurement rather than a claimed result.
 
 ## Immutable evidence
@@ -440,6 +468,7 @@ future high-GPU measurement rather than a claimed result.
 | GPT-OSS 256-row raw score | `906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59` |
 | GPT-OSS zero-retry accounting | `8546d5ba326263d7235eb465a13fcd87081ed5fb346e8f7f8073632b6dfcc36d` |
 | three-point MoE analysis | `6434ba95df6c35174fce536e96571d046e9e6fd97459100232120d1976c27550` |
+| termination-aware replay manifest | `b5b97e28cebb5a7bfdd449a377aa802c21ba73c839527d371557bee940509270` |
 | publication architecture figure (SVG) | `f49e888942284f5c3fb1feb6e18d567e3c23531ac8ed5b2f0ec1807d6aec1bdf` |
 | publication architecture figure (PDF) | `c998b10840c4e65095bb2ecc0ba39a51bb5df710cccf6982259ebca0b5c4d393` |
 | publication evidence figure (SVG) | `2594a40af43989e662b8f86d2673a71530c81d38be5c86cee384a0aeab07a379` |
