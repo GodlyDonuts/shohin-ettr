@@ -1,0 +1,141 @@
+{
+  "schema": "shohin-nemotron-super-mechanics-result-v1",
+  "status": "PASS",
+  "job": {
+    "id": 767994,
+    "node": "evc43",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "submitted_at": "2026-08-20T22:47:04-04:00",
+    "started_at": "2026-08-20T22:47:32-04:00",
+    "ended_at": "2026-08-20T23:13:32-04:00",
+    "elapsed_seconds": 1560,
+    "restarts": 0,
+    "h100s": 2
+  },
+  "runtime": {
+    "source_commit": "201dc76f3178715af819229c32dd77f35a9cdd22",
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/upward_moe_runtime_201dc76f_r1",
+    "manifest_sha256": "ac06e9bd1aced7a8cfc024fd58eb3d467c0145ccb7e4d3c9668c65059d4251fc",
+    "runtime_json_sha256": "563b5f3ca3ef4ab230bde58cc07761b210101af9b342481241d76bebdf64b43e",
+    "architecture_source_sha256": "7b93197056a00ba9882d4c11c89261da2140095dfcbd6846c20b337667cdbecf"
+  },
+  "artifacts": {
+    "report": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_mechanics_modelopt_201dc76f_r1.json",
+      "bytes": 10931,
+      "mode": "0444",
+      "sha256": "50f2e4d4c0146deede2104e5125782da9c4796c042e4fa918354098671cf17a3"
+    },
+    "checkpoint": {
+      "path": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_mechanics_modelopt_201dc76f_r1.checkpoint.pt",
+      "bytes": 9450234,
+      "mode": "0444",
+      "sha256": "a6562beb24790662446508afe9557abd4bc01eb922ecf5fe635e5fffe884779c"
+    },
+    "stdout": {
+      "bytes": 9642,
+      "lines": 6,
+      "sha256": "52099d1008c9e4854a165de61598998ad436af372ce0031e142cc4633060982a"
+    },
+    "stderr": {
+      "bytes": 16545263,
+      "lines": 11,
+      "sha256": "f013724503f96344469cef69e39a761ab6fc9745594385770ed1ba25ff0b6c9c"
+    }
+  },
+  "host": {
+    "identity": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "revision": "7d7e5797b8a3c7abbab54033b6004e93e8b6bc91",
+    "model_manifest_sha256": "8bb8bb898794651791de9d79c1041fe0ec6ad0f54a97b03f52620bd6e245ce92",
+    "covered_bytes": 128379948624,
+    "native_router_expert_trainables": 0,
+    "device_map_sha256": "7eab76b2b6f927c121f203ba7ab3b944f8e6cbb2a272863ead1b4c5c826c6284",
+    "devices": [
+      "NVIDIA H100 PCIe:0",
+      "NVIDIA H100 PCIe:1"
+    ]
+  },
+  "shohin_surface": {
+    "architecture": "shohin-nemotron-super-shared-post-mixer-v1",
+    "attachment_surface": "post-mixer-residual",
+    "controlled_layers": [
+      54,
+      56,
+      59,
+      61,
+      63,
+      65,
+      67,
+      70,
+      72,
+      74,
+      76,
+      79,
+      81,
+      83,
+      85,
+      87
+    ],
+    "trainable_parameters": 2359296,
+    "activation_gradient_boundary": {
+      "mode": "every-native-block-output-direction-preserving-l2-clip-v1",
+      "maximum_l2_norm": 1.0,
+      "surface": "every_native_block_output",
+      "layer_count": 88,
+      "training_only": true,
+      "forward_values_unchanged": true
+    }
+  },
+  "gradient_receipt": {
+    "parameters": 32,
+    "adapter_a_zero_gradients": 16,
+    "adapter_b_nonzero_gradients": 16,
+    "nonzero_gradients": 16,
+    "nonzero_parameter_names_sha256": "ba75e3ded2d4b91eb756f8562bc23ed1d5f3338cfe9de53970e6855dcd0f7f37",
+    "receipt_sha256": "b47d133e29b04a3e0afbe803176f4f2d667c1f697e2da202cb56b656280d4ba1"
+  },
+  "update_and_restore": {
+    "initial_trainable_state_sha256": "579a15f02b8df776fe5066158a07407a97715dbaaba43d9f91a26a7636669752",
+    "updated_trainable_state_sha256": "9c8ccb45701ed0e056a1a9f9500f6fc8dd8243a8d5931ed112366f74213ad944",
+    "state_changed": true,
+    "serialization_restore_exact": true
+  },
+  "resource_receipt": {
+    "peak_gpu_0_bytes": 76854414848,
+    "peak_gpu_1_bytes": 46526696960,
+    "torch": "2.6.0+cu124",
+    "cuda": "12.4",
+    "nvidia_modelopt": "0.43.0",
+    "mamba_ssm": "2.3.2.post1"
+  },
+  "sealed_access": {
+    "benchmark_rows_read": 0,
+    "score_rows_read": 0
+  },
+  "independent_validation": {
+    "training_authorization_validator": "PASS",
+    "evaluation_authorization_validator": "PASS",
+    "exact_invariant_replay": "PASS",
+    "local_upward_moe_regression_tests": "198 passed"
+  },
+  "released_graph": {
+    "fit_job": 767995,
+    "evaluation_jobs": [
+      767996,
+      767997,
+      767998,
+      767999,
+      768000,
+      768001,
+      768002,
+      768003,
+      768004,
+      768005,
+      768006,
+      768007
+    ],
+    "score_job": 768008
+  },
+  "interpretation": "The pinned 120B FP8 host completed a full two-H100 forward, bounded backward, nonzero Shohin residual update, and exact checkpoint restore while preserving the native router/expert surface. This proves mechanics and authorizes the frozen 256-row capability screen; it is not itself a benchmark result."
+}
