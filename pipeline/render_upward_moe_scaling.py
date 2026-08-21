@@ -285,7 +285,7 @@ def _svg(analysis: dict[str, Any], points: list[dict[str, Any]]) -> bytes:
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-labelledby="title desc">',
         '<title id="title">Shohin upward mixture-of-experts scaling</title>',
-        '<desc id="desc">Matched source-disjoint trained-revision gains and retention across three distinct MoE model families and parameter scales.</desc>',
+        f'<desc id="desc">Matched source-disjoint trained-revision gains and retention across {len(points)} MoE hosts and parameter scales.</desc>',
         f'<rect width="{width}" height="{height}" fill="#ffffff"/>',
         '<text x="700" y="38" text-anchor="middle" font-family="sans-serif" font-size="25" font-weight="700" fill="#0f172a">Shohin upward MoE transfer</text>',
         '<text x="700" y="67" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#475569">Matched 256-row source-disjoint screens · trained revision versus unchanged</text>',
@@ -383,7 +383,7 @@ def _svg(analysis: dict[str, Any], points: list[dict[str, Any]]) -> bytes:
         )
     parts.extend(
         [
-            '<text x="700" y="865" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">Error bars are paired Wald 95% intervals for capability gain and Wilson 95% intervals for retention. The three-point fit is a matched cross-family scaling screen.</text>',
+            f'<text x="700" y="865" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">Error bars are paired Wald 95% intervals for capability gain and Wilson 95% intervals for retention. The {len(points)}-point fit is a matched cross-family scaling screen.</text>',
             "</svg>\n",
         ]
     )

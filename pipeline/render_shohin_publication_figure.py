@@ -288,7 +288,7 @@ def lifecycle_panel(ax: plt.Axes) -> None:
     ax.set_xlim(0, 13.4)
     ax.set_ylim(0, 6)
     ax.axis("off")
-    ax.set_title("a  Model-owned temporal lifecycle", loc="left", weight="bold")
+    ax.set_title("a  Dense model-owned temporal lifecycle", loc="left", weight="bold")
     diagram_box(ax, 0.2, 2.45, 1.35, 0.9, "source\nx", facecolor=FROZEN)
     diagram_box(
         ax,
@@ -353,7 +353,7 @@ def lifecycle_panel(ax: plt.Axes) -> None:
     ax.text(
         6.9,
         5.25,
-        "same source + draft\nsame output budget",
+        "dense lifecycle: same source + draft\nsame output budget",
         ha="center",
         va="center",
         fontsize=7.4,

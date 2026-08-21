@@ -1,0 +1,143 @@
+{
+  "schema": "shohin-q36-nemotron-super-modelopt-execution-v1",
+  "status": "submitted_pending_two_h100_capacity",
+  "observed_at": "2026-08-20T17:21:21-04:00",
+  "scientific_result_available": false,
+  "nemotron_score_available": false,
+  "science": {
+    "source_commit": "2b6b9affa5ea57dae3a2a6a744bc8387a3060bfd",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/nemotron_super_modelopt_2b6b9aff_r1",
+    "runtime_manifest_sha256": "a1422dc24f7b56eacbe87384006c7caade7f5f2393a211a60c7ad4dfb9591456",
+    "mechanics_source_sha256": "ec1cf530f4841824ab41393783e6f1c4b32e952633bb6bf52003e84ff91f6ff0",
+    "mechanics_change": "replace_synthetic_squared_logit_objective_with_next_token_cross_entropy_and_emit_per_parameter_gradient_diagnostics",
+    "scientific_prompts_data_arms_seeds_thresholds_changed": false,
+    "focused_upward_moe_tests_passed": 212,
+    "static_checks": "pass"
+  },
+  "predecessor_failure": {
+    "job": 767302,
+    "source_commit": "f17e32df",
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "elapsed_seconds": 1595,
+    "restarts": 0,
+    "node": "evc43",
+    "full_checkpoint_load_completed": true,
+    "full_two_gpu_forward_completed": true,
+    "backward_returned": true,
+    "terminal_error": "Shohin gradient receipt differs",
+    "mechanics_report_published": false,
+    "mechanics_checkpoint_published": false,
+    "benchmark_rows_scored": 0
+  },
+  "active_graph": {
+    "mechanics": 767352,
+    "fit": 767353,
+    "unchanged_shards": [767354, 767355, 767356, 767357],
+    "self_refinement_shards": [767358, 767359, 767360, 767361],
+    "revision_shards": [767362, 767363, 767364, 767365],
+    "score": 767366,
+    "four_point_analysis": 767375,
+    "nemotron_accounting": 767381,
+    "four_point_figure": 767388,
+    "publication_receipt": 767389,
+    "durable_evidence_mirror": 767390,
+    "gpu_jobs": 14,
+    "cpu_jobs_in_primary_branch": 6,
+    "conditional_cpu_recovery_jobs": 4,
+    "maximum_cpu_jobs_executed": 6,
+    "requeue": false,
+    "duplicate_scientific_jobs": 0,
+    "mechanics_h100s_on_one_node": 2,
+    "fit_h100s_on_one_node": 2,
+    "evaluation_h100s_per_singleton_shard": 2,
+    "mechanics_time_limit_minutes": 34,
+    "mechanics_measured_predecessor_runtime_seconds": 1595,
+    "mechanics_runtime_margin_over_predecessor": 0.2789968652037618
+  },
+  "scheduler_snapshot": {
+    "mechanics_state": "PENDING",
+    "mechanics_reason": "Priority",
+    "scheduler_estimated_start": "2026-08-20T21:32:37-04:00",
+    "estimate_is_nonbinding": true,
+    "scheduled_node_if_estimate_holds": "evc39",
+    "excluded_nodes": [
+      "evc26",
+      "evc29",
+      "evc31",
+      "evc32",
+      "evc33",
+      "evc34",
+      "evc37",
+      "evc38",
+      "evc50"
+    ]
+  },
+  "conditional_analysis_recovery": {
+    "reason": "the original analyzer rejects structurally valid negative matched net_correct values before emitting the frozen terminal measured-transfer result",
+    "scientific_semantics_changed": false,
+    "scientific_jobs_submitted": 0,
+    "gpu_jobs_submitted": 0,
+    "source_commit": "a50554d3055ae19aae640515b6f396337ed3dd68",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/upward_moe_runtime_a50554d3_r1",
+    "runtime_manifest_sha256": "5be8e9e250ae516e445dc13f275a6b2d68eb91e66e3d30b0e8030da75ab2411e",
+    "runtime_files": 245,
+    "runtime_directories": 5,
+    "runtime_full_manifest_verified": true,
+    "runtime_writable_or_link_or_special_members": 0,
+    "trigger": "afterok:767366 AND afternotok:767375",
+    "analysis_job": 767427,
+    "figure_job": 767428,
+    "publication_job": 767429,
+    "mirror_job": 767430,
+    "existing_accounting_job_reused": 767381,
+    "duplicate_scoring": false,
+    "primary_and_recovery_analysis_can_both_execute": false,
+    "dispatch_path": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_gptoss120_mixtral141_nemotron120_2b6b9aff_r1/conditional_analysis_recovery_dispatch.json",
+    "dispatch_sha256": "03ebc91f532af517bdaec609425031504aff5f3ef0d0911acce05e2396cffb6e"
+  },
+  "matched_screen": {
+    "rows": 256,
+    "shards_per_arm": 4,
+    "arms": ["unchanged", "self_refinement", "revision"],
+    "score_mode": "single_cpu_sandboxed_paired_reduction",
+    "candidate_root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_2b6b9aff_r1",
+    "score_path": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_2b6b9aff_r1/score.json"
+  },
+  "existing_scaling_points": [
+    {
+      "host": "Qwen3.6-35B-A3B",
+      "sha256": "d5b5a59448c15ce00f48cf3a44b524688503e9f7ad00c877761ebcd859673a45"
+    },
+    {
+      "host": "openai/gpt-oss-120b",
+      "sha256": "906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59"
+    },
+    {
+      "host": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+      "sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50"
+    }
+  ],
+  "publication": {
+    "source_commit": "ebc0c724dcc3eb64439839be03b0e5107b39c084",
+    "runtime_root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/upward_moe_runtime_ebc0c724_r1",
+    "runtime_manifest_sha256": "1c957fd3c48d242b72f7a0e8839fd0dbcac5f803350091ef61c5cc1869046a16",
+    "renderer_source_sha256": "1f4b56e8d8d98613fabdf27b10b6f88dbe368cddca11044a1de27edd5094f27e",
+    "four_point_mirror_regressions_passed": 25,
+    "authorized_evidence_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence",
+    "output_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_mtr_evidence/upward-moe-qwen-gptoss-mixtral-nemotron-2b6b9aff-r1"
+  },
+  "storage_snapshot": {
+    "filesystem": "/lustre/fs1",
+    "used_kib": 978861668,
+    "hard_limit_kib": 1059061760,
+    "hard_headroom_kib": 80200092,
+    "used_inodes": 589415,
+    "hard_limit_inodes": 1010000,
+    "hard_headroom_inodes": 420585
+  },
+  "private_branches": [
+    "codex/q36-mechanics-generation-prepare",
+    "codex/q36-moe-temporal-revision"
+  ]
+}

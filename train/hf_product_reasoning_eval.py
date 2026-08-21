@@ -990,6 +990,7 @@ def _generate_completions(
     stop_token_ids: list[int],
     *,
     add_special_tokens: bool = True,
+    past_key_values: Any | None = None,
 ) -> tuple[list[str], list[tuple[int, bool]]]:
     import torch
 
@@ -1021,13 +1022,23 @@ def _generate_completions(
             stop_token_ids[0] if len(stop_token_ids) == 1 else stop_token_ids
         )
         if not adapter:
+            cache_arguments = (
+                {"past_key_values": past_key_values}
+                if past_key_values is not None
+                else {}
+            )
             output = model.generate(
                 **encoded,
                 pad_token_id=tokenizer.pad_token_id,
+                **cache_arguments,
                 **generation_arguments,
             )
             completion_ids = output[:, prompt_width:]
         else:
+            if past_key_values is not None:
+                raise ProductEvalError(
+                    "explicit generation cache is unsupported for adapter generation"
+                )
             completion_ids = _generate_adapter(
                 model,
                 encoded,

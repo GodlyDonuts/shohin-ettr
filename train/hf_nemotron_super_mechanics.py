@@ -17,15 +17,19 @@ from pathlib import Path
 import stat
 import sys
 import time
+from types import MethodType
 from typing import Any
 
 import torch
+import torch.nn.functional as F
 
 from nemotron_super_post_mixer_revision import (
     NemotronSuperRevisionError,
     NemotronSuperRevisionModel,
 )
 from q36_upward_moe_host import (
+    CONTROLLED_LAYER_INDICES,
+    LAYER_TYPES,
     MODEL_CONFIG_SHA256,
     MODEL_MANIFEST_SHA256,
     MODEL_REVISION,
@@ -37,6 +41,8 @@ from q36_upward_moe_host import (
 
 SCHEMA = "shohin-nemotron-super-two-h100-mechanics-v1"
 SEED = 2026081521
+TRAINING_GRADIENT_ACCUMULATION = 8
+TRAINING_LEARNING_RATE = 2e-5
 OVERLAY_MANIFEST_SHA256 = (
     "cde0fa5b91d50d1509872cbc577cf016d0a6c6697bfb066d607f420c1b568e84"
 )
@@ -82,6 +88,26 @@ REMOTE_CONFIGURATION_SHA256 = (
 REMOTE_MODELING_SHA256 = (
     "e1cb5fc02e887983f0a445bf4c1a2604453b2cb2db4624c7004dcf663bbb1b6e"
 )
+MODELOPT_FP8_BACKEND_SHA256 = (
+    "4a68f8dfd2df4ec3ff472b701816c8a2d32a71fa1ee0e8691e8804fe28780cb2"
+)
+MAMBA_LAYER_INDICES = tuple(
+    index for index, layer_type in enumerate(LAYER_TYPES) if layer_type == "mamba"
+)
+MAMBA_OUTPUT_PROJECTION_NAMES = tuple(
+    f"model.layers.{index}.mixer.out_proj" for index in MAMBA_LAYER_INDICES
+)
+MAMBA_OUTPUT_PROJECTION_NAMES_SHA256 = hashlib.sha256(
+    json.dumps(list(MAMBA_OUTPUT_PROJECTION_NAMES), separators=(",", ":")).encode()
+).hexdigest()
+MOE_LAYER_INDICES = tuple(
+    index for index, layer_type in enumerate(LAYER_TYPES) if layer_type == "moe"
+)
+MOE_MIXER_NAMES = tuple(f"model.layers.{index}.mixer" for index in MOE_LAYER_INDICES)
+MOE_MIXER_NAMES_SHA256 = hashlib.sha256(
+    json.dumps(list(MOE_MIXER_NAMES), separators=(",", ":")).encode()
+).hexdigest()
+ROUTED_EXPERTS_PER_LAYER = 512
 
 
 class NemotronSuperMechanicsError(RuntimeError):
@@ -92,6 +118,78 @@ def _canonical_sha256(payload: Any) -> str:
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
+
+
+def training_objective_receipt_is_exact(payload: Any) -> bool:
+    """Validate that mechanics exercised the frozen trainer's actual objective."""
+
+    if not isinstance(payload, dict) or set(payload) != {
+        "objective",
+        "prompt_tokens",
+        "response_tokens",
+        "ignore_index",
+        "gradient_accumulation_scale",
+        "learning_rate",
+        "autocast_dtype",
+    }:
+        return False
+    prompt_tokens = payload.get("prompt_tokens")
+    response_tokens = payload.get("response_tokens")
+    ignore_index = payload.get("ignore_index")
+    accumulation_scale = payload.get("gradient_accumulation_scale")
+    learning_rate = payload.get("learning_rate")
+    return bool(
+        payload.get("objective") == "response_only_next_token_cross_entropy"
+        and isinstance(prompt_tokens, int)
+        and not isinstance(prompt_tokens, bool)
+        and prompt_tokens > 0
+        and isinstance(response_tokens, int)
+        and not isinstance(response_tokens, bool)
+        and response_tokens > 0
+        and isinstance(ignore_index, int)
+        and not isinstance(ignore_index, bool)
+        and ignore_index == -100
+        and isinstance(accumulation_scale, int)
+        and not isinstance(accumulation_scale, bool)
+        and accumulation_scale == TRAINING_GRADIENT_ACCUMULATION
+        and isinstance(learning_rate, float)
+        and learning_rate == TRAINING_LEARNING_RATE
+        and payload.get("autocast_dtype") == "torch.bfloat16"
+    )
+
+
+def gradient_receipt_is_exact(payload: Any) -> bool:
+    """Validate full first-step gradient connectivity across controlled layers."""
+
+    expected_layers = len(CONTROLLED_LAYER_INDICES)
+    if not isinstance(payload, dict) or set(payload) != {
+        "parameters",
+        "nonzero_gradients",
+        "adapter_a_zero_gradients",
+        "adapter_b_nonzero_gradients",
+        "nonzero_parameter_names_sha256",
+        "receipt_sha256",
+    }:
+        return False
+    integers = {
+        "parameters": expected_layers * 2,
+        "nonzero_gradients": expected_layers,
+        "adapter_a_zero_gradients": expected_layers,
+        "adapter_b_nonzero_gradients": expected_layers,
+    }
+    if any(
+        not isinstance(payload.get(name), int)
+        or isinstance(payload.get(name), bool)
+        or payload.get(name) != expected
+        for name, expected in integers.items()
+    ):
+        return False
+    return all(
+        isinstance(payload.get(name), str)
+        and len(payload[name]) == 64
+        and all(character in "0123456789abcdef" for character in payload[name])
+        for name in ("nonzero_parameter_names_sha256", "receipt_sha256")
+    )
 
 
 def _modelopt_fp8_quantization_config(
@@ -576,11 +674,17 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
     checkpoint_translation = payload.get("checkpoint_translation")
     remote_model = payload.get("remote_model")
     runtime = payload.get("runtime")
+    fp8_backend = payload.get("fp8_per_tensor_backend")
+    empty_experts = payload.get("frozen_empty_expert_compatibility")
+    mamba_projection = payload.get("mamba_output_projection_compatibility")
     return bool(
         isinstance(export, dict)
         and isinstance(checkpoint_translation, dict)
         and isinstance(remote_model, dict)
         and isinstance(runtime, dict)
+        and isinstance(fp8_backend, dict)
+        and isinstance(empty_experts, dict)
+        and isinstance(mamba_projection, dict)
         and export.get("hf_quant_config_sha256") == HF_QUANT_CONFIG_SHA256
         and export.get("model_index_sha256") == MODEL_INDEX_SHA256
         and export.get("fp8_linear_count") == FP8_LINEAR_COUNT
@@ -647,12 +751,299 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and runtime.get("meta_tensors") == 0
         and set(runtime.get("parameter_devices", {})) == {"cuda:0", "cuda:1"}
         and set(runtime.get("buffer_devices", {})) <= {"cuda:0", "cuda:1"}
+        and fp8_backend.get("mode") == "modelopt-fp8-per-tensor-scaled-mm"
+        and fp8_backend.get("source_sha256") == MODELOPT_FP8_BACKEND_SHA256
+        and fp8_backend.get("registration_count") == 1
+        and fp8_backend.get("gemm_function") == "Fp8PerTensorLinear.apply"
+        and fp8_backend.get("availability_check") == "_fp8_availability_check"
+        and fp8_backend.get("backward_mode")
+        == "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+        and fp8_backend.get("trainable_weight_backward") is False
+        and fp8_backend.get("bias_gradient_backward") is False
+        and fp8_backend.get("tensor_parallel_dgrad") is False
+        and empty_experts.get("mode")
+        == "skip-mathematically-zero-frozen-empty-expert-compute"
+        and empty_experts.get("moe_layers") == len(MOE_LAYER_INDICES)
+        and empty_experts.get("experts_per_layer") == ROUTED_EXPERTS_PER_LAYER
+        and empty_experts.get("expert_modules")
+        == len(MOE_LAYER_INDICES) * ROUTED_EXPERTS_PER_LAYER
+        and empty_experts.get("mixer_names_sha256") == MOE_MIXER_NAMES_SHA256
+        and empty_experts.get("expert_biases") is False
+        and empty_experts.get("active_expert_path")
+        == "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+        and empty_experts.get("accumulator_dtype_source") == "topk_weights.dtype"
+        and empty_experts.get("output_dtype") == "hidden_states.dtype"
+        and empty_experts.get("native_router_expert_trainables") == 0
+        and mamba_projection.get("mode") == "quant-aware-projection-after-fused-ssm"
+        and mamba_projection.get("mamba_layers") == len(MAMBA_LAYER_INDICES)
+        and mamba_projection.get("projection_names_sha256")
+        == MAMBA_OUTPUT_PROJECTION_NAMES_SHA256
+        and str(mamba_projection.get("remote_module", "")).endswith(
+            ".modeling_nemotron_h"
+        )
+        and mamba_projection.get("fused_outproj_weight") is None
+        and mamba_projection.get("fused_outproj_bias") is None
+        and mamba_projection.get("final_states_preserved") is True
     )
+
+
+def install_modelopt_fp8_per_tensor_backend() -> dict[str, Any]:
+    """Register the pinned FP8 scaled-matmul backend omitted by ModelOpt's package init."""
+
+    from modelopt.torch.quantization.backends.gemm_registry import gemm_registry
+    from modelopt.torch.quantization.backends import fp8_per_tensor_gemm as backend
+
+    source = Path(inspect.getfile(backend)).resolve(strict=True)
+    registrations = [
+        entry
+        for entry in getattr(gemm_registry, "_registry", ())
+        if getattr(entry.get("gemm_func"), "__self__", None)
+        is backend.Fp8PerTensorLinear
+    ]
+    if (
+        sha256_file(source) != MODELOPT_FP8_BACKEND_SHA256
+        or not str(source).endswith(
+            "/modelopt/torch/quantization/backends/fp8_per_tensor_gemm.py"
+        )
+        or len(registrations) != 1
+        or registrations[0].get("availability_check")
+        is not backend._fp8_availability_check
+    ):
+        raise NemotronSuperMechanicsError("ModelOpt FP8 GEMM backend differs")
+
+    linear = backend.Fp8PerTensorLinear
+    if getattr(linear, "_shohin_frozen_dgrad_dtype_compatibility", False):
+        raise NemotronSuperMechanicsError("ModelOpt FP8 backward already patched")
+    original_forward = linear.forward
+
+    def _forward_with_input_dtype(ctx: Any, *args: Any, **kwargs: Any) -> Any:
+        if len(args) < 2 or not isinstance(args[1], torch.Tensor):
+            raise NemotronSuperMechanicsError("ModelOpt FP8 forward input differs")
+        ctx._shohin_input_dtype = args[1].dtype
+        return original_forward(ctx, *args, **kwargs)
+
+    def _frozen_dgrad_with_dtype_compatibility(
+        ctx: Any, grad_outputs: torch.Tensor
+    ) -> tuple[Any, ...]:
+        input_tensor, weight, scale = ctx.saved_tensors
+        if (
+            input_tensor is not None
+            or weight is None
+            or getattr(ctx, "compute_bias_grad", False)
+            or getattr(ctx, "allreduce_dgrad", False)
+            or not isinstance(grad_outputs, torch.Tensor)
+            or not hasattr(ctx, "_shohin_input_dtype")
+        ):
+            raise NemotronSuperMechanicsError(
+                "ModelOpt FP8 frozen backward surface differs"
+            )
+        if isinstance(weight, backend.QTensorWrapper):
+            weight = weight.get_qtensor()
+            if not isinstance(weight, backend.FP8QTensor):
+                raise NemotronSuperMechanicsError("ModelOpt FP8 frozen weight differs")
+            weight = weight.dequantize(
+                scale=scale,
+                block_sizes=getattr(ctx, "block_sizes", None),
+            )
+        if not isinstance(weight, torch.Tensor):
+            raise NemotronSuperMechanicsError("ModelOpt FP8 dgrad weight differs")
+        common_dtype = torch.promote_types(grad_outputs.dtype, weight.dtype)
+        if common_dtype not in (torch.bfloat16, torch.float32):
+            raise NemotronSuperMechanicsError("ModelOpt FP8 dgrad dtype differs")
+        grad_input = (grad_outputs.to(common_dtype) @ weight.to(common_dtype)).to(
+            ctx._shohin_input_dtype
+        )
+        return None, grad_input, None, None, None, None
+
+    linear.forward = staticmethod(_forward_with_input_dtype)
+    linear.backward = staticmethod(_frozen_dgrad_with_dtype_compatibility)
+    linear._shohin_frozen_dgrad_dtype_compatibility = True
+    return {
+        "mode": "modelopt-fp8-per-tensor-scaled-mm",
+        "source_sha256": MODELOPT_FP8_BACKEND_SHA256,
+        "registration_count": 1,
+        "gemm_function": "Fp8PerTensorLinear.apply",
+        "availability_check": "_fp8_availability_check",
+        "backward_mode": (
+            "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+        ),
+        "trainable_weight_backward": False,
+        "bias_gradient_backward": False,
+        "tensor_parallel_dgrad": False,
+    }
+
+
+def install_frozen_empty_expert_compatibility(backbone: Any) -> dict[str, Any]:
+    """Skip only the pinned remote model's mathematically zero empty-expert calls.
+
+    The upstream single-process forward calls every unselected expert on an all-zero
+    tensor solely to mark distributed parameters as used.  Shohin freezes every
+    native router/expert parameter, so those calls have exactly zero value and zero
+    relevant gradient while forcing unsupported FP8 fallback GEMMs.
+    """
+
+    layers = getattr(getattr(backbone, "model", None), "layers", None)
+    if not isinstance(layers, (list, tuple)) and type(layers).__name__ != "ModuleList":
+        raise NemotronSuperMechanicsError("MoE empty-expert layer surface differs")
+
+    observed_names: list[str] = []
+    expert_modules = 0
+    for index in MOE_LAYER_INDICES:
+        mixer = getattr(layers[index], "mixer", None)
+        experts = getattr(mixer, "experts", None)
+        original = getattr(mixer, "moe", None)
+        if (
+            type(mixer).__name__ != "QuantNemotronHMoE"
+            or not callable(original)
+            or getattr(original, "_shohin_frozen_empty_expert_compatibility", False)
+            or type(experts).__name__ != "ModuleList"
+            or len(experts) != ROUTED_EXPERTS_PER_LAYER
+        ):
+            raise NemotronSuperMechanicsError("MoE empty-expert geometry differs")
+        for expert in experts:
+            if (
+                type(expert).__name__ != "NemotronHMLP"
+                or getattr(getattr(expert, "up_proj", None), "bias", object())
+                is not None
+                or getattr(getattr(expert, "down_proj", None), "bias", object())
+                is not None
+            ):
+                raise NemotronSuperMechanicsError("MoE empty-expert surface differs")
+        observed_names.append(f"model.layers.{index}.mixer")
+        expert_modules += len(experts)
+
+        def _moe_without_empty_expert_compute(
+            self: Any,
+            hidden_states: torch.Tensor,
+            topk_indices: torch.Tensor,
+            topk_weights: torch.Tensor,
+        ) -> torch.Tensor:
+            final_hidden_states = torch.zeros_like(
+                hidden_states, dtype=topk_weights.dtype
+            )
+            expert_mask = torch.nn.functional.one_hot(
+                topk_indices, num_classes=len(self.experts)
+            ).permute(2, 0, 1)
+            for expert_idx, expert in enumerate(self.experts):
+                token_indices, weight_indices = torch.where(expert_mask[expert_idx])
+                if token_indices.numel() == 0:
+                    continue
+                expert_weights = topk_weights[token_indices, weight_indices]
+                expert_input = hidden_states[token_indices]
+                expert_output = expert(expert_input)
+                weighted_output = (expert_output * expert_weights.unsqueeze(-1)).to(
+                    final_hidden_states.dtype
+                )
+                final_hidden_states.index_add_(0, token_indices, weighted_output)
+            return final_hidden_states.type(hidden_states.dtype)
+
+        _moe_without_empty_expert_compute._shohin_frozen_empty_expert_compatibility = (  # type: ignore[attr-defined]
+            True
+        )
+        mixer.moe = MethodType(_moe_without_empty_expert_compute, mixer)
+
+    if tuple(observed_names) != MOE_MIXER_NAMES:
+        raise NemotronSuperMechanicsError("MoE empty-expert identities differ")
+    return {
+        "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
+        "moe_layers": len(MOE_LAYER_INDICES),
+        "experts_per_layer": ROUTED_EXPERTS_PER_LAYER,
+        "expert_modules": expert_modules,
+        "mixer_names_sha256": MOE_MIXER_NAMES_SHA256,
+        "expert_biases": False,
+        "active_expert_path": (
+            "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+        ),
+        "accumulator_dtype_source": "topk_weights.dtype",
+        "output_dtype": "hidden_states.dtype",
+        "native_router_expert_trainables": 0,
+    }
+
+
+def install_modelopt_mamba_output_projection_compatibility(
+    backbone: Any,
+) -> dict[str, Any]:
+    """Keep fused SSM execution while routing FP8 out-projections through ModelOpt."""
+
+    layers = getattr(getattr(backbone, "model", None), "layers", None)
+    if not isinstance(layers, (list, tuple)) and type(layers).__name__ != "ModuleList":
+        raise NemotronSuperMechanicsError("Mamba projection layer surface differs")
+    projections: dict[int, Any] = {}
+    module_names: set[str] = set()
+    observed_names: list[str] = []
+    for index in MAMBA_LAYER_INDICES:
+        layer = layers[index]
+        mixer = getattr(layer, "mixer", None)
+        projection = getattr(mixer, "out_proj", None)
+        weight = getattr(projection, "weight", None)
+        if (
+            type(mixer).__name__ != "NemotronHMamba2Mixer"
+            or not callable(projection)
+            or not isinstance(weight, torch.Tensor)
+            or id(weight) in projections
+        ):
+            raise NemotronSuperMechanicsError("Mamba output projection differs")
+        projections[id(weight)] = projection
+        module_names.add(type(mixer).__module__)
+        observed_names.append(f"model.layers.{index}.mixer.out_proj")
+    if (
+        tuple(observed_names) != MAMBA_OUTPUT_PROJECTION_NAMES
+        or len(projections) != len(MAMBA_LAYER_INDICES)
+        or len(module_names) != 1
+    ):
+        raise NemotronSuperMechanicsError("Mamba output projection geometry differs")
+    remote_module = sys.modules.get(next(iter(module_names)))
+    original = getattr(remote_module, "mamba_split_conv1d_scan_combined", None)
+    if (
+        remote_module is None
+        or not callable(original)
+        or getattr(original, "_shohin_modelopt_projection_compatibility", False)
+    ):
+        raise NemotronSuperMechanicsError("Mamba fused SSM implementation differs")
+
+    def _compatible_fused_ssm(*args: Any, **kwargs: Any) -> Any:
+        weight = kwargs.get("outproj_weight")
+        projection = projections.get(id(weight))
+        if projection is None:
+            return original(*args, **kwargs)
+        if (
+            "outproj_weight" not in kwargs
+            or "outproj_bias" not in kwargs
+            or kwargs["outproj_bias"] is not getattr(projection, "bias", None)
+            or kwargs.get("return_final_states") is not True
+        ):
+            raise NemotronSuperMechanicsError(
+                "Mamba fused output projection call differs"
+            )
+        fused_kwargs = dict(kwargs)
+        fused_kwargs["outproj_weight"] = None
+        fused_kwargs["outproj_bias"] = None
+        result = original(*args, **fused_kwargs)
+        if (
+            not isinstance(result, tuple)
+            or len(result) != 2
+            or not isinstance(result[0], torch.Tensor)
+        ):
+            raise NemotronSuperMechanicsError("Mamba fused SSM result differs")
+        return projection(result[0]), result[1]
+
+    _compatible_fused_ssm._shohin_modelopt_projection_compatibility = True  # type: ignore[attr-defined]
+    remote_module.mamba_split_conv1d_scan_combined = _compatible_fused_ssm
+    return {
+        "mode": "quant-aware-projection-after-fused-ssm",
+        "mamba_layers": len(MAMBA_LAYER_INDICES),
+        "projection_names_sha256": MAMBA_OUTPUT_PROJECTION_NAMES_SHA256,
+        "remote_module": next(iter(module_names)),
+        "fused_outproj_weight": None,
+        "fused_outproj_bias": None,
+        "final_states_preserved": True,
+    }
 
 
 def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     """Load the immutable ModelOpt FP8 export across exactly two local H100s."""
 
+    fp8_backend_receipt = install_modelopt_fp8_per_tensor_backend()
     quant_cfg, export_receipt = _modelopt_fp8_quantization_config(model_root)
     expected_fp8_modules = _expected_fp8_module_names(model_root)
     expected_kv_cache_amax = _expected_kv_cache_amax_names(model_root)
@@ -706,6 +1097,10 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
     runtime_receipt = _modelopt_fp8_runtime_receipt(
         backbone, expected_fp8_modules, expected_kv_cache_amax
     )
+    empty_expert_receipt = install_frozen_empty_expert_compatibility(backbone)
+    mamba_projection_receipt = install_modelopt_mamba_output_projection_compatibility(
+        backbone
+    )
     return backbone, {
         "export": export_receipt,
         "checkpoint_translation": translation_receipt,
@@ -715,6 +1110,9 @@ def load_modelopt_fp8_backbone(model_root: Path) -> tuple[Any, dict[str, Any]]:
             "model_class": f"{model_class.__module__}.{model_class.__name__}",
         },
         "runtime": runtime_receipt,
+        "fp8_per_tensor_backend": fp8_backend_receipt,
+        "frozen_empty_expert_compatibility": empty_expert_receipt,
+        "mamba_output_projection_compatibility": mamba_projection_receipt,
     }
 
 
@@ -839,19 +1237,55 @@ def _restore_trainables(
 
 def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
     rows = []
+    diagnostics = []
     for name, parameter in model.named_parameters():
         if not parameter.requires_grad:
             continue
         gradient = parameter.grad
-        finite = bool(gradient is not None and torch.isfinite(gradient).all())
-        norm = float(gradient.float().norm().detach().cpu()) if finite else None
+        elements_finite = bool(gradient is not None and torch.isfinite(gradient).all())
+        norm = (
+            float(gradient.float().norm().detach().cpu()) if elements_finite else None
+        )
+        finite = bool(elements_finite and norm is not None and math.isfinite(norm))
         rows.append({"name": name, "finite": finite, "norm": norm})
+        diagnostics.append(
+            {
+                "name": name,
+                "present": gradient is not None,
+                "finite": finite,
+                "nan_values": (
+                    int(torch.isnan(gradient).sum().detach().cpu())
+                    if gradient is not None
+                    else None
+                ),
+                "positive_infinite_values": (
+                    int(torch.isposinf(gradient).sum().detach().cpu())
+                    if gradient is not None
+                    else None
+                ),
+                "negative_infinite_values": (
+                    int(torch.isneginf(gradient).sum().detach().cpu())
+                    if gradient is not None
+                    else None
+                ),
+                "norm": norm,
+            }
+        )
+    adapter_a = [row for row in rows if row["name"].endswith(".adapter_a.weight")]
+    adapter_b = [row for row in rows if row["name"].endswith(".adapter_b.weight")]
+    expected_layers = len(CONTROLLED_LAYER_INDICES)
     if (
-        len(rows) != 32
+        len(rows) != expected_layers * 2
+        or len(adapter_a) != expected_layers
+        or len(adapter_b) != expected_layers
         or not all(row["finite"] for row in rows)
-        or not any(float(row["norm"] or 0.0) > 0.0 for row in rows)
+        or any(float(row["norm"] or 0.0) != 0.0 for row in adapter_a)
+        or any(float(row["norm"] or 0.0) <= 0.0 for row in adapter_b)
     ):
-        raise NemotronSuperMechanicsError("Shohin gradient receipt differs")
+        raise NemotronSuperMechanicsError(
+            "Shohin gradient receipt differs: "
+            + json.dumps(diagnostics, sort_keys=True, separators=(",", ":"))
+        )
     encoded = b"".join(
         (json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n").encode()
         for row in rows
@@ -859,8 +1293,42 @@ def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
     return {
         "parameters": len(rows),
         "nonzero_gradients": sum(float(row["norm"] or 0.0) > 0.0 for row in rows),
+        "adapter_a_zero_gradients": sum(
+            float(row["norm"] or 0.0) == 0.0 for row in adapter_a
+        ),
+        "adapter_b_nonzero_gradients": sum(
+            float(row["norm"] or 0.0) > 0.0 for row in adapter_b
+        ),
+        "nonzero_parameter_names_sha256": _canonical_sha256(
+            sorted(row["name"] for row in rows if float(row["norm"] or 0.0) > 0.0)
+        ),
         "receipt_sha256": hashlib.sha256(encoded).hexdigest(),
     }
+
+
+def _mechanics_next_token_loss(
+    logits: torch.Tensor, labels: torch.Tensor
+) -> torch.Tensor:
+    if (
+        logits.ndim != 3
+        or labels.ndim != 2
+        or logits.shape[:2] != labels.shape
+        or labels.shape[1] < 2
+        or labels.dtype != torch.long
+    ):
+        raise NemotronSuperMechanicsError("mechanics loss geometry differs")
+    shifted_labels = labels[:, 1:].to(logits.device)
+    supervised_tokens = int((shifted_labels != -100).sum().detach().cpu())
+    if supervised_tokens < 1:
+        raise NemotronSuperMechanicsError("mechanics supervised tokens differ")
+    loss = F.cross_entropy(
+        logits[:, :-1].reshape(-1, logits.shape[-1]),
+        shifted_labels.reshape(-1),
+        ignore_index=-100,
+    )
+    if not bool(torch.isfinite(loss)):
+        raise NemotronSuperMechanicsError("mechanics loss is nonfinite")
+    return loss
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -938,30 +1406,44 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     initial_state = model.trainable_state()
     initial_sha256 = _state_sha256(initial_state)
 
-    token_ids = tokenizer.encode("Shohin mechanics only.", add_special_tokens=False)
-    if not token_ids or len(token_ids) > 16:
+    prompt_ids = tokenizer.encode("Shohin mechanics:", add_special_tokens=False)
+    response_ids = tokenizer.encode(" verified.", add_special_tokens=False)
+    token_ids = prompt_ids + response_ids
+    label_ids = [-100] * len(prompt_ids) + response_ids
+    if not prompt_ids or not response_ids or len(token_ids) < 2 or len(token_ids) > 16:
         raise NemotronSuperMechanicsError("synthetic mechanics tokenization differs")
     input_device = backbone.model.embeddings.weight.device
     input_ids = torch.tensor([token_ids], device=input_device, dtype=torch.long)
     attention_mask = torch.ones_like(input_ids)
+    labels = torch.tensor([label_ids], device=input_device, dtype=torch.long)
+    if hasattr(backbone, "gradient_checkpointing_enable"):
+        backbone.gradient_checkpointing_enable(
+            gradient_checkpointing_kwargs={"use_reentrant": False}
+        )
+    if hasattr(backbone, "enable_input_require_grads"):
+        backbone.enable_input_require_grads()
     model.train()
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
-        lr=1e-4,
+        lr=TRAINING_LEARNING_RATE,
+        betas=(0.9, 0.95),
+        weight_decay=0.01,
+        foreach=False,
+        fused=False,
     )
-    output_payload = model(
-        input_ids=input_ids,
-        attention_mask=attention_mask,
-        use_cache=False,
-        return_dict=True,
-    )
-    logits = output_payload.logits
-    if logits.ndim != 3 or logits.shape[:2] != input_ids.shape:
-        raise NemotronSuperMechanicsError("full-model forward geometry differs")
-    loss = logits[:, -1, :128].float().square().mean()
-    if not bool(torch.isfinite(loss)):
-        raise NemotronSuperMechanicsError("mechanics loss is nonfinite")
-    loss.backward()
+    with torch.autocast("cuda", dtype=torch.bfloat16):
+        output_payload = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            use_cache=False,
+            return_dict=True,
+        )
+        logits = output_payload.logits
+        if logits.ndim != 3 or logits.shape[:2] != input_ids.shape:
+            raise NemotronSuperMechanicsError("full-model forward geometry differs")
+        loss = _mechanics_next_token_loss(logits, labels)
+        scaled_loss = loss / TRAINING_GRADIENT_ACCUMULATION
+    scaled_loss.backward()
     gradients = _gradient_receipt(model)
     optimizer.step()
     optimizer.zero_grad(set_to_none=True)
@@ -1028,6 +1510,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "initial_trainable_state_sha256": initial_sha256,
         "updated_trainable_state_sha256": updated_sha256,
         "gradient_receipt": gradients,
+        "training_objective_receipt": {
+            "objective": "response_only_next_token_cross_entropy",
+            "prompt_tokens": len(prompt_ids),
+            "response_tokens": len(response_ids),
+            "ignore_index": -100,
+            "gradient_accumulation_scale": TRAINING_GRADIENT_ACCUMULATION,
+            "learning_rate": TRAINING_LEARNING_RATE,
+            "autocast_dtype": "torch.bfloat16",
+        },
         "checkpoint": str(checkpoint),
         "checkpoint_sha256": checkpoint_sha256,
         "serialization_restore_exact": True,

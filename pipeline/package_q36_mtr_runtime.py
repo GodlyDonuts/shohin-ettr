@@ -103,6 +103,7 @@ REQUIRED = {
     "train/jobs/nemotron_super_mechanics.sbatch",
     "train/jobs/gpt_oss_120b_mechanics.sbatch",
     "train/jobs/nemotron_super_evaluate.sbatch",
+    "train/jobs/nemotron_super_fp8_extension_probe.sbatch",
     "train/jobs/nemotron_super_train_revision.sbatch",
     "train/jobs/nemotron_ultra_evaluate.sbatch",
     "train/jobs/nemotron_ultra_mechanics.sbatch",

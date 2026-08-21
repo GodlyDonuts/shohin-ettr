@@ -378,7 +378,7 @@ def _normalize_matched(payload: dict[str, Any]) -> dict[str, Any]:
     losses = _integer(paired.get("right_only_correct"), "paired losses")
     if (
         wins - losses != delta
-        or _integer(paired.get("net_correct"), "paired net") != delta
+        or _integer(paired.get("net_correct"), "paired net", -rows) != delta
     ):
         raise UpwardMoEScalingError("matched paired delta differs")
     totals: dict[str, int] = {}

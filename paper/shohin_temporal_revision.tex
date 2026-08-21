@@ -141,9 +141,10 @@ and uses response loss only, with no selector target or auxiliary routing label.
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{shohin_temporal_revision_architecture.pdf}
-  \caption{\textbf{Learned ownership across inference time.} (a) A model-owned
-  draft feeds matched unchanged and trained-revision roles; commitment selects
-  one whole trajectory. (b) The sparse-host revision surface augments the final
+  \caption{\textbf{Learned ownership across inference time.} (a) In the dense
+  lifecycle, a model-owned draft feeds matched unchanged and trained-revision
+  roles; commitment selects one whole trajectory. (b) The sparse-host revision
+  surface augments the final
   frozen MoE blocks. (c) The causal gate interpolates frozen owner and revision
   residuals token by token.}
   \label{fig:architecture}
