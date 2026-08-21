@@ -16,6 +16,7 @@ def test_super_evaluation_is_two_h100_sharded_and_nonrequeueing() -> None:
     assert "--shard-index" in source
     assert "q36_init_local_tmp" in source
     assert "q36_export_nemotron_cuda_toolchain" in source
+    assert "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True" in source
     assert "trap q36_cleanup_local_tmp EXIT" in source
 
 
