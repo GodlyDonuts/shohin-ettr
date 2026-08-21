@@ -96,7 +96,11 @@ def _modelopt_fp8() -> dict[str, object]:
             * mechanics.ROUTED_EXPERTS_PER_LAYER,
             "mixer_names_sha256": mechanics.MOE_MIXER_NAMES_SHA256,
             "expert_biases": False,
-            "active_expert_path": "unchanged",
+            "active_expert_path": (
+                "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+            ),
+            "accumulator_dtype_source": "topk_weights.dtype",
+            "output_dtype": "hidden_states.dtype",
             "native_router_expert_trainables": 0,
         },
         "mamba_output_projection_compatibility": {

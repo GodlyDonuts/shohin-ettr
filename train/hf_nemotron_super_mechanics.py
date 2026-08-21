@@ -764,7 +764,10 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         == len(MOE_LAYER_INDICES) * ROUTED_EXPERTS_PER_LAYER
         and empty_experts.get("mixer_names_sha256") == MOE_MIXER_NAMES_SHA256
         and empty_experts.get("expert_biases") is False
-        and empty_experts.get("active_expert_path") == "unchanged"
+        and empty_experts.get("active_expert_path")
+        == "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+        and empty_experts.get("accumulator_dtype_source") == "topk_weights.dtype"
+        and empty_experts.get("output_dtype") == "hidden_states.dtype"
         and empty_experts.get("native_router_expert_trainables") == 0
         and mamba_projection.get("mode") == "quant-aware-projection-after-fused-ssm"
         and mamba_projection.get("mamba_layers") == len(MAMBA_LAYER_INDICES)
@@ -869,7 +872,9 @@ def install_frozen_empty_expert_compatibility(backbone: Any) -> dict[str, Any]:
                 expert_weights = topk_weights[token_indices, weight_indices]
                 expert_input = hidden_states[token_indices]
                 expert_output = expert(expert_input)
-                weighted_output = expert_output * expert_weights.unsqueeze(-1)
+                weighted_output = (expert_output * expert_weights.unsqueeze(-1)).to(
+                    final_hidden_states.dtype
+                )
                 final_hidden_states.index_add_(0, token_indices, weighted_output)
             return final_hidden_states.type(hidden_states.dtype)
 
@@ -887,7 +892,11 @@ def install_frozen_empty_expert_compatibility(backbone: Any) -> dict[str, Any]:
         "expert_modules": expert_modules,
         "mixer_names_sha256": MOE_MIXER_NAMES_SHA256,
         "expert_biases": False,
-        "active_expert_path": "unchanged",
+        "active_expert_path": (
+            "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+        ),
+        "accumulator_dtype_source": "topk_weights.dtype",
+        "output_dtype": "hidden_states.dtype",
         "native_router_expert_trainables": 0,
     }
 

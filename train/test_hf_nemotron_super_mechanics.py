@@ -339,7 +339,11 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             * mechanics.ROUTED_EXPERTS_PER_LAYER,
             "mixer_names_sha256": mechanics.MOE_MIXER_NAMES_SHA256,
             "expert_biases": False,
-            "active_expert_path": "unchanged",
+            "active_expert_path": (
+                "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+            ),
+            "accumulator_dtype_source": "topk_weights.dtype",
+            "output_dtype": "hidden_states.dtype",
             "native_router_expert_trainables": 0,
         },
         "mamba_output_projection_compatibility": {
@@ -797,7 +801,9 @@ def test_frozen_empty_experts_skip_only_zero_distributed_noops(
 
         def forward(self, value: torch.Tensor) -> torch.Tensor:
             calls[self.index] += 1
-            return self.down_proj(self.up_proj(value))
+            # ModelOpt's real FP8 GEMM returns float32 while the frozen router
+            # explicitly declares its accumulator through topk_weights.dtype.
+            return value.float()
 
     class QuantNemotronHMoE(torch.nn.Module):
         def __init__(self) -> None:
@@ -819,12 +825,15 @@ def test_frozen_empty_experts_skip_only_zero_distributed_noops(
     monkeypatch.setattr(mechanics, "ROUTED_EXPERTS_PER_LAYER", 3)
 
     receipt = install_frozen_empty_expert_compatibility(backbone)
-    hidden = torch.tensor([[1.0, 2.0], [3.0, 4.0]], requires_grad=True)
+    hidden = torch.tensor(
+        [[1.0, 2.0], [3.0, 4.0]], dtype=torch.bfloat16, requires_grad=True
+    )
     indices = torch.tensor([[1], [1]], dtype=torch.long)
-    weights = torch.tensor([[0.5], [0.25]])
+    weights = torch.tensor([[0.5], [0.25]], dtype=torch.bfloat16)
     result = mixer.moe(hidden, indices, weights)
-    expected = hidden * weights
+    expected = (hidden.float() * weights.float()).to(torch.bfloat16)
     assert torch.equal(result, expected)
+    assert result.dtype == torch.bfloat16
     result.sum().backward()
     assert torch.equal(hidden.grad, weights.expand_as(hidden))
     assert calls == [0, 1, 0]
@@ -835,7 +844,11 @@ def test_frozen_empty_experts_skip_only_zero_distributed_noops(
         "expert_modules": 3,
         "mixer_names_sha256": "b" * 64,
         "expert_biases": False,
-        "active_expert_path": "unchanged",
+        "active_expert_path": (
+            "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+        ),
+        "accumulator_dtype_source": "topk_weights.dtype",
+        "output_dtype": "hidden_states.dtype",
         "native_router_expert_trainables": 0,
     }
     with pytest.raises(NemotronSuperMechanicsError, match="geometry"):
