@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=gpt-oss-120b-eval
 #SBATCH --partition=normal
-#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38
+#SBATCH --exclude=evc26,evc29,evc31,evc32,evc38,evc50
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
@@ -22,7 +22,13 @@ for variable in "${required[@]}"; do
   [[ -n "${!variable:-}" ]] || { printf '%s is required\n' "$variable" >&2; exit 2; }
 done
 [[ "$ARM" == unchanged || "$ARM" == self_refinement || "$ARM" == revision ]]
-[[ "$SHARD_INDEX" =~ ^[0-3]$ ]]
+EXPECTED_ROWS=${EXPECTED_ROWS:-256}
+SHARD_COUNT=${SHARD_COUNT:-4}
+case "$EXPECTED_ROWS:$SHARD_COUNT" in
+  256:4) [[ "$SHARD_INDEX" =~ ^[0-3]$ ]] ;;
+  1023:16) [[ "$SHARD_INDEX" =~ ^([0-9]|1[0-5])$ ]] ;;
+  *) false ;;
+esac || { printf 'GPT-OSS evaluation geometry differs\n' >&2; exit 2; }
 [[ "${SLURM_GPUS_ON_NODE:-}" == "1" ]]
 [[ -x "$PYTHON" ]]
 for path in "$RUNTIME" "$MODEL_ROOT" "$OVERLAY_ROOT"; do
@@ -50,11 +56,15 @@ if [[ "$ARM" == unchanged ]]; then
   [[ "$DRAFT_CANDIDATES" == none ]]
 else
   IFS=: read -r -a draft_paths <<< "$DRAFT_CANDIDATES"
-  [[ ${#draft_paths[@]} -eq 4 ]]
+  [[ ${#draft_paths[@]} -eq $SHARD_COUNT ]]
   for path in "${draft_paths[@]}"; do
     [[ -f "$path" && ! -L "$path" ]]
     draft_args+=(--draft-candidates "$path")
   done
+fi
+confirmation_args=()
+if [[ "${CONFIRMATION_MMLU_PRO:-0}" == 1 ]]; then
+  confirmation_args=(--confirmation-mmlu-pro)
 fi
 
 shard=$(printf '%02d' "$SHARD_INDEX")
@@ -94,10 +104,14 @@ nvidia-smi
   --mechanics-report "$MECHANICS_REPORT" \
   "${checkpoint_args[@]}" \
   --source "$SOURCE" \
+  --expected-source-sha256 "${EXPECTED_SOURCE_SHA256:-f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9}" \
+  "${confirmation_args[@]}" \
   "${draft_args[@]}" \
   --candidates-output "$candidates" \
   --report "$report" \
-  --shard-index "$SHARD_INDEX"
+  --expected-rows "$EXPECTED_ROWS" \
+  --shard-index "$SHARD_INDEX" \
+  --shard-count "$SHARD_COUNT"
 
 [[ -f "$candidates" && ! -L "$candidates" ]]
 [[ -f "$report" && ! -L "$report" ]]

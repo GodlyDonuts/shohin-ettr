@@ -1,0 +1,295 @@
+{
+  "schema": "shohin-gpt-oss-120b-commit-confirmation-execution-v1",
+  "status": "complete_gate_fail_no_improvement",
+  "date": "2026-08-20",
+  "source_commit": "7aa8609241e05bcd3810a790b17421c44950d65c",
+  "private_branches": [
+    "codex/q36-mechanics-generation-prepare",
+    "codex/q36-moe-temporal-revision"
+  ],
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/gpt_oss_commit_confirmation_7aa86092_r1",
+    "manifest_sha256": "0b29fef950b967c0b89b0d54c0b543353fe878ff3e9a871dca759f3f3aacea4e",
+    "runtime_receipt_sha256": "9dd913c1eaae9d5d7eab6b62208211409f481f8924cbc4de0494947313f65730",
+    "regular_files": 245,
+    "full_manifest_verification": "pass",
+    "links_or_special_members": 0,
+    "writable_members": 0
+  },
+  "contract": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/gpt_oss_120b_commit_confirmation_contract_238143bd_r1.json",
+    "sha256": "f08020d8f054b99d3deefac5cfad8148f42c6db50daee147e0ad43fb928ce391",
+    "revision_margin_threshold": 0.703125,
+    "frozen_before_candidate_generation": true
+  },
+  "preparation": {
+    "job": 766368,
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed_seconds": 2,
+    "restarts": 0,
+    "receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_commit_confirmation_inputs_7aa86092_r1/receipt.json",
+    "receipt_sha256": "3b4891fd372f5c4b08238eeeaad7be4239ef3933cc13c78297f80c9a5959999c",
+    "source_sha256": "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+    "selected_identity_sha256": "c5393c15d36a441b6a43b8e2eee0db90a11199e16434db06704a7dbd7b9954e4",
+    "rows": 256,
+    "unique_identities": 256,
+    "public_screen_overlap": 0,
+    "prior_q36_external_overlap": 0,
+    "assessor_access_count": 0,
+    "label_or_correctness_field_access_count": 0
+  },
+  "preparation_infrastructure_repairs": [
+    {
+      "job": 766366,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "restarts": 0,
+      "classification": "wrapper attempted to create the pre-existing shared logs directory",
+      "scientific_rows_emitted": 0,
+      "assessor_access": 0
+    },
+    {
+      "job": 766367,
+      "state": "FAILED",
+      "exit_code": "1:0",
+      "restarts": 0,
+      "classification": "valid Unicode line separator was incorrectly treated as a JSONL record boundary",
+      "scientific_rows_emitted": 0,
+      "assessor_access": 0
+    }
+  ],
+  "environment": {
+    "capture_job": 766369,
+    "capture_state": "COMPLETED",
+    "capture_exit_code": "0:0",
+    "capture_elapsed_seconds": 171,
+    "capture_restarts": 0,
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_cross_host_commit_environment_7aa86092_r1.json",
+    "sha256": "5be8387bfc7f1a2d3678d4ac2ca430467766406139ef8d90e1a0fe01501ab2bf",
+    "tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c",
+    "runtime_binding": "0b29fef950b967c0b89b0d54c0b543353fe878ff3e9a871dca759f3f3aacea4e",
+    "scientific_rows_read": 0
+  },
+  "scientific_inputs": {
+    "gpt_oss_model_manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "mxfp4_overlay_manifest_sha256": "50637a890f5149402e3f769b56a97081551b71a0d4102fe1ebba7056a3fb88d8",
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "gpt_revision_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "qwen_model_manifest_sha256": "06c9d8d8419244f2d001cb351e164f356718d9d77138e898b13afee35856f56e",
+    "qwen_aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "qwen_commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "mmlu_pro_assessor_sha256": "66831e5a644b8c94f058630f9a13d19df326a18e04a2e0a15cde7a74591d1a4f"
+  },
+  "dispatch": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_commit_confirmation_7aa86092_r1",
+    "receipt_sha256": "16cf9f2b9f37cab291b561a152566e43d6a13f4b404f372433cf1f963ff144ae",
+    "qwen_fixed_draft_jobs": [766370, 766371, 766372, 766373],
+    "gpt_unchanged_jobs": [766374, 766375, 766376, 766377],
+    "gpt_revision_jobs": [766378, 766379, 766380, 766381],
+    "selector_job": 766382,
+    "score_job": 766383,
+    "analysis_job": 766384,
+    "independent_single_h100_jobs": 13,
+    "gpu_arrays": 0,
+    "gpus_per_job": 1,
+    "requeue": false,
+    "duplicate_scientific_jobs": 0,
+    "assessor_access_phase": "dependent_cpu_score_after_generation"
+  },
+  "initial_admission_snapshot": {
+    "timestamp": "2026-08-20T01:32:42-04:00",
+    "running_h100_jobs": [766370, 766371, 766372, 766373, 766374, 766375],
+    "allocated_h100s": 6,
+    "nodes": ["evc33", "evc35", "evc36", "evc48"],
+    "all_restarts_zero": true,
+    "all_stderr_empty": true,
+    "excluded_bad_node_evc50": true
+  },
+  "quota_at_launch": {
+    "used_kib": 978592800,
+    "hard_limit_kib": 1059061760,
+    "hard_headroom_kib": 80468960,
+    "used_inodes": 581446,
+    "hard_inode_limit": 1010000,
+    "hard_inode_headroom": 428554
+  },
+  "qwen_draft_infrastructure_repair": {
+    "receipt": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_commit_confirmation_7aa86092_r1/qwen_draft_infrastructure_repair.json",
+    "receipt_sha256": "38340bceba283782bcb2e838fa26332373aad4a0dd36f191317043fc2cc46e6a",
+    "failed_jobs": [766370, 766371, 766372, 766373],
+    "failed_job_exit_code": "1:0",
+    "failed_job_restarts": 0,
+    "failed_candidate_rows": 0,
+    "failure_classification": "source-only prompt arm was coupled to owner-checkpoint validation while the prospectively frozen fixed-draft checkpoint is aligned",
+    "repair_source_commit": "b667309e1881db6b60747c988025e86c32956631",
+    "repair_runtime_manifest_sha256": "3864beb9a82daf504f66c9a8b30bb46e31d0dd1f27f1452ef520ad067c9e2f8c",
+    "repair_environment_receipt_sha256": "45274b3bf99ef7d508c496cbd011e94b3b3ebf0201369d3dd7f74ffa9b23f843",
+    "replacement_jobs": [766387, 766388, 766389, 766390],
+    "retargeted_never_started_revision_jobs": [766378, 766379, 766380, 766381],
+    "healthy_unchanged_jobs_preserved": [766374, 766375, 766376, 766377],
+    "prompt_changed": false,
+    "checkpoint_changed": false,
+    "source_changed": false,
+    "threshold_changed": false,
+    "assessor_access_count": 0,
+    "duplicate_healthy_work": 0
+  },
+  "generation_progress": {
+    "timestamp": "2026-08-20T02:08:51-04:00",
+    "qwen_fixed_draft": {
+      "status": "complete",
+      "jobs": [766387, 766388, 766389, 766390],
+      "elapsed_seconds": [677, 765, 754, 651],
+      "candidate_sha256s": [
+        "9c2703ca5bcc644acb28972b85312287251747d14ff5da9ca2c6ae370480c778",
+        "4695c7d819a1b1eb59c0be8107f52b39a098d706ec8701dd45a4ccf7f902736d",
+        "de5b3c527e20666c12af28430e8753026b3958f557d4a331594e97316bc11cc5",
+        "29995face23d816ac6bb9b5ba607b2aba7494d7c7278585f1ddef0f9024c910f"
+      ],
+      "report_sha256s": [
+        "0fd869a365edc0a00e2a88168db6c9e440e3035c09aa3d8d776261ef1c43a34e",
+        "f9e90a6329665983ea62db94689153aca1e785cd756668e82b1f258c86c142ed",
+        "653c6416540792e3b1e7b095458528c9fdb7bc5340f3f30b3daa1cca350eccfc",
+        "c6f3362532b490f1d6d97132d6f4e42229180afa0eca956d937d934f0d338a06"
+      ],
+      "rows": 256,
+      "unique_identities": 256,
+      "source_identity_set_exact": true,
+      "empty_completions": 0,
+      "max_token_exhausted": 2,
+      "assessor_access_count": 0,
+      "role": "aligned",
+      "prompt_arm": "unchanged_source_only"
+    },
+    "gpt_unchanged": {
+      "status": "complete",
+      "jobs": [766374, 766375, 766376, 766377],
+      "elapsed_seconds": [1658, 1656, 1744, 1671],
+      "candidate_sha256s": [
+        "f117efbb62d52b44f5fbdd336aaf8f379ce800e786cb07bc55feda82712f9c8a",
+        "f166f8ede26d23531838c518e25ff0c2adbc541fe857fcfdf3e5b76442b0ed09",
+        "1a07b1a948444a9cb71a004da6ad40ca94111917907093c513deb934168ef31e",
+        "e2d681c3ce1cc4a8365b9b0ab751a0c0a891f145f0780b04153ff905ac6157a9"
+      ],
+      "report_sha256s": [
+        "aa90d3cc45ad21fd3a512391c3a862d9bdc10c6b3b077400d7454331727f8eee",
+        "d7caa563bcd710c11fe5b05d5f70fadd20346bf6015b28f44f3c085c3039efcc",
+        "c1cb8b0b57969efd9c284a3259d428d07341270da8bb5ede2cc1a6c08fc78b9b",
+        "17b4ef80580d0cf8a995d26d4a7013976fbc0e211f322ed1cc999faa3a945048"
+      ],
+      "rows": 256,
+      "unique_identities": 256,
+      "source_identity_set_exact": true,
+      "empty_completions": 5,
+      "max_token_exhausted": 20,
+      "assessor_access_count": 0
+    },
+    "gpt_revision": {
+      "status": "complete",
+      "jobs": [766378, 766379, 766380, 766381],
+      "elapsed_seconds": [3201, 3225, 3328, 3067],
+      "nodes": ["evc33", "evc33", "evc35", "evc36"],
+      "all_restarts_zero": true,
+      "candidate_sha256s": [
+        "43da129c94fdccf8c8513fce3e5bd87152bff98dda5e1102083d0672f1be71b8",
+        "09e34f370b20fad767529535c90af172c221d912cd45d2be7511da73c117cb1f",
+        "7757b71151b9264d09b87816318b5c2cd5e1b8222b3da9939755af7688f10f05",
+        "3fb92c20255409d51d753487f11269bc36f2129b52f824de61dd50552ad879be"
+      ],
+      "report_sha256s": [
+        "39a618ca2f8d567934e5b9f259137523ec9643350b1b57c8aa1e03e6fc8f410e",
+        "605a43b067fcef460e2887bec150e894c9c876e0d7d37d25fd84b1dfe83c1c81",
+        "9ea4b68c1c5e5483da820b5b7c99631a8e1406dd27d99edbeb54b603fe9fa5d7",
+        "0ceeadc3f118125775e44defe3a8ba633bb2760f3556ceb84204be63826205dc"
+      ],
+      "rows": 256,
+      "unique_identities": 256,
+      "source_identity_set_exact": true,
+      "empty_completions": 35,
+      "max_token_exhausted": 87,
+      "assessor_access_count": 0
+    }
+  },
+  "result": {
+    "score_job": 766383,
+    "score_state": "COMPLETED",
+    "score_exit_code": "0:0",
+    "score_elapsed_seconds": 4,
+    "score_restarts": 0,
+    "score_sha256": "2ace56d9c400f0275b1acb826e2ba73b98f615307b80e03e63dd81eb37425d05",
+    "selector_job": 766382,
+    "selector_state": "COMPLETED",
+    "selector_exit_code": "0:0",
+    "selector_elapsed_seconds": 424,
+    "selector_restarts": 0,
+    "selector_node": "evc35",
+    "selection_candidates_sha256": "a010a348db6e4de2fd73abaabf4a9c0961fc423bd1f6e3c5fd219ae67348e84c",
+    "selections_sha256": "1efe54fbda696b8c4619c1a4914c390e3382e0cde6784d01c796b07d20b3cca6",
+    "application_sha256": "d6891f2b41d4d63f8ba5ddf2027dc5f7d3546b321e2a92a3598cbb7317e44fb6",
+    "analysis_job": 766384,
+    "analysis_state": "COMPLETED",
+    "analysis_exit_code": "0:0",
+    "analysis_elapsed_seconds": 1,
+    "analysis_restarts": 0,
+    "result_sha256": "85447cedd9ce1b49eafcd7c75b60038191a4cd34fe231657db55ae9d0fcefade",
+    "rows": 256,
+    "unchanged_correct": 187,
+    "unchanged_accuracy": 0.73046875,
+    "revision_correct": 120,
+    "revision_accuracy": 0.46875,
+    "raw_revision_gain_over_unchanged": -67,
+    "raw_revision_unchanged_correct_retention": 0.5828877005347594,
+    "selected_correct": 187,
+    "selected_accuracy": 0.73046875,
+    "selected_gain_over_unchanged": 0,
+    "selected_gain_over_revision": 67,
+    "selected_counts": {
+      "revision": 33,
+      "unchanged": 223
+    },
+    "unchanged_correct_retained": 184,
+    "unchanged_correct_retention": 0.983957219251337,
+    "selected_vs_unchanged": {
+      "selected_only_correct": 3,
+      "unchanged_only_correct": 3,
+      "net_correct": 0,
+      "mcnemar_exact_two_sided_p": 1.0
+    },
+    "selected_vs_revision": {
+      "selected_only_correct": 75,
+      "revision_only_correct": 8,
+      "net_correct": 67,
+      "mcnemar_exact_two_sided_p": 9.099722954884666e-15
+    },
+    "retention_at_least_95_percent": true,
+    "all_domains_nonnegative_vs_unchanged": true,
+    "selection_had_score_or_assessor_access": false,
+    "frozen_gate": {
+      "improves_unchanged": false,
+      "retains_at_least_95_percent_unchanged_correct": true,
+      "all_domains_nonnegative_vs_unchanged": true,
+      "pass": false
+    },
+    "independent_score_replay": "pass",
+    "independent_selection_replay": "pass",
+    "scientific_interpretation": "The source-disjoint MMLU-Pro confirmation falsified net capability improvement: the frozen selector exactly tied unchanged while preserving 98.40% of unchanged-correct rows and avoiding the raw revision's 67-answer collapse. This supports conservative fallback transfer but not a publication claim that the architecture improves GPT-OSS-120B on untouched MMLU-Pro identities."
+  },
+  "final_quota": {
+    "used_kib": 978606532,
+    "hard_limit_kib": 1059061760,
+    "hard_headroom_kib": 80455228,
+    "used_inodes": 582080,
+    "hard_inode_limit": 1010000,
+    "hard_inode_headroom": 427920
+  },
+  "accounting": {
+    "all_scientific_jobs_restarts_zero": true,
+    "successful_scientific_h100_seconds": 22821,
+    "successful_scientific_h100_hours": 6.339166666666666,
+    "infrastructure_failure_h100_seconds": 1072,
+    "total_h100_seconds": 23893,
+    "total_h100_hours": 6.6369444444444445,
+    "duplicate_healthy_scientific_jobs": 0
+  }
+}

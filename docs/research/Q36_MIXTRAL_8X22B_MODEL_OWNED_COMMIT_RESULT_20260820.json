@@ -1,0 +1,119 @@
+{
+  "schema": "shohin-q36-mixtral-8x22b-model-owned-commit-result-v1",
+  "status": "complete",
+  "date": "2026-08-20",
+  "scientific_classification": "prospective exploratory cross-host transfer; selector weights were frozen before the target-host result",
+  "host": {
+    "model": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    "total_parameters": 141000000000,
+    "active_parameters": 39000000000,
+    "rows": 1023
+  },
+  "architecture": {
+    "selector_backbone": "Qwen3.6-35B-A3B",
+    "selector_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "commit_checkpoint_sha256": "614b828bf8b09f78a974d92b517b2cb256e921b7254cfe955b0e9ff02ae74386",
+    "aligned_checkpoint_sha256": "cdb5ae7ac37e632a5a5c8f11682efc5f03a3ff8288c6dc2d46e7859d2e827c4f",
+    "selector_training_updates": 128,
+    "selector_training_pair_presentations": 1024,
+    "model_visible_projection": "question_plus_complete_candidate_only_v1",
+    "target_host_retraining": false,
+    "target_host_label_visibility": false,
+    "assessor_access_during_selection": 0
+  },
+  "results": {
+    "unchanged_correct": 147,
+    "trained_revision_correct": 448,
+    "model_owned_commit_correct": 336,
+    "gain_over_unchanged_count": 189,
+    "gain_over_unchanged_percentage_points": 18.475073313782993,
+    "gain_over_trained_revision_count": -112,
+    "gain_over_trained_revision_percentage_points": -10.948191593352885,
+    "unchanged_correct_retained": 130,
+    "unchanged_correct_retention": 0.8843537414965986,
+    "retention_at_least_95_percent": false,
+    "selection_counts": {
+      "revision": 614,
+      "unchanged": 409
+    },
+    "domains": {
+      "bbh_logic": {
+        "unchanged_correct": 106,
+        "trained_revision_correct": 272,
+        "model_owned_commit_correct": 173
+      },
+      "math500": {
+        "unchanged_correct": 25,
+        "trained_revision_correct": 176,
+        "model_owned_commit_correct": 151
+      },
+      "mbpp": {
+        "unchanged_correct": 16,
+        "trained_revision_correct": 0,
+        "model_owned_commit_correct": 12
+      }
+    },
+    "all_domains_nonnegative_vs_unchanged": false
+  },
+  "paired_comparisons": {
+    "commit_vs_unchanged": {
+      "commit_only_correct": 206,
+      "unchanged_only_correct": 17,
+      "net_correct": 189,
+      "mcnemar_exact_two_sided_p": 2.0267871128529123e-42
+    },
+    "commit_vs_revision": {
+      "commit_only_correct": 35,
+      "revision_only_correct": 147,
+      "net_correct": -112,
+      "mcnemar_exact_two_sided_p": 1.5793331338223992e-17
+    }
+  },
+  "comparison_to_prior_external_selector": {
+    "prior_selector_correct": 287,
+    "model_owned_commit_correct": 336,
+    "net_correct": 49,
+    "prior_selector_unchanged_retention": 0.9319727891156463,
+    "model_owned_commit_unchanged_retention": 0.8843537414965986
+  },
+  "gate": {
+    "improves_unchanged": true,
+    "retains_at_least_95_percent_unchanged_correct": false,
+    "all_domains_nonnegative_vs_unchanged": false,
+    "pass": false
+  },
+  "interpretation": {
+    "demonstrated_result": "The Qwen3.6-trained model-owned commit transfers substantial capability to Mixtral and outperforms the prior external selector by 49 correct answers, but it does not transfer conservative retention: 17 baseline-correct cases are lost and MBPP remains below unchanged.",
+    "next_architecture_target": "Use this validation as development evidence for a host-adapted conservative abstention surface, then confirm on new untouched source-disjoint identities."
+  },
+  "custody": {
+    "contract_sha256": "e986213c362d8305e7068daa52418aa9299d11162af097add94899bedebe2fa7",
+    "application_sha256": "95546fb50f7b20a1551d34df82b664d3b6135435ea6b33a5014b06851ab6d738",
+    "selections_sha256": "1b6f9fc588f64272179c8e15eafafc524f3edf47e38b5e00fe11d4006d49f831",
+    "selected_candidates_sha256": "751b33f2781a6940d22bdc3fdace524ec5bf31979b1202e7fc842d41b3ca3987",
+    "result_sha256": "ba51d1de9a93e908b95d8034dda5bffe588e08d57caaff0cff42d74495ee5492",
+    "frozen_target_score_sha256": "7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8",
+    "prompt_truncated": 0,
+    "order_consistent": 1023,
+    "maximum_swap_error": 0.0,
+    "selection_files_mode": "0444"
+  },
+  "accounting": {
+    "selector_job": 766354,
+    "selector_state": "COMPLETED",
+    "selector_exit_code": "0:0",
+    "selector_elapsed_seconds": 582,
+    "selector_restarts": 0,
+    "selector_node": "evc36",
+    "selector_h100_hours": 0.16166666666666665,
+    "analysis_job": 766355,
+    "analysis_state": "COMPLETED",
+    "analysis_exit_code": "0:0",
+    "analysis_elapsed_seconds": 1,
+    "analysis_restarts": 0
+  },
+  "code": {
+    "implementation_commit": "aaaab852ea14963d41f890173899c7297dcc0675",
+    "runtime_manifest_sha256": "c7a8ee957d9bcf2741ca687e4387ee7dccd0ea9a6fc80f1159e980739aa2c127"
+  }
+}

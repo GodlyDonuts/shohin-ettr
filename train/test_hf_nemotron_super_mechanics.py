@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 import hashlib
+import json
 from pathlib import Path
+import sys
+from types import ModuleType
 
 import pytest
 import torch
@@ -11,8 +15,16 @@ import torch
 from hf_nemotron_super_mechanics import (
     NemotronSuperMechanicsError,
     _atomic_json,
+    _checkpoint_translation_receipt,
+    _modelopt_fp8_quantization_config,
     _state_sha256,
+    _translate_export_checkpoint_keys,
+    install_frozen_empty_expert_compatibility,
+    install_modelopt_fp8_per_tensor_backend,
+    install_modelopt_mamba_output_projection_compatibility,
     install_triton_allocator_compatibility,
+    load_modelopt_fp8_backbone,
+    modelopt_fp8_receipt_is_exact,
     verify_manifest,
 )
 
@@ -99,3 +111,928 @@ def test_atomic_report_is_write_once(tmp_path: Path) -> None:
     assert output.read_text() == '{\n  "status": "pass"\n}\n'
     with pytest.raises(NemotronSuperMechanicsError):
         _atomic_json(output, {"status": "changed"})
+
+
+def test_modelopt_loader_config_replays_export_and_disables_exact_modules(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    exported = {
+        "config_groups": {
+            "group_0": {
+                "targets": ["Linear"],
+                "weights": {"dynamic": False, "num_bits": 8, "type": "float"},
+                "input_activations": {
+                    "dynamic": False,
+                    "num_bits": 8,
+                    "type": "float",
+                },
+            }
+        },
+        "ignore": ["backbone.block.linear", "backbone.block.*"],
+        "producer": {"name": "modelopt", "version": "0.41.0"},
+        "kv_cache_scheme": {"dynamic": False, "num_bits": 8, "type": "float"},
+        "quant_algo": "FP8",
+        "quant_method": "modelopt",
+    }
+    legacy = {"producer": exported["producer"], "quantization": {"quant_algo": "FP8"}}
+    (tmp_path / "config.json").write_text(json.dumps({"quantization_config": exported}))
+    (tmp_path / "hf_quant_config.json").write_text(json.dumps(legacy))
+    (tmp_path / "model.safetensors.index.json").write_text(
+        json.dumps(
+            {
+                "weight_map": {
+                    "backbone.block.linear.weight": "one.safetensors",
+                    "backbone.block.linear.weight_scale": "one.safetensors",
+                    "backbone.block.linear.input_scale": "one.safetensors",
+                    "backbone.block.k_proj.k_scale": "one.safetensors",
+                    "backbone.block.v_proj.v_scale": "one.safetensors",
+                }
+            }
+        )
+    )
+    import hf_nemotron_super_mechanics as mechanics
+
+    monkeypatch.setattr(
+        mechanics, "HF_QUANT_CONFIG_SHA256", _sha256(tmp_path / "hf_quant_config.json")
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "MODEL_INDEX_SHA256",
+        _sha256(tmp_path / "model.safetensors.index.json"),
+    )
+    monkeypatch.setattr(mechanics, "FP8_LINEAR_COUNT", 1)
+    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 5)
+    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_SHARDS", 1)
+    monkeypatch.setattr(mechanics, "MODELOPT_IGNORE_PATTERNS", 2)
+    monkeypatch.setattr(mechanics, "MODELOPT_BACKBONE_IGNORE_PATTERNS", 2)
+    kv_names = sorted(
+        {
+            "model.block.k_bmm_quantizer._amax",
+            "model.block.v_bmm_quantizer._amax",
+        }
+    )
+    monkeypatch.setattr(mechanics, "KV_CACHE_SCALE_COUNT", 2)
+    monkeypatch.setattr(
+        mechanics, "KV_CACHE_AMAX_NAMES_SHA256", mechanics._canonical_sha256(kv_names)
+    )
+
+    convert_module = ModuleType("modelopt.torch.export.convert_hf_config")
+    convert_module.convert_hf_quant_config_format = lambda payload: exported
+    quantization_module = ModuleType("modelopt.torch.quantization")
+    quantization_module.FP8_DEFAULT_CFG = {
+        "quant_cfg": {
+            "*weight_quantizer": {"num_bits": (4, 3), "axis": None},
+            "*input_quantizer": {"num_bits": (4, 3), "axis": None},
+            "default": {"enable": False},
+        },
+        "algorithm": "max",
+    }
+    for name in ("modelopt", "modelopt.torch", "modelopt.torch.export"):
+        monkeypatch.setitem(sys.modules, name, ModuleType(name))
+    monkeypatch.setitem(
+        sys.modules, "modelopt.torch.export.convert_hf_config", convert_module
+    )
+    monkeypatch.setitem(sys.modules, "modelopt.torch.quantization", quantization_module)
+
+    config, receipt = _modelopt_fp8_quantization_config(tmp_path)
+    assert config["quant_cfg"]["model.block.linear*"] == {"enable": False}
+    assert config["quant_cfg"]["model.block.*"] == {"enable": False}
+    assert config["quant_cfg"]["model.block.k_bmm_quantizer"] == {
+        "num_bits": (4, 3),
+        "axis": None,
+    }
+    assert config["quant_cfg"]["model.block.v_bmm_quantizer"] == {
+        "num_bits": (4, 3),
+        "axis": None,
+    }
+    assert "backbone.block.linear*" not in config["quant_cfg"]
+    assert "backbone.block.*" not in config["quant_cfg"]
+    assert receipt["fp8_linear_count"] == 1
+    assert receipt["kv_cache_scale_count"] == 2
+    assert receipt["kv_cache_amax_names_sha256"] == mechanics._canonical_sha256(
+        kv_names
+    )
+    assert receipt["disabled_patterns"] == 2
+    assert receipt["renamed_disabled_patterns"] == 2
+    assert receipt["disabled_pattern_source_prefix"] == "backbone."
+    assert receipt["disabled_pattern_target_prefix"] == "model."
+    assert receipt["quant_gemm"] is True
+
+
+def test_modelopt_loader_config_rejects_conversion_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    exported = {
+        "config_groups": {"group_0": {"targets": ["Linear"]}},
+        "ignore": [],
+        "producer": {"name": "modelopt", "version": "0.41.0"},
+        "quant_algo": "FP8",
+        "quant_method": "modelopt",
+    }
+    (tmp_path / "config.json").write_text(json.dumps({"quantization_config": exported}))
+    (tmp_path / "hf_quant_config.json").write_text("{}")
+    (tmp_path / "model.safetensors.index.json").write_text('{"weight_map":{}}')
+    import hf_nemotron_super_mechanics as mechanics
+
+    monkeypatch.setattr(
+        mechanics, "HF_QUANT_CONFIG_SHA256", _sha256(tmp_path / "hf_quant_config.json")
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "MODEL_INDEX_SHA256",
+        _sha256(tmp_path / "model.safetensors.index.json"),
+    )
+    convert_module = ModuleType("modelopt.torch.export.convert_hf_config")
+    convert_module.convert_hf_quant_config_format = lambda payload: {"changed": True}
+    for name in ("modelopt", "modelopt.torch", "modelopt.torch.export"):
+        monkeypatch.setitem(sys.modules, name, ModuleType(name))
+    monkeypatch.setitem(
+        sys.modules, "modelopt.torch.export.convert_hf_config", convert_module
+    )
+    with pytest.raises(NemotronSuperMechanicsError, match="converted"):
+        _modelopt_fp8_quantization_config(tmp_path)
+
+
+def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    payload = {
+        "export": {
+            "hf_quant_config_sha256": mechanics.HF_QUANT_CONFIG_SHA256,
+            "model_index_sha256": mechanics.MODEL_INDEX_SHA256,
+            "fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "kv_cache_scale_count": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "kv_cache_scheme": {
+                "dynamic": False,
+                "num_bits": 8,
+                "type": "float",
+            },
+            "weight_map_entries": mechanics.MODEL_WEIGHT_MAP_ENTRIES,
+            "weight_shards": mechanics.MODEL_WEIGHT_SHARDS,
+            "disabled_patterns": mechanics.MODELOPT_IGNORE_PATTERNS,
+            "renamed_disabled_patterns": mechanics.MODELOPT_BACKBONE_IGNORE_PATTERNS,
+            "disabled_pattern_source_prefix": "backbone.",
+            "disabled_pattern_target_prefix": "model.",
+            "source_disabled_pattern_sha256": mechanics.MODELOPT_SOURCE_IGNORE_SHA256,
+            "disabled_pattern_sha256": mechanics.MODELOPT_TARGET_IGNORE_SHA256,
+            "quant_gemm": True,
+        },
+        "remote_model": {
+            "configuration_sha256": mechanics.REMOTE_CONFIGURATION_SHA256,
+            "modeling_sha256": mechanics.REMOTE_MODELING_SHA256,
+            "model_class": "frozen.NemotronHForCausalLM",
+        },
+        "checkpoint_translation": {
+            "backbone_to_model": mechanics.BACKBONE_WEIGHT_MAP_ENTRIES,
+            "mtp_ignored": mechanics.MTP_WEIGHT_MAP_ENTRIES,
+            "lm_head_unchanged": mechanics.LM_HEAD_WEIGHT_MAP_ENTRIES,
+            "source_prefix": "backbone.",
+            "target_prefix": "model.",
+            "mtp_policy": "ignored_not_implemented_by_remote_causal_lm",
+            "input_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "weight_scale_to_amax": mechanics.FP8_LINEAR_COUNT,
+            "input_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "weight_amax_placeholders": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_identities": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "k_scale_to_amax": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            "v_scale_to_amax": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            "kv_cache_amax_placeholders": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_identities": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "weight_amax_pre_dtype": "torch.bfloat16",
+            "weight_amax_dtype": "torch.float32",
+            "weight_amax_shape": [],
+            "input_amax_shape": [],
+            "kv_cache_amax_shape": [],
+            "scale_to_amax_multiplier": mechanics.FP8_SCALE_MULTIPLIER,
+        },
+        "runtime": {
+            "real_quant_gemm_enabled": True,
+            "real_fp8_linear_count": mechanics.FP8_LINEAR_COUNT,
+            "enabled_fp8_module_names_sha256": mechanics.FP8_MODULE_NAMES_SHA256,
+            "kv_cache_amax_count": mechanics.KV_CACHE_SCALE_COUNT,
+            "kv_cache_amax_names_sha256": mechanics.KV_CACHE_AMAX_NAMES_SHA256,
+            "kv_cache_amax_devices": {
+                "cuda:0": mechanics.KV_CACHE_SCALE_COUNT // 2,
+                "cuda:1": mechanics.KV_CACHE_SCALE_COUNT // 2,
+            },
+            "cpu_tensors": 0,
+            "disk_tensors": 0,
+            "meta_tensors": 0,
+            "parameter_devices": {"cuda:0": 10, "cuda:1": 10},
+            "buffer_devices": {"cuda:0": 2, "cuda:1": 2},
+        },
+        "fp8_per_tensor_backend": {
+            "mode": "modelopt-fp8-per-tensor-scaled-mm",
+            "source_sha256": mechanics.MODELOPT_FP8_BACKEND_SHA256,
+            "registration_count": 1,
+            "gemm_function": "Fp8PerTensorLinear.apply",
+            "availability_check": "_fp8_availability_check",
+            "backward_mode": (
+                "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+            ),
+            "trainable_weight_backward": False,
+            "bias_gradient_backward": False,
+            "tensor_parallel_dgrad": False,
+        },
+        "frozen_empty_expert_compatibility": {
+            "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
+            "moe_layers": len(mechanics.MOE_LAYER_INDICES),
+            "experts_per_layer": mechanics.ROUTED_EXPERTS_PER_LAYER,
+            "expert_modules": len(mechanics.MOE_LAYER_INDICES)
+            * mechanics.ROUTED_EXPERTS_PER_LAYER,
+            "mixer_names_sha256": mechanics.MOE_MIXER_NAMES_SHA256,
+            "expert_biases": False,
+            "active_expert_path": (
+                "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+            ),
+            "accumulator_dtype_source": "topk_weights.dtype",
+            "output_dtype": "hidden_states.dtype",
+            "native_router_expert_trainables": 0,
+        },
+        "mamba_output_projection_compatibility": {
+            "mode": "quant-aware-projection-after-fused-ssm",
+            "mamba_layers": len(mechanics.MAMBA_LAYER_INDICES),
+            "projection_names_sha256": mechanics.MAMBA_OUTPUT_PROJECTION_NAMES_SHA256,
+            "remote_module": "frozen.modeling_nemotron_h",
+            "fused_outproj_weight": None,
+            "fused_outproj_bias": None,
+            "final_states_preserved": True,
+        },
+    }
+    assert modelopt_fp8_receipt_is_exact(payload)
+    payload["runtime"]["cpu_tensors"] = 1
+    assert not modelopt_fp8_receipt_is_exact(payload)
+    payload["runtime"]["cpu_tensors"] = 0
+    payload["runtime"]["real_fp8_linear_count"] -= 1
+    assert not modelopt_fp8_receipt_is_exact(payload)
+
+
+def test_checkpoint_translation_is_streamed_exact_and_restored(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import accelerate.utils.modeling as accelerate_modeling
+    import hf_nemotron_super_mechanics as mechanics
+
+    sentinel = object()
+    modelopt_accelerate = ModuleType("modelopt.torch.quantization.plugins.accelerate")
+    modelopt_accelerate.load_checkpoint_and_dispatch = (
+        lambda model, *args, **kwargs: model
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "modelopt.torch.quantization.plugins.accelerate",
+        modelopt_accelerate,
+    )
+
+    def fake_load(*args, **kwargs):
+        return {
+            "backbone.layer.weight": sentinel,
+            "backbone.layer.input_scale": torch.tensor(2.0),
+            "backbone.layer.weight_scale": torch.tensor(3.0),
+            "backbone.layer.k_proj.k_scale": torch.tensor(4.0),
+            "backbone.layer.v_proj.v_scale": torch.tensor(5.0),
+            "mtp.layer.weight": object(),
+            "lm_head.weight": sentinel,
+        }
+
+    class Quantizer(torch.nn.Module):
+        fake_quant = False
+        num_bits = (4, 3)
+
+        @property
+        def is_enabled(self) -> bool:
+            return True
+
+    class QuantizedLinear(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.weight = torch.nn.Parameter(
+                torch.empty((1, 1), dtype=torch.float32, device="meta")
+            )
+            self.weight_quantizer = Quantizer()
+            self.weight_quantizer.register_buffer(
+                "_amax", torch.empty((), dtype=torch.bfloat16, device="meta")
+            )
+            self.input_quantizer = Quantizer()
+            self.k_bmm_quantizer = Quantizer()
+            self.v_bmm_quantizer = Quantizer()
+
+    model = torch.nn.Module()
+    model.model = torch.nn.Module()
+    model.model.layer = QuantizedLinear()
+
+    monkeypatch.setattr(accelerate_modeling, "load_state_dict", fake_load)
+    monkeypatch.setattr(mechanics, "BACKBONE_WEIGHT_MAP_ENTRIES", 5)
+    monkeypatch.setattr(mechanics, "MTP_WEIGHT_MAP_ENTRIES", 1)
+    monkeypatch.setattr(mechanics, "LM_HEAD_WEIGHT_MAP_ENTRIES", 1)
+    monkeypatch.setattr(mechanics, "MODEL_WEIGHT_MAP_ENTRIES", 7)
+    monkeypatch.setattr(mechanics, "FP8_LINEAR_COUNT", 1)
+    kv_names = frozenset(
+        {
+            "model.layer.k_bmm_quantizer._amax",
+            "model.layer.v_bmm_quantizer._amax",
+        }
+    )
+    monkeypatch.setattr(mechanics, "KV_CACHE_SCALE_COUNT", 2)
+    monkeypatch.setattr(
+        mechanics,
+        "KV_CACHE_AMAX_NAMES_SHA256",
+        mechanics._canonical_sha256(sorted(kv_names)),
+    )
+    with _translate_export_checkpoint_keys(
+        frozenset({"model.layer"}), kv_names
+    ) as counts:
+        assert modelopt_accelerate.load_checkpoint_and_dispatch(model) is model
+        translated = accelerate_modeling.load_state_dict("one.safetensors")
+        assert set(translated) == {
+            "model.layer.weight",
+            "model.layer.input_quantizer._amax",
+            "model.layer.weight_quantizer._amax",
+            "model.layer.k_bmm_quantizer._amax",
+            "model.layer.v_bmm_quantizer._amax",
+            "lm_head.weight",
+        }
+        assert translated["model.layer.weight"] is sentinel
+        assert translated["lm_head.weight"] is sentinel
+        assert translated["model.layer.input_quantizer._amax"].shape == ()
+        assert translated["model.layer.input_quantizer._amax"].item() == 896.0
+        assert translated["model.layer.weight_quantizer._amax"].shape == ()
+        assert translated["model.layer.weight_quantizer._amax"].item() == 1344.0
+        assert translated["model.layer.k_bmm_quantizer._amax"].item() == 1792.0
+        assert translated["model.layer.v_bmm_quantizer._amax"].item() == 2240.0
+        assert model.model.layer.weight_quantizer._amax.shape == ()
+        assert model.model.layer.weight_quantizer._amax.dtype == torch.float32
+        assert model.model.layer.weight_quantizer._amax.is_meta
+        assert model.model.layer.k_bmm_quantizer._amax.is_meta
+        assert model.model.layer.v_bmm_quantizer._amax.is_meta
+    assert accelerate_modeling.load_state_dict is fake_load
+    receipt = _checkpoint_translation_receipt(counts)
+    assert receipt["backbone_to_model"] == 5
+    assert receipt["mtp_ignored"] == 1
+    assert receipt["lm_head_unchanged"] == 1
+    assert receipt["input_amax_placeholders"] == 1
+    assert receipt["weight_amax_placeholders"] == 1
+    assert receipt["k_scale_to_amax"] == 1
+    assert receipt["v_scale_to_amax"] == 1
+    assert receipt["kv_cache_amax_placeholders"] == 2
+
+
+def test_enabled_fp8_classifier_uses_linear_weight_and_enabled_quantizers() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    class Quantizer(torch.nn.Module):
+        def __init__(self, enabled: bool) -> None:
+            super().__init__()
+            self.enabled = enabled
+
+        @property
+        def is_enabled(self) -> bool:
+            return self.enabled
+
+    class Candidate(torch.nn.Module):
+        def __init__(self, *, weight: bool, enabled: bool) -> None:
+            super().__init__()
+            if weight:
+                self.weight = torch.nn.Parameter(torch.zeros((1, 1)))
+            self.weight_quantizer = Quantizer(enabled)
+            self.input_quantizer = Quantizer(enabled)
+
+    model = torch.nn.Module()
+    model.enabled = Candidate(weight=True, enabled=True)
+    model.disabled = Candidate(weight=True, enabled=False)
+    model.container = Candidate(weight=False, enabled=True)
+    assert set(mechanics._enabled_fp8_linears(model)) == {"enabled"}
+
+
+def test_checkpoint_translation_rejects_unknown_namespace(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import accelerate.utils.modeling as accelerate_modeling
+
+    modelopt_accelerate = ModuleType("modelopt.torch.quantization.plugins.accelerate")
+    modelopt_accelerate.load_checkpoint_and_dispatch = (
+        lambda model, *args, **kwargs: model
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "modelopt.torch.quantization.plugins.accelerate",
+        modelopt_accelerate,
+    )
+
+    monkeypatch.setattr(
+        accelerate_modeling,
+        "load_state_dict",
+        lambda *args, **kwargs: {"unexpected.weight": object()},
+    )
+    with _translate_export_checkpoint_keys(frozenset(), frozenset()):
+        with pytest.raises(NemotronSuperMechanicsError, match="namespace"):
+            accelerate_modeling.load_state_dict("one.safetensors")
+
+
+def test_loader_registers_the_hash_bound_remote_model_before_modelopt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    quantization = {"quant_method": "modelopt"}
+    (tmp_path / "config.json").write_text(
+        json.dumps({"quantization_config": quantization})
+    )
+    configuration = tmp_path / "configuration_nemotron_h.py"
+    modeling = tmp_path / "modeling_nemotron_h.py"
+    configuration.write_text("configuration")
+    modeling.write_text("modeling")
+    monkeypatch.setattr(
+        mechanics, "REMOTE_CONFIGURATION_SHA256", _sha256(configuration)
+    )
+    monkeypatch.setattr(mechanics, "REMOTE_MODELING_SHA256", _sha256(modeling))
+    monkeypatch.setattr(
+        mechanics,
+        "_modelopt_fp8_quantization_config",
+        lambda root: ({"loader": "fp8"}, {"source": "exact"}),
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "_expected_fp8_module_names",
+        lambda root: frozenset({"model.layer"}),
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "_expected_kv_cache_amax_names",
+        lambda root: frozenset({"model.attention.k_bmm_quantizer._amax"}),
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "_modelopt_fp8_runtime_receipt",
+        lambda model, expected, kv_expected: {"runtime": "exact"},
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "install_modelopt_fp8_per_tensor_backend",
+        lambda: {"backend": "exact"},
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "install_frozen_empty_expert_compatibility",
+        lambda model: {"empty_experts": "exact"},
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "install_modelopt_mamba_output_projection_compatibility",
+        lambda model: {"mamba": "exact"},
+    )
+
+    @contextmanager
+    def fake_translation(expected, kv_expected):
+        assert expected == frozenset({"model.layer"})
+        assert kv_expected == frozenset({"model.attention.k_bmm_quantizer._amax"})
+        yield mechanics.Counter()
+
+    monkeypatch.setattr(
+        mechanics, "_translate_export_checkpoint_keys", fake_translation
+    )
+    monkeypatch.setattr(
+        mechanics,
+        "_checkpoint_translation_receipt",
+        lambda counts: {"translation": "exact"},
+    )
+
+    class RemoteConfig:
+        def __init__(self) -> None:
+            self.quantization_config = quantization
+            self.auto_map = {
+                "AutoModelForCausalLM": "modeling_nemotron_h.NemotronHForCausalLM"
+            }
+
+    class RemoteModel:
+        pass
+
+    sentinel = object()
+    events: list[object] = []
+
+    class AutoConfig:
+        @staticmethod
+        def from_pretrained(*args, **kwargs):
+            events.append(("config", args, kwargs))
+            return RemoteConfig()
+
+    class AutoModel:
+        @classmethod
+        def register(cls, config_class, model_class, *, exist_ok):
+            events.append(("register", config_class, model_class, exist_ok))
+
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            events.append(("load", args, kwargs))
+            return sentinel
+
+    @contextmanager
+    def init_quantized_weights(config, *, gpu_mem_percentage, quant_gemm):
+        events.append(("context", config, gpu_mem_percentage, quant_gemm))
+        yield
+
+    transformers = ModuleType("transformers")
+    transformers.AutoConfig = AutoConfig
+    transformers.AutoModelForCausalLM = AutoModel
+    dynamic = ModuleType("transformers.dynamic_module_utils")
+    dynamic.get_class_from_dynamic_module = lambda *args, **kwargs: RemoteModel
+    accelerate = ModuleType("modelopt.torch.quantization.plugins.accelerate")
+    accelerate.init_quantized_weights = init_quantized_weights
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+    monkeypatch.setitem(sys.modules, "transformers.dynamic_module_utils", dynamic)
+    for name in (
+        "modelopt",
+        "modelopt.torch",
+        "modelopt.torch.quantization",
+        "modelopt.torch.quantization.plugins",
+    ):
+        monkeypatch.setitem(sys.modules, name, ModuleType(name))
+    monkeypatch.setitem(
+        sys.modules, "modelopt.torch.quantization.plugins.accelerate", accelerate
+    )
+    monkeypatch.setattr(mechanics.inspect, "getfile", lambda value: str(modeling))
+
+    model, receipt = load_modelopt_fp8_backbone(tmp_path)
+    assert model is sentinel
+    assert events[1] == ("register", RemoteConfig, RemoteModel, True)
+    assert events[2] == ("context", {"loader": "fp8"}, 0.95, True)
+    assert events[3][0] == "load"
+    assert events[3][2]["config"].torch_dtype == torch.bfloat16
+    assert receipt["remote_model"]["model_class"].endswith(".RemoteModel")
+    assert receipt["fp8_per_tensor_backend"] == {"backend": "exact"}
+    assert receipt["frozen_empty_expert_compatibility"] == {"empty_experts": "exact"}
+    assert receipt["mamba_output_projection_compatibility"] == {"mamba": "exact"}
+
+
+def test_modelopt_mamba_projection_runs_after_fused_ssm(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    module_name = "frozen_test_modeling_nemotron_h"
+    remote_module = ModuleType(module_name)
+    calls: list[dict[str, object]] = []
+
+    def fused(value: torch.Tensor, **kwargs):
+        calls.append(kwargs)
+        return value * 2, "state"
+
+    remote_module.mamba_split_conv1d_scan_combined = fused
+    monkeypatch.setitem(sys.modules, module_name, remote_module)
+    mixer_type = type("NemotronHMamba2Mixer", (), {"__module__": module_name})
+    mixer = mixer_type()
+    mixer.out_proj = torch.nn.Linear(2, 2, bias=False)
+    with torch.no_grad():
+        mixer.out_proj.weight.copy_(torch.eye(2))
+    mixer.out_proj.weight.requires_grad_(False)
+    backbone = type("Backbone", (), {})()
+    backbone.model = type("Model", (), {})()
+    backbone.model.layers = [type("Layer", (), {"mixer": mixer})()]
+    monkeypatch.setattr(mechanics, "MAMBA_LAYER_INDICES", (0,))
+    monkeypatch.setattr(
+        mechanics,
+        "MAMBA_OUTPUT_PROJECTION_NAMES",
+        ("model.layers.0.mixer.out_proj",),
+    )
+    monkeypatch.setattr(mechanics, "MAMBA_OUTPUT_PROJECTION_NAMES_SHA256", "a" * 64)
+
+    receipt = install_modelopt_mamba_output_projection_compatibility(backbone)
+    value = torch.tensor([[1.0, 3.0]], requires_grad=True)
+    result, state = remote_module.mamba_split_conv1d_scan_combined(
+        value,
+        outproj_weight=mixer.out_proj.weight,
+        outproj_bias=None,
+        return_final_states=True,
+    )
+    assert torch.equal(result, value * 2)
+    assert state == "state"
+    result.sum().backward()
+    assert torch.equal(value.grad, torch.full_like(value, 2.0))
+    assert mixer.out_proj.weight.grad is None
+    assert calls == [
+        {
+            "outproj_weight": None,
+            "outproj_bias": None,
+            "return_final_states": True,
+        }
+    ]
+    assert receipt["mode"] == "quant-aware-projection-after-fused-ssm"
+
+
+def test_fp8_per_tensor_backend_registration_is_exact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    source = (
+        tmp_path
+        / "modelopt"
+        / "torch"
+        / "quantization"
+        / "backends"
+        / "fp8_per_tensor_gemm.py"
+    )
+    source.parent.mkdir(parents=True)
+    source.write_text("pinned fp8 backend\n")
+
+    class Fp8PerTensorLinear(torch.autograd.Function):
+        @staticmethod
+        def forward(
+            ctx,
+            quant_module,
+            input_tensor,
+            weight,
+            bias=None,
+            allreduce_dgrad=False,
+            tp_group=None,
+        ):
+            ctx.save_for_backward(
+                input_tensor if weight.requires_grad else None,
+                weight if input_tensor.requires_grad else None,
+                None,
+            )
+            ctx.compute_bias_grad = bias is not None and bias.requires_grad
+            ctx.block_sizes = None
+            ctx.allreduce_dgrad = allreduce_dgrad
+            ctx.tp_group = tp_group
+            return input_tensor @ weight.float().T
+
+        @staticmethod
+        def backward(ctx, grad_outputs):
+            _, weight, _ = ctx.saved_tensors
+            return None, grad_outputs @ weight, None, None, None, None
+
+    class QTensorWrapper:
+        pass
+
+    class FP8QTensor:
+        pass
+
+    def availability_check(*args):
+        return True
+
+    backend = ModuleType("modelopt.torch.quantization.backends.fp8_per_tensor_gemm")
+    backend.Fp8PerTensorLinear = Fp8PerTensorLinear
+    backend.QTensorWrapper = QTensorWrapper
+    backend.FP8QTensor = FP8QTensor
+    backend._fp8_availability_check = availability_check
+    registry = type(
+        "Registry",
+        (),
+        {
+            "_registry": [
+                {
+                    "gemm_func": Fp8PerTensorLinear.apply,
+                    "availability_check": availability_check,
+                }
+            ]
+        },
+    )()
+    registry_module = ModuleType("modelopt.torch.quantization.backends.gemm_registry")
+    registry_module.gemm_registry = registry
+    backends = ModuleType("modelopt.torch.quantization.backends")
+    backends.fp8_per_tensor_gemm = backend
+    for name in ("modelopt", "modelopt.torch", "modelopt.torch.quantization"):
+        monkeypatch.setitem(sys.modules, name, ModuleType(name))
+    monkeypatch.setitem(sys.modules, "modelopt.torch.quantization.backends", backends)
+    monkeypatch.setitem(
+        sys.modules,
+        "modelopt.torch.quantization.backends.gemm_registry",
+        registry_module,
+    )
+    monkeypatch.setattr(mechanics.inspect, "getfile", lambda value: str(source))
+    monkeypatch.setattr(mechanics, "MODELOPT_FP8_BACKEND_SHA256", _sha256(source))
+
+    assert install_modelopt_fp8_per_tensor_backend() == {
+        "mode": "modelopt-fp8-per-tensor-scaled-mm",
+        "source_sha256": _sha256(source),
+        "registration_count": 1,
+        "gemm_function": "Fp8PerTensorLinear.apply",
+        "availability_check": "_fp8_availability_check",
+        "backward_mode": (
+            "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+        ),
+        "trainable_weight_backward": False,
+        "bias_gradient_backward": False,
+        "tensor_parallel_dgrad": False,
+    }
+    value = torch.tensor([[1.0, 2.0]], requires_grad=True)
+    weight = torch.tensor([[3.0, 4.0], [5.0, 6.0]], dtype=torch.bfloat16)
+    output = Fp8PerTensorLinear.apply(None, value, weight)
+    output.sum().backward()
+    assert torch.equal(value.grad, torch.tensor([[8.0, 10.0]]))
+    assert value.grad.dtype == torch.float32
+
+    trainable_weight = weight.detach().clone().requires_grad_(True)
+    with pytest.raises(NemotronSuperMechanicsError, match="frozen backward surface"):
+        Fp8PerTensorLinear.apply(
+            None,
+            torch.tensor([[1.0, 2.0]], requires_grad=True),
+            trainable_weight,
+        ).sum().backward()
+    with pytest.raises(NemotronSuperMechanicsError, match="frozen backward surface"):
+        Fp8PerTensorLinear.apply(
+            None,
+            torch.tensor([[1.0, 2.0]], requires_grad=True),
+            weight,
+            torch.zeros(2, requires_grad=True),
+        ).sum().backward()
+    with pytest.raises(NemotronSuperMechanicsError, match="frozen backward surface"):
+        Fp8PerTensorLinear.apply(
+            None,
+            torch.tensor([[1.0, 2.0]], requires_grad=True),
+            weight,
+            None,
+            True,
+        ).sum().backward()
+    registry._registry.append(registry._registry[0])
+    with pytest.raises(NemotronSuperMechanicsError, match="backend"):
+        install_modelopt_fp8_per_tensor_backend()
+
+
+def test_frozen_empty_experts_skip_only_zero_distributed_noops(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    calls = [0, 0, 0]
+
+    class NemotronHMLP(torch.nn.Module):
+        def __init__(self, index: int) -> None:
+            super().__init__()
+            self.index = index
+            self.up_proj = torch.nn.Linear(2, 2, bias=False)
+            self.down_proj = torch.nn.Linear(2, 2, bias=False)
+            with torch.no_grad():
+                self.up_proj.weight.copy_(torch.eye(2))
+                self.down_proj.weight.copy_(torch.eye(2))
+
+        def forward(self, value: torch.Tensor) -> torch.Tensor:
+            calls[self.index] += 1
+            # ModelOpt's real FP8 GEMM returns float32 while the frozen router
+            # explicitly declares its accumulator through topk_weights.dtype.
+            return value.float()
+
+    class QuantNemotronHMoE(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.experts = torch.nn.ModuleList(
+                [NemotronHMLP(index) for index in range(3)]
+            )
+
+        def moe(self, *args):
+            raise AssertionError("unpatched method must not run")
+
+    mixer = QuantNemotronHMoE()
+    backbone = type("Backbone", (), {})()
+    backbone.model = type("Model", (), {})()
+    backbone.model.layers = [type("Layer", (), {"mixer": mixer})()]
+    monkeypatch.setattr(mechanics, "MOE_LAYER_INDICES", (0,))
+    monkeypatch.setattr(mechanics, "MOE_MIXER_NAMES", ("model.layers.0.mixer",))
+    monkeypatch.setattr(mechanics, "MOE_MIXER_NAMES_SHA256", "b" * 64)
+    monkeypatch.setattr(mechanics, "ROUTED_EXPERTS_PER_LAYER", 3)
+
+    receipt = install_frozen_empty_expert_compatibility(backbone)
+    hidden = torch.tensor(
+        [[1.0, 2.0], [3.0, 4.0]], dtype=torch.bfloat16, requires_grad=True
+    )
+    indices = torch.tensor([[1], [1]], dtype=torch.long)
+    weights = torch.tensor([[0.5], [0.25]], dtype=torch.bfloat16)
+    result = mixer.moe(hidden, indices, weights)
+    expected = (hidden.float() * weights.float()).to(torch.bfloat16)
+    assert torch.equal(result, expected)
+    assert result.dtype == torch.bfloat16
+    result.sum().backward()
+    assert torch.equal(hidden.grad, weights.expand_as(hidden))
+    assert calls == [0, 1, 0]
+    assert receipt == {
+        "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
+        "moe_layers": 1,
+        "experts_per_layer": 3,
+        "expert_modules": 3,
+        "mixer_names_sha256": "b" * 64,
+        "expert_biases": False,
+        "active_expert_path": (
+            "native_weighted_output_cast_to_declared_router_accumulator_dtype"
+        ),
+        "accumulator_dtype_source": "topk_weights.dtype",
+        "output_dtype": "hidden_states.dtype",
+        "native_router_expert_trainables": 0,
+    }
+    with pytest.raises(NemotronSuperMechanicsError, match="geometry"):
+        install_frozen_empty_expert_compatibility(backbone)
+
+
+def test_gradient_failure_emits_exact_diagnostics() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    class _Block(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.adapter_a = torch.nn.Linear(2, 2, bias=False)
+            self.adapter_b = torch.nn.Linear(2, 2, bias=False)
+
+    class _Model(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.blocks = torch.nn.ModuleList(
+                [_Block() for _ in mechanics.CONTROLLED_LAYER_INDICES]
+            )
+
+    model = _Model()
+    for name, parameter in model.named_parameters():
+        parameter.grad = (
+            torch.ones_like(parameter)
+            if name.endswith(".adapter_b.weight")
+            else torch.zeros_like(parameter)
+        )
+    receipt = mechanics._gradient_receipt(model)
+    assert receipt["parameters"] == 32
+    assert receipt["nonzero_gradients"] == 16
+    assert receipt["adapter_a_zero_gradients"] == 16
+    assert receipt["adapter_b_nonzero_gradients"] == 16
+
+    missing = model.blocks[0].adapter_b.weight
+    missing.grad = None
+    with pytest.raises(
+        NemotronSuperMechanicsError,
+        match='"present":false',
+    ):
+        mechanics._gradient_receipt(model)
+
+    missing.grad = torch.zeros_like(missing)
+    with pytest.raises(NemotronSuperMechanicsError, match="gradient receipt differs"):
+        mechanics._gradient_receipt(model)
+
+    missing.grad = torch.full_like(missing, float("nan"))
+    with pytest.raises(
+        NemotronSuperMechanicsError,
+        match='"nan_values":4',
+    ):
+        mechanics._gradient_receipt(model)
+
+    missing.grad = torch.full_like(missing, 2.0e38)
+    with pytest.raises(NemotronSuperMechanicsError, match="gradient receipt differs"):
+        mechanics._gradient_receipt(model)
+
+
+def test_mechanics_loss_matches_next_token_training_objective() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    logits = torch.tensor(
+        [
+            [
+                [0.0, 2.0, -1.0, 0.5],
+                [1.0, -2.0, 3.0, 0.0],
+                [4.0, 0.0, -1.0, 2.0],
+            ]
+        ]
+    )
+    labels = torch.tensor([[-100, -100, 2]])
+    expected = torch.nn.functional.cross_entropy(
+        logits[:, :-1].reshape(-1, logits.shape[-1]),
+        labels[:, 1:].reshape(-1),
+        ignore_index=-100,
+    )
+    assert torch.equal(mechanics._mechanics_next_token_loss(logits, labels), expected)
+    with pytest.raises(NemotronSuperMechanicsError, match="geometry"):
+        mechanics._mechanics_next_token_loss(logits[:, :1], labels[:, :1])
+    with pytest.raises(NemotronSuperMechanicsError, match="supervised tokens"):
+        mechanics._mechanics_next_token_loss(logits, torch.full_like(labels, -100))
+
+
+def test_mechanics_training_objective_constants_match_frozen_trainer() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+    import hf_nemotron_super_train_revision as trainer
+
+    assert mechanics.TRAINING_GRADIENT_ACCUMULATION == trainer.GRADIENT_ACCUMULATION
+    assert mechanics.TRAINING_LEARNING_RATE == trainer.LEARNING_RATE
+
+
+def test_training_objective_receipt_rejects_nonexact_types_and_members() -> None:
+    import hf_nemotron_super_mechanics as mechanics
+
+    payload = {
+        "objective": "response_only_next_token_cross_entropy",
+        "prompt_tokens": 3,
+        "response_tokens": 2,
+        "ignore_index": -100,
+        "gradient_accumulation_scale": mechanics.TRAINING_GRADIENT_ACCUMULATION,
+        "learning_rate": mechanics.TRAINING_LEARNING_RATE,
+        "autocast_dtype": "torch.bfloat16",
+    }
+    assert mechanics.training_objective_receipt_is_exact(payload)
+    for field, value in (
+        ("prompt_tokens", True),
+        ("ignore_index", -100.0),
+        ("gradient_accumulation_scale", 8.0),
+        ("learning_rate", True),
+    ):
+        mutated = {**payload, field: value}
+        assert not mechanics.training_objective_receipt_is_exact(mutated)
+    assert not mechanics.training_objective_receipt_is_exact(
+        {**payload, "unbound": True}
+    )

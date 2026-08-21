@@ -1,0 +1,27 @@
+{
+  "schema": "shohin-q36-cross-host-model-owned-commit-contract-v1",
+  "status": "frozen_before_execution",
+  "date": "2026-08-20",
+  "scientific_contract": "Q36_GPT_OSS_120B_MARGIN_TRANSFER_CONFIRMATION_1023_CONTRACT_20260820.json",
+  "hosts": {
+    "gpt_oss_120b_confirmation_1023": {
+      "rows": 1023,
+      "shards": 16,
+      "benchmark": "mmlu_pro",
+      "candidate_schema": "shohin-gpt-oss-120b-fixed-draft-candidate-v1",
+      "score_schema": "shohin-gpt-oss-120b-commit-confirmation-score-v1"
+    }
+  },
+  "selector": {
+    "revision_margin_threshold": 0.25,
+    "revision_reliability_veto": "empty_or_exhausted",
+    "task_correctness_host_or_assessor_visible": false
+  },
+  "execution": {
+    "single_h100_jobs": 49,
+    "gpus_per_job": 1,
+    "arrays": 0,
+    "requeue": false,
+    "duplicate_scientific_jobs": 0
+  }
+}

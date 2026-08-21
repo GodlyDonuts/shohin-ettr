@@ -54,6 +54,10 @@ RANK = 18
 ALPHA = 18.0
 TRAINABLE_PARAMETERS_PER_ROLE = CONTROLLED_LAYERS * 2 * HIDDEN_SIZE * RANK
 ATTACHMENT_SURFACE = "post-mixer-residual"
+NATIVE_MOE_MIXER_CLASS = "NemotronHMoE"
+MODELOPT_MOE_MIXER_CLASS = "QuantNemotronHMoE"
+NATIVE_ATTENTION_MIXER_CLASS = "NemotronHAttention"
+MODELOPT_ATTENTION_MIXER_CLASS = "QuantNemotronHAttention"
 
 
 class Q36UpwardMoEHostError(RuntimeError):
@@ -193,8 +197,19 @@ def _sequence(value: Any) -> Sequence[Any] | None:
     return None
 
 
-def validate_loaded_surface(backbone: Any) -> dict[str, Any]:
+def validate_loaded_surface(
+    backbone: Any, *, modelopt_quantized: bool = False
+) -> dict[str, Any]:
     """Pin the live 88-layer topology before any Shohin residual is attached."""
+
+    expected_moe_mixer_class = (
+        MODELOPT_MOE_MIXER_CLASS if modelopt_quantized else NATIVE_MOE_MIXER_CLASS
+    )
+    expected_attention_mixer_class = (
+        MODELOPT_ATTENTION_MIXER_CLASS
+        if modelopt_quantized
+        else NATIVE_ATTENTION_MIXER_CLASS
+    )
 
     config = getattr(backbone, "config", None)
     if (
@@ -255,7 +270,7 @@ def validate_loaded_surface(backbone: Any) -> dict[str, Any]:
             expected_row = {
                 "layer": index,
                 "block_type": "moe",
-                "mixer_class": "NemotronHMoE",
+                "mixer_class": expected_moe_mixer_class,
                 "gate_class": "NemotronHTopkRouter",
                 "router_top_k": ROUTER_TOP_K,
                 "router_experts": NUM_EXPERTS,
@@ -279,7 +294,7 @@ def validate_loaded_surface(backbone: Any) -> dict[str, Any]:
                 "mixer_class": (
                     "NemotronHMamba2Mixer"
                     if expected_type == "mamba"
-                    else "NemotronHAttention"
+                    else expected_attention_mixer_class
                 ),
             }
         if row != expected_row:

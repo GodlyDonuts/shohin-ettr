@@ -18,12 +18,16 @@ import torch.nn.functional as F
 
 from hf_nemotron_super_mechanics import (
     CUDA_VERSION,
+    gradient_receipt_is_exact,
     MAMBA_VERSION,
     MODELOPT_VERSION,
     OVERLAY_MANIFEST_SHA256,
     OVERLAY_RECEIPT_SHA256,
     TORCH_VERSION,
     install_triton_allocator_compatibility,
+    load_modelopt_fp8_backbone,
+    modelopt_fp8_receipt_is_exact,
+    training_objective_receipt_is_exact,
     verify_manifest,
 )
 from hf_product_reasoning_train import PRODUCT_SYSTEM_PROMPT, render_reasoning_messages
@@ -175,19 +179,10 @@ def _package_versions() -> dict[str, str | None]:
     }
 
 
-def run(args: argparse.Namespace) -> dict[str, Any]:
-    install_triton_allocator_compatibility()
-    from modelopt.torch.opt.plugins.huggingface import enable_huggingface_checkpointing
-    from transformers import AutoModelForCausalLM, AutoTokenizer
-
-    started = time.monotonic()
-    if args.output.exists() or args.output.is_symlink():
-        raise NemotronSuperTrainingError("training output already exists")
-    if args.mechanics_report.is_symlink() or not args.mechanics_report.is_file():
-        raise NemotronSuperTrainingError("mechanics report is absent")
-    mechanics = json.loads(args.mechanics_report.read_text(encoding="utf-8"))
+def validate_mechanics_authorization(mechanics: Any) -> None:
     if (
-        mechanics.get("schema") != "shohin-nemotron-super-two-h100-mechanics-v1"
+        not isinstance(mechanics, dict)
+        or mechanics.get("schema") != "shohin-nemotron-super-two-h100-mechanics-v1"
         or mechanics.get("status") != "pass"
         or mechanics.get("score_rows_read") != 0
         or mechanics.get("benchmark_rows_read") != 0
@@ -195,8 +190,26 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or mechanics.get("trainable_parameters") != TRAINABLE_PARAMETERS_PER_ROLE
         or mechanics.get("native_router_expert_trainables") != 0
         or mechanics.get("serialization_restore_exact") is not True
+        or not gradient_receipt_is_exact(mechanics.get("gradient_receipt"))
+        or not modelopt_fp8_receipt_is_exact(mechanics.get("modelopt_fp8"))
+        or not training_objective_receipt_is_exact(
+            mechanics.get("training_objective_receipt")
+        )
     ):
         raise NemotronSuperTrainingError("mechanics authorization differs")
+
+
+def run(args: argparse.Namespace) -> dict[str, Any]:
+    install_triton_allocator_compatibility()
+    from transformers import AutoTokenizer
+
+    started = time.monotonic()
+    if args.output.exists() or args.output.is_symlink():
+        raise NemotronSuperTrainingError("training output already exists")
+    if args.mechanics_report.is_symlink() or not args.mechanics_report.is_file():
+        raise NemotronSuperTrainingError("mechanics report is absent")
+    mechanics = json.loads(args.mechanics_report.read_text(encoding="utf-8"))
+    validate_mechanics_authorization(mechanics)
 
     model_root = args.model_root.resolve(strict=True)
     overlay_root = args.overlay_root.resolve(strict=True)
@@ -234,27 +247,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     random.seed(SEED)
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
-    enable_huggingface_checkpointing()
-    backbone = AutoModelForCausalLM.from_pretrained(
-        model_root,
-        local_files_only=True,
-        trust_remote_code=True,
-        device_map="balanced",
-        max_memory={0: "77GiB", 1: "77GiB", "cpu": "32GiB"},
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True,
-    )
-    if not isinstance(getattr(backbone, "hf_device_map", None), dict) or set(
-        backbone.hf_device_map.values()
-    ) - {0, 1}:
-        raise NemotronSuperTrainingError("training device map differs")
+    try:
+        backbone, modelopt_fp8 = load_modelopt_fp8_backbone(model_root)
+    except Exception as error:
+        raise NemotronSuperTrainingError(
+            "training ModelOpt FP8 load differs"
+        ) from error
     if hasattr(backbone, "gradient_checkpointing_enable"):
         backbone.gradient_checkpointing_enable(
             gradient_checkpointing_kwargs={"use_reentrant": False}
         )
     if hasattr(backbone, "enable_input_require_grads"):
         backbone.enable_input_require_grads()
-    model = NemotronSuperRevisionModel(backbone)
+    model = NemotronSuperRevisionModel(backbone, modelopt_quantized=True)
     initial_state_sha256 = model.trainable_state_sha256()
     trainables = [
         parameter for parameter in model.parameters() if parameter.requires_grad
@@ -344,6 +349,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "final_trainable_state_sha256": final_state_sha256,
         "sequence_receipt": sequence_receipt,
         "mechanics_report_sha256": sha256_file(args.mechanics_report),
+        "modelopt_fp8": modelopt_fp8,
         "optimizer_state_serialized": False,
         "checkpoint_trainable_only": True,
     }

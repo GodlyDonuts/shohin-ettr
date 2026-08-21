@@ -21,14 +21,19 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, list[Path]]:
         {
             "schema": "shohin-upward-moe-scaling-analysis-v1",
             "status": "complete_curve",
-            "point_count": 3,
+            "point_count": 4,
             "points": [
                 {
                     "host": host,
                     "source_sha256": str(index) * 64,
                 }
                 for index, host in enumerate(
-                    ("Qwen3.6-35B-A3B", "Mixtral-8x22B", "Nemotron-Super")
+                    (
+                        "Qwen3.6-35B-A3B",
+                        "gpt-oss-120b",
+                        "Mixtral-8x22B",
+                        "Nemotron-Super",
+                    )
                 )
             ],
             "claim": "supported",
@@ -58,7 +63,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, list[Path]]:
             "schema": "shohin-upward-moe-scaling-figure-manifest-v1",
             "status": "complete",
             "analysis_sha256": hashlib.sha256(analysis.read_bytes()).hexdigest(),
-            "point_source_sha256s": [str(index) * 64 for index in range(3)],
+            "point_source_sha256s": [str(index) * 64 for index in range(4)],
             "records": records,
             "scientific_scores_changed": False,
             "automatic_successor_authorized": False,

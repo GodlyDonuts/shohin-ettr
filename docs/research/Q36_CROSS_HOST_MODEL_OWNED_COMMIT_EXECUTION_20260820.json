@@ -1,0 +1,66 @@
+{
+  "schema": "shohin-q36-cross-host-model-owned-commit-execution-v1",
+  "status": "submitted",
+  "date": "2026-08-20",
+  "source_commit": "434141e0039f1da4510ed3a324daf625e27bbae9",
+  "private_branches": [
+    "codex/q36-mechanics-generation-prepare",
+    "codex/q36-moe-temporal-revision"
+  ],
+  "runtime": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_cross_host_commit_runtime_434141e0_r1",
+    "manifest_sha256": "9277c18ffa9f0b490ff05a4e47ef41b8623690e63b0b866280a15e3f25754c23",
+    "allowlisted_files": 200,
+    "full_manifest_verification": "pass",
+    "writable_members": 0
+  },
+  "contract": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_cross_host_commit_contract_434141e0_r1.json",
+    "sha256": "e986213c362d8305e7068daa52418aa9299d11162af097add94899bedebe2fa7"
+  },
+  "environment": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_cross_host_commit_environment_434141e0_r1.json",
+    "sha256": "4771ce50a2833d3fa21dd1117c7a7467c4d5678bc5fb450850969f0f0a048fc2",
+    "tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c",
+    "capture_job": 766346,
+    "capture_state": "COMPLETED",
+    "capture_exit_code": "0:0",
+    "capture_restarts": 0
+  },
+  "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/q36_cross_host_commit_434141e0_r1",
+  "jobs": {
+    "gpt_oss_120b_screen": {
+      "selector_job": 766347,
+      "analysis_job": 766348,
+      "analysis_dependency": "afterok:766347",
+      "selector_gpus": 1,
+      "selector_requeue": false,
+      "rows": 256
+    },
+    "mixtral_8x22b_validation": {
+      "selector_job": 766349,
+      "analysis_job": 766350,
+      "analysis_dependency": "afterok:766349",
+      "selector_gpus": 1,
+      "selector_requeue": false,
+      "rows": 1023
+    }
+  },
+  "submission_geometry": {
+    "independent_gpu_requests": 2,
+    "gpus_per_request": 1,
+    "cpu_replay_jobs": 2,
+    "gpu_arrays": 0,
+    "duplicate_scientific_jobs": 0,
+    "target_candidate_generation_jobs": 0,
+    "target_selector_training_jobs": 0
+  },
+  "selection_firewall": {
+    "task_correctness_host_or_assessor_fields_visible": false,
+    "score_paths_exported_to_selector_jobs": false,
+    "assessor_paths_exported_to_selector_jobs": false,
+    "score_replay_phase": "dependent_cpu_after_sealed_selection",
+    "target_candidates_mutated": false,
+    "target_scores_mutated": false
+  }
+}

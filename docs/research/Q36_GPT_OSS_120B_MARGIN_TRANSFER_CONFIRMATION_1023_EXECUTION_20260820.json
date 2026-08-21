@@ -1,0 +1,120 @@
+{
+  "schema": "shohin-gpt-oss-120b-margin-transfer-confirmation-1023-execution-v1",
+  "status": "complete_strict_confirmation_pass",
+  "date": "2026-08-20",
+  "scientific_contract_sha256": "72494bc467ed1abb7d1726130668d4f30e90f03a2cd6c0b842eb757239fa55a7",
+  "authorization_sha256": "882545007119513598aeb9588bec6193d0c2e773651e773c1d25847d55c0b6af",
+  "launch_commit": "433a1a709e9bf9749595eda9b979fc52fb5ea2cf",
+  "repair_commit": "2c99be58400edf6ed4ecbddb8faae821a5f369b5",
+  "source": {
+    "rows": 1023,
+    "unique_identities": 1023,
+    "seed": 2026082004,
+    "source_sha256": "36660cfc526d0ec69b84064cd9ff12b03fe8ced816de644410fcf48675356a93",
+    "receipt_sha256": "d7bd9869f5ebaea12acab13819bbe673b790578f7f3fbd45df67dc2375514373",
+    "identity_digest_sha256": "1bde4d516396401260a39fbbe48f5216a7c25fccec040eafc19f55966f6764ff",
+    "overlap_with_public_screen_or_prior_q36_or_three_prior_confirmations": 0,
+    "pre_score_assessor_access_count": 0,
+    "pre_score_label_access_count": 0,
+    "preparation_job": 766451
+  },
+  "original_runtime": {
+    "source_commit": "433a1a709e9bf9749595eda9b979fc52fb5ea2cf",
+    "manifest_sha256": "d153ea38475c7c0b0bbe858fb6df5e2de55880493ee18aea19dfc8353098fa4f",
+    "runtime_json_sha256": "aab018d459f4241d98d03d7065b79798acfbd641e53b48e77200bbeb874cac7a"
+  },
+  "repair_runtime": {
+    "source_commit": "2c99be58400edf6ed4ecbddb8faae821a5f369b5",
+    "manifest_sha256": "98986560dff6fbf3d1bab5c27b84ec0c3bd894f6493e738d4be6c6d40804b919",
+    "runtime_json_sha256": "bddaf9d4a46c989068c49a82cf1a431eb24d5052d5c504bdd43b1bd9c1d6de58"
+  },
+  "environments": {
+    "original_job": 766452,
+    "original_receipt_sha256": "c5a505d3941ec5118f80953d1696e9e43f4b40593a1070383d769ee3cca25868",
+    "repair_job": 766507,
+    "repair_receipt_sha256": "b00a096e12241ec3d838e8b5dd116886a3c234e6d89c9b676886de489d78aa83",
+    "environment_tree_sha256": "6c3311032bc4efb065222378e053e1cc15266b37bd868aee2bc05aa94f8ebf9c"
+  },
+  "dispatch": {
+    "original_dispatch_sha256": "d724a92b8733c350b07ab18670bd03a4c5f15894e2aa405cd2302b2b44c3fef1",
+    "recovery_dispatch_sha256": "6e39c237453848e6e06e316748e7eebb40b6890dde40cc7fef63bab5d87dcab5",
+    "one_h100_per_generation_shard": true,
+    "requeue": false,
+    "failed_qwen_jobs": [766453, 766454, 766455, 766456, 766457, 766458, 766459, 766460, 766461, 766462, 766463, 766464],
+    "cancelled_pre_science_qwen_jobs": [766465, 766466, 766467, 766468],
+    "failure_classification": "static control-plane row-geometry admission rejected 1023 before model load or candidate publication",
+    "cancelled_unreleased_original_revision_jobs": [766485, 766486, 766487, 766488, 766489, 766490, 766491, 766492, 766493, 766494, 766495, 766496, 766497, 766498, 766499, 766500],
+    "cancelled_unreleased_original_terminal_jobs": [766501, 766502, 766503],
+    "replacement_qwen_jobs": [766508, 766509, 766510, 766511, 766512, 766513, 766514, 766515, 766516, 766517, 766518, 766519, 766520, 766521, 766522, 766523],
+    "replacement_revision_jobs": [766524, 766525, 766526, 766527, 766528, 766529, 766530, 766531, 766532, 766533, 766534, 766535, 766536, 766537, 766538, 766539],
+    "selector_job": 766540,
+    "score_job": 766541,
+    "analysis_job": 766542,
+    "healthy_generation_repeated": false,
+    "scientific_policy_changed": false
+  },
+  "completed_generation_evidence": {
+    "gpt_unchanged": {
+      "jobs": [766469, 766470, 766471, 766472, 766473, 766474, 766475, 766476, 766477, 766478, 766479, 766480, 766481, 766482, 766483, 766484],
+      "reports": 16,
+      "rows": 1023,
+      "unique_identities": 1023,
+      "exact_source_order": true,
+      "empty_completions": 26,
+      "token_budget_exhaustions": 68,
+      "ordered_report_hash_digest": "3ea93f63727354ac7bed8adcba2505d96aaf27f69dfe10749a8e2b1ed4a6d73f",
+      "ordered_candidate_hash_digest": "85b1649ad27c22f97c24d67a5f33445c0ac33c5d734581d70c7599d4d4917f0e",
+      "all_restarts_zero": true,
+      "assessor_or_label_access": 0
+    },
+    "qwen_fixed_drafts": {
+      "jobs": [766508, 766509, 766510, 766511, 766512, 766513, 766514, 766515, 766516, 766517, 766518, 766519, 766520, 766521, 766522, 766523],
+      "reports": 16,
+      "rows": 1023,
+      "unique_identities": 1023,
+      "exact_source_order": true,
+      "empty_completions": 0,
+      "token_budget_exhaustions": 8,
+      "ordered_report_hash_digest": "4524c9901e412946c54363f32354e655357192ce4da6bccba8850f943dfc0875",
+      "ordered_candidate_hash_digest": "0776e5653ef6e562ce8234b79d53d8c5e634f029c8085e5d48749f2d41ffc081",
+      "all_restarts_zero": true,
+      "assessor_or_label_access": 0
+    }
+  },
+  "terminal_evidence": {
+    "revision_reports": 16,
+    "revision_rows": 1023,
+    "revision_unique_identities": 1023,
+    "revision_exact_source_order": true,
+    "revision_empty_completions": 149,
+    "revision_token_budget_exhaustions": 317,
+    "revision_ordered_report_hash_digest": "59106d48835cd4ec603f9d54f08d0ab5a5e4c3fd4c0fa4c82546acf78000da1c",
+    "revision_ordered_candidate_hash_digest": "0e0010715ed87e9567ca91101a2e0956cc6c45d0d240df30e4e4476d27164534",
+    "all_successful_restarts_zero": true,
+    "assessor_or_label_access_before_score": 0,
+    "score_sha256": "5dd404a166d429ecd9b2c798d33e70ca410ef4e9fe9d5e749d2edb98dd3d2fed",
+    "selection_candidates_sha256": "65d0df105bddb117cc8f4db90bf74806dce05ed14d0cd13b1a155a840521710d",
+    "selections_sha256": "cd63497950a39114eaaaf44763702e58ecd15a93771d1dd72df7ac9c92c9c6c1",
+    "application_sha256": "a5d663dd7beafcc40e8137e8b266e631bf2411d4265ede794d24e5a9e086959a",
+    "result_sha256": "8248c4ec574df08b785579443cef90cb46e447ffd018f94ed1fe26cefb0303be",
+    "selected_correct": 714,
+    "unchanged_correct": 711,
+    "selected_gain": 3,
+    "unchanged_correct_retention": 0.9774964838255977,
+    "strict_confirmation_pass": true
+  },
+  "accounting": {
+    "canonical_sacct_rows": 70,
+    "canonical_sacct_sha256": "6f4ab3b29683c7e43d653f8148f55b15bc4e5d8a8c9ebc6d7439972a6e513edf",
+    "successful_scientific_h100_jobs": 49,
+    "successful_scientific_h100_seconds": 86201,
+    "successful_scientific_h100_hours": 23.94472222222222,
+    "failed_pre_model_h100_jobs": 12,
+    "failed_pre_model_h100_seconds": 2923,
+    "cancelled_pre_model_h100_jobs": 4,
+    "cancelled_pre_model_h100_seconds": 592,
+    "total_h100_hours": 24.92111111111111,
+    "nonzero_restarts": 0
+  },
+  "terminal_boundary": "The prospectively frozen 1023-row confirmation is terminal: selected accuracy is strictly greater than unchanged and unchanged-correct retention exceeds 95 percent; no policy, threshold, checkpoint, prompt, decoding rule, or source identity was changed after scoring."
+}

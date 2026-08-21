@@ -1,4 +1,5 @@
 # Deterministic upward-MoE temporal runtime closure. Sorted, one path per line.
+pipeline/analyze_q36_cross_host_commit.py
 pipeline/analyze_q36_mtr_external_outcomes.py
 pipeline/analyze_q36_mtr_token_gates.py
 pipeline/analyze_q36_mtr_trajectory_state_geometry.py
@@ -7,6 +8,7 @@ pipeline/apply_q36_mtr_owner_commit.py
 pipeline/apply_q36_mtr_synthesis_consensus.py
 pipeline/authorize_q36_mtr_mechanics_qualification.py
 pipeline/authorize_q36_mtr_phase.py
+pipeline/build_dense_public_benchmark_data.py
 pipeline/build_gpt_oss_mxfp4_overlay.py
 pipeline/build_nemotron_scale_transfer_basis.py
 pipeline/build_pcf1_data.py
@@ -38,6 +40,7 @@ pipeline/jobs/build_nemotron_scale_transfer_basis.sbatch
 pipeline/jobs/capture_upward_moe_accounting.sbatch
 pipeline/jobs/fetch_gpt_oss_120b.sbatch
 pipeline/jobs/fetch_mixtral_8x22b.sbatch
+pipeline/jobs/gpt_oss_120b_commit_confirmation_score.sbatch
 pipeline/jobs/gpt_oss_120b_score.sbatch
 pipeline/jobs/launch_upward_moe_temporal_promotion.sbatch
 pipeline/jobs/lift_nemotron_super_adapter_to_ultra.sbatch
@@ -51,6 +54,7 @@ pipeline/jobs/mixtral_8x22b_validation_score.sbatch
 pipeline/jobs/nemotron_super_score.sbatch
 pipeline/jobs/nemotron_ultra_score.sbatch
 pipeline/jobs/package_upward_moe_publication.sbatch
+pipeline/jobs/prepare_gpt_oss_120b_commit_confirmation.sbatch
 pipeline/jobs/q36_mtr_authorize_score.sbatch
 pipeline/jobs/q36_mtr_build_final_custody.sbatch
 pipeline/jobs/q36_mtr_build_multi_owner_commit_pairs.sbatch
@@ -99,11 +103,14 @@ pipeline/mirror_upward_moe_publication.py
 pipeline/normalize_q36_mtr_score.py
 pipeline/package_q36_mtr_runtime.py
 pipeline/package_upward_moe_publication.py
+pipeline/prepare_gpt_oss_120b_commit_confirmation.py
 pipeline/q36_mtr_contract.py
 pipeline/q36_mtr_evidence.py
 pipeline/read_upward_moe_data_receipt.py
 pipeline/render_q36_mtr_publication_figure.py
 pipeline/render_upward_moe_scaling.py
+pipeline/score_dense_public_benchmark.py
+pipeline/score_gpt_oss_120b_commit_confirmation.py
 pipeline/score_gpt_oss_120b_screen.py
 pipeline/score_mixtral_8x22b_commit_validation.py
 pipeline/score_mixtral_8x22b_screen.py
@@ -154,6 +161,7 @@ train/hf_pcf1_evaluate.py
 train/hf_pcf1_train_commit.py
 train/hf_product_reasoning_eval.py
 train/hf_product_reasoning_train.py
+train/hf_q36_mtr_apply_cross_host_commit.py
 train/hf_q36_mtr_apply_multi_owner_commit.py
 train/hf_q36_mtr_evaluate.py
 train/hf_q36_mtr_evaluate_temporal_gate.py
@@ -182,13 +190,16 @@ train/jobs/mixtral_8x22b_multinode_tp_mechanics.sbatch
 train/jobs/mixtral_8x22b_multinode_tp_train_revision.sbatch
 train/jobs/mixtral_8x22b_train_revision.sbatch
 train/jobs/nemotron_super_evaluate.sbatch
+train/jobs/nemotron_super_fp8_extension_probe.sbatch
 train/jobs/nemotron_super_mechanics.sbatch
 train/jobs/nemotron_super_train_revision.sbatch
 train/jobs/nemotron_ultra_evaluate.sbatch
 train/jobs/nemotron_ultra_mechanics.sbatch
 train/jobs/nemotron_ultra_train_revision.sbatch
+train/jobs/q36_mtr_analyze_cross_host_commit.sbatch
 train/jobs/q36_mtr_apply_multi_owner_commit.sbatch
 train/jobs/q36_mtr_common.sh
+train/jobs/q36_mtr_cross_host_commit.sbatch
 train/jobs/q36_mtr_evaluate.sbatch
 train/jobs/q36_mtr_evaluate_temporal_gate.sbatch
 train/jobs/q36_mtr_external_evaluate.sbatch
@@ -202,6 +213,7 @@ train/jobs/q36_mtr_train_commit_256.sbatch
 train/jobs/q36_mtr_train_role.sbatch
 train/jobs/q36_mtr_train_setwise_commit.sbatch
 train/jobs/q36_mtr_train_temporal_gate.sbatch
+train/jobs/submit_gpt_oss_120b_commit_confirmation.sh
 train/jobs/submit_gpt_oss_120b_screen.sh
 train/jobs/submit_mixtral_8x22b_multinode_tp_evaluate_matched.sh
 train/jobs/submit_mixtral_8x22b_multinode_tp_mechanics.sh

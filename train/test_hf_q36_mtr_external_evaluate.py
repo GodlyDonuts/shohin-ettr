@@ -76,3 +76,34 @@ def test_supervision_in_source_fails(tmp_path):
 
 def test_external_screen_and_full_geometry_are_distinct():
     assert module.SHARD_COUNTS == {256: 4, 1_023: 16, 1_279: 16}
+    assert module.MMLU_CONFIRMATION_ROWS == (256, 1_023)
+
+
+def test_mmlu_confirmation_source_is_explicit_and_label_free(tmp_path):
+    rows = [_source(index, "mmlu_pro") for index in range(3)]
+    path = tmp_path / "mmlu.jsonl"
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    loaded = module.load_sources(path, 3, module.MMLU_CONFIRMATION_TASKS)
+    assert {row["task"] for row in loaded} == {"mmlu_pro"}
+    with pytest.raises(module.Q36MTRExternalEvaluationError, match="source"):
+        module.load_sources(path, 3)
+
+
+def test_mmlu_fixed_draft_uses_aligned_adapter_with_source_only_prompt() -> None:
+    assert module.prompt_for("unchanged", _source(0, "mmlu_pro"), None) == "Problem 0"
+    assert module.adapter_validation_arm("unchanged", True) == "revision"
+    assert module.adapter_validation_arm("unchanged", False) == "unchanged"
+    with pytest.raises(
+        module.Q36MTRExternalEvaluationError, match="confirmation adapter arm"
+    ):
+        module.adapter_validation_arm("revision", True)
+
+
+def test_external_job_accepts_independent_shard_identity() -> None:
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    wrapper = (root / "train/jobs/q36_mtr_external_evaluate.sbatch").read_text()
+    assert "SHARD_INDEX" in wrapper
+    assert "task_index=${SLURM_ARRAY_TASK_ID:-${SHARD_INDEX:-}}" in wrapper
+    assert "--confirmation-mmlu-pro" in wrapper

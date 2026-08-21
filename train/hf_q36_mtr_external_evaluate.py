@@ -33,6 +33,8 @@ CANDIDATE_SCHEMA = "shohin-q36-mtr-candidate-v1"
 REPORT_SCHEMA = "shohin-q36-mtr-external-evaluation-v1"
 ARMS = ("unchanged", "self_refinement", "revision", "draft_hidden", "interpolation")
 TASKS = ("math500", "bbh_logic", "mbpp")
+MMLU_CONFIRMATION_TASKS = ("mmlu_pro",)
+MMLU_CONFIRMATION_ROWS = (256, 1_023)
 ROLE_ARM = {
     "unchanged": "unchanged",
     "self_refinement": "unchanged",
@@ -48,6 +50,18 @@ class Q36MTRExternalEvaluationError(RuntimeError):
     """An external-validation model input or output differs."""
 
 
+def adapter_validation_arm(arm: str, confirmation_mmlu_pro: bool) -> str:
+    """Separate the source-only prompt arm from the frozen adapter role."""
+
+    if arm not in ROLE_ARM:
+        raise Q36MTRExternalEvaluationError("external adapter arm differs")
+    if confirmation_mmlu_pro:
+        if arm != "unchanged":
+            raise Q36MTRExternalEvaluationError("confirmation adapter arm differs")
+        return "revision"
+    return ROLE_ARM[arm]
+
+
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     try:
         rows = [json.loads(line) for line in path.read_text().splitlines() if line]
@@ -58,7 +72,9 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def load_sources(path: Path, expected_rows: int) -> list[dict[str, Any]]:
+def load_sources(
+    path: Path, expected_rows: int, expected_tasks: tuple[str, ...] = TASKS
+) -> list[dict[str, Any]]:
     rows = _load_jsonl(path)
     identities: set[str] = set()
     for row in rows:
@@ -66,7 +82,7 @@ def load_sources(path: Path, expected_rows: int) -> list[dict[str, Any]]:
         if (
             row.get("schema") != SOURCE_SCHEMA
             or row.get("split") != "external_validation"
-            or row.get("task") not in TASKS
+            or row.get("task") not in expected_tasks
             or not isinstance(identity, str)
             or len(identity) != 64
             or identity in identities
@@ -80,7 +96,9 @@ def load_sources(path: Path, expected_rows: int) -> list[dict[str, Any]]:
         ):
             raise Q36MTRExternalEvaluationError("external source projection differs")
         identities.add(identity)
-    if len(rows) != expected_rows or {row["task"] for row in rows} != set(TASKS):
+    if len(rows) != expected_rows or {row["task"] for row in rows} != set(
+        expected_tasks
+    ):
         raise Q36MTRExternalEvaluationError("external source coverage differs")
     return sorted(rows, key=lambda row: row["identity_sha256"])
 
@@ -170,13 +188,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or args.shard_count != SHARD_COUNTS[args.expected_rows]
         or args.batch_size != 2
         or not 0 <= args.shard_index < args.shard_count
+        or (
+            args.confirmation_mmlu_pro
+            and (
+                args.arm != "unchanged"
+                or args.expected_rows not in MMLU_CONFIRMATION_ROWS
+            )
+        )
     ):
         raise Q36MTRExternalEvaluationError("external evaluation settings differ")
     if args.candidates_output.exists() or args.report.exists():
         raise Q36MTRExternalEvaluationError("external output exists")
     if sha256_file(args.source) != args.source_sha256:
         raise Q36MTRExternalEvaluationError("external source SHA-256 differs")
-    sources = load_sources(args.source, args.expected_rows)
+    sources = load_sources(
+        args.source,
+        args.expected_rows,
+        MMLU_CONFIRMATION_TASKS if args.confirmation_mmlu_pro else TASKS,
+    )
     drafts = None
     if args.arm != "unchanged":
         if not args.draft_candidates:
@@ -196,7 +225,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     model, metadata, loader = load_q36_adapter_model(
         args.model_root, args.adapter_checkpoint
     )
-    trainable_receipt = validate_adapter(model, metadata, ROLE_ARM[args.arm])
+    validation_arm = adapter_validation_arm(args.arm, args.confirmation_mmlu_pro)
+    trainable_receipt = validate_adapter(model, metadata, validation_arm)
     stop_ids = _generation_stop_token_ids(tokenizer)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
@@ -251,6 +281,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "adapter_metadata_sha256": hashlib.sha256(
             json.dumps(metadata, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest(),
+        "adapter_validation_arm": validation_arm,
         **trainable_receipt,
         "source": str(args.source.resolve()),
         "source_sha256": args.source_sha256,
@@ -276,6 +307,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "peak_gpu_memory_bytes": int(torch.cuda.max_memory_allocated()),
         "assessor_access_count": 0,
         "development_labels_read": 0,
+        "confirmation_mmlu_pro": args.confirmation_mmlu_pro,
     }
     _atomic_json(args.report, report)
     return report
@@ -297,6 +329,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--shard-index", type=int, required=True)
     parser.add_argument("--shard-count", type=int, default=4)
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--confirmation-mmlu-pro", action="store_true")
     return parser.parse_args()
 
 

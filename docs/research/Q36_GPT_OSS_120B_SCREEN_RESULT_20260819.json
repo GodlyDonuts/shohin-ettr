@@ -1,0 +1,147 @@
+{
+  "schema": "shohin-gpt-oss-120b-fixed-draft-screen-result-v1",
+  "recorded_utc": "2026-08-20T03:26:00Z",
+  "status": "COMPLETE",
+  "verdict": "AGGREGATE_IMPROVEMENT_NO_CONSERVATIVE_PROMOTION",
+  "demonstrated_result": "On the source-disjoint 256-row matched screen, the 1,658,880-parameter Shohin revision surface improves pinned GPT-OSS-120B from 101/256 to 111/256 (+10 correct, +3.90625 percentage points) and exceeds draft-matched self-refinement by 8 correct (+3.125 points). All three domain deltas versus unchanged are nonnegative. The frozen conservative gate fails because revision retains only 92/101 unchanged-correct identities (91.0891%), below the 95% floor. The matched screen is positive cross-family MoE transfer evidence, but it is not a statistically decisive or conservative promotion.",
+  "source_commit_for_screen_runtime": "1125e3feaa51cba8a1b45dcda27d17e2e3cb7717",
+  "source_commit_for_accounting": "2749aa88c67472bb0b836b05cc8377db84055745",
+  "model": {
+    "name": "openai/gpt-oss-120b",
+    "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a",
+    "manifest_sha256": "a2a8026b3ab645285045dab439934416628e7bce392b351499b023298ff4a6d0",
+    "total_parameters": 117000000000,
+    "active_parameters": 5100000000,
+    "native_quantization": "mxfp4",
+    "weight_execution": "one_h100_native_mxfp4"
+  },
+  "treatment": {
+    "architecture": "shohin-gpt-oss-120b-shared-post-mlp-v1",
+    "attachment_surface": "post-mlp-residual",
+    "controlled_layer_indices": [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35],
+    "trainable_parameters": 1658880,
+    "native_router_expert_trainables": 0,
+    "updates": 256,
+    "presentations": 2048,
+    "charged_tokens": 2087451,
+    "checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "training_report_sha256": "b36288d09d8e26d0760c194e81571698957512b4bed0463064fc2e388d8de649",
+    "initial_and_final_trainable_states_differ": true,
+    "checkpoint_restore_exact": true,
+    "native_router_and_expert_surface_unchanged": true
+  },
+  "screen": {
+    "source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "assessors_sha256": "ac665433d40c0f492744e1152bfabc0e960dfb2d2e4ced8c15c7385a1e387351",
+    "revision_train_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "seed": 2026080816,
+    "rows": 256,
+    "domains": {"bbh_logic": 128, "math500": 117, "mbpp": 11},
+    "shards_per_arm": 4,
+    "arms": ["unchanged", "self_refinement", "revision"],
+    "identity_task_order_match": true,
+    "assessor_access_during_generation": 0,
+    "development_label_access_during_generation": 0,
+    "sealed_access": {"holdout": 0, "product": 0, "public": 0}
+  },
+  "scores": {
+    "unchanged": {
+      "correct": 101,
+      "total": 256,
+      "accuracy": 0.39453125,
+      "domains": {"bbh_logic": 78, "math500": 12, "mbpp": 11},
+      "empty_completions": 47,
+      "max_token_exhausted": 100
+    },
+    "self_refinement": {
+      "correct": 103,
+      "total": 256,
+      "accuracy": 0.40234375,
+      "domains": {"bbh_logic": 81, "math500": 11, "mbpp": 11},
+      "empty_completions": 18,
+      "max_token_exhausted": 106
+    },
+    "revision": {
+      "correct": 111,
+      "total": 256,
+      "accuracy": 0.43359375,
+      "domains": {"bbh_logic": 82, "math500": 18, "mbpp": 11},
+      "gain_over_unchanged_correct": 10,
+      "gain_over_unchanged_percentage_points": 3.90625,
+      "gain_over_self_refinement_correct": 8,
+      "gain_over_self_refinement_percentage_points": 3.125,
+      "unchanged_correct_retained": 92,
+      "unchanged_correct_retention": 0.9108910891089109,
+      "empty_completions": 36,
+      "max_token_exhausted": 93
+    }
+  },
+  "paired_evidence": {
+    "revision_vs_unchanged": {
+      "revision_only_correct": 19,
+      "unchanged_only_correct": 9,
+      "net_correct": 10,
+      "mcnemar_exact_two_sided_p": 0.08715855330228806
+    },
+    "revision_vs_self_refinement": {
+      "revision_only_correct": 12,
+      "self_refinement_only_correct": 4,
+      "net_correct": 8,
+      "mcnemar_exact_two_sided_p": 0.076812744140625
+    },
+    "domain_correct_deltas_revision_vs_unchanged": {"bbh_logic": 4, "math500": 6, "mbpp": 0},
+    "domain_correct_deltas_revision_vs_self_refinement": {"bbh_logic": 1, "math500": 7, "mbpp": 0}
+  },
+  "decision": {
+    "revision_improves_unchanged": true,
+    "revision_improves_self_refinement": true,
+    "retains_at_least_95_percent_unchanged_correct": false,
+    "all_domains_nonnegative_vs_unchanged": true,
+    "promote_as_conservative_treatment": false,
+    "reason": "The measured revision is a positive aggregate GPT-OSS-120B capability transfer, including a positive draft-matched comparison, but 91.0891% retention misses the frozen 95% floor and neither paired comparison is below p=0.05 on this 256-row screen."
+  },
+  "artifacts": {
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "mechanics_checkpoint_sha256": "239f9ee231dd9bf7b63973b841944e40c64cd9cfae1eb7430aaa97eab0e2fc52",
+    "screen_dispatch_sha256": "481f994587cf7a82b9a64da6ddc6ba68c1eaebbf8e39a6d7c8a313868fb54793",
+    "score_sha256": "906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59",
+    "sandbox_receipt_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "sandbox_probe_sha256": "43da238ea874ad7b15ae68091482c948c5c9b5a48a8ec23d3bf7a7add86ced09",
+    "sandbox_probes_passed": 41,
+    "sandbox_probes_total": 41,
+    "accounting_sha256": "8546d5ba326263d7235eb465a13fcd87081ed5fb346e8f7f8073632b6dfcc36d",
+    "three_point_analysis_sha256": "6434ba95df6c35174fce536e96571d046e9e6fd97459100232120d1976c27550",
+    "three_point_publication_manifest_sha256": "70dec71065a3a9f83caa4e58d218cc1831ca89f664a3cab3f036eecacad49c7b"
+  },
+  "jobs": {
+    "mechanics": 766148,
+    "fit": 766177,
+    "unchanged": [766178, 766179, 766180, 766181],
+    "self_refinement": [766182, 766183, 766184, 766185],
+    "revision": [766186, 766187, 766188, 766189],
+    "score": 766190,
+    "accounting": 766334,
+    "all_states": "COMPLETED",
+    "all_restarts": 0,
+    "duplicate_scoring": false
+  },
+  "resources": {
+    "allocation_count": 15,
+    "charged_h100_seconds": 26322,
+    "charged_h100_hours": 7.3116666666666665,
+    "accounting_gpu_type_source": "exact_scontrol_node_gres_for_generic_sacct_gpu_records",
+    "h100_nodes": ["evc24", "evc34", "evc35", "evc36", "evc44", "evc48", "evc49"]
+  },
+  "three_point_moe_boundary": {
+    "point_count": 3,
+    "all_points_positive_vs_unchanged": true,
+    "all_points_positive_vs_self_refinement": true,
+    "all_points_retention_at_least_95_percent": false,
+    "all_domains_nonnegative_at_every_point": false,
+    "gain_monotonic_by_active_parameters": false,
+    "claim": "moe_transfer_measured_without_positive_scaling_law",
+    "capability_curve_claim": "positive_upward_moe_capability_scaling_not_supported",
+    "conservative_retention_curve_claim": "conservative_retention_scaling_not_supported"
+  },
+  "interpretation": "This result demonstrates that Shohin's trained temporal-revision mechanism transfers into a third sparse model family and improves both a source-only control and a draft-matched self-refinement control on GPT-OSS-120B with 1,658,880 trained parameters while native MXFP4 router/expert weights remain frozen. Across Qwen, GPT-OSS, and Mixtral MoE points, every measured revision gain is positive, but the gains are nonmonotonic, retention fails at multiple points, and Mixtral has a code regression. The evidence therefore supports cross-family MoE capability transfer, not a positive scaling law or universal conservative improvement."
+}

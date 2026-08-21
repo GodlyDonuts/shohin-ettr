@@ -29,7 +29,7 @@ mkdir -p logs
 
 IFS=: read -r -a accounting_paths <<< "$ACCOUNTING"
 IFS=: read -r -a point_paths <<< "$SOURCE_POINTS"
-[[ ${#accounting_paths[@]} -eq 2 && ${#point_paths[@]} -eq 3 ]]
+[[ ${#accounting_paths[@]} -eq 2 && ${#point_paths[@]} -ge 3 ]]
 arguments=()
 for path in "${accounting_paths[@]}"; do arguments+=(--accounting "$path"); done
 for path in "${point_paths[@]}"; do arguments+=(--source-point "$path"); done

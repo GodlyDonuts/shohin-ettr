@@ -134,7 +134,14 @@ def mirror(
             raise UpwardMoEMirrorError("figure asset differs")
         figures.append((name, path))
 
-    if len(accounting) != 2 or len(source_points) != 3:
+    expected_points = publication.get("analysis", {}).get("point_source_sha256s")
+    if (
+        len(accounting) != 2
+        or len(source_points) < 3
+        or not isinstance(expected_points, list)
+        or len(expected_points) != len(source_points)
+        or len(set(expected_points)) != len(expected_points)
+    ):
         raise UpwardMoEMirrorError("mirror input geometry differs")
     accounting_paths = [_regular(path) for path in accounting]
     point_paths = [_regular(path) for path in source_points]
@@ -142,12 +149,7 @@ def mirror(
         publication.get("accounting_records"), "accounting"
     ):
         raise UpwardMoEMirrorError("accounting mirror set differs")
-    expected_points = publication.get("analysis", {}).get("point_source_sha256s")
-    if (
-        not isinstance(expected_points, list)
-        or len(set(expected_points)) != 3
-        or {sha256_file(path) for path in point_paths} != set(expected_points)
-    ):
+    if {sha256_file(path) for path in point_paths} != set(expected_points):
         raise UpwardMoEMirrorError("source point mirror set differs")
 
     primary: dict[str, Path] = {

@@ -20,6 +20,7 @@ def test_mechanics_job_is_two_h100_score_free_and_nonrequeueing() -> None:
     assert "TRANSFORMERS_OFFLINE=1" in source
     assert "HF_DATASETS_OFFLINE=1" in source
     assert "q36_init_local_tmp" in source
+    assert "q36_export_nemotron_cuda_toolchain" in source
     assert "trap q36_cleanup_local_tmp EXIT" in source
 
 

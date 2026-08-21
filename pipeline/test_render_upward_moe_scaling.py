@@ -108,6 +108,8 @@ def test_render_writes_read_only_svg_csv_and_manifest(tmp_path: Path) -> None:
     assert "Gain vs active parameters" in svg
     assert "retention" in svg
     assert "95% CI" in svg
+    assert "across 3 MoE hosts" in svg
+    assert "The 3-point fit" in svg
     rows = list(
         csv.DictReader(
             io.StringIO((output / "shohin-upward-moe-scaling-points.csv").read_text())
@@ -168,6 +170,8 @@ def test_renderer_extends_to_fourth_ultra_point(tmp_path: Path) -> None:
     svg = (output / "shohin-upward-moe-scaling.svg").read_text()
     assert "Nemotron Ultra-550B-A55B-NVFP4" in svg
     assert "550B" in svg
+    assert "across 4 MoE hosts" in svg
+    assert "The 4-point fit" in svg
     rows = list(
         csv.DictReader(
             io.StringIO((output / "shohin-upward-moe-scaling-points.csv").read_text())

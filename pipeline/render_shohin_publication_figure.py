@@ -17,6 +17,7 @@ GRID = "#d9e0e5"
 QWEN = "#2f6fed"
 OTHER_DENSE = "#7b61a8"
 MIXTRAL = "#e17832"
+GPT_OSS = "#8b5cf6"
 COMMIT = "#1d9a6c"
 CONTROL = "#aab4bd"
 FROZEN = "#eef1f4"
@@ -132,14 +133,27 @@ def moe_panel(ax: plt.Axes) -> None:
         (
             "Qwen 35B\nscreen",
             256,
-            [("unchanged", 111, CONTROL), ("causal gate", 143, QWEN)],
+            [
+                ("source-only", 111, CONTROL),
+                ("trained revision", 141, "#d3a44a"),
+                ("temporal gate", 143, QWEN),
+            ],
+        ),
+        (
+            "GPT-OSS 117B\nscreen",
+            256,
+            [
+                ("source-only", 101, CONTROL),
+                ("draft self-refine", 103, "#d3a44a"),
+                ("revision", 111, GPT_OSS),
+            ],
         ),
         (
             "Mixtral 141B\nscreen",
             256,
             [
-                ("unchanged", 45, CONTROL),
-                ("self-refine", 105, "#d3a44a"),
+                ("source-only", 45, CONTROL),
+                ("draft self-refine", 105, "#d3a44a"),
                 ("revision", 114, MIXTRAL),
             ],
         ),
@@ -147,10 +161,10 @@ def moe_panel(ax: plt.Axes) -> None:
             "Mixtral 141B\nvalidation",
             1023,
             [
-                ("unchanged", 147, CONTROL),
-                ("self-refine", 356, "#d3a44a"),
+                ("source-only", 147, CONTROL),
+                ("draft self-refine", 356, "#d3a44a"),
                 ("revision", 448, MIXTRAL),
-                ("commit", 287, COMMIT),
+                ("aux selector", 287, COMMIT),
             ],
         ),
     ]
@@ -168,11 +182,13 @@ def moe_panel(ax: plt.Axes) -> None:
                 ha="center",
                 va="bottom",
                 fontsize=7.7,
-                weight="bold" if arm in {"causal gate", "revision"} else "normal",
+                weight="bold" if arm in {"temporal gate", "revision"} else "normal",
             )
     ax.set_xticks(group_centers, [item[0] for item in experiments])
     ax.set_ylabel("Accuracy (%) — labels show correct count")
-    ax.set_title("b  Matched MoE capability", loc="left", weight="bold")
+    ax.set_title(
+        "b  Sparse capability with explicit control access", loc="left", weight="bold"
+    )
     ax.set_ylim(0, 72)
     handles, labels = ax.get_legend_handles_labels()
     unique = dict(zip(labels, handles, strict=True))
@@ -181,7 +197,7 @@ def moe_panel(ax: plt.Axes) -> None:
         unique.keys(),
         frameon=False,
         fontsize=8,
-        ncol=2,
+        ncol=3,
         loc="upper right",
     )
 
@@ -189,39 +205,48 @@ def moe_panel(ax: plt.Axes) -> None:
 def retention_panel(ax: plt.Axes) -> None:
     points = [
         (
-            "Qwen causal gate\n256 rows",
+            "Qwen gate",
             percentage(105, 111),
-            percentage(32, 256),
+            percentage(143 - 141, 256),
             QWEN,
             "o",
-            (-1.0, -2.0),
+            (-1.0, 0.7),
             "right",
         ),
         (
-            "Mixtral revision\n256 rows",
+            "GPT rev",
+            percentage(92, 101),
+            percentage(111 - 103, 256),
+            GPT_OSS,
+            "^",
+            (-1.0, 3.0),
+            "right",
+        ),
+        (
+            "Mix rev (screen)",
             percentage(34, 45),
-            percentage(69, 256),
+            percentage(114 - 105, 256),
             MIXTRAL,
             "o",
-            (1.0, 1.2),
+            (1.0, 0.7),
             "left",
         ),
         (
-            "Mixtral revision\n1,023 rows",
+            "Mix rev (val)",
             percentage(95, 147),
-            percentage(301, 1023),
+            percentage(448 - 356, 1023),
             MIXTRAL,
             "s",
-            (1.0, 1.2),
+            (1.0, 0.7),
             "left",
         ),
         (
-            "Mixtral commit\n1,023 rows",
+            "Mix selector",
             percentage(137, 147),
-            percentage(140, 1023),
+            percentage(287 - 356, 1023),
             COMMIT,
             "D",
-            (-1.0, 1.2),
+            (-1.0, 0.7),
             "right",
         ),
     ]
@@ -239,23 +264,24 @@ def retention_panel(ax: plt.Axes) -> None:
             zorder=3,
         )
         ax.annotate(
-            f"{label}\n+{gain:.2f} pp / {retention:.1f}% retained",
+            f"{label}: {gain:+.2f} pp / {retention:.1f}%",
             (retention, gain),
             xytext=(retention + offset[0], gain + offset[1]),
             textcoords="data",
             ha=alignment,
             va="bottom",
-            fontsize=7.8,
+            fontsize=6.8,
             color=INK,
         )
     ax.set_xlim(58, 101)
-    ax.set_ylim(8, 34)
-    ax.set_xlabel("Unchanged-correct cases retained (%)")
-    ax.set_ylabel("Gain over unchanged (percentage points)")
+    ax.axhline(0, color=INK, linewidth=0.8)
+    ax.set_ylim(-10, 13)
+    ax.set_xlabel("Source-only-correct cases retained (%)")
+    ax.set_ylabel("Delta vs draft-matched comparator (percentage points)")
     ax.set_title(
         "c  Capability and conservative retention separate", loc="left", weight="bold"
     )
-    ax.text(97.5, 9.0, "95% retention zone", ha="center", color=COMMIT, fontsize=8)
+    ax.text(97.5, -9.0, "95% retention zone", ha="center", color=COMMIT, fontsize=8)
 
 
 def lifecycle_panel(ax: plt.Axes) -> None:
@@ -327,7 +353,7 @@ def lifecycle_panel(ax: plt.Axes) -> None:
     ax.text(
         6.9,
         5.25,
-        "same source + draft\nsame output budget",
+        "dense lifecycle: same source + draft\nsame output budget",
         ha="center",
         va="center",
         fontsize=7.4,
@@ -469,7 +495,7 @@ def causal_gate_panel(ax: plt.Axes) -> None:
     ax.text(
         5.0,
         0.25,
-        "Qwen3.6-35B-A3B: 32,784 gate parameters; response loss only",
+        "Qwen3.6-35B-A3B: 32,784 incremental gate; 2,392,080 Shohin parameters total",
         ha="center",
         fontsize=7.8,
         color=QWEN,
@@ -500,12 +526,12 @@ def render_architecture(output_dir: Path) -> tuple[Path, Path]:
     fig.savefig(
         svg,
         bbox_inches="tight",
-        metadata={"Creator": "Shohin", "Date": "2026-08-18"},
+        metadata={"Creator": "Shohin", "Date": "2026-08-19"},
     )
     svg.write_text(
         "\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n"
     )
-    fixed_time = datetime(2026, 8, 18, tzinfo=timezone.utc)
+    fixed_time = datetime(2026, 8, 19, tzinfo=timezone.utc)
     fig.savefig(
         pdf,
         bbox_inches="tight",
@@ -543,7 +569,7 @@ def render(output_dir: Path) -> tuple[Path, Path]:
     moe_panel(axes[1])
     retention_panel(axes[2])
     fig.suptitle(
-        "Shohin: temporal revision transfers; commitment determines whether capability is retained",
+        "Shohin: temporal revision transfers; auxiliary selection exposes the retention boundary",
         x=0.01,
         ha="left",
         fontsize=15,
@@ -555,12 +581,12 @@ def render(output_dir: Path) -> tuple[Path, Path]:
     fig.savefig(
         svg,
         bbox_inches="tight",
-        metadata={"Creator": "Shohin", "Date": "2026-08-18"},
+        metadata={"Creator": "Shohin", "Date": "2026-08-19"},
     )
     svg.write_text(
         "\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n"
     )
-    fixed_time = datetime(2026, 8, 18, tzinfo=timezone.utc)
+    fixed_time = datetime(2026, 8, 19, tzinfo=timezone.utc)
     fig.savefig(
         pdf,
         bbox_inches="tight",

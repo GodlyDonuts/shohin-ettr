@@ -1,0 +1,106 @@
+{
+  "schema": "shohin-gpt-oss-120b-source-disjoint-commit-confirmation-result-v1",
+  "status": "complete_gate_fail_no_improvement",
+  "date": "2026-08-20",
+  "scientific_classification": "prospective source-disjoint confirmation; selector weights and revision-margin threshold were frozen before candidate generation and scoring",
+  "host": {
+    "model": "openai/gpt-oss-120b",
+    "total_parameters": 117000000000,
+    "active_parameters": 5100000000,
+    "benchmark": "MMLU-Pro",
+    "rows": 256
+  },
+  "source_disjointness": {
+    "prepared_source_sha256": "6831c3cfcb21580481e04aa034783314c7385627cc788ac0f6d38e73b057a3e1",
+    "selected_identity_sha256": "c5393c15d36a441b6a43b8e2eee0db90a11199e16434db06704a7dbd7b9954e4",
+    "unique_identities": 256,
+    "prior_public_screen_overlap": 0,
+    "prior_q36_external_overlap": 0,
+    "labels_or_correctness_visible_before_score": false
+  },
+  "frozen_policy": {
+    "selector_backbone": "Qwen3.6-35B-A3B",
+    "selector_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "revision_margin_threshold": 0.703125,
+    "model_visible_fields": [
+      "question",
+      "candidate_a.completion",
+      "candidate_b.completion"
+    ],
+    "task_correctness_or_host_label_visible": false,
+    "assessor_access_count": 0,
+    "order_consistent_rows": 256,
+    "prompt_truncated_rows": 0
+  },
+  "raw_arms": {
+    "unchanged": {
+      "correct": 187,
+      "total": 256,
+      "accuracy": 0.73046875,
+      "empty_completions": 5,
+      "max_token_exhausted": 20
+    },
+    "trained_revision": {
+      "correct": 120,
+      "total": 256,
+      "accuracy": 0.46875,
+      "gain_over_unchanged_count": -67,
+      "unchanged_correct_retained": 109,
+      "unchanged_correct_retention": 0.5828877005347594,
+      "empty_completions": 35,
+      "max_token_exhausted": 87
+    },
+    "revision_vs_unchanged": {
+      "revision_only_correct": 11,
+      "unchanged_only_correct": 78,
+      "net_correct": -67,
+      "mcnemar_exact_two_sided_p": 1.367383267102241e-13
+    }
+  },
+  "model_owned_commit": {
+    "selected_correct": 187,
+    "total": 256,
+    "accuracy": 0.73046875,
+    "gain_over_unchanged_count": 0,
+    "gain_over_revision_count": 67,
+    "selection_counts": {
+      "revision": 33,
+      "unchanged": 223
+    },
+    "unchanged_correct_retained": 184,
+    "unchanged_correct_retention": 0.983957219251337,
+    "selected_only_correct_vs_unchanged": 3,
+    "unchanged_only_correct_vs_selected": 3,
+    "mcnemar_exact_two_sided_p_vs_unchanged": 1.0,
+    "selected_only_correct_vs_revision": 75,
+    "revision_only_correct_vs_selected": 8,
+    "mcnemar_exact_two_sided_p_vs_revision": 9.099722954884666e-15
+  },
+  "gate": {
+    "improves_unchanged": false,
+    "retains_at_least_95_percent_unchanged_correct": true,
+    "all_domains_nonnegative_vs_unchanged": true,
+    "pass": false
+  },
+  "interpretation": {
+    "demonstrated_result": "The frozen Qwen3.6-trained semantic commit policy prevented a severe cross-family raw-revision regression on untouched GPT-OSS-120B MMLU-Pro identities: it recovered all 67 net answers and retained 98.40% of baseline-correct rows.",
+    "falsified_claim": "It did not improve the untouched baseline: the selected system tied unchanged at 187/256, with three gains and three losses. The prospective improvement gate therefore failed.",
+    "publication_boundary": "The result supports conservative fallback transfer, not a claim of source-disjoint GPT-OSS capability improvement. The earlier +13/256 exploratory screen did not reproduce as a net gain on this untouched MMLU-Pro confirmation."
+  },
+  "custody": {
+    "score_sha256": "2ace56d9c400f0275b1acb826e2ba73b98f615307b80e03e63dd81eb37425d05",
+    "selection_candidates_sha256": "a010a348db6e4de2fd73abaabf4a9c0961fc423bd1f6e3c5fd219ae67348e84c",
+    "selections_sha256": "1efe54fbda696b8c4619c1a4914c390e3382e0cde6784d01c796b07d20b3cca6",
+    "application_sha256": "d6891f2b41d4d63f8ba5ddf2027dc5f7d3546b321e2a92a3598cbb7317e44fb6",
+    "result_sha256": "85447cedd9ce1b49eafcd7c75b60038191a4cd34fe231657db55ae9d0fcefade",
+    "independent_score_replay": "pass",
+    "independent_selection_replay": "pass",
+    "all_scientific_job_restarts": 0,
+    "duplicate_healthy_scientific_jobs": 0
+  },
+  "accounting": {
+    "successful_scientific_h100_hours": 6.339166666666666,
+    "infrastructure_failure_h100_hours": 0.29777777777777775,
+    "total_h100_hours": 6.6369444444444445
+  }
+}
