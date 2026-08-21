@@ -1,0 +1,120 @@
+{
+  "schema": "shohin-nemotron-super-mechanics-failure-v1",
+  "status": "terminal_mechanics_failure_before_science",
+  "job": {
+    "id": 767780,
+    "name": "nemotron-super-mechanics",
+    "node": "evc43",
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "submitted_at": "2026-08-20T21:34:39-04:00",
+    "started_at": "2026-08-20T21:35:00-04:00",
+    "ended_at": "2026-08-20T22:01:57-04:00",
+    "elapsed_seconds": 1617,
+    "restarts": 0,
+    "h100s": 2
+  },
+  "inputs": {
+    "source_commit": "042bcdb4ebb5641fb822bb4747209a30dc1d206d",
+    "runtime_manifest_sha256": "3e55b9c637e4e4d102a2f2a4cedd91fcbe5ee5014b3a90eb07aca218cc979d44",
+    "host": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "model_manifest_sha256": "8bb8bb898794651791de9d79c1041fe0ec6ad0f54a97b03f52620bd6e245ce92",
+    "overlay_manifest_sha256": "cde0fa5b91d50d1509872cbc577cf016d0a6c6697bfb066d607f420c1b568e84"
+  },
+  "logs": {
+    "stdout": {
+      "path": "/lustre/fs1/home/sa305415/shohin/logs/nemotron_super_mechanics_767780.out",
+      "bytes": 457,
+      "lines": 5,
+      "sha256": "6d885b119d91bdc44f3f016ad9800b091c61a18e1189fbacb9c43f61fda4f11c"
+    },
+    "stderr": {
+      "path": "/lustre/fs1/home/sa305415/shohin/logs/nemotron_super_mechanics_767780.err",
+      "bytes": 16517471,
+      "lines": 12,
+      "sha256": "49186de01ebd40e1188b4a46f8c16deda38934dc24774d78c00baec8f6ddcbd4"
+    }
+  },
+  "mechanics_observation": {
+    "full_model_forward_completed": true,
+    "full_model_backward_completed": true,
+    "modelopt_fp8_forward_dtype_repair_exercised": true,
+    "modelopt_fp8_frozen_weight_dgrad_repair_exercised": true,
+    "controlled_layers": [
+      54,
+      56,
+      59,
+      61,
+      63,
+      65,
+      67,
+      70,
+      72,
+      74,
+      76,
+      79,
+      81,
+      83,
+      85,
+      87
+    ],
+    "layers_with_nan_adapter_a_and_b_gradients": [
+      54,
+      56,
+      59,
+      61,
+      63,
+      65,
+      67,
+      70,
+      72,
+      74,
+      76,
+      79
+    ],
+    "nan_gradient_elements": 1769472,
+    "layers_with_finite_elements_but_infinite_adapter_b_norm": [
+      81,
+      83
+    ],
+    "layer_85_adapter_b_norm": 1389093632.0,
+    "layer_87_adapter_b_norm": 0.016291188076138496,
+    "root_cause": "activation-gradient growth through intervening frozen Mamba and MoE segments",
+    "hardware_or_scheduler_failure": false
+  },
+  "no_science_boundary": {
+    "mechanics_report_exists": false,
+    "mechanics_checkpoint_exists": false,
+    "training_root_exists": false,
+    "candidate_root_exists": false,
+    "candidate_rows": 0,
+    "assessor_accessed": false,
+    "score_exists": false,
+    "downstream_jobs_cancelled_without_allocation": [
+      767781,
+      767782,
+      767783,
+      767784,
+      767785,
+      767786,
+      767787,
+      767788,
+      767789,
+      767790,
+      767791,
+      767792,
+      767793,
+      767794
+    ]
+  },
+  "prospective_resolution": {
+    "commit": "cd1e3f688385606db5cf06cfac2627134c64026c",
+    "mechanic": "training-only direction-preserving L2 clipping at the outputs of the same 16 controlled PostMixerResidual blocks",
+    "maximum_boundary_gradient_norm": 1.0,
+    "forward_values_changed": false,
+    "gradient_direction_changed_when_scaled": false,
+    "data_arms_prompts_seeds_thresholds_or_selection_rule_changed": false,
+    "fresh_mechanics_job": 767823
+  },
+  "interpretation": "This is a mechanics result, not a capability result. It proves the pinned FP8 forward and frozen-weight dgrad compatibility repairs reached a complete backward pass, and localizes the next failure to backward activation growth before any training or benchmark candidate existed."
+}
