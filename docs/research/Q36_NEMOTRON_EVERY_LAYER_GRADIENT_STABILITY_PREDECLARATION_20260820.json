@@ -1,0 +1,146 @@
+{
+  "schema": "shohin-moe-termination-aware-commit-predeclaration-v1",
+  "status": "frozen_during_mechanics_before_mechanics_completion_training_candidate_generation_and_scoring",
+  "frozen_at": "2026-08-20T22:47:41-04:00",
+  "rule": {
+    "decision": "select revision iff the baseline exhausted its generation limit and revision did not; otherwise retain the baseline",
+    "uses_task_label": false,
+    "uses_correctness_at_selection": false,
+    "uses_assessor_at_selection": false,
+    "uses_completion_text": false,
+    "model_visible_fields": [
+      "baseline.max_token_exhausted",
+      "revision.max_token_exhausted"
+    ],
+    "implementation_source": "pipeline/analyze_moe_termination_commit.py",
+    "implementation_sha256": "eb3fea20006463555abc4df5e8fbdb490ed15d21e1a576d32d6418eede78c378"
+  },
+  "repair_lineage": {
+    "failed_mechanics_jobs": [
+      767488,
+      767715,
+      767780,
+      767823
+    ],
+    "latest_failure": {
+      "job": 767823,
+      "phase": "backward propagation before the gradient receipt",
+      "node": "evc43",
+      "elapsed_seconds": 1584,
+      "restarts": 0,
+      "cause": "a nonfinite gradient arrived at one of the 16 sparse controlled post-mixer boundaries after crossing an intervening frozen native block",
+      "stdout_sha256": "b0efbe989128aeab7072fb0506ddc5d219439a44a10923dfb4335a50e5b0b641",
+      "stderr_sha256": "669b60337f98138cc573dfe7c4fd2c22a9c3f7b9220b511e39b088bdc4a54c7e"
+    },
+    "evidence_from_prior_gradient_receipt": {
+      "last_finite_small_adapter_b_layer": 87,
+      "layer_85_adapter_b_norm": 1389093632.0,
+      "finite_element_infinite_norm_layers": [
+        81,
+        83
+      ],
+      "first_controlled_layer_with_nan_adapter_gradients": 79,
+      "conclusion": "the overflow occurs between sparse treatment boundaries rather than inside the Shohin residual attachment itself"
+    },
+    "all_failed_before_training_candidate_generation_assessor_access_and_scoring": true,
+    "current_change_class": "prospective_training_stability_mechanic",
+    "current_change": {
+      "boundary": "every-native-block-output-direction-preserving-l2-clip-v1",
+      "maximum_l2_norm": 1.0,
+      "locations": "all 88 frozen native block outputs",
+      "training_only": true,
+      "forward_values_unchanged": true,
+      "gradient_direction_preserved_when_scaled": true,
+      "nonfinite_gradients_rejected_with_exact_layer_index": true,
+      "shohin_attachment_layers_changed": false
+    },
+    "scientific_data_arms_prompts_seeds_thresholds_or_selection_rule_changed": false,
+    "backward_training_dynamics_changed_prospectively": true
+  },
+  "runtime": {
+    "source_commit": "201dc76f3178715af819229c32dd77f35a9cdd22",
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/upward_moe_runtime_201dc76f_r1",
+    "manifest_sha256": "ac06e9bd1aced7a8cfc024fd58eb3d467c0145ccb7e4d3c9668c65059d4251fc",
+    "runtime_json_sha256": "563b5f3ca3ef4ab230bde58cc07761b210101af9b342481241d76bebdf64b43e",
+    "architecture_source_sha256": "7b93197056a00ba9882d4c11c89261da2140095dfcbd6846c20b337667cdbecf",
+    "mechanics_source_sha256": "e8f053abe0f9492b530038fede5e6cec160c40d16e70ed69a453a0bd38f3df41",
+    "files": 246,
+    "exact_membership_verified": true,
+    "writable_symlink_or_special_members": 0
+  },
+  "target": {
+    "host": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "mechanics_job": 767994,
+    "training_job": 767995,
+    "evaluation_jobs": [
+      767996,
+      767997,
+      767998,
+      767999,
+      768000,
+      768001,
+      768002,
+      768003,
+      768004,
+      768005,
+      768006,
+      768007
+    ],
+    "score_job": 768008,
+    "mechanics_submit_time": "2026-08-20T22:47:04-04:00",
+    "mechanics_start_time": "2026-08-20T22:47:32-04:00",
+    "mechanics_state_at_freeze": "RUNNING",
+    "mechanics_elapsed_seconds_at_freeze": 9,
+    "mechanics_restarts_at_freeze": 0,
+    "mechanics_report": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_mechanics_modelopt_201dc76f_r1.json",
+    "training_root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_revision_201dc76f_r1",
+    "candidate_root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_201dc76f_r1",
+    "score": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_201dc76f_r1/score.json"
+  },
+  "candidate_identities": {
+    "arms": [
+      "unchanged",
+      "self_refinement",
+      "revision"
+    ],
+    "ordered_shards_per_arm": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "required_rows": 256,
+    "one_independent_two_h100_job_per_arm_shard_identity": true,
+    "requeue": false,
+    "candidate_root_was_absent_at_freeze": true
+  },
+  "state_at_freeze": {
+    "mechanics_report_exists": false,
+    "training_root_exists": false,
+    "candidate_root_exists": false,
+    "score_exists": false,
+    "candidate_rows_available": 0,
+    "scientific_score_available": false
+  },
+  "confirmation_contract": {
+    "baseline_reports": [
+      "unchanged",
+      "self_refinement"
+    ],
+    "required_rows": 256,
+    "required_tasks": [
+      "bbh_logic",
+      "math500",
+      "mbpp"
+    ],
+    "primary_conservative_baseline": "self_refinement",
+    "report_both_baselines": true,
+    "success_requires": [
+      "committed_correct > baseline_correct",
+      "retained_baseline_correct == baseline_correct",
+      "paired_losses == 0"
+    ],
+    "result_policy": "report the exact result regardless of direction without altering the frozen selection rule or live candidate identities"
+  },
+  "interpretation": "This declaration moves the same training-only direction-preserving bound from sparse treatment outputs to every native block output after live evidence proved that an intervening frozen block can create nonfinite gradients before the next sparse boundary. The change is prospective and affects backward training dynamics only. It was frozen during mechanics and before mechanics completion, training, candidate generation, assessor access, or scoring."
+}
