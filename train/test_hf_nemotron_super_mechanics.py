@@ -330,6 +330,12 @@ def test_modelopt_runtime_receipt_rejects_cpu_or_missing_fp8() -> None:
             "registration_count": 1,
             "gemm_function": "Fp8PerTensorLinear.apply",
             "availability_check": "_fp8_availability_check",
+            "backward_mode": (
+                "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+            ),
+            "trainable_weight_backward": False,
+            "bias_gradient_backward": False,
+            "tensor_parallel_dgrad": False,
         },
         "frozen_empty_expert_compatibility": {
             "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
@@ -732,16 +738,46 @@ def test_fp8_per_tensor_backend_registration_is_exact(
     source.parent.mkdir(parents=True)
     source.write_text("pinned fp8 backend\n")
 
-    class Fp8PerTensorLinear:
-        @classmethod
-        def apply(cls, *args):
-            return args
+    class Fp8PerTensorLinear(torch.autograd.Function):
+        @staticmethod
+        def forward(
+            ctx,
+            quant_module,
+            input_tensor,
+            weight,
+            bias=None,
+            allreduce_dgrad=False,
+            tp_group=None,
+        ):
+            ctx.save_for_backward(
+                input_tensor if weight.requires_grad else None,
+                weight if input_tensor.requires_grad else None,
+                None,
+            )
+            ctx.compute_bias_grad = bias is not None and bias.requires_grad
+            ctx.block_sizes = None
+            ctx.allreduce_dgrad = allreduce_dgrad
+            ctx.tp_group = tp_group
+            return input_tensor @ weight.float().T
+
+        @staticmethod
+        def backward(ctx, grad_outputs):
+            _, weight, _ = ctx.saved_tensors
+            return None, grad_outputs @ weight, None, None, None, None
+
+    class QTensorWrapper:
+        pass
+
+    class FP8QTensor:
+        pass
 
     def availability_check(*args):
         return True
 
     backend = ModuleType("modelopt.torch.quantization.backends.fp8_per_tensor_gemm")
     backend.Fp8PerTensorLinear = Fp8PerTensorLinear
+    backend.QTensorWrapper = QTensorWrapper
+    backend.FP8QTensor = FP8QTensor
     backend._fp8_availability_check = availability_check
     registry = type(
         "Registry",
@@ -776,7 +812,42 @@ def test_fp8_per_tensor_backend_registration_is_exact(
         "registration_count": 1,
         "gemm_function": "Fp8PerTensorLinear.apply",
         "availability_check": "_fp8_availability_check",
+        "backward_mode": (
+            "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+        ),
+        "trainable_weight_backward": False,
+        "bias_gradient_backward": False,
+        "tensor_parallel_dgrad": False,
     }
+    value = torch.tensor([[1.0, 2.0]], requires_grad=True)
+    weight = torch.tensor([[3.0, 4.0], [5.0, 6.0]], dtype=torch.bfloat16)
+    output = Fp8PerTensorLinear.apply(None, value, weight)
+    output.sum().backward()
+    assert torch.equal(value.grad, torch.tensor([[8.0, 10.0]]))
+    assert value.grad.dtype == torch.float32
+
+    trainable_weight = weight.detach().clone().requires_grad_(True)
+    with pytest.raises(NemotronSuperMechanicsError, match="frozen backward surface"):
+        Fp8PerTensorLinear.apply(
+            None,
+            torch.tensor([[1.0, 2.0]], requires_grad=True),
+            trainable_weight,
+        ).sum().backward()
+    with pytest.raises(NemotronSuperMechanicsError, match="frozen backward surface"):
+        Fp8PerTensorLinear.apply(
+            None,
+            torch.tensor([[1.0, 2.0]], requires_grad=True),
+            weight,
+            torch.zeros(2, requires_grad=True),
+        ).sum().backward()
+    with pytest.raises(NemotronSuperMechanicsError, match="frozen backward surface"):
+        Fp8PerTensorLinear.apply(
+            None,
+            torch.tensor([[1.0, 2.0]], requires_grad=True),
+            weight,
+            None,
+            True,
+        ).sum().backward()
     registry._registry.append(registry._registry[0])
     with pytest.raises(NemotronSuperMechanicsError, match="backend"):
         install_modelopt_fp8_per_tensor_backend()

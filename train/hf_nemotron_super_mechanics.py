@@ -756,6 +756,11 @@ def modelopt_fp8_receipt_is_exact(payload: Any) -> bool:
         and fp8_backend.get("registration_count") == 1
         and fp8_backend.get("gemm_function") == "Fp8PerTensorLinear.apply"
         and fp8_backend.get("availability_check") == "_fp8_availability_check"
+        and fp8_backend.get("backward_mode")
+        == "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+        and fp8_backend.get("trainable_weight_backward") is False
+        and fp8_backend.get("bias_gradient_backward") is False
+        and fp8_backend.get("tensor_parallel_dgrad") is False
         and empty_experts.get("mode")
         == "skip-mathematically-zero-frozen-empty-expert-compute"
         and empty_experts.get("moe_layers") == len(MOE_LAYER_INDICES)
@@ -805,12 +810,66 @@ def install_modelopt_fp8_per_tensor_backend() -> dict[str, Any]:
         is not backend._fp8_availability_check
     ):
         raise NemotronSuperMechanicsError("ModelOpt FP8 GEMM backend differs")
+
+    linear = backend.Fp8PerTensorLinear
+    if getattr(linear, "_shohin_frozen_dgrad_dtype_compatibility", False):
+        raise NemotronSuperMechanicsError("ModelOpt FP8 backward already patched")
+    original_forward = linear.forward
+
+    def _forward_with_input_dtype(ctx: Any, *args: Any, **kwargs: Any) -> Any:
+        if len(args) < 2 or not isinstance(args[1], torch.Tensor):
+            raise NemotronSuperMechanicsError("ModelOpt FP8 forward input differs")
+        ctx._shohin_input_dtype = args[1].dtype
+        return original_forward(ctx, *args, **kwargs)
+
+    def _frozen_dgrad_with_dtype_compatibility(
+        ctx: Any, grad_outputs: torch.Tensor
+    ) -> tuple[Any, ...]:
+        input_tensor, weight, scale = ctx.saved_tensors
+        if (
+            input_tensor is not None
+            or weight is None
+            or getattr(ctx, "compute_bias_grad", False)
+            or getattr(ctx, "allreduce_dgrad", False)
+            or not isinstance(grad_outputs, torch.Tensor)
+            or not hasattr(ctx, "_shohin_input_dtype")
+        ):
+            raise NemotronSuperMechanicsError(
+                "ModelOpt FP8 frozen backward surface differs"
+            )
+        if isinstance(weight, backend.QTensorWrapper):
+            weight = weight.get_qtensor()
+            if not isinstance(weight, backend.FP8QTensor):
+                raise NemotronSuperMechanicsError("ModelOpt FP8 frozen weight differs")
+            weight = weight.dequantize(
+                scale=scale,
+                block_sizes=getattr(ctx, "block_sizes", None),
+            )
+        if not isinstance(weight, torch.Tensor):
+            raise NemotronSuperMechanicsError("ModelOpt FP8 dgrad weight differs")
+        common_dtype = torch.promote_types(grad_outputs.dtype, weight.dtype)
+        if common_dtype not in (torch.bfloat16, torch.float32):
+            raise NemotronSuperMechanicsError("ModelOpt FP8 dgrad dtype differs")
+        grad_input = (grad_outputs.to(common_dtype) @ weight.to(common_dtype)).to(
+            ctx._shohin_input_dtype
+        )
+        return None, grad_input, None, None, None, None
+
+    linear.forward = staticmethod(_forward_with_input_dtype)
+    linear.backward = staticmethod(_frozen_dgrad_with_dtype_compatibility)
+    linear._shohin_frozen_dgrad_dtype_compatibility = True
     return {
         "mode": "modelopt-fp8-per-tensor-scaled-mm",
         "source_sha256": MODELOPT_FP8_BACKEND_SHA256,
         "registration_count": 1,
         "gemm_function": "Fp8PerTensorLinear.apply",
         "availability_check": "_fp8_availability_check",
+        "backward_mode": (
+            "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+        ),
+        "trainable_weight_backward": False,
+        "bias_gradient_backward": False,
+        "tensor_parallel_dgrad": False,
     }
 
 

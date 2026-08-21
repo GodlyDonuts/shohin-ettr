@@ -87,6 +87,12 @@ def _modelopt_fp8() -> dict[str, object]:
             "registration_count": 1,
             "gemm_function": "Fp8PerTensorLinear.apply",
             "availability_check": "_fp8_availability_check",
+            "backward_mode": (
+                "frozen_weight_dgrad_promote_to_common_dtype_restore_input_dtype"
+            ),
+            "trainable_weight_backward": False,
+            "bias_gradient_backward": False,
+            "tensor_parallel_dgrad": False,
         },
         "frozen_empty_expert_compatibility": {
             "mode": "skip-mathematically-zero-frozen-empty-expert-compute",
