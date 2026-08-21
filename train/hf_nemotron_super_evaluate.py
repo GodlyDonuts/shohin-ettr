@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 import hashlib
+import importlib
+import inspect
 import json
 import os
 from pathlib import Path
@@ -19,6 +21,7 @@ from hf_nemotron_super_mechanics import (
     gradient_receipt_is_exact,
     MAMBA_VERSION,
     MODELOPT_VERSION,
+    REMOTE_MODELING_SHA256,
     TORCH_VERSION,
     install_triton_allocator_compatibility,
     load_modelopt_fp8_backbone,
@@ -52,9 +55,11 @@ from hf_pcf1_evaluate import shard_bounds
 from nemotron_super_post_mixer_revision import NemotronSuperRevisionModel
 from q36_upward_moe_host import (
     MODEL_CONFIG_SHA256,
+    MODEL_LAYERS,
     MODEL_MANIFEST_SHA256,
     MODEL_REVISION,
     MODEL_SOURCE_REVISION_SHA256,
+    LAYER_TYPES,
     TRAINABLE_PARAMETERS_PER_ROLE,
     load_pinned_config,
     sha256_file,
@@ -69,6 +74,7 @@ ROWS = 256
 SHARDS = 4
 SEED = 2026080816
 MAX_NEW_TOKENS = 768
+GENERATION_CACHE_SCHEMA = "shohin-nemotron-super-hybrid-generation-cache-v1"
 
 
 class NemotronSuperEvaluationError(RuntimeError):
@@ -210,6 +216,107 @@ def _package_versions() -> dict[str, str | None]:
     }
 
 
+def _hybrid_generation_cache(
+    backbone: Any, batch_size: int
+) -> tuple[Any, dict[str, Any]]:
+    """Build the pinned host cache on each block's actual execution device.
+
+    Transformers 5.15 otherwise eagerly injects a generic ``DynamicCache``
+    before the remote model's ``prepare_inputs_for_generation`` runs.  That
+    cache cannot represent NemotronH's convolution and SSM state.  The remote
+    implementation already supplies the exact hybrid cache class; this helper
+    instantiates it and projects each layer's state onto the same CUDA device
+    as that immutable layer.
+    """
+
+    if (
+        isinstance(batch_size, bool)
+        or not isinstance(batch_size, int)
+        or batch_size < 1
+    ):
+        raise NemotronSuperEvaluationError("generation cache batch differs")
+    remote_module = importlib.import_module(backbone.__class__.__module__)
+    remote_path = Path(inspect.getfile(remote_module)).resolve(strict=True)
+    cache_class = getattr(remote_module, "NemotronHHybridDynamicCache", None)
+    layers = getattr(getattr(backbone, "model", None), "layers", None)
+    if (
+        sha256_file(remote_path) != REMOTE_MODELING_SHA256
+        or not isinstance(cache_class, type)
+        or cache_class.__name__ != "NemotronHHybridDynamicCache"
+        or cache_class.__module__ != remote_module.__name__
+        or not isinstance(layers, torch.nn.ModuleList)
+        or len(layers) != MODEL_LAYERS
+        or tuple(getattr(backbone.config, "layers_block_type", ())) != LAYER_TYPES
+    ):
+        raise NemotronSuperEvaluationError("generation cache host differs")
+
+    layer_devices: list[torch.device] = []
+    for index, layer in enumerate(layers):
+        devices = {
+            value.device
+            for value in (*tuple(layer.parameters()), *tuple(layer.buffers()))
+            if value.numel() > 0
+        }
+        if len(devices) != 1:
+            raise NemotronSuperEvaluationError(
+                f"generation cache layer placement differs at {index}"
+            )
+        device = next(iter(devices))
+        if device.type != "cuda" or device.index not in {0, 1}:
+            raise NemotronSuperEvaluationError(
+                f"generation cache layer device differs at {index}"
+            )
+        layer_devices.append(device)
+
+    cache = cache_class(
+        backbone.config,
+        batch_size,
+        dtype=backbone.dtype,
+        device=layer_devices[0],
+    )
+    mappings = ("conv_states", "ssm_states")
+    sequences = ("key_cache", "value_cache")
+    if any(
+        set(getattr(cache, name, {})) != set(range(MODEL_LAYERS)) for name in mappings
+    ) or any(len(getattr(cache, name, ())) != MODEL_LAYERS for name in sequences):
+        raise NemotronSuperEvaluationError("generation cache geometry differs")
+    for index, device in enumerate(layer_devices):
+        for name in mappings:
+            values = getattr(cache, name)
+            values[index] = values[index].to(device)
+        for name in sequences:
+            values = getattr(cache, name)
+            values[index] = values[index].to(device)
+
+    cache_tensors = [
+        getattr(cache, name)[index]
+        for index in range(MODEL_LAYERS)
+        for name in (*mappings, *sequences)
+    ]
+    if any(
+        not isinstance(value, torch.Tensor)
+        or value.shape[0] != batch_size
+        or value.device != layer_devices[index // 4]
+        for index, value in enumerate(cache_tensors)
+    ):
+        raise NemotronSuperEvaluationError("generation cache tensor placement differs")
+    layer_device_counts = Counter(str(device) for device in layer_devices)
+    tensor_device_counts = Counter(str(value.device) for value in cache_tensors)
+    receipt = {
+        "schema": GENERATION_CACHE_SCHEMA,
+        "cache_class": f"{cache_class.__module__}.{cache_class.__name__}",
+        "remote_modeling_sha256": REMOTE_MODELING_SHA256,
+        "transformers_default_dynamic_cache_bypassed": True,
+        "batch_size": batch_size,
+        "layer_count": MODEL_LAYERS,
+        "mamba_layer_count": sum(value == "mamba" for value in LAYER_TYPES),
+        "layer_device_counts": dict(sorted(layer_device_counts.items())),
+        "cache_tensors_per_layer": 4,
+        "cache_tensor_device_counts": dict(sorted(tensor_device_counts.items())),
+    }
+    return cache, receipt
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     install_triton_allocator_compatibility()
     from transformers import AutoTokenizer
@@ -276,6 +383,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     torch.cuda.reset_peak_memory_stats()
     counters: Counter[str] = Counter()
     candidates: list[dict[str, Any]] = []
+    generation_cache_receipt: dict[str, Any] | None = None
     started = time.monotonic()
     for source in rows:
         draft = drafts[source["identity_sha256"]] if drafts is not None else None
@@ -285,6 +393,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         # projection and presence of the learned residual.
         rendered = [_render_prompt(tokenizer, question, True, False)]
         counters["prompt_tokens"] += q36_nonpadding_prompt_tokens(tokenizer, rendered)
+        generation_cache, observed_cache_receipt = _hybrid_generation_cache(
+            backbone, len(rendered)
+        )
+        if generation_cache_receipt is None:
+            generation_cache_receipt = observed_cache_receipt
+        elif generation_cache_receipt != observed_cache_receipt:
+            raise NemotronSuperEvaluationError(
+                "generation cache receipt changed within shard"
+            )
         completions, usage = _generate_completions(
             backbone,
             tokenizer,
@@ -294,6 +411,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             MAX_NEW_TOKENS,
             stop_ids,
             add_special_tokens=False,
+            past_key_values=generation_cache,
         )
         completion = completions[0]
         generated_tokens, exhausted = usage[0]
@@ -357,6 +475,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "fixed_draft_control": args.arm != "unchanged",
         "generation_mode": "greedy",
         "generation_sequence_contract": GENERATED_ONLY_SEQUENCE_CONTRACT,
+        "generation_cache_receipt": generation_cache_receipt,
         "max_new_tokens": MAX_NEW_TOKENS,
         "seed": args.seed,
         "batch_size": args.batch_size,

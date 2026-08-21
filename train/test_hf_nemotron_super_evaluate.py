@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import torch
@@ -275,3 +276,112 @@ def test_all_arms_share_the_training_prompt_envelope() -> None:
     source = Path(evaluation.__file__).read_text()
     assert "_render_prompt(tokenizer, question, True, False)" in source
     assert "_render_prompt(tokenizer, question, False, False)" not in source
+
+
+def test_hybrid_generation_cache_tracks_each_layer_device(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeTensor:
+        def __init__(self, device: torch.device, batch_size: int = 1) -> None:
+            self.device = device
+            self.shape = (batch_size, 0)
+
+        def numel(self) -> int:
+            return 1
+
+        def to(self, device: torch.device) -> "FakeTensor":
+            self.device = device
+            return self
+
+    class FakeLayer(torch.nn.Module):
+        def __init__(self, device: torch.device) -> None:
+            super().__init__()
+            self.value = FakeTensor(device)
+
+        def parameters(self, recurse: bool = True):
+            del recurse
+            return iter((self.value,))
+
+        def buffers(self, recurse: bool = True):
+            del recurse
+            return iter(())
+
+    def cache_init(self, config, batch_size, dtype, device) -> None:
+        del dtype
+        count = len(config.layers_block_type)
+        self.conv_states = {
+            index: FakeTensor(device, batch_size) for index in range(count)
+        }
+        self.ssm_states = {
+            index: FakeTensor(device, batch_size) for index in range(count)
+        }
+        self.key_cache = [FakeTensor(device, batch_size) for _ in range(count)]
+        self.value_cache = [FakeTensor(device, batch_size) for _ in range(count)]
+
+    module_name = "frozen.modeling_nemotron_h"
+    cache_class = type(
+        "NemotronHHybridDynamicCache",
+        (),
+        {"__module__": module_name, "__init__": cache_init},
+    )
+    backbone_class = type("NemotronHForCausalLM", (), {"__module__": module_name})
+    devices = [
+        torch.device("cuda:0"),
+        torch.device("cuda:0"),
+        torch.device("cuda:1"),
+        torch.device("cuda:1"),
+    ]
+    backbone = backbone_class()
+    backbone.config = SimpleNamespace(
+        layers_block_type=("mamba", "moe", "attention", "mamba")
+    )
+    backbone.dtype = torch.bfloat16
+    backbone.model = SimpleNamespace(
+        layers=torch.nn.ModuleList(FakeLayer(device) for device in devices)
+    )
+    remote_module = SimpleNamespace(
+        __name__=module_name, NemotronHHybridDynamicCache=cache_class
+    )
+    remote_path = tmp_path / "modeling_nemotron_h.py"
+    remote_path.write_text("frozen")
+    monkeypatch.setattr(evaluation, "MODEL_LAYERS", 4)
+    monkeypatch.setattr(
+        evaluation, "LAYER_TYPES", ("mamba", "moe", "attention", "mamba")
+    )
+    monkeypatch.setattr(evaluation.importlib, "import_module", lambda _: remote_module)
+    monkeypatch.setattr(evaluation.inspect, "getfile", lambda _: remote_path)
+    monkeypatch.setattr(
+        evaluation,
+        "sha256_file",
+        lambda path: (
+            evaluation.REMOTE_MODELING_SHA256
+            if path == remote_path
+            else mechanics.sha256_file(path)
+        ),
+    )
+    monkeypatch.setattr(evaluation.torch, "Tensor", FakeTensor)
+
+    cache, receipt = evaluation._hybrid_generation_cache(backbone, 1)
+    assert receipt == {
+        "schema": evaluation.GENERATION_CACHE_SCHEMA,
+        "cache_class": f"{module_name}.NemotronHHybridDynamicCache",
+        "remote_modeling_sha256": evaluation.REMOTE_MODELING_SHA256,
+        "transformers_default_dynamic_cache_bypassed": True,
+        "batch_size": 1,
+        "layer_count": 4,
+        "mamba_layer_count": 2,
+        "layer_device_counts": {"cuda:0": 2, "cuda:1": 2},
+        "cache_tensors_per_layer": 4,
+        "cache_tensor_device_counts": {"cuda:0": 8, "cuda:1": 8},
+    }
+    for index, device in enumerate(devices):
+        assert cache.conv_states[index].device == device
+        assert cache.ssm_states[index].device == device
+        assert cache.key_cache[index].device == device
+        assert cache.value_cache[index].device == device
+
+
+def test_evaluator_passes_pinned_hybrid_cache_to_generation() -> None:
+    source = Path(evaluation.__file__).read_text()
+    assert "past_key_values=generation_cache" in source
+    assert '"generation_cache_receipt": generation_cache_receipt' in source
