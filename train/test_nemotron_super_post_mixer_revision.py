@@ -9,8 +9,11 @@ import torch
 import torch.nn as nn
 
 from nemotron_super_post_mixer_revision import (
+    ACTIVATION_GRADIENT_BOUNDARY,
+    ACTIVATION_GRADIENT_MAX_L2_NORM,
     NemotronSuperRevisionError,
     NemotronSuperRevisionModel,
+    _bounded_activation_gradient,
 )
 from q36_upward_moe_host import (
     CONTROLLED_LAYER_INDICES,
@@ -152,6 +155,23 @@ def test_zero_initialized_residual_preserves_native_forward_then_updates() -> No
     loss.backward()
     assert all(block.adapter_b.weight.grad is not None for block in model.blocks)
     assert model.receipt()["layers"][0]["tokens"] == 1
+    assert model.receipt()["activation_gradient_boundary"] == {
+        "mode": ACTIVATION_GRADIENT_BOUNDARY,
+        "maximum_l2_norm": ACTIVATION_GRADIENT_MAX_L2_NORM,
+        "training_only": True,
+        "forward_values_unchanged": True,
+    }
+
+
+def test_activation_gradient_boundary_preserves_direction_and_caps_norm() -> None:
+    gradient = torch.tensor([3.0, 4.0])
+    bounded = _bounded_activation_gradient(gradient)
+    assert torch.allclose(bounded, torch.tensor([0.6, 0.8]))
+    assert float(bounded.norm()) == pytest.approx(ACTIVATION_GRADIENT_MAX_L2_NORM)
+    small = torch.tensor([0.3, 0.4])
+    assert torch.equal(_bounded_activation_gradient(small), small)
+    with pytest.raises(NemotronSuperRevisionError, match="nonfinite"):
+        _bounded_activation_gradient(torch.tensor([float("nan")]))
 
 
 def test_non_moe_controlled_surface_fails_closed() -> None:

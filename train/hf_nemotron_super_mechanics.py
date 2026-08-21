@@ -1242,8 +1242,11 @@ def _gradient_receipt(model: NemotronSuperRevisionModel) -> dict[str, Any]:
         if not parameter.requires_grad:
             continue
         gradient = parameter.grad
-        finite = bool(gradient is not None and torch.isfinite(gradient).all())
-        norm = float(gradient.float().norm().detach().cpu()) if finite else None
+        elements_finite = bool(gradient is not None and torch.isfinite(gradient).all())
+        norm = (
+            float(gradient.float().norm().detach().cpu()) if elements_finite else None
+        )
+        finite = bool(elements_finite and norm is not None and math.isfinite(norm))
         rows.append({"name": name, "finite": finite, "norm": norm})
         diagnostics.append(
             {

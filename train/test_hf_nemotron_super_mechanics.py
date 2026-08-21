@@ -932,8 +932,8 @@ def test_gradient_failure_emits_exact_diagnostics() -> None:
     class _Block(torch.nn.Module):
         def __init__(self) -> None:
             super().__init__()
-            self.adapter_a = torch.nn.Linear(1, 1, bias=False)
-            self.adapter_b = torch.nn.Linear(1, 1, bias=False)
+            self.adapter_a = torch.nn.Linear(2, 2, bias=False)
+            self.adapter_b = torch.nn.Linear(2, 2, bias=False)
 
     class _Model(torch.nn.Module):
         def __init__(self) -> None:
@@ -970,8 +970,12 @@ def test_gradient_failure_emits_exact_diagnostics() -> None:
     missing.grad = torch.full_like(missing, float("nan"))
     with pytest.raises(
         NemotronSuperMechanicsError,
-        match='"nan_values":1',
+        match='"nan_values":4',
     ):
+        mechanics._gradient_receipt(model)
+
+    missing.grad = torch.full_like(missing, 2.0e38)
+    with pytest.raises(NemotronSuperMechanicsError, match="gradient receipt differs"):
         mechanics._gradient_receipt(model)
 
 
