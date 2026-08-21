@@ -22,7 +22,7 @@ from q36_upward_moe_host import (
 
 ARCHITECTURE = "shohin-nemotron-super-shared-post-mixer-v1"
 ACTIVATION_GRADIENT_BOUNDARY = (
-    "controlled-post-mixer-output-direction-preserving-l2-clip-v1"
+    "every-native-block-output-direction-preserving-l2-clip-v1"
 )
 ACTIVATION_GRADIENT_MAX_L2_NORM = 1.0
 
@@ -31,28 +31,65 @@ class NemotronSuperRevisionError(RuntimeError):
     """The pinned upward-MoE residual surface differs."""
 
 
-def _bounded_activation_gradient(gradient: torch.Tensor) -> torch.Tensor:
+def _bounded_activation_gradient(
+    gradient: torch.Tensor, *, layer_index: int | None = None
+) -> torch.Tensor:
     """Clip a finite activation gradient without changing its direction."""
 
+    boundary = "unknown" if layer_index is None else str(layer_index)
     if not isinstance(gradient, torch.Tensor) or not gradient.is_floating_point():
-        raise NemotronSuperRevisionError("activation gradient geometry differs")
+        raise NemotronSuperRevisionError(
+            f"activation gradient geometry differs at layer {boundary}"
+        )
     max_abs = gradient.detach().abs().amax()
     if not bool(torch.isfinite(max_abs)):
-        raise NemotronSuperRevisionError("activation gradient is nonfinite")
+        nan_values = int(torch.isnan(gradient).sum().detach().cpu())
+        positive_infinite_values = int(torch.isposinf(gradient).sum().detach().cpu())
+        negative_infinite_values = int(torch.isneginf(gradient).sum().detach().cpu())
+        raise NemotronSuperRevisionError(
+            "activation gradient is nonfinite at layer "
+            f"{boundary}: nan={nan_values}, positive_inf={positive_infinite_values}, "
+            f"negative_inf={negative_infinite_values}"
+        )
     if float(max_abs) == 0.0:
         return gradient
     normalized = gradient / max_abs
     normalized_norm = normalized.float().norm()
     if not bool(torch.isfinite(normalized_norm)) or float(normalized_norm) <= 0.0:
-        raise NemotronSuperRevisionError("activation gradient norm differs")
+        raise NemotronSuperRevisionError(
+            f"activation gradient norm differs at layer {boundary}"
+        )
     threshold = ACTIVATION_GRADIENT_MAX_L2_NORM / normalized_norm
     if bool(max_abs <= threshold):
         return gradient
     scale = (ACTIVATION_GRADIENT_MAX_L2_NORM / max_abs) / normalized_norm
     bounded = gradient * scale.to(dtype=gradient.dtype)
     if not bool(torch.isfinite(bounded).all()):
-        raise NemotronSuperRevisionError("bounded activation gradient differs")
+        raise NemotronSuperRevisionError(
+            f"bounded activation gradient differs at layer {boundary}"
+        )
     return bounded
+
+
+def _layer_output_gradient_boundary(layer_index: int):
+    """Return a forward hook that bounds the backward vector at one native block."""
+
+    def attach_boundary(
+        _module: nn.Module, _inputs: tuple[Any, ...], output: Any
+    ) -> Any:
+        if not isinstance(output, torch.Tensor):
+            raise NemotronSuperRevisionError(
+                f"Nemotron Super layer {layer_index} output geometry differs"
+            )
+        if output.requires_grad:
+            output.register_hook(
+                lambda gradient: _bounded_activation_gradient(
+                    gradient, layer_index=layer_index
+                )
+            )
+        return output
+
+    return attach_boundary
 
 
 class PostMixerResidual(nn.Module):
@@ -112,10 +149,7 @@ class PostMixerResidual(nn.Module):
             self._tokens += tokens
             self._residual_norm += float(residual.float().norm(dim=-1).sum().cpu())
             self._native_norm += float(native.float().norm(dim=-1).sum().cpu())
-        output = native + residual.to(native.dtype)
-        if output.requires_grad:
-            output.register_hook(_bounded_activation_gradient)
-        return output
+        return native + residual.to(native.dtype)
 
 
 class NemotronSuperRevisionModel(nn.Module):
@@ -149,6 +183,14 @@ class NemotronSuperRevisionModel(nn.Module):
             layer.mixer = block
             blocks.append(block)
         self.blocks = nn.ModuleList(blocks)
+        self._activation_gradient_hook_handles = [
+            layer.register_forward_hook(_layer_output_gradient_boundary(index))
+            for index, layer in enumerate(layers)
+        ]
+        if len(self._activation_gradient_hook_handles) != len(layers):
+            raise NemotronSuperRevisionError(
+                "Nemotron Super activation gradient boundaries differ"
+            )
         if self.trainable_parameter_count() != TRAINABLE_PARAMETERS_PER_ROLE:
             raise NemotronSuperRevisionError(
                 "Nemotron Super trainable parameter count differs"
@@ -222,6 +264,8 @@ class NemotronSuperRevisionModel(nn.Module):
                 "maximum_l2_norm": ACTIVATION_GRADIENT_MAX_L2_NORM,
                 "training_only": True,
                 "forward_values_unchanged": True,
+                "surface": "every_native_block_output",
+                "layer_count": len(self.backbone.model.layers),
             },
             "controlled_layer_indices": list(CONTROLLED_LAYER_INDICES),
             "trainable_parameters": self.trainable_parameter_count(),

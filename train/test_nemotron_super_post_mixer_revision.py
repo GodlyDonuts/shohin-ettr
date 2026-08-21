@@ -14,6 +14,7 @@ from nemotron_super_post_mixer_revision import (
     NemotronSuperRevisionError,
     NemotronSuperRevisionModel,
     _bounded_activation_gradient,
+    _layer_output_gradient_boundary,
 )
 from q36_upward_moe_host import (
     CONTROLLED_LAYER_INDICES,
@@ -82,7 +83,16 @@ def _moe_mixer(*, modelopt_quantized: bool = False) -> nn.Module:
 
 
 def _backbone(*, modelopt_quantized: bool = False) -> nn.Module:
-    layers = []
+    class _Layer(nn.Module):
+        def __init__(self, block_type: str, mixer: nn.Module) -> None:
+            super().__init__()
+            self.block_type = block_type
+            self.mixer = mixer
+
+        def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+            return self.mixer(hidden_states)
+
+    layers: list[nn.Module] = []
     for block_type in LAYER_TYPES:
         if block_type == "moe":
             mixer = _moe_mixer(modelopt_quantized=modelopt_quantized)
@@ -98,7 +108,12 @@ def _backbone(*, modelopt_quantized: bool = False) -> nn.Module:
                 (_NativeMixer,),
                 {},
             )()
-        layers.append(SimpleNamespace(block_type=block_type, mixer=mixer))
+        layers.append(_Layer(block_type, mixer))
+
+    class _Model(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.layers = nn.ModuleList(layers)
 
     class _Backbone(nn.Module):
         def __init__(self) -> None:
@@ -109,11 +124,11 @@ def _backbone(*, modelopt_quantized: bool = False) -> nn.Module:
                 num_hidden_layers=MODEL_LAYERS,
                 layers_block_type=LAYER_TYPES,
             )
-            self.model = SimpleNamespace(layers=layers)
+            self.model = _Model()
 
         def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
             for layer in self.model.layers:
-                hidden_states = layer.mixer(hidden_states)
+                hidden_states = layer(hidden_states)
             return hidden_states
 
     _Backbone.__name__ = "NemotronHForCausalLM"
@@ -160,7 +175,10 @@ def test_zero_initialized_residual_preserves_native_forward_then_updates() -> No
         "maximum_l2_norm": ACTIVATION_GRADIENT_MAX_L2_NORM,
         "training_only": True,
         "forward_values_unchanged": True,
+        "surface": "every_native_block_output",
+        "layer_count": MODEL_LAYERS,
     }
+    assert all(len(layer._forward_hooks) == 1 for layer in model.backbone.model.layers)
 
 
 def test_activation_gradient_boundary_preserves_direction_and_caps_norm() -> None:
@@ -172,6 +190,35 @@ def test_activation_gradient_boundary_preserves_direction_and_caps_norm() -> Non
     assert torch.equal(_bounded_activation_gradient(small), small)
     with pytest.raises(NemotronSuperRevisionError, match="nonfinite"):
         _bounded_activation_gradient(torch.tensor([float("nan")]))
+
+
+def test_every_layer_boundary_prevents_interstitial_nonfinite_elements() -> None:
+    class _Amplify(nn.Module):
+        def forward(self, value: torch.Tensor) -> torch.Tensor:
+            return value * 1e30
+
+    first = _Amplify()
+    second = _Amplify()
+    first.register_forward_hook(_layer_output_gradient_boundary(0))
+    second.register_forward_hook(_layer_output_gradient_boundary(1))
+    value = torch.ones(2, requires_grad=True)
+    second(first(value)).sum().backward()
+    assert value.grad is not None
+    assert torch.isfinite(value.grad).all()
+    max_abs = value.grad.abs().amax()
+    assert torch.isfinite(max_abs)
+    assert torch.isfinite((value.grad / max_abs).float().norm())
+
+
+def test_layer_boundary_reports_exact_nonfinite_interface() -> None:
+    hook = _layer_output_gradient_boundary(79)
+    value = torch.ones(2, requires_grad=True)
+    output = hook(nn.Identity(), (value,), value)
+    with pytest.raises(
+        NemotronSuperRevisionError,
+        match=r"nonfinite at layer 79: nan=2, positive_inf=0, negative_inf=0",
+    ):
+        output.backward(torch.full_like(output, float("nan")))
 
 
 def test_non_moe_controlled_surface_fails_closed() -> None:
