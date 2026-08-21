@@ -13,7 +13,7 @@ assigning distinct learned owners to drafting, revision, and commitment?
 Shohin tests this question with model-owned temporal roles rather than an
 external verifier or answer-level ensemble. On a protected 538-problem board,
 a dense Qwen3.5-9B draft → revision → whole-trajectory-commit system solves
-`383` problems versus `316` for a source-only unchanged second pass. Trained
+`383` problems versus `316` for a matched unchanged second pass. Trained
 revision also produces positive aggregate gains across Qwen3.5-0.8B, 4B, and
 9B, SmolLM3-3B, and OLMo2-7B. Moving to sparse hosts, a 32,784-parameter
 causal temporal gate improves Qwen3.6-35B-A3B by `32/256`, with positive
@@ -36,7 +36,7 @@ commitment is a separate unsolved problem at large sparse scale.
    correctness label, benchmark router, external verifier, or tool result is
    available at inference time.
 2. **A protected end-to-end capability result.** The complete dense 9B system
-   adds 67 solved problems over its source-only unchanged control on a held
+   adds 67 solved problems over its matched unchanged control on a held
    538-problem board, with immutable model, adapter, runtime, and result
    identities.
 3. **Cross-size and cross-family transfer.** The same revision principle
@@ -56,7 +56,7 @@ commitment is a separate unsolved problem at large sparse scale.
 
 On a protected 538-problem board, Shohin's same-family
 draft → trained revision → learned whole-trajectory commit system solves
-`383/538` problems, versus `316/538` for the source-only unchanged second pass:
+`383/538` problems, versus `316/538` for the matched unchanged second pass:
 `+67` solved problems and `+8.552` macro-accuracy points (`67.263%` to
 `75.815%`).
 
@@ -96,15 +96,20 @@ then generates a complete revision conditioned on both source and draft,
 
 `r = G(θ + δ_revision, x || d; b)`.
 
-The source-only unchanged role generates a complete second-pass trajectory
-`u = G(θ, x; b)`. Self-refinement and trained revision both receive `x || d`
-under the same output budget, so their paired contrast isolates the effect of
-learned revision parameters from access to the fixed model-owned draft. The commit
+The matched unchanged role generates its own complete second-pass trajectory
+`u` from the same source and draft under the same output budget. The commit
 owner receives the two coherent candidate trajectories and emits one member
 of `{u, r}`. It does not average logits, splice answer fields, or observe which
 candidate is correct. In the primary protected system, draft and revision are
 same-family Qwen3.5-9B roles; the commit owner is learned exclusively over
 their model-owned trajectories.
+
+That matching statement applies to the dense lifecycle. In the sparse Qwen,
+GPT-OSS, and Mixtral screens, unchanged is a source-only host baseline;
+self-refinement and trained revision receive the same fixed draft. Revision
+versus self-refinement is therefore the draft-matched learned-effect contrast,
+while revision versus sparse unchanged measures the complete
+draft-conditioned treatment against a source-only second pass.
 
 For a frozen MoE feed-forward block `m_l` at layer `l`, the transferable
 revision surface used on Mixtral is the post-block low-rank residual
@@ -135,9 +140,9 @@ auxiliary routing label is used in the reported result.
 
 ![Figure 1: Shohin temporal architecture](figures/shohin_temporal_revision_architecture.svg)
 
-**Figure 1 — Learned ownership across inference time.** (a) A model-owned
-draft feeds self-refinement and trained-revision roles; the source-only
-unchanged role is the second-pass baseline, and the commit owner
+**Figure 1 — Learned ownership across inference time.** (a) In the dense
+lifecycle, a model-owned draft feeds matched unchanged and trained-revision
+roles; the commit owner
 selects one whole candidate trajectory. (b) On Mixtral, a trained low-rank
 post-MLP residual augments each of the final 16 frozen MoE blocks while native
 routers and experts remain unchanged. (c) On Qwen3.6-35B-A3B, a tokenwise
@@ -148,13 +153,10 @@ frozen or matched controls.
 ## Matched experimental design
 
 Every capability comparison holds the evaluation identities and decoding
-contract fixed. On the sparse screens, “unchanged” is the host's source-only
-second-pass control. “Self-refinement” receives the same fixed model-owned
-draft as trained revision but uses a natural-language instruction rather than
-learned revision parameters. Revision versus self-refinement is therefore the
-draft-matched learned-effect contrast; revision versus unchanged measures the
-complete draft-conditioned treatment against a source-only second pass. The
-commit owner sees candidate trajectories but not their labels
+contract fixed. Dense unchanged and revision receive the same source, draft,
+and output budget. On the sparse screens, unchanged is source-only;
+self-refinement and trained revision receive the same fixed model-owned draft.
+The dense commit owner sees candidate trajectories but not their labels
 and chooses one complete trajectory; it cannot assemble a post-hoc answer from
 correct fragments. Source-disjoint screens and holdouts are identity-separated
 from training inputs, and protected boards remain outside model-visible
@@ -171,7 +173,7 @@ gains remain non-promotions.
 ![Figure 2: Shohin evidence overview](figures/shohin_temporal_revision_evidence.svg)
 
 **Figure 2 — Capability transfer and its retention boundary.** (a) Trained
-revision improves the source-only unchanged pass on all five dense hosts; `H` and
+revision improves the matched unchanged pass on all five dense hosts; `H` and
 `D` distinguish holdout from development measurements. (b) The learned causal
 gate improves Qwen3.6-35B-A3B, while trained revision improves Mixtral-8x22B
 on both its screen and validation; bar labels are correct counts. (c) Aggregate
@@ -250,7 +252,7 @@ in the immutable product report and are not silently recoded as clean rows.
 
 Before the protected product board, the trained 9B reviser was evaluated on a
 1,279-row source-disjoint holdout. It solved `625/1,279`, versus `495/1,279`
-for the source-only unchanged second pass: `+130` answers (`+10.16` percentage
+for the matched unchanged second pass: `+130` answers (`+10.16` percentage
 points). A learned whole-trajectory commit then solved `652/1,279`.
 
 The original IDR1 promotion rule nevertheless failed because its frozen MATH
@@ -259,7 +261,7 @@ product result is the qualified publication result.
 
 ## Transfer across dense model sizes and families
 
-Every row uses trained revision versus the source-only unchanged second pass over
+Every row uses trained revision versus the matched unchanged second pass over
 the same source-disjoint identities. These experiments establish repeatable
 aggregate transfer, not monotonic improvement on every domain.
 
@@ -438,8 +440,8 @@ future high-GPU measurement rather than a claimed result.
 | GPT-OSS 256-row raw score | `906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59` |
 | GPT-OSS zero-retry accounting | `8546d5ba326263d7235eb465a13fcd87081ed5fb346e8f7f8073632b6dfcc36d` |
 | three-point MoE analysis | `6434ba95df6c35174fce536e96571d046e9e6fd97459100232120d1976c27550` |
-| publication architecture figure (SVG) | `803aa2cc9f341a0ac5350bcc235f1120560330cd35382f3878e52277f4c617c7` |
-| publication architecture figure (PDF) | `8cb17c2227636e48a3fb1eb20f543e221aef595755caed7d9daf8ca5e5c204fc` |
+| publication architecture figure (SVG) | `f49e888942284f5c3fb1feb6e18d567e3c23531ac8ed5b2f0ec1807d6aec1bdf` |
+| publication architecture figure (PDF) | `c998b10840c4e65095bb2ecc0ba39a51bb5df710cccf6982259ebca0b5c4d393` |
 | publication evidence figure (SVG) | `2594a40af43989e662b8f86d2673a71530c81d38be5c86cee384a0aeab07a379` |
 | publication evidence figure (PDF) | `86484c12a361efbd37edef0bcb1a37f2aac98963dd71a7c0597d2f6656bc1383` |
 | deterministic five-page preprint (PDF) | `4749815a7f6d69716fb21b994f222966055a7d4f5c09df021751d031b19238fb` |

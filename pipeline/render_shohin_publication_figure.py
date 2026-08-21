@@ -262,7 +262,7 @@ def lifecycle_panel(ax: plt.Axes) -> None:
     ax.set_xlim(0, 13.4)
     ax.set_ylim(0, 6)
     ax.axis("off")
-    ax.set_title("a  Model-owned temporal lifecycle", loc="left", weight="bold")
+    ax.set_title("a  Dense model-owned temporal lifecycle", loc="left", weight="bold")
     diagram_box(ax, 0.2, 2.45, 1.35, 0.9, "source\nx", facecolor=FROZEN)
     diagram_box(
         ax,
@@ -298,7 +298,7 @@ def lifecycle_panel(ax: plt.Axes) -> None:
         1.25,
         2.0,
         1.0,
-        "source-only unchanged\nmatched budget",
+        "unchanged role\nmatched budget",
         facecolor=FROZEN,
         fontsize=6.7,
     )
@@ -318,7 +318,7 @@ def lifecycle_panel(ax: plt.Axes) -> None:
     diagram_arrow(ax, (1.55, 2.9), (2.05, 2.9))
     diagram_arrow(ax, (3.95, 2.9), (4.45, 2.9))
     diagram_arrow(ax, (5.65, 3.0), (6.35, 4.05), connectionstyle="arc3,rad=-0.08")
-    diagram_arrow(ax, (1.55, 2.7), (6.35, 1.75), connectionstyle="arc3,rad=0.12")
+    diagram_arrow(ax, (5.65, 2.8), (6.35, 1.85), connectionstyle="arc3,rad=0.08")
     diagram_arrow(ax, (8.35, 4.15), (8.8, 4.15))
     diagram_arrow(ax, (8.35, 1.75), (8.8, 1.75))
     diagram_arrow(ax, (9.9, 4.05), (10.35, 3.15), connectionstyle="arc3,rad=0.08")
@@ -327,7 +327,7 @@ def lifecycle_panel(ax: plt.Axes) -> None:
     ax.text(
         6.9,
         5.25,
-        "revision receives source + draft\ncontrols retain the same output budget",
+        "same source + draft\nsame output budget",
         ha="center",
         va="center",
         fontsize=7.4,
