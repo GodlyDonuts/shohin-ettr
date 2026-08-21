@@ -1,0 +1,107 @@
+{
+  "schema": "shohin-moe-termination-aware-commit-predeclaration-v1",
+  "status": "frozen_before_mechanics_completion_candidate_generation_and_scoring",
+  "frozen_at": "2026-08-20T20:57:58-04:00",
+  "rule": {
+    "decision": "select revision iff the baseline exhausted its generation limit and revision did not; otherwise retain the baseline",
+    "uses_task_label": false,
+    "uses_correctness_at_selection": false,
+    "uses_assessor_at_selection": false,
+    "uses_completion_text": false,
+    "model_visible_fields": [
+      "baseline.max_token_exhausted",
+      "revision.max_token_exhausted"
+    ],
+    "derivation_commit": "aeced4169e3ee863d1996b50bb4ad489c676aab3",
+    "implementation_source": "pipeline/analyze_moe_termination_commit.py",
+    "implementation_sha256": "eb3fea20006463555abc4df5e8fbdb490ed15d21e1a576d32d6418eede78c378"
+  },
+  "repair_lineage": {
+    "failed_mechanics_job": 767488,
+    "failed_before_training_candidate_generation_and_scoring": true,
+    "failed_mechanics_report_published": false,
+    "failed_training_root_published": false,
+    "failed_candidate_root_published": false,
+    "failed_score_published": false,
+    "repair_commit": "a6be3c6cd32fc23f1a075b33e565472e23a8413e",
+    "repair_scope": "cast active ModelOpt FP8 expert output to the frozen router accumulator dtype before index_add",
+    "scientific_data_arms_prompts_seeds_thresholds_changed": false
+  },
+  "target": {
+    "host": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "mechanics_job": 767715,
+    "training_job": 767716,
+    "evaluation_jobs": [
+      767717,
+      767718,
+      767719,
+      767720,
+      767721,
+      767722,
+      767723,
+      767724,
+      767725,
+      767726,
+      767727,
+      767728
+    ],
+    "score_job": 767729,
+    "mechanics_submit_time": "2026-08-20T20:56:48-04:00",
+    "mechanics_start_time": "2026-08-20T20:56:58-04:00",
+    "mechanics_state_at_freeze": "RUNNING",
+    "mechanics_restarts_at_freeze": 0,
+    "mechanics_report": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_mechanics_modelopt_a6be3c6c_r1.json",
+    "training_root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_revision_a6be3c6c_r1",
+    "candidate_root": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1",
+    "score": "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/score.json"
+  },
+  "candidate_inputs": {
+    "unchanged": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/unchanged/shard_00/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/unchanged/shard_01/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/unchanged/shard_02/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/unchanged/shard_03/candidates.jsonl"
+    ],
+    "self_refinement": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/self_refinement/shard_00/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/self_refinement/shard_01/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/self_refinement/shard_02/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/self_refinement/shard_03/candidates.jsonl"
+    ],
+    "revision": [
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/revision/shard_00/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/revision/shard_01/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/revision/shard_02/candidates.jsonl",
+      "/lustre/fs1/home/sa305415/shohin/artifacts/nemotron_super_120b_screen_a6be3c6c_r1/revision/shard_03/candidates.jsonl"
+    ]
+  },
+  "state_at_freeze": {
+    "mechanics_report_exists": false,
+    "training_root_exists": false,
+    "candidate_root_exists": false,
+    "score_exists": false,
+    "candidate_rows_available": 0,
+    "scientific_score_available": false
+  },
+  "confirmation_contract": {
+    "baseline_reports": [
+      "unchanged",
+      "self_refinement"
+    ],
+    "required_rows": 256,
+    "required_tasks": [
+      "bbh_logic",
+      "math500",
+      "mbpp"
+    ],
+    "primary_conservative_baseline": "self_refinement",
+    "report_both_baselines": true,
+    "success_requires": [
+      "committed_correct > baseline_correct",
+      "retained_baseline_correct == baseline_correct",
+      "paired_losses == 0"
+    ],
+    "result_policy": "report the exact result regardless of direction without altering the rule or live graph"
+  },
+  "interpretation": "This receipt carries the already-frozen cross-family termination-aware commitment through a verified pre-science ModelOpt dtype compatibility repair. It was written while the fresh mechanics job was running and before mechanics publication, training, candidate generation, or scoring. No Nemotron scientific outcome informed the rule or repair."
+}

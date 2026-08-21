@@ -1,0 +1,68 @@
+{
+  "schema": "shohin-nemotron-super-mechanics-failure-v1",
+  "status": "terminal_mechanics_failure_before_science",
+  "job": {
+    "id": 767823,
+    "node": "evc43",
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "started_at": "2026-08-20T22:12:31-04:00",
+    "ended_at": "2026-08-20T22:38:55-04:00",
+    "elapsed_seconds": 1584,
+    "restarts": 0,
+    "h100s": 2
+  },
+  "inputs": {
+    "source_commit": "cd1e3f688385606db5cf06cfac2627134c64026c",
+    "runtime_manifest_sha256": "3d066b62c837a91bf6aa1c7a1b85ee7ddb6a9cd14dbd1c21c2dccaf82da35366",
+    "host": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "model_manifest_sha256": "8bb8bb898794651791de9d79c1041fe0ec6ad0f54a97b03f52620bd6e245ce92",
+    "overlay_manifest_sha256": "cde0fa5b91d50d1509872cbc577cf016d0a6c6697bfb066d607f420c1b568e84",
+    "activation_gradient_boundary": "controlled-post-mixer-output-direction-preserving-l2-clip-v1",
+    "maximum_l2_norm": 1.0,
+    "boundary_count": 16
+  },
+  "logs": {
+    "stdout": {
+      "path": "/lustre/fs1/home/sa305415/shohin/logs/nemotron_super_mechanics_767823.out",
+      "bytes": 457,
+      "lines": 5,
+      "sha256": "b0efbe989128aeab7072fb0506ddc5d219439a44a10923dfb4335a50e5b0b641"
+    },
+    "stderr": {
+      "path": "/lustre/fs1/home/sa305415/shohin/logs/nemotron_super_mechanics_767823.err",
+      "bytes": 16503712,
+      "lines": 12,
+      "sha256": "669b60337f98138cc573dfe7c4fd2c22a9c3f7b9220b511e39b088bdc4a54c7e",
+      "terminal_message": "activation gradient is nonfinite"
+    }
+  },
+  "interpretation": {
+    "forward_completed": true,
+    "backward_reached_activation_boundary": true,
+    "sparse_boundary_was_insufficient": true,
+    "cause": "an intervening frozen native block produced a nonfinite backward vector before the next sparse controlled-layer boundary",
+    "hardware_or_scheduler_failure": false,
+    "capability_result": false
+  },
+  "no_science_boundary": {
+    "mechanics_report_exists": false,
+    "mechanics_checkpoint_exists": false,
+    "training_root_exists": false,
+    "candidate_root_exists": false,
+    "candidate_rows": 0,
+    "assessor_accessed": false,
+    "score_exists": false,
+    "all_19_dependents_cancelled_without_allocation": true
+  },
+  "prospective_resolution": {
+    "commit": "201dc76f3178715af819229c32dd77f35a9cdd22",
+    "boundary": "every-native-block-output-direction-preserving-l2-clip-v1",
+    "maximum_l2_norm": 1.0,
+    "boundary_count": 88,
+    "forward_values_changed": false,
+    "shohin_attachment_layers_changed": false,
+    "data_arms_prompts_seeds_thresholds_or_selection_rule_changed": false,
+    "fresh_mechanics_job": 767994
+  }
+}

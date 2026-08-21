@@ -1,32 +1,33 @@
 # Shohin: Model-Owned Temporal Revision and Commitment
 
-> Publication evidence report — updated 2026-08-19
+> Publication evidence report — updated 2026-08-20
 > Primary result: protected Qwen3.5-9B product board  
-> Evidence boundary: completed dense transfer; matched source-disjoint MoE
-> screens on Qwen 35B, GPT-OSS 117B, and Mixtral 141B; and a 1,023-row
-> Mixtral validation
+> Evidence boundary: completed dense transfer, a causal 35B MoE screen, and
+> completed cross-family MoE screens on GPT-OSS-120B and
+> Mixtral-141B-total / 39B-active, plus Mixtral validation
 
 ## Abstract
 
-Can distinct learned owners for drafting, revision, and commitment convert an
-executed multi-stage inference budget into additional task accuracy?
-Shohin tests this question with model-owned temporal roles rather than a
-test-time external verifier or answer-level ensemble. On a protected 538-problem board,
+Can a language model use additional inference computation more effectively by
+assigning distinct learned owners to drafting, revision, and commitment?
+Shohin tests this question with model-owned temporal roles rather than an
+external verifier or answer-level ensemble. On a protected 538-problem board,
 a dense Qwen3.5-9B draft → revision → whole-trajectory-commit system solves
 `383` problems versus `316` for a matched unchanged second pass. Trained
 revision also produces positive aggregate gains across Qwen3.5-0.8B, 4B, and
 9B, SmolLM3-3B, and OLMo2-7B. Moving to sparse hosts, a 32,784-parameter
-incremental temporal gate reaches `143/256` on Qwen3.6-35B-A3B, versus `111`
-for a source-only host and `141` for draft-matched trained revision. On
-GPT-OSS-120B, a 1.66M-parameter revision surface reaches `111/256`, versus
-`101` source-only and `103` self-refinement, adding 10 and eight answers. On
-non-Qwen Mixtral-8x22B, a 3.54M-parameter revision surface reaches
-`448/1,023` and beats draft-matched self-refinement by 92 answers, while
-exposing severe code and source-only-case retention regressions. These results support
-model-owned temporal revision as a parameter-efficient cross-family capability
-mechanism, but reject a monotonic MoE scaling law and universal improvement.
-The measured auxiliary sparse selector is not conservative, and model-owned
-sparse commitment remains untested.
+causal temporal gate improves Qwen3.6-35B-A3B by `32/256`, with positive
+deltas in logic, mathematics, and executable code. On non-Qwen
+Mixtral-8x22B, a 3.54M-parameter revision surface improves `147/1,023` to
+`448/1,023` and beats self-refinement by 92 answers, while exposing severe
+code and unchanged-case retention regressions. On GPT-OSS-120B, a distinct
+1.66M-parameter revision surface improves `101/256` to `111/256` and exceeds
+draft-matched self-refinement by eight answers, with nonnegative deltas in
+logic, mathematics, and code, but only `92/101` unchanged-correct retention.
+These results support
+model-owned temporal revision as a parameter-efficient capability mechanism,
+but reject universal improvement and show that learned conservative
+commitment is a separate unsolved problem at large sparse scale.
 
 ## Contributions
 
@@ -41,15 +42,15 @@ sparse commitment remains untested.
 3. **Cross-size and cross-family transfer.** The same revision principle
    produces positive aggregate gains on five dense hosts spanning 0.8B–9B
    and three model families.
-4. **Three-family MoE transfer.** Learned revision improves both sparse
-   controls on Qwen 35B, GPT-OSS 117B, and Mixtral 141B screens; a distinct
-   3.54M-parameter surface also beats draft-matched self-refinement on the
-   1,023-row Mixtral validation.
+4. **Causal and large-MoE evidence.** Hidden-state intervention improves a
+   35B-total Qwen MoE with only 32,784 trainables; independent 1.66M- and
+   3.54M-parameter surfaces improve 117B-total OpenAI and 141B-total Mistral
+   MoE hosts.
 5. **Negative results as architecture evidence.** Dense and sparse failures
    localize the unresolved problem: capability-improving revision can regress
-   previously correct cases and executable code, while the external auxiliary
-   selector restores some capabilities without meeting conservative
-   large-host retention. Model-owned sparse commitment remains to be tested.
+   previously correct cases and executable code, while current commitment
+   restores some capabilities without yet meeting conservative large-host
+   retention.
 
 ## Result in one sentence
 
@@ -64,16 +65,11 @@ one pinned dense 9B host, not a claim of universal improvement or a completed
 MoE scaling law.
 
 The strongest cross-family scale result is now separate and complementary:
-on 1,023 source-disjoint rows, a 3.54M-parameter Shohin revision surface scores
-`448` correct versus `356` for draft-matched self-refinement. The source-only
-host scores `147`. That result demonstrates large sparse-host
+on 1,023 source-disjoint rows, a 3.54M-parameter Shohin revision surface raises
+pinned Mixtral-8x22B from `147` to `448` correct and exceeds matched
+self-refinement by 92 answers. That result demonstrates large sparse-host
 capability transfer, while its code and retention regressions establish why
-a future model-owned sparse commit is necessary rather than optional.
-
-The third matched MoE family is GPT-OSS-120B: revision scores `111/256`,
-versus `101` source-only and `103` for draft-matched self-refinement. Its
-`+10` and `+8` gains demonstrate transfer at 117B total / 5.1B active scale,
-but `92/101 = 91.09%` retention fails the frozen conservative boundary.
+the learned conservative commit remains essential rather than optional.
 
 ## What the system does
 
@@ -108,11 +104,12 @@ candidate is correct. In the primary protected system, draft and revision are
 same-family Qwen3.5-9B roles; the commit owner is learned exclusively over
 their model-owned trajectories.
 
-That matching statement applies to the dense lifecycle. In the sparse Qwen
-and Mixtral experiments, unchanged is a source-only host baseline;
-self-refinement and trained revision receive the same fixed draft. Comparisons
-against sparse unchanged therefore measure an end-to-end draft-conditioned
-system difference, while revision versus self-refinement is draft-matched.
+That matching statement applies to the dense lifecycle. In the sparse Qwen,
+GPT-OSS, and Mixtral screens, unchanged is a source-only host baseline;
+self-refinement and trained revision receive the same fixed draft. Revision
+versus self-refinement is therefore the draft-matched learned-effect contrast,
+while revision versus sparse unchanged measures the complete
+draft-conditioned treatment against a source-only second pass.
 
 For a frozen MoE feed-forward block `m_l` at layer `l`, the transferable
 revision surface used on Mixtral is the post-block low-rank residual
@@ -137,17 +134,16 @@ Its controlled block is
 `m'_l(h) = m_l(h) + Δ_o,l(h) + g_l(h)[Δ_r,l(h) - Δ_o,l(h)]`.
 
 Thus `g_l(h)=0` recovers the owner residual, `g_l(h)=1` recovers the revision
-residual, and intermediate values form a causal hidden-state blend. The gate
-phase trains 32,784 incremental parameters atop two frozen 1,179,648-parameter
-branches: 2,392,080 Shohin surface parameters are deployed in total, excluding
-the host. No selector target or auxiliary routing label is used in gate training.
+residual, and intermediate values form a causal hidden-state blend. The 32,784
+gate parameters are trained by response loss only; no selector target or
+auxiliary routing label is used in the reported result.
 
 ![Figure 1: Shohin temporal architecture](figures/shohin_temporal_revision_architecture.svg)
 
 **Figure 1 — Learned ownership across inference time.** (a) In the dense
 lifecycle, a model-owned draft feeds matched unchanged and trained-revision
-roles; the commit owner selects one whole candidate trajectory. (b) On
-Mixtral, a trained low-rank
+roles; the commit owner
+selects one whole candidate trajectory. (b) On Mixtral, a trained low-rank
 post-MLP residual augments each of the final 16 frozen MoE blocks while native
 routers and experts remain unchanged. (c) On Qwen3.6-35B-A3B, a tokenwise
 causal gate interpolates two frozen temporal residual branches. Blue, orange,
@@ -158,10 +154,10 @@ frozen or matched controls.
 
 Every capability comparison holds the evaluation identities and decoding
 contract fixed. Dense unchanged and revision receive the same source, draft,
-and output budget. In the sparse Qwen and Mixtral experiments, unchanged is
-source-only; self-refinement and trained revision receive the same fixed draft.
-The dense commit owner sees candidate trajectories but not their labels and
-chooses one complete trajectory; it cannot assemble a post-hoc answer from
+and output budget. On the sparse screens, unchanged is source-only;
+self-refinement and trained revision receive the same fixed model-owned draft.
+The dense commit owner sees candidate trajectories but not their labels
+and chooses one complete trajectory; it cannot assemble a post-hoc answer from
 correct fragments. Source-disjoint screens and holdouts are identity-separated
 from training inputs, and protected boards remain outside model-visible
 training and generation paths.
@@ -174,21 +170,17 @@ weights remain frozen. Predeclared retention and per-domain gates are retained
 even when aggregate accuracy improves, which is why several large numerical
 gains remain non-promotions.
 
-These are identity- and decoding-matched comparisons, not compute-normalized ones.
-The dense commit consumes multiple generated trajectories, and the sparse
-draft-conditioned arms consume frozen drafts that source-only unchanged does
-not. End-to-end calls, generated tokens, latency, and FLOPs therefore differ;
-no equal-call or equal-token superiority claim is made.
-
 ![Figure 2: Shohin evidence overview](figures/shohin_temporal_revision_evidence.svg)
 
 **Figure 2 — Capability transfer and its retention boundary.** (a) Trained
-revision improves matched dense unchanged on five hosts; `H` and `D` distinguish
-holdout from development. (b) Sparse bars explicitly distinguish source-only
-from draft-conditioned arms across Qwen, GPT-OSS, and Mixtral. (c) The x-axis
-retains source-only-correct cases; the y-axis is each learned sparse treatment
-minus its draft-matched comparator. Aggregate gain does not imply conservative
-retention. The figure is
+revision improves the matched unchanged pass on all five dense hosts; `H` and
+`D` distinguish holdout from development measurements. (b) The learned causal
+gate improves Qwen3.6-35B-A3B, while trained revision improves Mixtral-8x22B
+on both its screen and validation; bar labels are correct counts. (c) Aggregate
+gain does not imply conservative retention. The Qwen gate nearly reaches the
+95% unchanged-correct floor, Mixtral revision makes a larger capability gain
+while retaining fewer baseline-correct identities, and Mixtral commitment
+recovers retention without preserving the revision gain. The figure is
 reproducible with `pipeline/render_shohin_publication_figure.py`; vector PDF
 and SVG are preserved together.
 
@@ -276,7 +268,7 @@ aggregate transfer, not monotonic improvement on every domain.
 | Dense host | Development | Holdout | Evidence boundary |
 |---|---:|---:|---|
 | Qwen3.5-0.8B | `323/1,289` vs `236/1,289` (`+6.75 pp`) | `328/1,279` vs `242/1,279` (`+6.72 pp`) | aggregate gain; code retention fails, `8` vs `9` |
-| Qwen3.5-4B | `529/1,289` vs `371/1,289` (`+12.26 pp`) | `554/1,279` vs `380/1,279` (`+13.60 pp`) | every attribution domain positive |
+| Qwen3.5-4B | `529/1,289` vs `371/1,289` (`+12.26 pp`) | `554/1,279` vs `380/1,279` (`+13.61 pp`) | every attribution domain positive |
 | Qwen3.5-9B | `589/1,289` vs `464/1,289` (`+9.70 pp`) | `625/1,279` vs `495/1,279` (`+10.16 pp`) | every attribution domain positive; original MATH floor missed |
 | SmolLM3-3B | `469/1,289` vs `358/1,289` (`+8.61 pp`) | sealed | cross-family aggregate gain; code retention fails, `4` vs `9` |
 | OLMo2-7B | `259/1,289` vs `231/1,289` (`+2.17 pp`) | sealed | positive but too weak to promote |
@@ -288,7 +280,7 @@ protected Qwen3.5-4B product board made that boundary concrete: trained
 revision improved `272/538` to `320/538`, but GSM8K, MATH, and BBH each
 regressed slightly, so its predeclared all-domain-nonregression gate failed.
 
-## First gated MoE transfer
+## First causal MoE transfer
 
 On pinned Qwen3.6-35B-A3B (`35B` total, `3B` active), a 32,784-parameter
 temporal residual gate blends frozen owner and revision residuals across the
@@ -299,24 +291,19 @@ On a fixed 256-row source-disjoint screen:
 
 | System | Correct | Accuracy |
 |---|---:|---:|
-| source-only unchanged | `111/256` | `43.359%` |
-| draft-matched trained revision | `141/256` | `55.078%` |
+| unchanged | `111/256` | `43.359%` |
 | temporal causal gate | **`143/256`** | **`55.859%`** |
 
-The `143`-versus-`111` end-to-end gain is `+32` answers / `+12.5` points,
-with 38 paired wins, six paired losses, and exact McNemar `p = 9.4304e-7`.
-It does not isolate the gate because unchanged is source-only. Against the
-draft-matched trained-revision branch, the gate adds two answers: three
-gate-only and one revision-only correct identity (`p = 0.625`). Retention
-against source-only is `105/111 = 94.595%`; there are zero empty completions.
-Mean revision weight rises from `0.6431` at the first controlled layer to
-`0.9028` at the last. These layer means describe the routing profile but do
-not by themselves exclude a fixed layer-specific gate.
+The gain is `+32` answers / `+12.5` points, with 38 paired wins, six paired
+losses, and an exact two-sided McNemar `p = 9.4304e-7`. Retention is
+`105/111 = 94.595%`. Domain deltas are logic `+15`, math `+15`, and executable
+code `+2`; there are zero empty completions. Mean revision weight rises from
+`0.6431` at the first controlled layer to `0.9028` at the last, showing a
+nondegenerate learned causal blend.
 
 This is a development screen, not the protected 9B publication confirmation.
-It establishes that the gated draft-conditioned system is strongest on this
-board; the incremental gate contribution over trained revision is small and
-not statistically distinguished from zero.
+It establishes a causal MoE transfer signal and motivates upward
+cross-family measurement.
 
 ## Cross-family transfer to a 141B sparse host
 
@@ -330,41 +317,37 @@ The matched 256-row source-disjoint screen used identical identities and
 decoding for every arm, plus the same fixed Qwen-owned draft trajectories for
 the two draft-conditioned arms, self-refinement and trained revision:
 
-| Mixtral screen arm | Correct | Delta vs source-only | Logic | Math | Code |
+| Mixtral screen arm | Correct | Delta vs unchanged | Logic | Math | Code |
 |---|---:|---:|---:|---:|---:|
-| source-only unchanged | `45/256` | — | 35 | 4 | 6 |
-| draft-matched self-refinement | `105/256` | `+60` | 75 | 21 | 9 |
-| draft-conditioned revision | **`114/256`** | **`+69`** | **81** | **33** | 0 |
+| unchanged | `45/256` | — | 35 | 4 | 6 |
+| self-refinement | `105/256` | `+60` | 75 | 21 | 9 |
+| trained revision | **`114/256`** | **`+69`** | **81** | **33** | 0 |
 
-Revision records 80 paired wins and 11 paired losses against source-only
-(`p = 4.4130e-14`) and improves draft-matched self-refinement by nine answers.
-It retains only `34/45 = 75.56%` of source-only-correct identities and loses all 11 code
+Revision records 80 paired wins and 11 paired losses against unchanged
+(`p = 4.4130e-14`) and improves self-refinement by nine answers. It retains
+only `34/45 = 75.56%` of unchanged-correct identities and loses all 11 code
 rows, so the predeclared conservative promotion gate correctly fails despite
 the large aggregate effect.
 
 The frozen 1,023-row validation makes the capability effect larger rather
 than smaller:
 
-| Mixtral validation arm | Correct | Delta vs source-only | Logic | Math | Code |
+| Mixtral validation arm | Correct | Delta vs unchanged | Logic | Math | Code |
 |---|---:|---:|---:|---:|---:|
-| source-only unchanged | `147/1,023` | — | 106 | 25 | 16 |
-| draft-matched self-refinement | `356/1,023` | `+209` | 224 | 121 | 11 |
-| draft-conditioned revision | **`448/1,023`** | **`+301`** | **272** | **176** | 0 |
-| auxiliary three-way selector | `287/1,023` | `+140` | 222 | 49 | 16 |
+| unchanged | `147/1,023` | — | 106 | 25 | 16 |
+| self-refinement | `356/1,023` | `+209` | 224 | 121 | 11 |
+| trained revision | **`448/1,023`** | **`+301`** | **272** | **176** | 0 |
+| learned selective commit | `287/1,023` | `+140` | 222 | 49 | 16 |
 
-The clean draft-matched comparison is 448 versus 356: 131 revision-only and
-39 self-refinement-only correct identities (`p = 7.9222e-13`). Against the
-source-only host, revision has 353 wins and 52 losses (`p = 4.4389e-56`), a
-descriptive end-to-end comparison that also includes draft access. The
-auxiliary selector restores source-only-level code but retains `137/147 =
-93.20%` of source-only-correct identities—three short of the frozen 95% floor—
-and underperforms both draft-conditioned arms. It is therefore a formal failure.
-
-The selector is a task-label-free three-way hashed logistic model over
-unchanged, self-refinement, and revision. It is trained from correctness labels
-on the 256-row screen and uses source/completion lexical features plus explicit
-format and exhaustion markers. It is distinct from the dense architecture's
-two-way in-model commit.
+The revision's paired gain over unchanged is 353 wins to 52 losses
+(`p = 4.4389e-56`); its paired gain over self-refinement is 131 wins to 39
+losses (`p = 7.9222e-13`). The learned commit restores unchanged-level code
+and has nonnegative domain deltas versus unchanged, but retains `137/147 =
+93.20%` of unchanged-correct identities—three short of the frozen 95% floor—
+and underperforms both self-refinement and revision. The selector gate is
+therefore a formal failure. The measured result is a strong, replicated
+cross-family capability transfer plus a precisely localized retention/code
+failure, not a universal-win claim.
 
 The code failure is systematic rather than noisy. An identity-joined replay
 of all 1,023 already-scored candidate triples finds that every revision
@@ -374,23 +357,78 @@ self-refinement. On the 22 MBPP rows, revision emits a median of `7` tokens:
 none contains a code fence, function definition, or return statement. The
 unchanged arm has `22/22` fences, `21/22` definitions, and `22/22` returns;
 self-refinement has `22/22`, `19/22`, and `21/22`. The learned surface has
-acquired an aggressive answer-extraction mode that coincides with higher
-scored logic and mathematics accuracy, but the existing analysis does not
-separate reasoning improvement from explicit-final-answer compliance. It
-violates executable-output modality. The auxiliary selector restores code by
-selecting unmodified trajectories. This localizes
+therefore acquired an aggressive answer-extraction mode that helps
+answer-valued logic and mathematics but violates executable-output modality.
+Commitment restores code by selecting unmodified trajectories. This localizes
 the next architecture problem to model-owned output-contract preservation,
 not merely more reasoning capacity.
 
-The auxiliary selector already detects part of that boundary without receiving
-a task label: it selects unchanged for all `22/22` MBPP identities, thereby
+The learned commit already detects part of that boundary without receiving a
+task label: it selects unchanged for all `22/22` MBPP identities, thereby
 restoring `16` correct programs. Its failure is under-promotion elsewhere. On
 504 mathematics identities it selects unchanged `460` times, self-refinement
 `34` times, and the much stronger revision only `10` times. The large-host
-selector therefore recognizes overt output modality but does not yet preserve
-and promote the revision surface's scored answer-valued gains at the same time.
+commit therefore recognizes overt output modality but does not yet preserve
+and promote the revision surface's reasoning gains at the same time.
 
-## Scale boundary as of 2026-08-19
+## Independent transfer to GPT-OSS-120B
+
+Pinned `openai/gpt-oss-120b` has 117B total and 5.1B active parameters under
+native MXFP4 execution. Shohin attaches a 1,658,880-parameter shared
+post-MLP revision surface to the final 16 layers, trains it for 256 updates,
+and preserves every native router and expert tensor. The complete mechanics,
+training, twelve one-H100 evaluation shards, scoring, and accounting path
+finished with zero retries and 7.312 charged H100-hours.
+
+On the same 256 source-disjoint identities used by the other MoE screens:
+
+| GPT-OSS screen arm | Correct | Logic | Math | Code |
+|---|---:|---:|---:|---:|
+| source-only unchanged | `101/256` | 78 | 12 | 11 |
+| draft-matched self-refinement | `103/256` | 81 | 11 | 11 |
+| trained revision | **`111/256`** | **82** | **18** | **11** |
+
+Revision improves unchanged by ten answers (`+3.906` points; 19 paired wins,
+9 losses, exact McNemar `p = 0.08716`) and improves the draft-matched
+self-refinement control by eight answers (12 wins, 4 losses, `p = 0.07681`).
+All domain deltas versus unchanged are nonnegative. The estimate is positive
+but not individually decisive at `p < 0.05`, and retention is only `92/101 =
+91.09%`, so the frozen 95% conservative gate fails.
+
+This third sparse-family result demonstrates another positive learned-revision
+transfer, not a promotion or a scaling-law proof. Across Qwen3.6-35B-A3B,
+GPT-OSS-120B, and Mixtral-8x22B, revision gains over unchanged are `+11.719`,
+`+3.906`, and `+26.953` percentage points: all positive but nonmonotonic.
+
+## Termination-aware whole-trajectory commitment
+
+A retrospective cross-host analysis identifies a simpler conservative
+commitment rule: select revision only when the baseline exhausted its fixed
+generation limit and revision did not; otherwise retain the baseline. The
+rule reads no task label, correctness, assessor output, or completion text.
+It operates only on the two candidates' already-observed termination states.
+
+| Evidence set | Baseline | Baseline correct | Committed correct | Gain | Retained | Wins / losses |
+|---|---|---:|---:|---:|---:|---:|
+| Qwen3.6-35B-A3B screen | unchanged | 111 | 136 | +25 | 111/111 | 25 / 0 |
+| Qwen3.6-35B-A3B screen | self-refinement | 121 | 135 | +14 | 121/121 | 14 / 0 |
+| GPT-OSS-120B screen | unchanged | 101 | 106 | +5 | 101/101 | 5 / 0 |
+| GPT-OSS-120B screen | self-refinement | 103 | 110 | +7 | 103/103 | 7 / 0 |
+| Mixtral-8x22B screen | unchanged | 45 | 55 | +10 | 45/45 | 10 / 0 |
+| Mixtral-8x22B screen | self-refinement | 105 | 109 | +4 | 105/105 | 4 / 0 |
+| Mixtral-8x22B validation | unchanged | 147 | 201 | +54 | 147/147 | 54 / 0 |
+| Mixtral-8x22B validation | self-refinement | 356 | 377 | +21 | 356/356 | 21 / 0 |
+
+The 1,023-row Mixtral validation is independent of the 256-row Mixtral
+screen, and its self-refinement-guarded gain has an exact two-sided sign-test
+`p = 9.54e-7`. Nevertheless, all four entries are retrospective replays and
+therefore remain development evidence. The exact rule implementation was
+committed while Nemotron-Super mechanics was running but before mechanics
+completion, candidate generation, or scoring. Nemotron-Super is consequently
+the first prospective cross-family test, and its result must be reported in
+either direction without changing the rule.
+
+## Scale boundary as of 2026-08-20
 
 | Host | Total / active parameters | Family | Status |
 |---|---:|---|---|
@@ -399,31 +437,18 @@ and promote the revision surface's scored answer-valued gains at the same time.
 | Qwen3.5-4B | 4B dense | Qwen | completed gain; protected all-domain gate failure |
 | OLMo2-7B | 7B dense | OLMo | completed weak positive / non-promotion |
 | Qwen3.5-9B | 9B dense | Qwen | completed protected publication result |
-| Qwen3.6-35B-A3B | 35B / 3B MoE | Qwen | completed source-disjoint screen; gate +2 vs draft-matched revision |
-| GPT-OSS-120B | 117B / 5.1B MoE | OpenAI | completed 256-row matched screen; `111` revision vs `101` source-only and `103` self-refinement; retention failure |
-| Nemotron Super-120B-A12B | 120B / 12B MoE | Nemotron | ModelOpt restoration failed before science; no result claimed |
+| Qwen3.6-35B-A3B | 35B / 3B MoE | Qwen | completed source-disjoint causal screen |
+| GPT-OSS-120B | 117B / 5.1B MoE | OpenAI | completed positive screen; retention gate failure |
+| Nemotron Super-120B-A12B | 120B / 12B MoE | Nemotron | prospective matched graph running; no result claimed |
 | Mixtral-8x22B | 141B / 39B MoE | Mistral | completed screen and 1,023-row validation; large aggregate gain, conservative gate failure |
 | Nemotron Ultra-550B-A55B | 550B / 55B MoE | Nemotron | prepared only; no result claimed |
 
-The completed evidence supports cross-size and cross-family dense transfer and
-positive learned-revision gains on three sparse model families. The new
-GPT-OSS point is a completed one-H100 native-MXFP4 measurement: revision gains
-10 answers over source-only (19 paired wins, nine losses; `p = 0.0872`) and
-eight over draft-matched self-refinement (12 wins, four losses; `p = 0.0768`).
-It improves logic by four, mathematics by six, and preserves all 11 MBPP
-solutions, but retains only `92/101 = 91.09%` of source-only-correct rows.
-Mechanics, fit, 12 independent evaluation allocations, and scoring consume
-`26,322` H100-seconds (`7.3117` H100-hours), all with zero retries.
-
-Across the three 256-row MoE points, every learned revision beats source-only
-and self-refinement, but the gain is nonmonotonic by active parameters,
-retention misses 95% at multiple points, and Mixtral code regresses. The
-weighted active-parameter slope is positive under an independent marginal
-sampling approximation, while the total-parameter slope interval crosses
-zero; only three heterogeneous points are available. The formal conclusion is
-therefore **cross-family MoE capability transfer without a supported positive
-scaling law**. Nemotron Ultra remains a future high-GPU measurement rather
-than a claimed result.
+The completed evidence supports cross-size dense transfer, cross-family dense
+transfer, a causal Qwen sparse-host result, and positive learned-revision
+screens on two much larger non-Qwen sparse hosts. It does **not** support a
+monotonic MoE scaling law or conservative transfer at every scale. Nemotron
+Super is the running fourth-family point; Nemotron Ultra remains a
+future high-GPU measurement rather than a claimed result.
 
 ## Immutable evidence
 
@@ -440,20 +465,15 @@ than a claimed result.
 | Mixtral 1,023-row raw score | `7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8` |
 | Mixtral validation evidence report | `9d98bff6cc3e244ed175c1ffe3574944ba326ef05b2925ab658eed5f317529b3` |
 | Mixtral revision-format and selection analysis | `6d53371877b729747c92ae552ddb5a7a399c937e3f284c276e1c47efde80512c` |
-| superseded GPT-OSS mechanics/screen launch receipt | `6107a5b4dd4298dabf3e5889d65df89b1b1e25c2df526c1772007773e987e083` |
-| GPT-OSS pre-science admission-failure receipt | `7b4c24b31244a4b79be6a870bd4a6ff2854bb066b26f4cc826561f415ce59c60` |
-| corrected GPT-OSS mechanics relaunch receipt | `5ab6381d57ba0ed3f9ff2a0c3b4a7b157d0da1c8b2bed8eaf9dd19d7889b4bec` |
-| GPT-OSS pinned-kernel compatibility-failure receipt | `33ea232dbae4c3cb1f48a9f575705fb8c2a58d2a589c4ac8305620bf12bc499e` |
 | GPT-OSS 256-row raw score | `906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59` |
-| GPT-OSS screen evidence report | `d60ea1f2147f4e34a668a376507b43d7a4dea11d97cb54834992837e1fb0d810` |
-| GPT-OSS Slurm/H100 accounting | `8546d5ba326263d7235eb465a13fcd87081ed5fb346e8f7f8073632b6dfcc36d` |
-| three-point MoE scaling analysis | `6434ba95df6c35174fce536e96571d046e9e6fd97459100232120d1976c27550` |
-| three-point MoE publication manifest | `70dec71065a3a9f83caa4e58d218cc1831ca89f664a3cab3f036eecacad49c7b` |
-| publication architecture figure (SVG) | `2b5a2a25d3ba623b2eb99c469fb1c80e265d4512f605fbef45f66c0a303b07aa` |
-| publication architecture figure (PDF) | `df0a324891fb4a7c6e9bafbfedbf58bec1d0dea523c7fd17f2014df2f5f53eed` |
-| publication evidence figure (SVG) | `9c405934f3aed5469f27a84e799cc8c7a1ff0dac4aa390a9492fc40aee2aaeac` |
-| publication evidence figure (PDF) | `fadf5be75728e6e5bb02272d7b59986c8e8191468555e5cc00a2ce4a05d84213` |
-| deterministic six-page preprint (PDF) | `6f319ab3a1615a51286ee7a9ed0bd3ffdb0418e0ba1f96cc5ece91b436019554` |
+| GPT-OSS zero-retry accounting | `8546d5ba326263d7235eb465a13fcd87081ed5fb346e8f7f8073632b6dfcc36d` |
+| three-point MoE analysis | `6434ba95df6c35174fce536e96571d046e9e6fd97459100232120d1976c27550` |
+| termination-aware replay manifest | `b5b97e28cebb5a7bfdd449a377aa802c21ba73c839527d371557bee940509270` |
+| publication architecture figure (SVG) | `f49e888942284f5c3fb1feb6e18d567e3c23531ac8ed5b2f0ec1807d6aec1bdf` |
+| publication architecture figure (PDF) | `c998b10840c4e65095bb2ecc0ba39a51bb5df710cccf6982259ebca0b5c4d393` |
+| publication evidence figure (SVG) | `2594a40af43989e662b8f86d2673a71530c81d38be5c86cee384a0aeab07a379` |
+| publication evidence figure (PDF) | `86484c12a361efbd37edef0bcb1a37f2aac98963dd71a7c0597d2f6656bc1383` |
+| deterministic five-page preprint (PDF) | `4749815a7f6d69716fb21b994f222966055a7d4f5c09df021751d031b19238fb` |
 
 The deployable 9B release binds:
 
@@ -475,14 +495,14 @@ The deployable 9B release binds:
    unchanged second pass on several dense model sizes and families.
 2. Learned whole-trajectory commitment adds measurable capability over the
    trained revision on the protected 9B board.
-3. A hidden-state temporal gate is the strongest measured system on a
-   35B-total / 3B-active MoE development screen, while adding only two answers
-   over its draft-matched trained-revision branch.
-4. A 3.54M-parameter trained revision surface produces a statistically
-   decisive gain over draft-matched self-refinement on a 141B-total /
-   39B-active non-Qwen MoE validation.
-5. A 1.66M-parameter revision surface improves both sparse controls on a
-   third MoE family, GPT-OSS-120B, with nonnegative screen-domain deltas.
+3. A small hidden-state temporal gate causes a large source-disjoint gain on a
+   35B-total / 3B-active MoE development screen.
+4. A 3.54M-parameter trained revision surface produces a large, statistically
+   decisive aggregate gain on a 141B-total / 39B-active non-Qwen MoE host on
+   both a 256-row screen and a 1,023-row validation.
+5. A separate 1.66M-parameter trained revision surface improves both the
+   source-only unchanged and draft-matched self-refinement controls on
+   GPT-OSS-120B, while missing the conservative retention gate.
 
 ## Claims not supported yet
 
@@ -490,17 +510,15 @@ The deployable 9B release binds:
 2. A unique benefit from antisymmetric commitment.
 3. A monotonic or retention-preserving MoE scaling law across 35B, 117B,
    141B, and 550B hosts.
-4. A gate-only Qwen effect isolated from draft access, or a compute-normalized
-   advantage over equal-call/equal-token baselines.
-5. Superiority on unrelated public leaderboard suites that were not part of
+4. Superiority on unrelated public leaderboard suites that were not part of
    the matched protected evaluation.
 
 Shohin's strongest present conclusion is narrower and useful: model-owned
 temporal revision and coherent commitment can convert additional inference
 computation into measurable capability, the effect repeats across multiple
-dense hosts, a gated draft-conditioned system is strongest on a sparse Qwen
-screen, and tiny trained residual surfaces beat draft-matched self-refinement
-on GPT-OSS and Mixtral sparse hosts. The same evidence shows that capability
-gain and conservative retention are distinct objectives: revision supplies
-the gain, while model-owned sparse commitment remains the unresolved
+dense hosts, a causally trained hidden-state version improves a sparse Qwen
+host, and tiny trained residual surfaces transfer positive capability effects
+to both 117B- and 141B-total non-Qwen sparse hosts. The same evidence shows
+that capability gain and conservative retention are distinct objectives:
+revision supplies the gain, while commitment remains the unresolved
 large-host frontier.

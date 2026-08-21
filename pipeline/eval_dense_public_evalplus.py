@@ -25,6 +25,10 @@ BENCHMARK_DATASET = {
 }
 EXPORT_SCHEMA = "shohin-dense-public-evalplus-export-v1"
 REPORT_SCHEMA = "shohin-dense-public-evalplus-collect-v1"
+TASK_ID_PREFIX = {
+    "humaneval_plus": "HumanEval/",
+    "mbpp_plus": "Mbpp/",
+}
 
 
 def sha256_file(path: Path) -> str:
@@ -42,6 +46,21 @@ def extract_python_solution(text: str) -> str:
     return text.strip()
 
 
+def normalize_evalplus_task_id(benchmark: str, raw_task_id: object) -> str:
+    """Project frozen assessor IDs into EvalPlus' canonical task namespace."""
+
+    try:
+        prefix = TASK_ID_PREFIX[benchmark]
+    except KeyError as error:
+        raise OfficialScoringError("EvalPlus benchmark differs") from error
+    task_id = str(raw_task_id)
+    if task_id.startswith(prefix):
+        return task_id
+    if "/" in task_id or not task_id:
+        raise OfficialScoringError("EvalPlus task identity differs")
+    return f"{prefix}{task_id}"
+
+
 def atomic_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
     if path.exists():
         raise OfficialScoringError(f"refusing to replace {path}")
@@ -50,7 +69,9 @@ def atomic_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
     digest = hashlib.sha256()
     with temporary.open("wb") as handle:
         for row in rows:
-            encoded = json.dumps(row, ensure_ascii=False, sort_keys=True).encode() + b"\n"
+            encoded = (
+                json.dumps(row, ensure_ascii=False, sort_keys=True).encode() + b"\n"
+            )
             digest.update(encoded)
             handle.write(encoded)
         handle.flush()
@@ -79,7 +100,9 @@ def export(args: argparse.Namespace) -> dict[str, Any]:
         for question, assessor_row, generated in zip(
             questions, assessors, ledgers[stage], strict=True
         ):
-            task_id = str(assessor_row["assessor"]["task_id"])
+            task_id = normalize_evalplus_task_id(
+                args.benchmark, assessor_row["assessor"]["task_id"]
+            )
             samples.append(
                 {
                     "task_id": task_id,
@@ -119,10 +142,14 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
             raise OfficialScoringError("EvalPlus result schema differs")
         output = []
         for question, assessor_row in zip(questions, assessors, strict=True):
-            task_id = str(assessor_row["assessor"]["task_id"])
+            task_id = normalize_evalplus_task_id(
+                args.benchmark, assessor_row["assessor"]["task_id"]
+            )
             task_results = evaluated.get(task_id)
             if not isinstance(task_results, list) or len(task_results) != 1:
-                raise OfficialScoringError(f"EvalPlus {task_id} result coverage differs")
+                raise OfficialScoringError(
+                    f"EvalPlus {task_id} result coverage differs"
+                )
             task = task_results[0]
             passed = task.get("base_status") == task.get("plus_status") == "pass"
             output.append(

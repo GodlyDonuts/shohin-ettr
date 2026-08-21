@@ -302,6 +302,96 @@ def reservoir_rows(path: Path, limit: int, seed: int) -> list[dict[str, str]]:
     return reservoir_rows_with_sha256(path, limit, seed)[0]
 
 
+def eos_debiased_revision_rows_with_sha256(
+    path: Path,
+    limit: int,
+    seed: int,
+) -> tuple[list[dict[str, Any]], str]:
+    """Select revision rows while binding the exact answer-only EOS boundary."""
+
+    if limit <= 0:
+        raise ProductReasoningTrainError("row limit must be positive")
+    generator = random.Random(seed)
+    digest = hashlib.sha256()
+    selected: list[dict[str, Any]] = []
+    valid = 0
+    with path.open("rb") as handle:
+        for line_number, raw_line in enumerate(handle, start=1):
+            digest.update(raw_line)
+            try:
+                row = json.loads(raw_line)
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+                raise ProductReasoningTrainError(
+                    f"EOS-debiased revision row {line_number} is not JSON"
+                ) from exc
+            pair = _question_response(row)
+            target_kind = row.get("target_kind")
+            outcome_class = row.get("outcome_class")
+            if (
+                pair is None
+                or target_kind
+                not in {
+                    "shortest_verified_candidate",
+                    "source_verified_repair",
+                    "verified_candidate",
+                }
+                or not isinstance(outcome_class, str)
+                or (target_kind == "source_verified_repair")
+                != (outcome_class == "both_wrong")
+            ):
+                raise ProductReasoningTrainError(
+                    f"EOS-debiased revision row {line_number} differs"
+                )
+            normalized = {
+                "question": pair[0],
+                "response": pair[1],
+                "target_kind": str(target_kind),
+                "outcome_class": outcome_class,
+                "suppress_terminal_eos": target_kind == "source_verified_repair",
+            }
+            valid += 1
+            if len(selected) < limit:
+                selected.append(normalized)
+            else:
+                position = generator.randrange(valid)
+                if position < limit:
+                    selected[position] = normalized
+    if not selected:
+        raise ProductReasoningTrainError("EOS-debiased revision source is empty")
+    generator.shuffle(selected)
+    return selected, digest.hexdigest()
+
+
+def terminal_eos_supervision_for_batch(
+    rows: list[dict[str, Any]],
+    response_rows: list[list[int]],
+    eos_token_id: int,
+) -> list[bool]:
+    """Validate the tokenizer boundary before removing any terminal-EOS label."""
+
+    if (
+        isinstance(eos_token_id, bool)
+        or not isinstance(eos_token_id, int)
+        or eos_token_id < 0
+        or len(rows) != len(response_rows)
+    ):
+        raise ProductReasoningTrainError("terminal EOS supervision boundary differs")
+    supervision: list[bool] = []
+    for row, response in zip(rows, response_rows, strict=True):
+        suppress = row.get("suppress_terminal_eos")
+        if (
+            not isinstance(suppress, bool)
+            or not response
+            or isinstance(response[-1], bool)
+            or response[-1] != eos_token_id
+        ):
+            raise ProductReasoningTrainError(
+                "terminal EOS supervision boundary differs"
+            )
+        supervision.append(not suppress)
+    return supervision
+
+
 def kcr1_rows_with_sha256(
     path: Path,
     limit: int,
@@ -426,6 +516,7 @@ def pack_training_embeddings(
     pad_token_id: int,
     prompt_residuals: torch.Tensor | None = None,
     prompt_attention_rows: list[list[int]] | None = None,
+    terminal_eos_supervision: list[bool] | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, int]:
     """Pack prompt, optional workspace, and target with causal-LM labels."""
 
@@ -448,6 +539,11 @@ def pack_training_embeddings(
             raise ProductReasoningTrainError("prompt attention geometry differs")
         if any(value not in (0, 1) for mask in prompt_attention_rows for value in mask):
             raise ProductReasoningTrainError("prompt attention values differ")
+    if terminal_eos_supervision is not None and (
+        len(terminal_eos_supervision) != len(response_rows)
+        or any(not isinstance(value, bool) for value in terminal_eos_supervision)
+    ):
+        raise ProductReasoningTrainError("terminal EOS supervision geometry differs")
     sequences: list[torch.Tensor] = []
     labels: list[torch.Tensor] = []
     charged_tokens = 0
@@ -477,6 +573,8 @@ def pack_training_embeddings(
             dtype=torch.long,
         )
         row_labels[len(prompt) + prefix_slots :] = response_tensor
+        if terminal_eos_supervision is not None and not terminal_eos_supervision[index]:
+            row_labels[-1] = -100
         labels.append(row_labels)
         charged_tokens += len(response)
 
@@ -668,9 +766,7 @@ class ProductReasoningModel(nn.Module):
             )
         self.unfreeze_layers = unfreeze_layers
         self.lora_scope = lora_scope
-        self.lora_layer_indices = list(
-            range(len(layers) - lora_layers, len(layers))
-        )
+        self.lora_layer_indices = list(range(len(layers) - lora_layers, len(layers)))
         self.lora_projection_count = 0
         for layer in layers[-lora_layers:]:
             self.lora_projection_count += install_scoped_lora(
@@ -769,6 +865,7 @@ class ProductReasoningModel(nn.Module):
         response_action_token_counts: list[int] | None = None,
         loss_mode: str = "standard",
         response_group_sizes: list[int] | None = None,
+        terminal_eos_supervision: list[bool] | None = None,
     ) -> tuple[torch.Tensor, dict[str, float]]:
         embedding = self.text_model.embed_tokens
         prefix = None
@@ -847,6 +944,7 @@ class ProductReasoningModel(nn.Module):
             pad_token_id,
             prompt_residuals,
             prompt_attention_rows,
+            terminal_eos_supervision,
         )
         outputs = self.text_model(
             inputs_embeds=inputs,
@@ -863,13 +961,18 @@ class ProductReasoningModel(nn.Module):
             "equivalence_groups": 0.0,
             "mean_equivalence_size": 0.0,
         }
-        if loss_mode == "standard":
+        if loss_mode in {"standard", "eos_debiased_revision"}:
             if (
                 response_action_token_counts is not None
                 or response_group_sizes is not None
+                or (loss_mode == "standard" and terminal_eos_supervision is not None)
+                or (
+                    loss_mode == "eos_debiased_revision"
+                    and terminal_eos_supervision is None
+                )
             ):
                 raise ProductReasoningTrainError(
-                    "standard loss received KCR1 action boundaries"
+                    "standard revision loss boundary differs"
                 )
             language_loss = F.cross_entropy(
                 logits[:, :-1].reshape(-1, logits.shape[-1]),
@@ -917,6 +1020,11 @@ class ProductReasoningModel(nn.Module):
                 else 0.0
             ),
             "charged_tokens": float(charged),
+            "terminal_eos_suppressed": float(
+                sum(not value for value in terminal_eos_supervision)
+                if terminal_eos_supervision is not None
+                else 0
+            ),
             **kcr1_metrics,
         }
 
@@ -1479,6 +1587,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         rows, data_hash = vte1_rows_with_sha256(
             args.data, args.max_rows, args.data_seed
         )
+    elif args.loss_mode == "eos_debiased_revision":
+        rows, data_hash = eos_debiased_revision_rows_with_sha256(
+            args.data, args.max_rows, args.data_seed
+        )
     else:
         rows, data_hash = reservoir_rows_with_sha256(
             args.data, args.max_rows, args.data_seed
@@ -1508,6 +1620,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "unfreeze_layers": model.unfreeze_layers,
         "mask_internal_draft": args.mask_internal_draft,
         "loss_mode": args.loss_mode,
+        "terminal_eos_policy": (
+            "suppress_source_verified_repair_both_wrong_only"
+            if args.loss_mode == "eos_debiased_revision"
+            else "supervise_every_response_terminal_eos"
+        ),
         "vte1_temperature": 0.1 if args.loss_mode == "vte1_equivalence" else None,
         "syndrome_weight": SYNDROME_WEIGHT if args.arm == "syndrome" else 0.0,
         "architecture": (
@@ -1565,6 +1682,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     optimizer.zero_grad(set_to_none=True)
     started = time.monotonic()
     total_charged = 0
+    total_terminal_eos_suppressed = 0
     trace: list[dict[str, float | int]] = []
     update = 0
     microstep = 0
@@ -1574,6 +1692,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         draft_indicator_rows = None
         response_action_token_counts = None
         response_group_sizes = None
+        terminal_eos_supervision = None
         if args.arm == "syndrome":
             prompt_rows, response_rows, draft_indicator_rows = (
                 _tokenize_rows_with_syndrome(
@@ -1626,6 +1745,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 tokenizer, raw_batch, args.max_sequence_length, workspace_slots
             )
             prompt_attention_rows = None
+        if args.loss_mode == "eos_debiased_revision":
+            terminal_eos_supervision = terminal_eos_supervision_for_batch(
+                raw_batch,
+                response_rows,
+                tokenizer.eos_token_id,
+            )
         with torch.autocast("cuda", dtype=torch.bfloat16):
             loss, metrics = model.forward_batch(
                 prompt_rows=prompt_rows,
@@ -1636,10 +1761,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 response_action_token_counts=response_action_token_counts,
                 loss_mode=args.loss_mode,
                 response_group_sizes=response_group_sizes,
+                terminal_eos_supervision=terminal_eos_supervision,
             )
             scaled_loss = loss / args.gradient_accumulation
         scaled_loss.backward()
         total_charged += int(metrics["charged_tokens"])
+        total_terminal_eos_suppressed += int(metrics["terminal_eos_suppressed"])
         microstep += 1
         if microstep % args.gradient_accumulation:
             continue
@@ -1673,6 +1800,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "gradient_norm": float(gradient_norm),
                 "learning_rate": learning_rate,
                 "charged_tokens": total_charged,
+                "terminal_eos_suppressed": total_terminal_eos_suppressed,
                 "charged_tokens_per_second": total_charged / elapsed,
             }
             trace.append(event)
@@ -1698,6 +1826,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "max_sequence_length": args.max_sequence_length,
         "learning_rate": args.learning_rate,
         "charged_tokens": total_charged,
+        "supervised_tokens": total_charged - total_terminal_eos_suppressed,
+        "terminal_eos_suppressed": total_terminal_eos_suppressed,
         "elapsed_seconds": elapsed,
         "charged_tokens_per_second": total_charged / elapsed,
         "current_gpu_memory_bytes": int(torch.cuda.memory_allocated()),
@@ -1757,7 +1887,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mask-internal-draft", action="store_true")
     parser.add_argument(
         "--loss-mode",
-        choices=("standard", "kcr1_action_payload", "vte1_equivalence"),
+        choices=(
+            "standard",
+            "eos_debiased_revision",
+            "kcr1_action_payload",
+            "vte1_equivalence",
+        ),
         default="standard",
     )
     parser.add_argument("--seed", type=int, default=31)

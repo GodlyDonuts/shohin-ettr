@@ -7,11 +7,43 @@ set -euo pipefail
 : "${LONGBENCH_COMMIT:?}" "${EMBEDDING_MODEL:?}"
 
 POLL_SECONDS=${POLL_SECONDS:-60}
+BOARD_ROOT=${BOARD_ROOT:-"$ARTIFACT_ROOT"}
 FINAL_GENERATION_REPORT="$ARTIFACT_ROOT/full_generation/mmlu_pro/report.json"
 SCORE_ROOT="$ARTIFACT_ROOT/official_scores"
 REPORT_ROOT="$ARTIFACT_ROOT/official_score_reports"
 LOG_ROOT="$ARTIFACT_ROOT/logs"
 mkdir -p "$SCORE_ROOT" "$REPORT_ROOT" "$LOG_ROOT"
+
+for path in "$RUNTIME_ROOT" "$ARTIFACT_ROOT" "$BOARD_ROOT" "$SCORING_DEPS" \
+  "$BASE_ENV_ROOT" "$EMBEDDING_MODEL"; do
+  [ -e "$path" ] && [ ! -L "$path" ] || {
+    echo "required scoring input differs: $path" >&2
+    exit 2
+  }
+done
+
+# The qualified virtual environment uses an absolute interpreter symlink into
+# its pinned Miniforge root.  Project only that root at its original path so
+# the symlink resolves inside Bubblewrap without exposing the surrounding
+# Shohin filesystem.
+BASE_PYTHON_ROOT=$(dirname "$(dirname "$(realpath "$BASE_ENV_ROOT/bin/python3.13")")")
+[ -d "$BASE_PYTHON_ROOT" ] && [ ! -L "$BASE_PYTHON_ROOT" ] || {
+  echo "qualified base Python root differs" >&2
+  exit 2
+}
+declare -a BWRAP_BASE_PYTHON_PROJECTION=()
+declare -a base_python_parents=()
+parent=$(dirname "$BASE_PYTHON_ROOT")
+while [ "$parent" != / ]; do
+  base_python_parents=("$parent" "${base_python_parents[@]}")
+  parent=$(dirname "$parent")
+done
+for parent in "${base_python_parents[@]}"; do
+  BWRAP_BASE_PYTHON_PROJECTION+=(--dir "$parent")
+done
+BWRAP_BASE_PYTHON_PROJECTION+=(
+  --ro-bind "$BASE_PYTHON_ROOT" "$BASE_PYTHON_ROOT"
+)
 
 while [ ! -s "$FINAL_GENERATION_REPORT" ]; do
   if ! squeue -h -j "$ALLOCATION_JOB_ID" -t RUNNING | grep -q .; then
@@ -25,7 +57,7 @@ mkdir -p "$ARTIFACT_ROOT/sandbox_manifests"
 for benchmark in livecodebench livebench; do
   sandbox_manifest="$ARTIFACT_ROOT/sandbox_manifests/${benchmark}.json"
   if [ ! -s "$sandbox_manifest" ]; then
-    "$PYTHON" - "$ARTIFACT_ROOT/manifests/${benchmark}.json" "$sandbox_manifest" "$benchmark" <<'PY'
+    "$PYTHON" - "$BOARD_ROOT/manifests/${benchmark}.json" "$sandbox_manifest" "$benchmark" <<'PY'
 import json
 import os
 from pathlib import Path
@@ -55,9 +87,9 @@ capture_final_json() {
 
 assessor_root() {
   case "$1" in
-    ifeval|musr|mmlu_pro) echo "$ARTIFACT_ROOT/data" ;;
-    ruler) echo "$ARTIFACT_ROOT/site_data_ruler" ;;
-    *) echo "$ARTIFACT_ROOT/site_data_core" ;;
+    ifeval|musr|mmlu_pro) echo "$BOARD_ROOT/data" ;;
+    ruler) echo "$BOARD_ROOT/site_data_ruler" ;;
+    *) echo "$BOARD_ROOT/site_data_core" ;;
   esac
 }
 
@@ -65,11 +97,11 @@ for benchmark in ifeval musr correctbench mmlu_pro; do
   report="$REPORT_ROOT/${benchmark}.json"
   [ -s "$report" ] && continue
   "$PYTHON" "$RUNTIME_ROOT/pipeline/score_dense_public_campaign.py" \
-    --manifest "$ARTIFACT_ROOT/manifests/${benchmark}.json" \
+    --manifest "$BOARD_ROOT/manifests/${benchmark}.json" \
     --generation-root "$ARTIFACT_ROOT/full_generation/${benchmark}" \
     --assessor-root "$(assessor_root "$benchmark")" \
     --assessor-name full.assessors.jsonl \
-    --ifeval-root "$ARTIFACT_ROOT/sources/google-research/instruction_following_eval" \
+    --ifeval-root "$BOARD_ROOT/sources/google-research/instruction_following_eval" \
     --official-score-root "$SCORE_ROOT" \
     --output "$report"
 done
@@ -77,9 +109,9 @@ done
 if [ ! -s "$REPORT_ROOT/ruler.json" ]; then
   log="$LOG_ROOT/score_ruler.out"
   "$PYTHON" "$RUNTIME_ROOT/pipeline/score_dense_public_ruler.py" \
-    --manifest "$ARTIFACT_ROOT/manifests/ruler.json" \
+    --manifest "$BOARD_ROOT/manifests/ruler.json" \
     --generation-root "$ARTIFACT_ROOT/full_generation/ruler" \
-    --assessor-root "$ARTIFACT_ROOT/site_data_ruler" \
+    --assessor-root "$BOARD_ROOT/site_data_ruler" \
     --output-root "$SCORE_ROOT" \
     --ruler-commit "$NVIDIA_RULER_COMMIT" >"$log"
   capture_final_json "$log" "$REPORT_ROOT/ruler.json"
@@ -92,19 +124,20 @@ run_evalplus() {
   local work="$ARTIFACT_ROOT/evalplus_work"
   "$PYTHON" "$RUNTIME_ROOT/pipeline/eval_dense_public_evalplus.py" export \
     --benchmark "$benchmark" \
-    --manifest "$ARTIFACT_ROOT/manifests/${benchmark}.json" \
+    --manifest "$BOARD_ROOT/manifests/${benchmark}.json" \
     --generation-root "$ARTIFACT_ROOT/full_generation/${benchmark}" \
-    --assessor-root "$ARTIFACT_ROOT/site_data_core" \
+    --assessor-root "$BOARD_ROOT/site_data_core" \
     --work-root "$work" \
     --evalplus-commit "$EVALPLUS_COMMIT" \
     >"$LOG_ROOT/score_${benchmark}_export.out"
   for stage in direct_base unchanged_continuation trained_revision; do
     bwrap \
       --ro-bind /usr /usr --ro-bind /lib64 /lib64 --ro-bind /lib /lib --ro-bind /etc /etc \
+      "${BWRAP_BASE_PYTHON_PROJECTION[@]}" \
       --ro-bind "$BASE_ENV_ROOT" /env \
       --ro-bind "$SCORING_DEPS" /deps \
-      --ro-bind "$ARTIFACT_ROOT/site_sources/evalplus-full" /scorer \
-      --ro-bind "$ARTIFACT_ROOT/evalplus_data" /data \
+      --ro-bind "$BOARD_ROOT/site_sources/evalplus-full" /scorer \
+      --ro-bind "$BOARD_ROOT/evalplus_data" /data \
       --bind "$work" /work \
       --proc /proc --dev /dev --tmpfs /tmp \
       --unshare-net --unshare-pid --unshare-ipc --unshare-uts --die-with-parent \
@@ -119,9 +152,9 @@ run_evalplus() {
   local log="$LOG_ROOT/score_${benchmark}_collect.out"
   "$PYTHON" "$RUNTIME_ROOT/pipeline/eval_dense_public_evalplus.py" collect \
     --benchmark "$benchmark" \
-    --manifest "$ARTIFACT_ROOT/manifests/${benchmark}.json" \
+    --manifest "$BOARD_ROOT/manifests/${benchmark}.json" \
     --generation-root "$ARTIFACT_ROOT/full_generation/${benchmark}" \
-    --assessor-root "$ARTIFACT_ROOT/site_data_core" \
+    --assessor-root "$BOARD_ROOT/site_data_core" \
     --work-root "$work" --output-root "$SCORE_ROOT" \
     --evalplus-commit "$EVALPLUS_COMMIT" >"$log"
   capture_final_json "$log" "$report"
@@ -134,12 +167,13 @@ if [ ! -s "$REPORT_ROOT/livecodebench.json" ]; then
   mkdir -p "$SCORE_ROOT"
   bwrap \
     --ro-bind /usr /usr --ro-bind /lib64 /lib64 --ro-bind /lib /lib --ro-bind /etc /etc \
+    "${BWRAP_BASE_PYTHON_PROJECTION[@]}" \
     --ro-bind "$BASE_ENV_ROOT" /env --ro-bind "$SCORING_DEPS" /deps \
     --ro-bind "$RUNTIME_ROOT" /runtime \
-    --ro-bind "$ARTIFACT_ROOT/site_sources/livecodebench-full" /scorer \
+    --ro-bind "$BOARD_ROOT/site_sources/livecodebench-full" /scorer \
     --ro-bind "$ARTIFACT_ROOT/sandbox_manifests/livecodebench.json" /manifest.json \
     --ro-bind "$ARTIFACT_ROOT/full_generation/livecodebench" /generation \
-    --ro-bind "$ARTIFACT_ROOT/site_data_core" /assessors \
+    --ro-bind "$BOARD_ROOT/site_data_core" /assessors \
     --bind "$SCORE_ROOT" /scores \
     --proc /proc --dev /dev --tmpfs /tmp \
     --unshare-net --unshare-pid --unshare-ipc --unshare-uts --die-with-parent \
@@ -157,13 +191,14 @@ if [ ! -s "$REPORT_ROOT/livebench.json" ]; then
   mkdir -p "$ARTIFACT_ROOT/livebench_work"
   bwrap \
     --ro-bind /usr /usr --ro-bind /lib64 /lib64 --ro-bind /lib /lib --ro-bind /etc /etc \
+    "${BWRAP_BASE_PYTHON_PROJECTION[@]}" \
     --ro-bind "$BASE_ENV_ROOT" /env --ro-bind "$SCORING_DEPS" /deps \
     --ro-bind "$RUNTIME_ROOT" /runtime \
-    --ro-bind "$ARTIFACT_ROOT/site_sources/livebench-src" /scorer \
+    --ro-bind "$BOARD_ROOT/site_sources/livebench-src" /scorer \
     --ro-bind "$ARTIFACT_ROOT/sandbox_manifests/livebench.json" /manifest.json \
     --ro-bind "$ARTIFACT_ROOT/full_generation/livebench" /generation \
-    --ro-bind "$ARTIFACT_ROOT/site_data_core" /assessors \
-    --ro-bind "$ARTIFACT_ROOT/nltk_data" /nltk \
+    --ro-bind "$BOARD_ROOT/site_data_core" /assessors \
+    --ro-bind "$BOARD_ROOT/nltk_data" /nltk \
     --bind "$ARTIFACT_ROOT/livebench_work" /work --bind "$SCORE_ROOT" /scores \
     --proc /proc --dev /dev --tmpfs /tmp \
     --unshare-net --unshare-pid --unshare-ipc --unshare-uts --die-with-parent \
@@ -181,18 +216,18 @@ if [ ! -s "$REPORT_ROOT/longbench_pro.json" ]; then
   log="$LOG_ROOT/score_longbench_pro.out"
   srun --jobid="$ALLOCATION_JOB_ID" --overlap --ntasks=1 --cpus-per-task=16 --mem=120G \
     env OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 \
-      PYTHONPATH="$RUNTIME_ROOT/pipeline:$ARTIFACT_ROOT/site_sources/longcontext-full/LongBench-Pro" \
+      PYTHONPATH="$RUNTIME_ROOT/pipeline:$BOARD_ROOT/site_sources/longcontext-full/LongBench-Pro" \
     "$PYTHON" "$RUNTIME_ROOT/pipeline/eval_dense_public_longbench_pro.py" \
-      --manifest "$ARTIFACT_ROOT/manifests/longbench_pro.json" \
+      --manifest "$BOARD_ROOT/manifests/longbench_pro.json" \
       --generation-root "$ARTIFACT_ROOT/full_generation/longbench_pro" \
-      --assessor-root "$ARTIFACT_ROOT/site_data_core" --output-root "$SCORE_ROOT" \
-      --longbench-root "$ARTIFACT_ROOT/site_sources/longcontext-full/LongBench-Pro" \
+      --assessor-root "$BOARD_ROOT/site_data_core" --output-root "$SCORE_ROOT" \
+      --longbench-root "$BOARD_ROOT/site_sources/longcontext-full/LongBench-Pro" \
       --longbench-commit "$LONGBENCH_COMMIT" --embedding-model "$EMBEDDING_MODEL" \
       >"$log" 2>"$LOG_ROOT/score_longbench_pro.err"
   capture_final_json "$log" "$REPORT_ROOT/longbench_pro.json"
 fi
 
 "$PYTHON" "$RUNTIME_ROOT/pipeline/aggregate_dense_public_official_scores.py" \
-  --manifest "$ARTIFACT_ROOT/manifests/all_official.json" \
+  --manifest "$BOARD_ROOT/manifests/all_official.json" \
   --score-root "$SCORE_ROOT" \
   --output "$ARTIFACT_ROOT/official_aggregate.json"

@@ -1,0 +1,112 @@
+{
+  "schema": "shohin-nemotron-super-training-generation-infrastructure-repair-v1",
+  "status": "repair_launched_pending_live_validation",
+  "recorded_date": "2026-08-20",
+  "host": "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+  "scientific_identity_changed": false,
+  "failed_training": {
+    "job_id": 767995,
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "restarts": 0,
+    "node": "evc39",
+    "elapsed_seconds": 1564,
+    "failure_class": "cuda_allocator_fragmentation_before_first_update",
+    "exception": "torch.OutOfMemoryError",
+    "requested_allocation_mib": 300.0,
+    "gpu0_total_gib": 79.18,
+    "gpu0_free_mib": 276.31,
+    "pytorch_allocated_gib": 72.37,
+    "pytorch_reserved_unallocated_gib": 5.95,
+    "stdout_sha256": "3431575be28d20d7d896283854559a9afda878e1ab133d81fb58639ddfa0d584",
+    "stderr_sha256": "d54960371697273255d415dd9112adbc443c0545913ca87bfd9aee4ad60b8252",
+    "checkpoint_written": false,
+    "report_written": false,
+    "scientific_updates_completed": 0
+  },
+  "failed_generation": {
+    "jobs": [
+      {
+        "job_id": 767996,
+        "array_task": 0,
+        "node": "evc40",
+        "elapsed_seconds": 1207,
+        "stderr_sha256": "c823e1c71429707147f72aefd7afb885e6114591029b1bd129d2e94d4214a14b"
+      },
+      {
+        "job_id": 767997,
+        "array_task": 1,
+        "node": "evc43",
+        "elapsed_seconds": 1187,
+        "stderr_sha256": "4d3420754581da16a1db57153c51cd1c24283b110f95f4ce9b67dededa8dddec"
+      },
+      {
+        "job_id": 767998,
+        "array_task": 2,
+        "node": "evc48",
+        "elapsed_seconds": 1198,
+        "stderr_sha256": "807acade961a7b226315b9c35d46c9bb68a4d04431b1dc0d59d3317c398c1281"
+      }
+    ],
+    "state": "FAILED",
+    "exit_code": "1:0",
+    "restarts_per_job": 0,
+    "shared_stdout_sha256": "cb4ecc133176cfbfa28bd2314d23f2018197eb91e4f107e3b521126da1f33126",
+    "failure_class": "transformers_default_cache_incompatible_with_pinned_hybrid_host",
+    "exception": "AttributeError: 'DynamicCache' object has no attribute 'conv_states'",
+    "candidate_rows_written": 0,
+    "reports_written": 0,
+    "assessor_rows_read": 0
+  },
+  "prevented_repetitions": {
+    "cancelled_evaluation_jobs": [767999, 768000, 768001, 768002, 768003, 768004, 768005, 768006, 768007],
+    "cancelled_score_job": 768008,
+    "reason": "the same immutable evaluator would deterministically repeat the observed pre-generation failure"
+  },
+  "repair": {
+    "source_commit": "2c1e583fa91959b22da7567b26d4ed4124e58ecf",
+    "cache_repair_commit": "49fbf056926af16a4579fe0f5f7f1af8db270269",
+    "runtime": "/lustre/fs1/home/sa305415/shohin/artifacts/runtimes/upward_moe_runtime_2c1e583f_r1",
+    "runtime_manifest_sha256": "fae63378cdb04473d1526ebe1d0488ad2bb01c739988bb9764549b98f5e7f8d0",
+    "runtime_json_sha256": "26af6296f4c46419c5ae427b88f4d288f1c3168a2920f491a1130c42b6d95e66",
+    "runtime_files": 246,
+    "evaluator_sha256": "8736d883e2b56279d9124882f0e9decdcce356d4a93689ebd24ea80c1d3ad5bb",
+    "shared_generator_sha256": "14bf7a0d0f7c8df258fc385506878d91039262f5256551ca003c09a8a1f5fcb9",
+    "train_job_sha256": "c5480267391e06401dc112792fcfd9204403bfc2ca1685fcd8a7b653c938cf28",
+    "evaluation_job_sha256": "4103927818f2be4dc3c01df9f8d1178ddc0d8f0f875b187f2d7900bd62ce2696",
+    "hybrid_cache": {
+      "schema": "shohin-nemotron-super-hybrid-generation-cache-v1",
+      "cache_class": "NemotronHHybridDynamicCache",
+      "layers": 88,
+      "placement": "each cache layer follows its immutable model block CUDA device",
+      "generic_dynamic_cache_bypassed": true
+    },
+    "allocator": {
+      "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True",
+      "scientific_tensors_or_schedule_changed": false
+    },
+    "local_focused_tests_passed": 94,
+    "black_ruff_pycompile_bash_diff_checks": "pass"
+  },
+  "live_replacements": {
+    "unchanged_shard_0_job": 768048,
+    "training_job": 768050,
+    "requeue": false,
+    "duplicate_identity_outputs": false,
+    "remaining_replacements_release_condition": "job 768048 crosses the first-token cache boundary without an infrastructure failure"
+  },
+  "unchanged_scientific_contract": {
+    "model_revision": "7d7e5797b8a3c7abbab54033b6004e93e8b6bc91",
+    "model_manifest_sha256": "8bb8bb898794651791de9d79c1041fe0ec6ad0f54a97b03f52620bd6e245ce92",
+    "training_data_sha256": "802c85662570c5bcb72f3e4430dbd093e901081f114213831292750894c3feff",
+    "screen_source_sha256": "f0b7830814762c6917363642e86edaaf192a8ab2834911c13c0cae9255ceefa9",
+    "training_updates": 256,
+    "gradient_accumulation": 8,
+    "learning_rate": 0.00002,
+    "evaluation_rows_per_arm": 256,
+    "evaluation_shards_per_arm": 4,
+    "generation_mode": "greedy",
+    "max_new_tokens": 768,
+    "seed": 2026080816
+  }
+}

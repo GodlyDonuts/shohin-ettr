@@ -1,0 +1,165 @@
+{
+  "schema": "shohin-moe-termination-aware-commit-replay-receipt-v1",
+  "status": "complete_retrospective_replay",
+  "date": "2026-08-20",
+  "rule": {
+    "decision": "select revision iff the baseline exhausted its generation limit and revision did not; otherwise retain the baseline",
+    "uses_task_label": false,
+    "uses_correctness_at_selection": false,
+    "uses_assessor_at_selection": false,
+    "uses_completion_text": false,
+    "candidate_state_fields": [
+      "baseline.max_token_exhausted",
+      "revision.max_token_exhausted"
+    ]
+  },
+  "implementation": {
+    "commit": "aeced4169e3ee863d1996b50bb4ad489c676aab3",
+    "commit_time": "2026-08-20T20:21:41-04:00",
+    "source": "pipeline/analyze_moe_termination_commit.py",
+    "source_sha256": "eb3fea20006463555abc4df5e8fbdb490ed15d21e1a576d32d6418eede78c378",
+    "tests": "4 passed before replay"
+  },
+  "remote_evidence": {
+    "root": "/lustre/fs1/home/sa305415/shohin/artifacts/moe_termination_commit_aeced416_r1",
+    "mode": "read-only after replay",
+    "manifest_sha256": "b5b97e28cebb5a7bfdd449a377aa802c21ba73c839527d371557bee940509270",
+    "outputs": {
+      "qwen35_screen.json": "6af821651231869814843d32b87b64ae8568edec6562951af715b4561a8dbd1a",
+      "gpt_oss_120b_screen.json": "db46b27d39d6dd358e2cd715719fda649047636a630ff3f158edbdd39bd2fccc",
+      "mixtral_screen.json": "2af99f39eb0842125f28f897a4c99ba529b8fa1cc54cffb5952cca36cf9b4199",
+      "mixtral_validation.json": "c80b8c1ae77bc889f43f36133065713a49e8d3bb4da8ff6bf166a8b9e3895be7"
+    }
+  },
+  "results": [
+    {
+      "host": "Qwen3.6-35B-A3B",
+      "split": "source-disjoint 256-row screen",
+      "rows": 256,
+      "score_sha256": "d5b5a59448c15ce00f48cf3a44b524688503e9f7ad00c877761ebcd859673a45",
+      "unchanged_guard": {
+        "baseline_correct": 111,
+        "committed_correct": 136,
+        "gain": 25,
+        "retained_baseline_correct": 111,
+        "retention": 1.0,
+        "paired_wins": 25,
+        "paired_losses": 0,
+        "two_sided_sign_p": 5.960464477539063e-08,
+        "revision_selected": 74
+      },
+      "self_refinement_guard": {
+        "baseline_correct": 121,
+        "committed_correct": 135,
+        "gain": 14,
+        "retained_baseline_correct": 121,
+        "retention": 1.0,
+        "paired_wins": 14,
+        "paired_losses": 0,
+        "two_sided_sign_p": 0.0001220703125,
+        "revision_selected": 63
+      }
+    },
+    {
+      "host": "GPT-OSS-120B",
+      "split": "source-disjoint 256-row screen",
+      "rows": 256,
+      "score_sha256": "906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59",
+      "unchanged_guard": {
+        "baseline_correct": 101,
+        "committed_correct": 106,
+        "gain": 5,
+        "retained_baseline_correct": 101,
+        "retention": 1.0,
+        "paired_wins": 5,
+        "paired_losses": 0,
+        "two_sided_sign_p": 0.0625,
+        "revision_selected": 10
+      },
+      "self_refinement_guard": {
+        "baseline_correct": 103,
+        "committed_correct": 110,
+        "gain": 7,
+        "retained_baseline_correct": 103,
+        "retention": 1.0,
+        "paired_wins": 7,
+        "paired_losses": 0,
+        "two_sided_sign_p": 0.015625,
+        "revision_selected": 13
+      }
+    },
+    {
+      "host": "Mixtral-8x22B",
+      "split": "source-disjoint 256-row screen",
+      "rows": 256,
+      "score_sha256": "ce51617197a9f8e9a8ffdfa08d900746bf7c6cf3c34898d941ebe004f6cc4e50",
+      "unchanged_guard": {
+        "baseline_correct": 45,
+        "committed_correct": 55,
+        "gain": 10,
+        "retained_baseline_correct": 45,
+        "retention": 1.0,
+        "paired_wins": 10,
+        "paired_losses": 0,
+        "two_sided_sign_p": 0.001953125,
+        "revision_selected": 40
+      },
+      "self_refinement_guard": {
+        "baseline_correct": 105,
+        "committed_correct": 109,
+        "gain": 4,
+        "retained_baseline_correct": 105,
+        "retention": 1.0,
+        "paired_wins": 4,
+        "paired_losses": 0,
+        "two_sided_sign_p": 0.125,
+        "revision_selected": 28
+      }
+    },
+    {
+      "host": "Mixtral-8x22B",
+      "split": "independent source-disjoint 1023-row validation",
+      "rows": 1023,
+      "score_sha256": "7befd864dd921ec371c175381b4eccec9f0d603bf291eaddf93fc5039043c3d8",
+      "unchanged_guard": {
+        "baseline_correct": 147,
+        "committed_correct": 201,
+        "gain": 54,
+        "retained_baseline_correct": 147,
+        "retention": 1.0,
+        "paired_wins": 54,
+        "paired_losses": 0,
+        "two_sided_sign_p": 1.1102230246251565e-16,
+        "revision_selected": 162
+      },
+      "self_refinement_guard": {
+        "baseline_correct": 356,
+        "committed_correct": 377,
+        "gain": 21,
+        "retained_baseline_correct": 356,
+        "retention": 1.0,
+        "paired_wins": 21,
+        "paired_losses": 0,
+        "two_sided_sign_p": 9.5367431640625e-07,
+        "revision_selected": 119
+      }
+    }
+  ],
+  "prospective_test": {
+    "host": "NVIDIA-Nemotron-3-Super-120B-A12B-FP8",
+    "mechanics_job": 767488,
+    "job_submit_time": "2026-08-20T18:43:11-04:00",
+    "allocation_start_time": "2026-08-20T20:20:56-04:00",
+    "rule_commit_time": "2026-08-20T20:21:41-04:00",
+    "boundary": "The rule was committed after the mechanics allocation started but before mechanics completion, candidate generation, scoring, or any Nemotron scientific output. The Nemotron score is therefore the first prospective family test of the frozen rule, not evidence used to derive it.",
+    "live_graph_changed": false
+  },
+  "interpretation": {
+    "claim": "A label-free termination-aware whole-trajectory commit recovers additional correct answers with zero observed paired losses across three MoE families and an independent 1023-row Mixtral validation.",
+    "limitations": [
+      "Qwen, GPT-OSS, and Mixtral results are retrospective development replays.",
+      "The rule is not a qualified release or confirmed architecture until it transfers prospectively.",
+      "Nemotron Super is the first prospective cross-family test and its result must be reported regardless of direction."
+    ]
+  }
+}

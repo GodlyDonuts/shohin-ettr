@@ -1,0 +1,120 @@
+{
+  "schema": "shohin-qwen9-public-early-results-v1",
+  "status": "five_of_ten_benchmarks_officially_scored",
+  "aggregate_authorized": false,
+  "website_authorized": false,
+  "host": "qwen3.5-9b",
+  "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "model_tree_sha256": "37048cc496c8992ea778fc1395f10b3c1d2dcb434f5de066f9f5c4bbf832903a",
+  "draft_checkpoint_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971",
+  "revision_checkpoint_sha256": "df3c264d426941fef8ba9c10a90fe9fab304ec2864738209a4d79f9f81e0c473",
+  "allocation_job": 766196,
+  "generation_source_sha256": "bbb551089cb21457e24655efad201da9bf58e64f080800526db48f9b0a179841",
+  "evalplus_commit": "26d6d00bb1fd0fa37f39c99d5290da67891d1c5e",
+  "newton_evidence_receipt": {
+    "path": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/early_official_scores_20260820_r1/receipt.json",
+    "sha256": "a9b64c5cbb51533fea3fe10f505fa9ba9bb1ec73bd295a686f88fabf786a2bf3",
+    "files": 20,
+    "covered_bytes": 3564211,
+    "sacct_sha256": "7405c1369cd84990bcae5bdc1afc74e37ed6cb25aed3c7378a5c096aca214287"
+  },
+  "results": {
+    "correctbench": {
+      "rows": 739,
+      "direct_base_score": 35.723951285520975,
+      "unchanged_score": 32.341001353179976,
+      "trained_revision_score": 14.884979702300406,
+      "paired_delta_points": -17.456021650879567,
+      "trained_revision_vs_direct_base_points": -20.83897158322057,
+      "wins": 0,
+      "losses": 129,
+      "baseline_correct_retention": 0.4602510460251046,
+      "paired_sign_test_two_sided_p": 2.938735877055719e-39,
+      "generation_report_sha256": "a0975c28de2a820395a3d490d76b29ab19a9b4ff5a4f93a482a6b9b9b6ad81a9",
+      "score_report_sha256": "bc01e307e202494539470aafd2897ac87213debd1b283dc06eab125fb7dd5247",
+      "score_job": 767640
+    },
+    "humaneval_plus": {
+      "rows": 164,
+      "direct_base_score": 68.90243902439025,
+      "unchanged_score": 70.73170731707317,
+      "trained_revision_score": 73.17073170731707,
+      "paired_delta_points": 2.4390243902439024,
+      "trained_revision_vs_direct_base_points": 4.2682926829268295,
+      "wins": 5,
+      "losses": 1,
+      "baseline_correct_retention": 0.9913793103448276,
+      "paired_sign_test_two_sided_p": 0.21875,
+      "generation_report_sha256": "84eb3a1148da128c8164165ffa35fde7dbf128d0e61272fe42b0fe8997259710",
+      "score_report_sha256": "b3ec70ace2b4441efa31c3a1c6a2e0ab97f84d5f2bee07d0703598e359258139",
+      "score_job": 767650
+    },
+    "ifeval": {
+      "rows": 541,
+      "direct_base_score": 81.88539741219964,
+      "unchanged_score": 72.2735674676525,
+      "trained_revision_score": 75.04621072088725,
+      "paired_delta_points": 2.7726432532347505,
+      "trained_revision_vs_direct_base_points": -6.839186691312392,
+      "wins": 27,
+      "losses": 12,
+      "baseline_correct_retention": 0.969309462915601,
+      "paired_sign_test_two_sided_p": 0.023702702470473014,
+      "generation_report_sha256": "65cef28476bc57f4cd59c73d933005fa52cbbb4302411a539be91ca046e9164f",
+      "score_report_sha256": "ebfa8fb9053dc8bc20f9abfae65685b5b2f759e8942a3196f652388e39619e99",
+      "score_job": 767645
+    },
+    "mbpp_plus": {
+      "rows": 378,
+      "direct_base_score": 5.555555555555555,
+      "unchanged_score": 5.82010582010582,
+      "trained_revision_score": 6.084656084656085,
+      "paired_delta_points": 0.26455026455026454,
+      "trained_revision_vs_direct_base_points": 0.5291005291005291,
+      "wins": 1,
+      "losses": 0,
+      "baseline_correct_retention": 1.0,
+      "paired_sign_test_two_sided_p": 1.0,
+      "generation_report_sha256": "c1639761d7abc55fbf590f1827a8f36c715d151c28bc5f43313a35d001ca1975",
+      "score_report_sha256": "3e37ef792dbbada48dad34b7d5540277031837f38b09c6e0d960e0fc6ecd3d4e",
+      "score_job": 767655
+    },
+    "musr": {
+      "rows": 756,
+      "direct_base_score": 78.04232804232804,
+      "unchanged_score": 68.3862433862434,
+      "trained_revision_score": 44.84126984126984,
+      "paired_delta_points": -23.544973544973544,
+      "trained_revision_vs_direct_base_points": -33.201058201058196,
+      "wins": 38,
+      "losses": 216,
+      "baseline_correct_retention": 0.5822050290135397,
+      "paired_sign_test_two_sided_p": 2.0971716721912456e-31,
+      "generation_report_sha256": "afba4a5e68da08b55ec3abaab5dfb6c6f506c4c52491f5d73b2f80550b97aabd",
+      "score_report_sha256": "50ca5f1bcb79fd7d2144f17345e1727959ee37fdd9be8a5e8768c2fb40a73e5d",
+      "score_job": 767639
+    }
+  },
+  "scoring_repairs": {
+    "ifeval_absl_dependency": {
+      "package": "absl-py==2.5.0",
+      "wheel_sha256": "0f17b89f2a4eaaedc4f28c622998aa690564b3012a396a4ffad0821007fe03ba",
+      "manifest_sha256": "bffd39bba10e64bfeeee610c1f90d5bc66ed8b1271b6e8817ff52718299bb67e",
+      "receipt_sha256": "ae3dd6171a37a736c7c078d62befcd9cdc5a646a32dde44d72e5c8be18acd066"
+    },
+    "evalplus_task_identity": {
+      "source_commit": "1b5e86d3c999ffba9863233db64376c2001d548c",
+      "runtime_manifest_sha256": "10bb8cdf7b52fd60c204793bd56156a16e82579183fcd09ffbd327ff45d6321e",
+      "runtime_json_sha256": "6ccfd38e4198f76d0bb3f3d2303170641c33a693b3eafb96e77e3d5866537df4"
+    },
+    "bubblewrap_python_projection_commit": "266546e5"
+  },
+  "interpretation": "capability_specific_positive_transfer_on_ifeval_humaneval_plus_and_directional_mbpp_plus_with_large_musr_and_correctbench_regressions",
+  "remaining_benchmarks": [
+    "livebench",
+    "livecodebench",
+    "ruler",
+    "longbench_pro",
+    "mmlu_pro"
+  ]
+}

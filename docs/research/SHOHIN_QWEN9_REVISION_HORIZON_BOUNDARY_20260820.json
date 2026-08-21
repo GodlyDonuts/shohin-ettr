@@ -1,0 +1,237 @@
+{
+  "schema": "shohin-qwen9-revision-horizon-boundary-v1",
+  "status": "public_development_diagnosis_complete",
+  "claim_scope": "prospective_architecture_diagnosis_not_confirmation",
+  "model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "draft_checkpoint_sha256": "854a7cc44fbc2b54418f4e5bd09b7efeed0da44fc9ce217b0bb6b1997b722971",
+  "revision_checkpoint_sha256": "df3c264d426941fef8ba9c10a90fe9fab304ec2864738209a4d79f9f81e0c473",
+  "newton_execution_evidence": {
+    "report_path": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/revision_horizon_89af615b_r1/report.json",
+    "report_sha256": "338ca55c0bd068a8ee3b57e28437d0d3b806f5f0001a87a2d976d0be98a82a93",
+    "execution_receipt_sha256": "576a2453c816a531b1b17f295a5db75f24d58d118f140229749f457eabbbde42",
+    "sacct_sha256": "e703e3c8b5a519f9431dc4d04bc598493f3e577aa0a3b7cdb842993724658ed7",
+    "completed_job": 767657,
+    "runtime_manifest_sha256": "cfd7d2fa4278914706cc7c0a4ddd8bc19f3878ad695d6517d4345728852844ca",
+    "runtime_json_sha256": "9064f39a92f38a0e33e738c5a3fa0426829dbaffc9466c0609a720b7c30b531e"
+  },
+  "matched_prompt_contract": {
+    "unchanged_and_revision_prompt_sha256_equal_on_every_row": true,
+    "prompt_equal_rows": 2578,
+    "total_rows": 2578,
+    "decoding_matched": true
+  },
+  "training_target_provenance": {
+    "input_path": "/lustre/fs1/home/sa305415/shohin/artifacts/product_reasoning/idr1_data_ad790b0_r1/train.jsonl",
+    "input_sha256": "6df3204573ce807db1b5057bce709189366b6674e38e5224ee3d17a3e6f0ac6c",
+    "input_rows": 9655,
+    "unique_source_identities": 5824,
+    "report_path": "/lustre/fs1/home/sa305415/shohin/artifacts/public_bench_qwen9_766196_r1/evidence/training_target_horizon_9bb78d4a_r4/report.json",
+    "report_sha256": "866e0904199b28e6f121d3d711f1fb93e3872904896a0a8ad56ddfff2e2d37e7",
+    "analyzer_source_sha256": "06afeffe1f03daa9eab07623bb0a3a767748dc4483ef0ad6e8cd04405c790855",
+    "source_verified_repair": {
+      "rows": 3294,
+      "outcome_class": "both_wrong",
+      "median_response_characters": 11.0,
+      "mean_response_characters": 17.55069823922283,
+      "under_20_characters": 2969,
+      "under_80_characters": 3214,
+      "exact_boxed_response": 3245,
+      "contains_think_open_tag": 0,
+      "median_internal_draft_characters": 1776.0,
+      "median_response_to_internal_draft_character_ratio": 0.006103143687036305,
+      "unique_source_identities": 3294,
+      "presentations_per_source": 1
+    },
+    "verified_candidate": {
+      "rows": 5108,
+      "median_response_characters": 706.0,
+      "under_20_characters": 16,
+      "contains_think_open_tag": 456,
+      "median_internal_draft_characters": 1897.0,
+      "median_response_to_internal_draft_character_ratio": 0.40248594258656406,
+      "unique_source_identities": 1277,
+      "presentations_per_source": 4
+    },
+    "executed_training_loss_geometry": {
+      "training_report_sha256": "457eccd13a4998510d774cf3e84f347b30480e017a6ad5e0eff4a24b368101c2",
+      "updates": 256,
+      "batch_size": 1,
+      "gradient_accumulation": 8,
+      "microsteps": 2048,
+      "charged_tokens": 365028,
+      "source_verified_repair_microsteps": 702,
+      "source_verified_repair_row_fraction": 0.3427734375,
+      "source_verified_repair_charged_token_fraction": 0.019198527236266808,
+      "source_verified_repair_mean_terminal_eos_fraction_of_row_loss": 0.13090556279393378,
+      "verified_candidate_mean_terminal_eos_fraction_of_row_loss": 0.0076615639377251845,
+      "source_repair_to_verified_candidate_eos_density_ratio": 17.086010618453614,
+      "terminal_eos_token": "<|im_end|>",
+      "terminal_eos_token_id": 248046
+    },
+    "evidence_scope": "direct curriculum provenance aligned with matched-prompt output behavior; an intervention is still required to establish causal improvement"
+  },
+  "benchmarks": {
+    "correctbench": {
+      "rows": 739,
+      "prompt_equal_rows": 739,
+      "byte_changed_rows": 703,
+      "byte_change_rate": 0.9512855209742895,
+      "unchanged_median_characters": 863,
+      "revision_median_characters": 12,
+      "revision_to_unchanged_median_character_ratio": 0.0226,
+      "unchanged_under_20_characters": 11,
+      "revision_under_20_characters": 519,
+      "unchanged_max_token_exhausted": 127,
+      "revision_max_token_exhausted": 2,
+      "paired_delta_points": -17.456021650879567,
+      "wins": 0,
+      "losses": 129,
+      "score_report_sha256": "bc01e307e202494539470aafd2897ac87213debd1b283dc06eab125fb7dd5247"
+    },
+    "humaneval_plus": {
+      "rows": 164,
+      "prompt_equal_rows": 164,
+      "byte_changed_rows": 19,
+      "byte_change_rate": 0.11585365853658537,
+      "unchanged_median_characters": 204.5,
+      "revision_median_characters": 196.0,
+      "revision_to_unchanged_median_character_ratio": 1.0,
+      "unchanged_under_20_characters": 1,
+      "revision_under_20_characters": 1,
+      "unchanged_max_token_exhausted": 2,
+      "revision_max_token_exhausted": 0,
+      "paired_delta_points": 2.4390243902439024,
+      "wins": 5,
+      "losses": 1,
+      "score_report_sha256": "b3ec70ace2b4441efa31c3a1c6a2e0ab97f84d5f2bee07d0703598e359258139"
+    },
+    "ifeval": {
+      "rows": 541,
+      "prompt_equal_rows": 541,
+      "byte_changed_rows": 261,
+      "byte_change_rate": 0.4824399260628466,
+      "unchanged_median_characters": 762,
+      "revision_median_characters": 679,
+      "revision_to_unchanged_median_character_ratio": 1.0,
+      "unchanged_under_20_characters": 26,
+      "revision_under_20_characters": 28,
+      "unchanged_max_token_exhausted": 42,
+      "revision_max_token_exhausted": 31,
+      "paired_delta_points": 2.7726432532347505,
+      "wins": 27,
+      "losses": 12,
+      "strata": {
+        "one_instruction": {
+          "rows": 305,
+          "paired_delta_points": 1.3114754098360655,
+          "wins": 14,
+          "losses": 10
+        },
+        "two_instructions": {
+          "rows": 179,
+          "paired_delta_points": 6.145251396648045,
+          "wins": 11,
+          "losses": 0
+        },
+        "three_instructions": {
+          "rows": 57,
+          "paired_delta_points": 0.0,
+          "wins": 2,
+          "losses": 2
+        }
+      },
+      "score_report_sha256": "ebfa8fb9053dc8bc20f9abfae65685b5b2f759e8942a3196f652388e39619e99"
+    },
+    "mbpp_plus": {
+      "rows": 378,
+      "prompt_equal_rows": 378,
+      "byte_changed_rows": 54,
+      "byte_change_rate": 0.14285714285714285,
+      "unchanged_median_characters": 138.0,
+      "revision_median_characters": 136.0,
+      "revision_to_unchanged_median_character_ratio": 1.0,
+      "unchanged_under_20_characters": 3,
+      "revision_under_20_characters": 1,
+      "unchanged_max_token_exhausted": 4,
+      "revision_max_token_exhausted": 2,
+      "paired_delta_points": 0.26455026455026454,
+      "wins": 1,
+      "losses": 0,
+      "score_report_sha256": "3e37ef792dbbada48dad34b7d5540277031837f38b09c6e0d960e0fc6ecd3d4e"
+    },
+    "musr": {
+      "rows": 756,
+      "prompt_equal_rows": 756,
+      "byte_changed_rows": 720,
+      "byte_change_rate": 0.9523809523809523,
+      "unchanged_median_characters": 1885.5,
+      "revision_median_characters": 26.0,
+      "revision_to_unchanged_median_character_ratio": 0.0123,
+      "unchanged_under_20_characters": 3,
+      "revision_under_20_characters": 322,
+      "unchanged_max_token_exhausted": 66,
+      "revision_max_token_exhausted": 7,
+      "paired_delta_points": -23.544973544973544,
+      "wins": 38,
+      "losses": 216,
+      "strata": {
+        "murder_mystery": {
+          "rows": 250,
+          "paired_delta_points": -27.2,
+          "wins": 5,
+          "losses": 73
+        },
+        "object_placements": {
+          "rows": 256,
+          "paired_delta_points": -1.5625,
+          "wins": 23,
+          "losses": 27
+        },
+        "team_allocation": {
+          "rows": 250,
+          "paired_delta_points": -42.4,
+          "wins": 10,
+          "losses": 116
+        }
+      },
+      "score_report_sha256": "50ca5f1bcb79fd7d2144f17345e1727959ee37fdd9be8a5e8768c2fb40a73e5d"
+    }
+  },
+  "diagnosis": {
+    "supported": true,
+    "name": "learned_revision_horizon_collapse",
+    "evidence": [
+      "unchanged and revision prompts are byte-hash matched on all 2578 rows",
+      "negative boards activate byte-changing revisions on more than 95 percent of rows",
+      "negative-board revision medians collapse to 12 and 26 characters",
+      "positive-board revision medians remain near matched controls",
+      "revision has fewer max-token exhaustions, excluding truncation as the collapse cause"
+    ],
+    "not_supported_as_causes": [
+      "prompt mismatch",
+      "decoding mismatch",
+      "maximum-token truncation",
+      "row-identity mismatch"
+    ]
+  },
+  "prospective_architecture_hypothesis": {
+    "name": "draft_relative_reasoning_horizon_preservation",
+    "description": "Retain the learned revision residual while removing terminal-EOS supervision from answer-only both-wrong repair targets and adding a task-agnostic draft-relative identity prior that prevents early-EOS collapse when a model-owned draft contains a long reasoning trajectory. Preserve answer-token supervision and ordinary shortening when the draft itself is concise.",
+    "training_boundary": "model-visible draft trajectory only; no benchmark name, task label, assessor, or correctness signal",
+    "historical_lane_differentiation": {
+      "VFR1": "does not retry fault-first teacher traces; its 128-row pilot missed both parse and correctness floors",
+      "CFR1": "does not retry synthetic appended faults; aligned training lost 144 answers and caused overlong draft trust",
+      "NDR1": "does not retry natural aligned-draft full-answer CE; aligned lost 37 answers to its shuffled control",
+      "TCS1": "does not add another post-hoc selector; semantic selection lost to the shape control",
+      "new_intervention": "de-bias terminal EOS on the existing answer-only repair targets rather than removing their correction tokens, while retaining the source-disjoint broad matched-control evaluation"
+    },
+    "required_controls": [
+      "unchanged continuation",
+      "self refinement",
+      "draft hidden",
+      "current revision checkpoint"
+    ],
+    "required_gate": "one new source-disjoint broad development screen followed by an untouched confirmation board",
+    "launch_authorized": false
+  }
+}

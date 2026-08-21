@@ -1,0 +1,112 @@
+{
+  "schema": "shohin-gpt-oss-120b-screen-result-v1",
+  "status": "complete_measured_result",
+  "measured_at": "2026-08-20",
+  "host": {
+    "id": "openai/gpt-oss-120b",
+    "total_parameters": 117000000000,
+    "active_parameters": 5100000000,
+    "native_precision": "MXFP4"
+  },
+  "screen": {
+    "run_root": "/lustre/fs1/home/sa305415/shohin/artifacts/gpt_oss_120b_fixed_draft_7ceb0400_r4",
+    "rows_per_arm": 256,
+    "total_scored_rows": 768,
+    "arms": {
+      "unchanged": {
+        "correct": 101,
+        "accuracy": 0.39453125,
+        "domains": {
+          "bbh_logic": {"correct": 78, "total": 128},
+          "math500": {"correct": 12, "total": 117},
+          "mbpp": {"correct": 11, "total": 11}
+        }
+      },
+      "self_refinement": {
+        "correct": 103,
+        "accuracy": 0.40234375,
+        "domains": {
+          "bbh_logic": {"correct": 81, "total": 128},
+          "math500": {"correct": 11, "total": 117},
+          "mbpp": {"correct": 11, "total": 11}
+        }
+      },
+      "trained_revision": {
+        "correct": 111,
+        "accuracy": 0.43359375,
+        "gain_over_unchanged_count": 10,
+        "gain_over_unchanged_percentage_points": 3.90625,
+        "gain_over_self_refinement_count": 8,
+        "domains": {
+          "bbh_logic": {"correct": 82, "total": 128, "delta_vs_unchanged": 4},
+          "math500": {"correct": 18, "total": 117, "delta_vs_unchanged": 6},
+          "mbpp": {"correct": 11, "total": 11, "delta_vs_unchanged": 0}
+        },
+        "paired_wins_vs_unchanged": 19,
+        "paired_losses_vs_unchanged": 9,
+        "mcnemar_exact_two_sided_p": 0.08715855330228806,
+        "paired_gain_ci95_percentage_points": [-0.12450411389167915, 7.937004113891679],
+        "unchanged_correct_retained": 92,
+        "unchanged_correct_total": 101,
+        "unchanged_correct_retention": 0.9108910891089109
+      }
+    },
+    "decision": {
+      "improves_unchanged": true,
+      "improves_self_refinement": true,
+      "all_domains_nonnegative_vs_unchanged": true,
+      "retains_at_least_95_percent_unchanged_correct": false,
+      "interpretation": "positive_cross_family_capability_transfer_with_unresolved_conservative_retention"
+    }
+  },
+  "execution": {
+    "mechanics_job": 766148,
+    "fit_job": 766177,
+    "evaluation_jobs": [766178, 766179, 766180, 766181, 766182, 766183, 766184, 766185, 766186, 766187, 766188, 766189],
+    "score_job": 766190,
+    "analysis_job": 766192,
+    "figure_job": 766193,
+    "all_required_complete": true,
+    "retry_count": 0,
+    "charged_h100_hours": 7.3116666666666665,
+    "training_updates": 256,
+    "training_charged_tokens": 2087451,
+    "trainable_parameters": 1658880,
+    "peak_cuda_bytes": 68606282240
+  },
+  "evidence": {
+    "mechanics_report_sha256": "e5f18469833962c3f05d2bf27eb8206ba113db4ee83cd7cc7a6b3ca7886299e9",
+    "mechanics_checkpoint_sha256": "239f9ee231dd9bf7b63973b841944e40c64cd9cfae1eb7430aaa97eab0e2fc52",
+    "training_report_sha256": "b36288d09d8e26d0760c194e81571698957512b4bed0463064fc2e388d8de649",
+    "training_checkpoint_sha256": "07aa4cb1b4ec4b1857a160574b87ad3d3d7bea2704896fafad24023b357ec0ed",
+    "score_sha256": "906b3b0147e6aeca00e53e9559533665a212bf48162a9758af295915d64a6d59",
+    "score_sandbox_sha256": "ee47a9cc3eea0b3b31308ac265b85807e4dce3d6b21a27861ee458195c1bcac3",
+    "accounting_sha256": "8546d5ba326263d7235eb465a13fcd87081ed5fb346e8f7f8073632b6dfcc36d"
+  },
+  "three_point_curve": {
+    "analysis_root": "/lustre/fs1/home/sa305415/shohin/artifacts/upward_moe_scaling_qwen35_gptoss117_mixtral141_83ff494d_r4",
+    "point_count": 3,
+    "all_points_positive_vs_unchanged": true,
+    "all_points_positive_vs_self_refinement": true,
+    "gain_monotonic_by_active_parameters": false,
+    "all_points_retention_at_least_95_percent": false,
+    "all_domains_nonnegative_at_every_point": false,
+    "claim": "moe_transfer_measured_without_positive_scaling_law",
+    "capability_curve_claim": "positive_upward_moe_capability_scaling_not_supported",
+    "conservative_retention_curve_claim": "conservative_retention_scaling_not_supported",
+    "points": [
+      {"host": "Qwen3.6-35B-A3B", "active_parameters": 3000000000, "gain_over_unchanged_percentage_points": 11.71875, "unchanged_correct_retention": 0.9459459459459459},
+      {"host": "openai/gpt-oss-120b", "active_parameters": 5100000000, "gain_over_unchanged_percentage_points": 3.90625, "unchanged_correct_retention": 0.9108910891089109},
+      {"host": "mistralai/Mixtral-8x22B-Instruct-v0.1", "active_parameters": 39000000000, "gain_over_unchanged_percentage_points": 26.953125, "unchanged_correct_retention": 0.7555555555555555}
+    ],
+    "analysis_sha256": "6434ba95df6c35174fce536e96571d046e9e6fd97459100232120d1976c27550",
+    "publication_manifest_sha256": "70dec71065a3a9f83caa4e58d218cc1831ca89f664a3cab3f036eecacad49c7b",
+    "publication_csv_sha256": "09c795326363a797152a9e334c55e9d9d3c9c078a6b7bd2a9b3518b3a662d058",
+    "publication_svg_sha256": "1e659330f02bac8d68fcbe332b9e418bd207cdd089bf0d14649418c434492feb"
+  },
+  "scientific_boundary": {
+    "supported": "The frozen trained-revision recipe transferred positive aggregate capability to a third MoE family and a 117B-total host while remaining nonnegative in every screened domain.",
+    "not_supported": "The three measured points do not establish monotonic capability scaling or conservative retention scaling. The GPT-OSS paired gain confidence interval includes zero and the 95-percent retention gate failed.",
+    "next_measurement": "Complete the already-staged, independent Nemotron-Super-120B-A12B point; do not reinterpret the three-point screen as a scaling law."
+  }
+}
